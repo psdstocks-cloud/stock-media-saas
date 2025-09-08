@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showSupportedSites, setShowSupportedSites] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -149,7 +150,7 @@ export default function DashboardPage() {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}>
-                  🔍 Browse Media
+                  🔍 Request Files
                 </button>
               </Link>
               <button 
@@ -246,7 +247,7 @@ export default function DashboardPage() {
                   transition: 'all 0.3s ease',
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
                 }}>
-                  🔍 Start Browsing Now
+                  🔍 Request Files Now
                 </button>
               </Link>
               <button style={{
@@ -546,7 +547,7 @@ export default function DashboardPage() {
                 transition: 'all 0.3s ease',
                 boxShadow: '0 8px 25px rgba(37, 99, 235, 0.3)'
               }}>
-                🔍 Start Browsing
+                🔍 Request Files
               </button>
             </Link>
             <Link href="/dashboard/orders">
@@ -613,7 +614,7 @@ export default function DashboardPage() {
                     transition: 'all 0.2s ease',
                     textAlign: 'left'
                   }}>
-                    🔍 Browse Media
+                    🔍 Request Files
                   </button>
                 </Link>
                 <Link href="/dashboard/orders" style={{ display: 'block' }}>
@@ -725,21 +726,101 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-              <Link href="/dashboard/browse" style={{ display: 'block', marginTop: '16px' }}>
-                <button style={{
-                  width: '100%',
-                  padding: '8px 16px',
-                  background: 'transparent',
-                  color: '#2563eb',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}>
-                  View All Sites →
+              <div style={{ marginTop: '16px' }}>
+                <button 
+                  onClick={() => setShowSupportedSites(!showSupportedSites)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  {showSupportedSites ? 'Hide All Sites' : 'View All Sites'} 
+                  {showSupportedSites ? '↑' : '↓'}
                 </button>
-              </Link>
+              </div>
+              
+              {showSupportedSites && (
+                <div style={{ 
+                  marginTop: '16px',
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  background: '#f8fafc'
+                }}>
+                  {stockSites?.map((site: any) => (
+                    <div key={site.id} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '16px',
+                      borderBottom: '1px solid #e2e8f0',
+                      background: 'white',
+                      margin: '4px',
+                      borderRadius: '6px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                          borderRadius: '6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: '12px'
+                        }}>
+                          {site.displayName.charAt(0)}
+                        </div>
+                        <div>
+                          <p style={{
+                            fontWeight: '600',
+                            color: '#0f172a',
+                            margin: 0,
+                            fontSize: '14px'
+                          }}>{site.displayName}</p>
+                          <p style={{
+                            fontSize: '12px',
+                            color: '#64748b',
+                            margin: 0
+                          }}>{site.category}</p>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          margin: 0,
+                          fontSize: '14px'
+                        }}>{site.cost} pts</p>
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: site.isActive ? '#dcfce7' : '#f1f5f9',
+                          color: site.isActive ? '#166534' : '#64748b'
+                        }}>
+                          {site.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -851,83 +932,182 @@ export default function DashboardPage() {
               )}
           </div>
 
-            {/* Recent Activity */}
+            {/* Quick Tips & Stats */}
             <div style={{
               background: 'white',
-              borderRadius: '12px',
+              borderRadius: '16px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              padding: '24px'
+              padding: '32px'
             }}>
               <h3 style={{
-                fontSize: '18px',
-                fontWeight: '600',
+                fontSize: '20px',
+                fontWeight: '700',
                 color: '#0f172a',
-                marginBottom: '16px',
+                marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '12px'
               }}>
-                📈 Recent Activity
+                💡 Quick Tips & Stats
               </h3>
-              {recentHistory.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>⭐</div>
-                  <p style={{ color: '#64748b' }}>No recent activity</p>
-            </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {recentHistory.map((activity: any, index: number) => (
-                    <div key={index} style={{
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Money Saved Calculator */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                  border: '1px solid #bae6fd',
+                  borderRadius: '12px',
+                  padding: '20px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      background: '#0ea5e9',
+                      borderRadius: '8px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '16px',
-                      padding: '12px',
-                      background: '#f8fafc',
-                      borderRadius: '8px'
+                      justifyContent: 'center',
+                      fontSize: '20px'
                     }}>
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        background: activity.type === 'SUBSCRIPTION' ? '#dbeafe' :
-                                   activity.type === 'DOWNLOAD' ? '#dcfce7' :
-                                   activity.type === 'REFUND' ? '#fed7aa' : '#f1f5f9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '16px'
-                      }}>
-                        {activity.type === 'SUBSCRIPTION' ? '➕' :
-                         activity.type === 'DOWNLOAD' ? '⬇️' :
-                         activity.type === 'REFUND' ? '↩️' : '⭐'}
-                        </div>
-                      <div style={{ flex: 1 }}>
-                        <p style={{
-                          fontWeight: '500',
-                          color: '#0f172a',
-                          margin: 0
-                        }}>{activity.description}</p>
-                        <p style={{
-                          fontSize: '12px',
-                          color: '#64748b',
-                          margin: 0
-                        }}>
-                          {new Date(activity.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{
-                          fontWeight: '600',
-                          color: activity.amount > 0 ? '#10b981' : '#ef4444',
-                          margin: 0
-                        }}>
-                          {activity.amount > 0 ? '+' : ''}{activity.amount} pts
-                        </p>
-                      </div>
+                      💰
                     </div>
-                  ))}
+                    <h4 style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      color: '#0c4a6e',
+                      margin: 0
+                    }}>Money Saved</h4>
+                  </div>
+                  <p style={{
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    color: '#0c4a6e',
+                    margin: '0 0 8px 0'
+                  }}>
+                    ${((orders?.filter((order: any) => order.status === 'COMPLETED').length || 0) * 15).toLocaleString()}
+                  </p>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#0369a1',
+                    margin: 0
+                  }}>
+                    Estimated savings vs. direct purchases
+                  </p>
                 </div>
-              )}
+
+                {/* Quick Tips */}
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '20px'
+                }}>
+                  <h4 style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#0f172a',
+                    margin: '0 0 16px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    🚀 Pro Tips
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        background: '#2563eb',
+                        borderRadius: '50%',
+                        marginTop: '6px',
+                        flexShrink: 0
+                      }}></div>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#374151',
+                        margin: 0,
+                        lineHeight: '1.5'
+                      }}>
+                        Copy any stock media URL and paste it in the request box
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        background: '#2563eb',
+                        borderRadius: '50%',
+                        marginTop: '6px',
+                        flexShrink: 0
+                      }}></div>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#374151',
+                        margin: 0,
+                        lineHeight: '1.5'
+                      }}>
+                        Download the same file multiple times for free
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        background: '#2563eb',
+                        borderRadius: '50%',
+                        marginTop: '6px',
+                        flexShrink: 0
+                      }}></div>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#374151',
+                        margin: 0,
+                        lineHeight: '1.5'
+                      }}>
+                        High-resolution files delivered instantly
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Support */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                  border: '1px solid #f59e0b',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎧</div>
+                  <h4 style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#92400e',
+                    margin: '0 0 8px 0'
+                  }}>Need Help?</h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#a16207',
+                    margin: '0 0 16px 0'
+                  }}>
+                    Our support team is here 24/7
+                  </p>
+                  <button style={{
+                    padding: '8px 16px',
+                    background: '#f59e0b',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}>
+                    Contact Support
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
