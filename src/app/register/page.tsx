@@ -4,21 +4,6 @@ import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { 
-  CheckCircle, 
-  ArrowRight, 
-  Star, 
-  Shield, 
-  Zap,
-  Users,
-  Clock,
-  AlertCircle
-} from 'lucide-react'
 
 interface Plan {
   id: string
@@ -135,130 +120,265 @@ export default function RegisterPage() {
 
   const features = [
     {
-      icon: <Zap className="w-5 h-5" />,
+      icon: '⚡',
       title: "Instant Downloads",
       description: "Download your media files instantly with our high-speed CDN"
     },
     {
-      icon: <Shield className="w-5 h-5" />,
+      icon: '🛡️',
       title: "Commercial License",
       description: "Full commercial rights for all downloads with no attribution required"
     },
     {
-      icon: <Users className="w-5 h-5" />,
+      icon: '🌍',
       title: "500+ Stock Sites",
       description: "Access to premium stock sites worldwide in one unified platform"
     },
     {
-      icon: <Clock className="w-5 h-5" />,
+      icon: '🕐',
       title: "24/7 Support",
       description: "Round-the-clock customer support from our expert team"
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid #e2e8f0'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 0'
+          }}>
+            <Link href="/" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              textDecoration: 'none'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
               </div>
-              <span className="text-xl font-bold text-slate-900">StockMedia Pro</span>
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>
+                StockMedia Pro
+              </span>
             </Link>
             <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
+              <button style={{
+                padding: '8px 16px',
+                color: '#64748b',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                borderRadius: '6px',
+                transition: 'all 0.2s ease'
+              }}>
+                Sign In
+              </button>
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '48px 1rem'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <h1 style={{
+            fontSize: 'clamp(36px, 6vw, 48px)',
+            fontWeight: 'bold',
+            color: '#0f172a',
+            marginBottom: '16px'
+          }}>
             Start Your Creative Journey
           </h1>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          <p style={{
+            fontSize: '20px',
+            color: '#64748b',
+            maxWidth: '768px',
+            margin: '0 auto'
+          }}>
             Join thousands of creators who trust StockMedia Pro for their premium stock media needs.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+          gap: '48px',
+          alignItems: 'start'
+        }}>
           {/* Registration Form */}
           <div>
-            <Card className="shadow-xl border-0">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-slate-900">
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              border: 'none',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                padding: '32px',
+                textAlign: 'center',
+                borderBottom: '1px solid #e2e8f0'
+              }}>
+                <h2 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  marginBottom: '8px'
+                }}>
                   Create Your Account
-                </CardTitle>
-                <CardDescription className="text-slate-600">
+                </h2>
+                <p style={{
+                  color: '#64748b',
+                  fontSize: '16px'
+                }}>
                   Get started with your free trial today
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                </p>
+              </div>
+              <div style={{ padding: '32px' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   {/* Step 1: Personal Information */}
                   {step === 1 && (
-                    <div className="space-y-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                       <div>
-                        <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+                        <label htmlFor="name" style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#374151',
+                          marginBottom: '8px'
+                        }}>
                           Full Name
-                        </Label>
-                        <Input
+                        </label>
+                        <input
                           id="name"
                           name="name"
                           type="text"
                           required
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="mt-1"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            transition: 'all 0.2s ease',
+                            boxSizing: 'border-box'
+                          }}
                           placeholder="Enter your full name"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="email" className="text-sm font-medium text-slate-700">
+                        <label htmlFor="email" style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#374151',
+                          marginBottom: '8px'
+                        }}>
                           Email Address
-                        </Label>
-                        <Input
+                        </label>
+                        <input
                           id="email"
                           name="email"
                           type="email"
                           required
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="mt-1"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            transition: 'all 0.2s ease',
+                            boxSizing: 'border-box'
+                          }}
                           placeholder="Enter your email address"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+                        <label htmlFor="password" style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#374151',
+                          marginBottom: '8px'
+                        }}>
                           Password
-                        </Label>
-                        <Input
+                        </label>
+                        <input
                           id="password"
                           name="password"
                           type="password"
                           required
                           value={formData.password}
                           onChange={handleInputChange}
-                          className="mt-1"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            transition: 'all 0.2s ease',
+                            boxSizing: 'border-box'
+                          }}
                           placeholder="Create a strong password"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+                        <label htmlFor="confirmPassword" style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#374151',
+                          marginBottom: '8px'
+                        }}>
                           Confirm Password
-                        </Label>
-                        <Input
+                        </label>
+                        <input
                           id="confirmPassword"
                           name="confirmPassword"
                           type="password"
                           required
                           value={formData.confirmPassword}
                           onChange={handleInputChange}
-                          className="mt-1"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '16px',
+                            transition: 'all 0.2s ease',
+                            boxSizing: 'border-box'
+                          }}
                           placeholder="Confirm your password"
                         />
                       </div>
@@ -267,44 +387,102 @@ export default function RegisterPage() {
 
                   {/* Step 2: Plan Selection */}
                   {step === 2 && (
-                    <div className="space-y-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                        <h3 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          marginBottom: '16px'
+                        }}>
                           Choose Your Plan
                         </h3>
-                        <div className="space-y-4">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                           {plans.map((plan) => (
                             <div
                               key={plan.id}
-                              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                selectedPlan === plan.id
-                                  ? 'border-blue-500 bg-blue-50'
-                                  : 'border-slate-200 hover:border-slate-300'
-                              }`}
+                              style={{
+                                padding: '16px',
+                                border: selectedPlan === plan.id ? '2px solid #3b82f6' : '2px solid #e5e7eb',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                background: selectedPlan === plan.id ? '#eff6ff' : 'white'
+                              }}
                               onClick={() => setSelectedPlan(plan.id)}
                             >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                    selectedPlan === plan.id
-                                      ? 'border-blue-500 bg-blue-500'
-                                      : 'border-slate-300'
-                                  }`}>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                              }}>
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px'
+                                }}>
+                                  <div style={{
+                                    width: '20px',
+                                    height: '20px',
+                                    borderRadius: '50%',
+                                    border: selectedPlan === plan.id ? '2px solid #3b82f6' : '2px solid #d1d5db',
+                                    background: selectedPlan === plan.id ? '#3b82f6' : 'transparent',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}>
                                     {selectedPlan === plan.id && (
-                                      <CheckCircle className="w-3 h-3 text-white" />
+                                      <div style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        borderRadius: '50%',
+                                        background: 'white'
+                                      }} />
                                     )}
                                   </div>
                                   <div>
-                                    <h4 className="font-semibold text-slate-900">{plan.name}</h4>
-                                    <p className="text-sm text-slate-600">{plan.description}</p>
+                                    <h4 style={{
+                                      fontWeight: '600',
+                                      color: '#0f172a',
+                                      textTransform: 'capitalize'
+                                    }}>
+                                      {plan.name}
+                                    </h4>
+                                    <p style={{
+                                      fontSize: '14px',
+                                      color: '#64748b'
+                                    }}>
+                                      {plan.name === 'starter' && 'Perfect for individuals and small projects'}
+                                      {plan.name === 'professional' && 'Ideal for freelancers and small agencies'}
+                                      {plan.name === 'business' && 'Perfect for agencies and design teams'}
+                                      {plan.name === 'enterprise' && 'For large agencies and enterprises'}
+                                    </p>
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <div className="text-2xl font-bold text-slate-900">${plan.price}</div>
-                                  <div className="text-sm text-slate-600">/month</div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    color: '#0f172a'
+                                  }}>
+                                    ${plan.price}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '14px',
+                                    color: '#64748b'
+                                  }}>
+                                    /month
+                                  </div>
                                 </div>
                               </div>
-                              <div className="mt-3 flex items-center space-x-4 text-sm text-slate-600">
+                              <div style={{
+                                marginTop: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '16px',
+                                fontSize: '14px',
+                                color: '#64748b'
+                              }}>
                                 <span>{plan.points} points/month</span>
                                 <span>•</span>
                                 <span>{plan.rolloverLimit}% rollover</span>
@@ -317,127 +495,299 @@ export default function RegisterPage() {
                   )}
 
                   {error && (
-                    <div className="flex items-center space-x-2 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                      <p className="text-red-700">{error}</p>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '16px',
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        color: '#dc2626'
+                      }}>
+                        ⚠️
+                      </div>
+                      <p style={{ color: '#dc2626', margin: 0 }}>{error}</p>
                     </div>
                   )}
 
-                  <div className="flex space-x-4">
+                  <div style={{
+                    display: 'flex',
+                    gap: '16px'
+                  }}>
                     {step === 2 && (
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
                         onClick={() => setStep(1)}
-                        className="flex-1"
+                        style={{
+                          flex: 1,
+                          padding: '12px 24px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          background: 'white',
+                          color: '#374151',
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
                       >
                         Back
-                      </Button>
+                      </button>
                     )}
                     {step === 1 ? (
-                      <Button
+                      <button
                         type="button"
                         onClick={() => setStep(2)}
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        style={{
+                          flex: 1,
+                          padding: '12px 24px',
+                          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
                       >
-                        Continue
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
+                        Continue →
+                      </button>
                     ) : (
-                      <Button
+                      <button
                         type="submit"
                         disabled={isLoading}
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        style={{
+                          flex: 1,
+                          padding: '12px 24px',
+                          background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
                       >
-                        {isLoading ? 'Creating Account...' : 'Create Account'}
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
+                        {isLoading ? 'Creating Account...' : 'Create Account →'}
+                      </button>
                     )}
                   </div>
                 </form>
 
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-slate-600">
+                <div style={{
+                  marginTop: '24px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#64748b',
+                    margin: 0
+                  }}>
                     Already have an account?{' '}
-                    <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/login" style={{
+                      color: '#2563eb',
+                      textDecoration: 'none',
+                      fontWeight: '500'
+                    }}>
                       Sign in here
                     </Link>
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Benefits Sidebar */}
-          <div className="space-y-8">
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-slate-900">
-                  Why Choose StockMedia Pro?
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '32px'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+              borderRadius: '16px',
+              border: '1px solid #bfdbfe',
+              padding: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#0f172a',
+                marginBottom: '16px'
+              }}>
+                Why Choose StockMedia Pro?
+              </h3>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}>
                 {features.map((feature, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+                  <div key={index} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      background: '#dbeafe',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      flexShrink: 0
+                    }}>
                       {feature.icon}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 mb-1">{feature.title}</h4>
-                      <p className="text-sm text-slate-600">{feature.description}</p>
+                      <h4 style={{
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        marginBottom: '4px'
+                      }}>
+                        {feature.title}
+                      </h4>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#64748b',
+                        margin: 0
+                      }}>
+                        {feature.description}
+                      </p>
                     </div>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-slate-900">
-                  What Our Users Say
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex space-x-1">
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              padding: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#0f172a',
+                marginBottom: '16px'
+              }}>
+                What Our Users Say
+              </h3>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '4px'
+                  }}>
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span key={i} style={{ color: '#fbbf24', fontSize: '16px' }}>★</span>
                     ))}
                   </div>
                   <div>
-                    <p className="text-slate-700 text-sm mb-2">
+                    <p style={{
+                      color: '#374151',
+                      fontSize: '14px',
+                      marginBottom: '8px',
+                      margin: 0
+                    }}>
                       "StockMedia Pro has revolutionized our workflow. The quality and variety of content is unmatched."
                     </p>
-                    <p className="text-slate-600 text-xs">- Sarah Johnson, Creative Director</p>
+                    <p style={{
+                      color: '#64748b',
+                      fontSize: '12px',
+                      margin: 0
+                    }}>
+                      - Sarah Johnson, Creative Director
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="flex space-x-1">
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '4px'
+                  }}>
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span key={i} style={{ color: '#fbbf24', fontSize: '16px' }}>★</span>
                     ))}
                   </div>
                   <div>
-                    <p className="text-slate-700 text-sm mb-2">
+                    <p style={{
+                      color: '#374151',
+                      fontSize: '14px',
+                      marginBottom: '8px',
+                      margin: 0
+                    }}>
                       "The API integration is seamless. We've saved hours of manual work with their automation features."
                     </p>
-                    <p className="text-slate-600 text-xs">- Mike Chen, Marketing Manager</p>
+                    <p style={{
+                      color: '#64748b',
+                      fontSize: '12px',
+                      margin: 0
+                    }}>
+                      - Mike Chen, Marketing Manager
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-6 h-6 text-green-600" />
-                </div>
-                <h3 className="font-semibold text-slate-900 mb-2">30-Day Money Back Guarantee</h3>
-                <p className="text-sm text-slate-600">
-                  Not satisfied? Get a full refund within 30 days, no questions asked.
-                </p>
-              </CardContent>
-            </Card>
+            <div style={{
+              background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+              borderRadius: '16px',
+              border: '1px solid #bbf7d0',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#dcfce7',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                fontSize: '24px'
+              }}>
+                🛡️
+              </div>
+              <h3 style={{
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '8px'
+              }}>
+                30-Day Money Back Guarantee
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#64748b',
+                margin: 0
+              }}>
+                Not satisfied? Get a full refund within 30 days, no questions asked.
+              </p>
+            </div>
           </div>
         </div>
       </div>
