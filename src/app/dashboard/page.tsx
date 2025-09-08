@@ -382,38 +382,57 @@ export default function DashboardPage() {
           <div style={{
             background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
             border: '1px solid #86efac',
-            borderRadius: '12px',
-            padding: '24px'
+            borderRadius: '16px',
+            padding: '32px',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(34, 197, 94, 0.1)',
+              borderRadius: '50%'
+            }}></div>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              position: 'relative',
+              zIndex: 1
             }}>
               <div>
                 <p style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '16px',
+                  fontWeight: '600',
                   color: '#166534',
-                  marginBottom: '4px'
-                }}>Downloads This Month</p>
+                  marginBottom: '8px'
+                }}>Successful Downloads</p>
                 <p style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: '#14532d'
+                  fontSize: '40px',
+                  fontWeight: '800',
+                  color: '#14532d',
+                  marginBottom: '4px'
                 }}>
                   {orders?.filter((order: any) => order.status === 'COMPLETED').length || 0}
                 </p>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#166534',
+                  opacity: 0.8
+                }}>Files Downloaded</p>
               </div>
               <div style={{
-                width: '48px',
-                height: '48px',
-                background: '#dcfce7',
-                borderRadius: '8px',
+                width: '64px',
+                height: '64px',
+                background: 'rgba(34, 197, 94, 0.2)',
+                borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '28px'
               }}>
                 ⬇️
               </div>
@@ -423,43 +442,62 @@ export default function DashboardPage() {
           <div style={{
             background: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)',
             border: '1px solid #c4b5fd',
-            borderRadius: '12px',
-            padding: '24px'
+            borderRadius: '16px',
+            padding: '32px',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(124, 58, 237, 0.1)',
+              borderRadius: '50%'
+            }}></div>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              position: 'relative',
+              zIndex: 1
             }}>
               <div>
                 <p style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '16px',
+                  fontWeight: '600',
                   color: '#7c3aed',
-                  marginBottom: '4px'
-                }}>Total Orders</p>
+                  marginBottom: '8px'
+                }}>Total Requests</p>
                 <p style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: '#6b21a8'
+                  fontSize: '40px',
+                  fontWeight: '800',
+                  color: '#6b21a8',
+                  marginBottom: '4px'
                 }}>
                   {orders?.length || 0}
                 </p>
-                </div>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#7c3aed',
+                  opacity: 0.8
+                }}>All Time Orders</p>
+              </div>
               <div style={{
-                width: '48px',
-                height: '48px',
-                background: '#f3e8ff',
-                borderRadius: '8px',
+                width: '64px',
+                height: '64px',
+                background: 'rgba(124, 58, 237, 0.2)',
+                borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '28px'
               }}>
                 📈
               </div>
             </div>
-                </div>
+          </div>
 
           <div style={{
             background: 'linear-gradient(135deg, #fed7aa, #fdba74)',
@@ -580,82 +618,223 @@ export default function DashboardPage() {
           <div>
             <div style={{
               background: 'white',
-              borderRadius: '16px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              borderRadius: '20px',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
               padding: '32px',
-              marginBottom: '24px'
+              marginBottom: '24px',
+              border: '1px solid #f1f5f9'
             }}>
               <h3 style={{
-                fontSize: '20px',
+                fontSize: '24px',
                 fontWeight: '700',
                 color: '#0f172a',
-                marginBottom: '20px',
+                marginBottom: '24px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px'
               }}>
-                ⚡ Quick Actions
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px'
+                }}>
+                  ⚡
+                </div>
+                Quick Actions
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
                 <Link href="/dashboard/browse" style={{ display: 'block' }}>
-                  <button style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '16px 20px',
+                  <div style={{
+                    padding: '20px',
+                    background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
                     border: '2px solid #e2e8f0',
-                    borderRadius: '12px',
-                    background: 'white',
-                    color: '#374151',
-                    fontSize: '16px',
-                    fontWeight: '600',
+                    borderRadius: '16px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
+                    e.currentTarget.style.borderColor = '#2563eb'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)'
+                    e.currentTarget.style.borderColor = '#e2e8f0'
                   }}>
-                    🔍 Request Files
-                  </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px'
+                      }}>
+                        🔍
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          margin: '0 0 4px 0'
+                        }}>Request Files</h4>
+                        <p style={{
+                          fontSize: '14px',
+                          color: '#64748b',
+                          margin: 0
+                        }}>Paste any stock media URL to download</p>
+                      </div>
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        background: '#e2e8f0',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px'
+                      }}>
+                        →
+                      </div>
+                    </div>
+                  </div>
                 </Link>
+
                 <Link href="/dashboard/orders" style={{ display: 'block' }}>
-                  <button style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '16px 20px',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '12px',
-                    background: 'white',
-                    color: '#374151',
-                    fontSize: '16px',
-                    fontWeight: '600',
+                  <div style={{
+                    padding: '20px',
+                    background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                    border: '2px solid #bae6fd',
+                    borderRadius: '16px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
+                    e.currentTarget.style.borderColor = '#0ea5e9'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)'
+                    e.currentTarget.style.borderColor = '#bae6fd'
                   }}>
-                    🕐 View Orders
-                  </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px'
+                      }}>
+                        📋
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          margin: '0 0 4px 0'
+                        }}>My Orders</h4>
+                        <p style={{
+                          fontSize: '14px',
+                          color: '#64748b',
+                          margin: 0
+                        }}>View and download your files</p>
+                      </div>
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        background: '#e2e8f0',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px'
+                      }}>
+                        →
+                      </div>
+                    </div>
+                  </div>
                 </Link>
-                <Link href="/dashboard/profile" style={{ display: 'block' }}>
-                  <button style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '16px 20px',
-                    border: '2px solid #e2e8f0',
-                    borderRadius: '12px',
-                    background: 'white',
-                    color: '#374151',
-                    fontSize: '16px',
-                    fontWeight: '600',
+
+                <Link href="/dashboard/support" style={{ display: 'block' }}>
+                  <div style={{
+                    padding: '20px',
+                    background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                    border: '2px solid #f59e0b',
+                    borderRadius: '16px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
+                    e.currentTarget.style.borderColor = '#d97706'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)'
+                    e.currentTarget.style.borderColor = '#f59e0b'
                   }}>
-                    👁️ Manage Profile
-                  </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px'
+                      }}>
+                        🎧
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          margin: '0 0 4px 0'
+                        }}>Get Support</h4>
+                        <p style={{
+                          fontSize: '14px',
+                          color: '#64748b',
+                          margin: 0
+                        }}>24/7 help and support</p>
+                      </div>
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        background: '#e2e8f0',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px'
+                      }}>
+                        →
+                      </div>
+                    </div>
+                  </div>
                 </Link>
               </div>
             </div>
@@ -769,7 +948,20 @@ export default function DashboardPage() {
                       borderBottom: '1px solid #e2e8f0',
                       background: 'white',
                       margin: '4px',
-                      borderRadius: '6px'
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={() => window.open(site.url, '_blank')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#f8fafc'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'white'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
@@ -800,22 +992,36 @@ export default function DashboardPage() {
                           }}>{site.category}</p>
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{
-                          fontWeight: '600',
-                          color: '#0f172a',
-                          margin: 0,
-                          fontSize: '14px'
-                        }}>{site.cost} pts</p>
-                        <span style={{
-                          fontSize: '11px',
-                          padding: '2px 6px',
+                      <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div>
+                          <p style={{
+                            fontWeight: '600',
+                            color: '#0f172a',
+                            margin: 0,
+                            fontSize: '14px'
+                          }}>{site.cost} pts</p>
+                          <span style={{
+                            fontSize: '11px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: site.isActive ? '#dcfce7' : '#f1f5f9',
+                            color: site.isActive ? '#166534' : '#64748b'
+                          }}>
+                            {site.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          background: '#e2e8f0',
                           borderRadius: '4px',
-                          background: site.isActive ? '#dcfce7' : '#f1f5f9',
-                          color: site.isActive ? '#166534' : '#64748b'
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12px'
                         }}>
-                          {site.isActive ? 'Active' : 'Inactive'}
-                        </span>
+                          ↗
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -996,7 +1202,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                {/* Quick Tips */}
+                {/* Recent Activity Summary */}
                 <div style={{
                   background: '#f8fafc',
                   border: '1px solid #e2e8f0',
@@ -1012,62 +1218,88 @@ export default function DashboardPage() {
                     alignItems: 'center',
                     gap: '8px'
                   }}>
-                    🚀 Pro Tips
+                    📊 Activity Summary
                   </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                      <div style={{
-                        width: '6px',
-                        height: '6px',
-                        background: '#2563eb',
-                        borderRadius: '50%',
-                        marginTop: '6px',
-                        flexShrink: 0
-                      }}></div>
-                      <p style={{
-                        fontSize: '14px',
-                        color: '#374151',
-                        margin: 0,
-                        lineHeight: '1.5'
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          background: '#10b981',
+                          borderRadius: '50%'
+                        }}></div>
+                        <span style={{ fontSize: '14px', color: '#374151' }}>Success Rate</span>
+                      </div>
+                      <span style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#10b981'
                       }}>
-                        Copy any stock media URL and paste it in the request box
-                      </p>
+                        {orders?.length > 0 ? Math.round((orders.filter((order: any) => order.status === 'COMPLETED').length / orders.length) * 100) : 0}%
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                      <div style={{
-                        width: '6px',
-                        height: '6px',
-                        background: '#2563eb',
-                        borderRadius: '50%',
-                        marginTop: '6px',
-                        flexShrink: 0
-                      }}></div>
-                      <p style={{
-                        fontSize: '14px',
-                        color: '#374151',
-                        margin: 0,
-                        lineHeight: '1.5'
+                    
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          background: '#f59e0b',
+                          borderRadius: '50%'
+                        }}></div>
+                        <span style={{ fontSize: '14px', color: '#374151' }}>Processing</span>
+                      </div>
+                      <span style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#f59e0b'
                       }}>
-                        Download the same file multiple times for free
-                      </p>
+                        {orders?.filter((order: any) => order.status === 'PROCESSING').length || 0}
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                      <div style={{
-                        width: '6px',
-                        height: '6px',
-                        background: '#2563eb',
-                        borderRadius: '50%',
-                        marginTop: '6px',
-                        flexShrink: 0
-                      }}></div>
-                      <p style={{
+
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          background: '#6b7280',
+                          borderRadius: '50%'
+                        }}></div>
+                        <span style={{ fontSize: '14px', color: '#374151' }}>Last Order</span>
+                      </div>
+                      <span style={{
                         fontSize: '14px',
-                        color: '#374151',
-                        margin: 0,
-                        lineHeight: '1.5'
+                        fontWeight: '600',
+                        color: '#6b7280'
                       }}>
-                        High-resolution files delivered instantly
-                      </p>
+                        {orders?.length > 0 ? new Date(orders[0].createdAt).toLocaleDateString() : 'Never'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1094,24 +1326,216 @@ export default function DashboardPage() {
                   }}>
                     Our support team is here 24/7
                   </p>
-                  <button style={{
-                    padding: '8px 16px',
-                    background: '#f59e0b',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}>
-                    Contact Support
-                  </button>
+                  <Link href="/dashboard/support">
+                    <button style={{
+                      padding: '8px 16px',
+                      background: '#f59e0b',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}>
+                      Contact Support
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{
+        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+        color: 'white',
+        marginTop: '80px'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '48px 1rem'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '32px',
+            marginBottom: '32px'
+          }}>
+            <div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '16px'
+              }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  background: 'linear-gradient(135deg, #2563eb, #4f46e5)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
+                </div>
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  margin: 0
+                }}>Stock Media SaaS</h3>
+              </div>
+              <p style={{
+                color: '#cbd5e1',
+                marginBottom: '16px',
+                lineHeight: '1.6'
+              }}>
+                Access millions of high-quality stock media files from top providers at a fraction of the cost.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease'
+                }}>
+                  📧
+                </div>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease'
+                }}>
+                  🐦
+                </div>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease'
+                }}>
+                  💼
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px'
+              }}>Quick Links</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link href="/dashboard" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Dashboard
+                </Link>
+                <Link href="/dashboard/browse" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Request Files
+                </Link>
+                <Link href="/dashboard/orders" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  My Orders
+                </Link>
+                <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Support
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px'
+              }}>Support</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Help Center
+                </Link>
+                <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Contact Us
+                </Link>
+                <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  FAQ
+                </Link>
+                <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Status Page
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px'
+              }}>Legal</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link href="#" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Terms of Service
+                </Link>
+                <Link href="#" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Privacy Policy
+                </Link>
+                <Link href="#" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Cookie Policy
+                </Link>
+                <Link href="#" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
+                  Refund Policy
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid #475569',
+            paddingTop: '24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}>
+            <p style={{
+              color: '#94a3b8',
+              margin: 0,
+              fontSize: '14px'
+            }}>
+              © 2024 Stock Media SaaS. All rights reserved.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '24px',
+              alignItems: 'center'
+            }}>
+              <span style={{
+                color: '#94a3b8',
+                fontSize: '14px'
+              }}>
+                Made with ❤️ for creators
+              </span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
