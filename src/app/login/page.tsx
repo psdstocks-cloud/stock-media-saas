@@ -4,20 +4,6 @@ import { useState } from 'react'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { 
-  ArrowRight, 
-  Eye, 
-  EyeOff, 
-  AlertCircle,
-  CheckCircle,
-  Star,
-  Shield,
-  Zap
-} from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -61,17 +47,17 @@ export default function LoginPage() {
 
   const features = [
     {
-      icon: <Zap className="w-5 h-5" />,
+      icon: '⚡',
       title: "Instant Access",
       description: "Access millions of premium stock media files instantly"
     },
     {
-      icon: <Shield className="w-5 h-5" />,
+      icon: '🛡️',
       title: "Secure Platform",
       description: "Your data is protected with enterprise-grade security"
     },
     {
-      icon: <Star className="w-5 h-5" />,
+      icon: '⭐',
       title: "Premium Quality",
       description: "High-quality content from 500+ top stock sites"
     }
@@ -93,186 +79,464 @@ export default function LoginPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid #e2e8f0'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 0'
+          }}>
+            <Link href="/" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              textDecoration: 'none'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
               </div>
-              <span className="text-xl font-bold text-slate-900">StockMedia Pro</span>
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>
+                StockMedia Pro
+              </span>
             </Link>
             <Link href="/register">
-              <Button variant="ghost">Sign Up</Button>
+              <button style={{
+                padding: '8px 16px',
+                color: '#64748b',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                borderRadius: '6px',
+                transition: 'all 0.2s ease'
+              }}>
+                Sign Up
+              </button>
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '48px 1rem'
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: '48px',
+          alignItems: 'center'
+        }}>
           {/* Login Form */}
-          <div className="max-w-md mx-auto lg:mx-0">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          <div style={{
+            maxWidth: '400px',
+            margin: '0 auto'
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h1 style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: '#0f172a',
+                marginBottom: '8px'
+              }}>
                 Welcome Back
               </h1>
-              <p className="text-slate-600">
+              <p style={{
+                color: '#64748b',
+                fontSize: '16px'
+              }}>
                 Sign in to your account to continue
               </p>
             </div>
 
-            <Card className="shadow-xl border-0">
-              <CardContent className="p-8">
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              border: 'none',
+              overflow: 'hidden'
+            }}>
+              <div style={{ padding: '32px' }}>
                 {message && (
-                  <div className="flex items-center space-x-2 p-4 bg-green-50 border border-green-200 rounded-lg mb-6">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <p className="text-green-700">{message}</p>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '16px',
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '8px',
+                    marginBottom: '24px'
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      color: '#16a34a'
+                    }}>
+                      ✓
+                    </div>
+                    <p style={{ color: '#16a34a', margin: 0 }}>{message}</p>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '24px'
+                }}>
                   <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-slate-700">
+                    <label htmlFor="email" style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>
                       Email Address
-                    </Label>
-                    <Input
+                    </label>
+                    <input
                       id="email"
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="mt-1"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        transition: 'all 0.2s ease',
+                        boxSizing: 'border-box'
+                      }}
                       placeholder="Enter your email"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+                    <label htmlFor="password" style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>
                       Password
-                    </Label>
-                    <div className="relative mt-1">
-                      <Input
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
                         id="password"
                         type={showPassword ? 'text' : 'password'}
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px 48px 12px 16px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s ease',
+                          boxSizing: 'border-box'
+                        }}
                         placeholder="Enter your password"
-                        className="pr-10"
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#9ca3af',
+                          fontSize: '16px'
+                        }}
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? (
-                          <EyeOff className="w-5 h-5 text-slate-400" />
-                        ) : (
-                          <Eye className="w-5 h-5 text-slate-400" />
-                        )}
+                        {showPassword ? '🙈' : '👁️'}
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
                       <input
                         id="remember-me"
                         name="remember-me"
                         type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          marginRight: '8px',
+                          accentColor: '#2563eb'
+                        }}
                       />
-                      <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700">
+                      <label htmlFor="remember-me" style={{
+                        fontSize: '14px',
+                        color: '#374151',
+                        cursor: 'pointer'
+                      }}>
                         Remember me
                       </label>
                     </div>
-                    <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+                    <Link href="/forgot-password" style={{
+                      fontSize: '14px',
+                      color: '#2563eb',
+                      textDecoration: 'none'
+                    }}>
                       Forgot password?
                     </Link>
                   </div>
 
                   {error && (
-                    <div className="flex items-center space-x-2 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                      <p className="text-red-700">{error}</p>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '16px',
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        color: '#dc2626'
+                      }}>
+                        ⚠️
+                      </div>
+                      <p style={{ color: '#dc2626', margin: 0 }}>{error}</p>
                     </div>
                   )}
 
-                  <Button
+                  <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    style={{
+                      width: '100%',
+                      padding: '12px 24px',
+                      background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
                   >
-                    {isLoading ? 'Signing In...' : 'Sign In'}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                    {isLoading ? 'Signing In...' : 'Sign In →'}
+                  </button>
                 </form>
 
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-slate-600">
+                <div style={{
+                  marginTop: '24px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#64748b',
+                    margin: 0
+                  }}>
                     Don't have an account?{' '}
-                    <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/register" style={{
+                      color: '#2563eb',
+                      textDecoration: 'none',
+                      fontWeight: '500'
+                    }}>
                       Sign up here
                     </Link>
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Benefits Sidebar */}
-          <div className="space-y-8">
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '32px'
+          }}>
             <div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              <h2 style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: '#0f172a',
+                marginBottom: '16px'
+              }}>
                 Why Choose StockMedia Pro?
               </h2>
-              <p className="text-lg text-slate-600 mb-8">
+              <p style={{
+                fontSize: '18px',
+                color: '#64748b',
+                marginBottom: '32px'
+              }}>
                 Join thousands of creators who trust us for their premium stock media needs.
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px'
+            }}>
               {features.map((feature, index) => (
-                <div key={index} className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+                <div key={index} style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '16px'
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px',
+                    flexShrink: 0
+                  }}>
                     {feature.icon}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">{feature.title}</h3>
-                    <p className="text-slate-600">{feature.description}</p>
+                    <h3 style={{
+                      fontWeight: '600',
+                      color: '#0f172a',
+                      marginBottom: '4px'
+                    }}>
+                      {feature.title}
+                    </h3>
+                    <p style={{
+                      color: '#64748b',
+                      margin: 0
+                    }}>
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
-              <h3 className="font-semibold text-slate-900 mb-4">What Our Users Say</h3>
-              <div className="space-y-4">
+            <div style={{
+              background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+              borderRadius: '12px',
+              padding: '24px'
+            }}>
+              <h3 style={{
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px'
+              }}>
+                What Our Users Say
+              </h3>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}>
                 {testimonials.map((testimonial, index) => (
                   <div key={index}>
-                    <div className="flex space-x-1 mb-2">
+                    <div style={{
+                      display: 'flex',
+                      gap: '4px',
+                      marginBottom: '8px'
+                    }}>
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span key={i} style={{ color: '#fbbf24', fontSize: '16px' }}>★</span>
                       ))}
                     </div>
-                    <p className="text-slate-700 text-sm mb-1">"{testimonial.content}"</p>
-                    <p className="text-slate-600 text-xs">- {testimonial.name}, {testimonial.role}</p>
+                    <p style={{
+                      color: '#374151',
+                      fontSize: '14px',
+                      marginBottom: '4px',
+                      margin: 0
+                    }}>
+                      "{testimonial.content}"
+                    </p>
+                    <p style={{
+                      color: '#64748b',
+                      fontSize: '12px',
+                      margin: 0
+                    }}>
+                      - {testimonial.name}, {testimonial.role}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-green-600" />
+            <div style={{
+              background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid #bbf7d0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '12px'
+              }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  background: '#dcfce7',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px'
+                }}>
+                  🛡️
                 </div>
-                <h3 className="font-semibold text-slate-900">Secure & Reliable</h3>
+                <h3 style={{
+                  fontWeight: '600',
+                  color: '#0f172a',
+                  margin: 0
+                }}>
+                  Secure & Reliable
+                </h3>
               </div>
-              <p className="text-slate-600 text-sm">
+              <p style={{
+                color: '#64748b',
+                fontSize: '14px',
+                margin: 0
+              }}>
                 Your data is protected with enterprise-grade security and 99.9% uptime guarantee.
               </p>
             </div>
