@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import our design system */
-@import '../styles/design-system.css';
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -58,5 +55,109 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Design System Styles */
+.gradient-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #64748b, #334155);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus States */
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.5);
+}
+
+/* Loading States */
+.loading-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
