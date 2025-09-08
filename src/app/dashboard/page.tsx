@@ -777,11 +777,11 @@ export default function DashboardPage() {
                   </div>
                 </Link>
 
-                <Link href="/dashboard/support" style={{ display: 'block' }}>
+                <Link href="/dashboard/profile" style={{ display: 'block' }}>
                   <div style={{
                     padding: '20px',
-                    background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
-                    border: '2px solid #f59e0b',
+                    background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                    border: '2px solid #86efac',
                     borderRadius: '16px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
@@ -791,25 +791,25 @@ export default function DashboardPage() {
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px)'
                     e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
-                    e.currentTarget.style.borderColor = '#d97706'
+                    e.currentTarget.style.borderColor = '#22c55e'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)'
                     e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)'
-                    e.currentTarget.style.borderColor = '#f59e0b'
+                    e.currentTarget.style.borderColor = '#86efac'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{
                         width: '48px',
                         height: '48px',
-                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                         borderRadius: '12px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '24px'
                       }}>
-                        🎧
+                        👤
                       </div>
                       <div style={{ flex: 1 }}>
                         <h4 style={{
@@ -817,12 +817,12 @@ export default function DashboardPage() {
                           fontWeight: '600',
                           color: '#0f172a',
                           margin: '0 0 4px 0'
-                        }}>Get Support</h4>
+                        }}>My Profile</h4>
                         <p style={{
                           fontSize: '14px',
                           color: '#64748b',
                           margin: 0
-                        }}>24/7 help and support</p>
+                        }}>Manage account settings</p>
                       </div>
                       <div style={{
                         width: '24px',
