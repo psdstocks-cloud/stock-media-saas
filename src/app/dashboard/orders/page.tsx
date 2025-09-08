@@ -61,19 +61,7 @@ export default function OrdersPage() {
     fetchOrders()
   }, [session, status, router])
 
-  // Separate effect for polling processing orders only
-  useEffect(() => {
-    if (!session?.user?.id) return
-    
-    const processing = orders.filter(o => o.status === 'PROCESSING' || o.status === 'PENDING')
-    if (processing.length === 0) return
-
-    const interval = setInterval(() => {
-      fetchOrders()
-    }, 5000) // Poll every 5 seconds
-
-    return () => clearInterval(interval)
-  }, [orders.filter(o => o.status === 'PROCESSING' || o.status === 'PENDING').length])
+  // No more polling - orders page is static
 
   const fetchOrders = async () => {
     try {
@@ -98,6 +86,9 @@ export default function OrdersPage() {
   }
 
   const filteredOrders = orders.filter(order => {
+    // Always exclude processing orders
+    if (order.status === 'PROCESSING' || order.status === 'PENDING') return false
+    
     if (filter === 'all') return true
     if (filter === 'ready') return order.status === 'READY' || order.status === 'COMPLETED'
     return order.status.toLowerCase() === filter.toLowerCase()
@@ -320,9 +311,7 @@ export default function OrdersPage() {
             flexWrap: 'wrap'
           }}>
             {[
-              { id: 'all', name: 'All Orders', count: orders.length },
-              { id: 'pending', name: 'Pending', count: orders.filter(o => o.status === 'PENDING').length },
-              { id: 'processing', name: 'Processing', count: orders.filter(o => o.status === 'PROCESSING').length },
+              { id: 'all', name: 'All Orders', count: orders.filter(o => o.status !== 'PROCESSING' && o.status !== 'PENDING').length },
               { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY' || o.status === 'COMPLETED').length },
               { id: 'completed', name: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
               { id: 'failed', name: 'Failed', count: orders.filter(o => o.status === 'FAILED').length },

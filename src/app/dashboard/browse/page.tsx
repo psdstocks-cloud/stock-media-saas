@@ -71,6 +71,7 @@ export default function BrowsePage() {
   const [orderStatus, setOrderStatus] = useState<string>('')
   const [downloadUrl, setDownloadUrl] = useState<string>('')
   const [processingTime, setProcessingTime] = useState<number>(0)
+  const [existingOrder, setExistingOrder] = useState<any>(null)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -242,6 +243,24 @@ export default function BrowsePage() {
     }
   }, [orderStatus])
 
+  const checkExistingOrder = async (site: string, id: string) => {
+    try {
+      const response = await fetch(`/api/orders?userId=${session?.user?.id}`)
+      const data = await response.json()
+      
+      if (data.orders) {
+        const existing = data.orders.find((order: any) => 
+          order.stockSite.name === site && 
+          order.stockItemId === id && 
+          (order.status === 'READY' || order.status === 'COMPLETED')
+        )
+        setExistingOrder(existing || null)
+      }
+    } catch (error) {
+      console.error('Error checking existing order:', error)
+    }
+  }
+
   const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!url.trim()) return
@@ -249,6 +268,7 @@ export default function BrowsePage() {
     setIsLoading(true)
     setError('')
     setStockInfo(null)
+    setExistingOrder(null)
 
     try {
       const response = await fetch('/api/stock-info', {
@@ -263,6 +283,8 @@ export default function BrowsePage() {
 
       if (data.success && data.data) {
         setStockInfo(data.data)
+        // Check if this item was already ordered
+        await checkExistingOrder(data.data.site, data.data.id)
       } else {
         setError(data.error || 'Failed to process URL. Please check if the URL is from a supported site and try again.')
       }
@@ -785,31 +807,53 @@ export default function BrowsePage() {
               }}>
                 {/* Image Preview */}
                 <div style={{
-                  aspectRatio: '1',
-                  background: '#f1f5f9',
+                  height: '400px',
+                  background: '#f8fafc',
                   borderRadius: '12px',
                   overflow: 'hidden',
-                  position: 'relative'
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid #e2e8f0'
                 }}>
                   <img
                     src={stockInfo.imageUrl}
                     alt={stockInfo.title}
                     style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      borderRadius: '8px'
+                    }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6b7280;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">🖼️</div>
+                            <div style="font-size: 16px; font-weight: 500;">Image Preview</div>
+                            <div style="font-size: 14px; margin-top: 4px;">Click to view original</div>
+                          </div>
+                        `;
+                      }
                     }}
                   />
                   <div style={{
                     position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    background: 'rgba(0, 0, 0, 0.7)',
+                    top: '12px',
+                    right: '12px',
+                    background: 'rgba(0, 0, 0, 0.8)',
                     color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
                     fontSize: '12px',
-                    fontWeight: '500'
+                    fontWeight: '600',
+                    backdropFilter: 'blur(4px)'
                   }}>
                     📷 IMAGE
                   </div>
@@ -835,22 +879,37 @@ export default function BrowsePage() {
                       <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Source:</span>
                       <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.site}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Image Link:</span>
-                      <a 
-                        href={stockInfo.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ 
-                          fontSize: '14px', 
-                          color: '#2563eb', 
-                          fontWeight: '500',
-                          textDecoration: 'underline',
-                          wordBreak: 'break-all'
-                        }}
-                      >
-                        {stockInfo.url}
-                      </a>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px', marginTop: '2px' }}>Image Link:</span>
+                      <div style={{ flex: 1 }}>
+                        <a 
+                          href={stockInfo.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '8px 12px',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            fontSize: '12px', 
+                            color: '#374151', 
+                            fontWeight: '500',
+                            textDecoration: 'none',
+                            wordBreak: 'break-all',
+                            transition: 'all 0.2s ease',
+                            maxWidth: '100%',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <ExternalLink style={{ width: '14px', height: '14px', color: '#6b7280', flexShrink: 0 }} />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {stockInfo.url}
+                          </span>
+                        </a>
+                      </div>
                     </div>
                   </div>
 
@@ -1078,6 +1137,56 @@ export default function BrowsePage() {
                 </div>
               ) : null}
 
+              {/* Existing Order Message */}
+              {existingOrder && (
+                <div style={{
+                  background: '#dcfce7',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginBottom: '8px'
+                  }}>
+                    <CheckCircle style={{ width: '20px', height: '20px', color: '#059669' }} />
+                    <span style={{ fontSize: '16px', fontWeight: '600', color: '#0f172a' }}>
+                      You've already ordered this item!
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 12px 0' }}>
+                    You can download it for free without any additional charges.
+                  </p>
+                  <a
+                    href={existingOrder.downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 20px',
+                      background: 'linear-gradient(135deg, #059669, #047857)',
+                      color: 'white',
+                      textDecoration: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 4px rgba(5, 150, 105, 0.3)'
+                    }}
+                  >
+                    <Download style={{ width: '16px', height: '16px' }} />
+                    Download for Free
+                  </a>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div style={{
                 display: 'flex',
@@ -1094,6 +1203,7 @@ export default function BrowsePage() {
                     setDownloadUrl('')
                     setOrderSuccess(false)
                     setProcessingTime(0)
+                    setExistingOrder(null)
                   }}
                   style={{
                     padding: '12px 24px',
@@ -1109,7 +1219,7 @@ export default function BrowsePage() {
                 >
                   Cancel
                 </button>
-                {!currentOrder && (
+                {!currentOrder && !existingOrder && (
                   <button
                     onClick={() => {
                       console.log('Confirm Order button clicked', { 
