@@ -259,17 +259,31 @@ See [README_DEPLOYMENT.md](./README_DEPLOYMENT.md) for complete deployment instr
 - **PCI DSS** - Secure payment processing
 - **SOC 2** - Security and availability standards
 
+## 📚 Documentation
+
+### Complete Documentation Suite
+- **[User Guide](./docs/USER_GUIDE.md)** - Complete end-user documentation
+- **[Developer Guide](./docs/DEVELOPER_GUIDE.md)** - Technical documentation for developers
+- **[API Documentation](./docs/API.md)** - Complete API reference with examples
+- **[OpenAPI Specification](./docs/openapi.yaml)** - Machine-readable API spec
+- **[Documentation Index](./docs/README.md)** - Overview of all documentation
+
+### Quick Links
+- **Live Application:** https://stock-media-saas-4828lc2uj-psdstocks-projects.vercel.app
+- **API Base URL:** https://stock-media-saas-4828lc2uj-psdstocks-projects.vercel.app/api
+- **GitHub Repository:** https://github.com/psdstocks-cloud/stock-media-saas
+
 ## 🤝 Support
 
 ### Documentation
-- **API Docs** - Complete API reference
-- **User Guide** - Step-by-step tutorials
-- **Admin Guide** - Management interface guide
+- **API Docs** - Complete API reference with code examples
+- **User Guide** - Step-by-step tutorials and troubleshooting
+- **Developer Guide** - Technical documentation and integration guides
 
 ### Contact
 - **Email** - support@stockmediapro.com
-- **Discord** - Community support
-- **GitHub** - Issue tracking and contributions
+- **GitHub Issues** - [Create an issue](https://github.com/psdstocks-cloud/stock-media-saas/issues)
+- **Discord** - Community support and discussions
 
 ## 📄 License
 
