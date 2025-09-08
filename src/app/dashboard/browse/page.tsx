@@ -105,9 +105,14 @@ export default function BrowsePage() {
   useEffect(() => {
     if (!currentOrder || !session?.user?.id) return
 
+    let pollCount = 0
+    const maxPolls = 150 // 5 minutes of polling (150 * 2 seconds)
+    let timeoutId: NodeJS.Timeout
+
     const pollOrderStatus = async () => {
       try {
-        console.log('Polling order status for order:', currentOrder.id)
+        pollCount++
+        console.log(`Polling order status for order: ${currentOrder.id} (attempt ${pollCount}/${maxPolls})`)
         
         // First, try to check the order status with the Nehtw API
         const statusResponse = await fetch(`/api/orders/${currentOrder.id}/status`, {
@@ -130,6 +135,13 @@ export default function BrowsePage() {
               console.log('Download URL found:', order.downloadUrl)
               setDownloadUrl(order.downloadUrl)
               setOrderSuccess(true)
+              return // Stop polling when download URL is found
+            }
+            
+            // Stop polling if order is completed or failed
+            if (order.status === 'READY' || order.status === 'COMPLETED' || order.status === 'FAILED') {
+              console.log('Order reached final status:', order.status)
+              return
             }
           }
         }
@@ -152,18 +164,44 @@ export default function BrowsePage() {
               console.log('Download URL found:', order.downloadUrl)
               setDownloadUrl(order.downloadUrl)
               setOrderSuccess(true)
+              return // Stop polling when download URL is found
+            }
+            
+            // Stop polling if order is completed or failed
+            if (order.status === 'READY' || order.status === 'COMPLETED' || order.status === 'FAILED') {
+              console.log('Order reached final status:', order.status)
+              return
             }
           } else {
             console.log('Order not found in response')
           }
         }
+        
+        // Check if we've exceeded max polls
+        if (pollCount >= maxPolls) {
+          console.log('Max polling attempts reached, stopping polling')
+          setError('Order is taking longer than expected. Please check your orders page for updates.')
+          return
+        }
       } catch (error) {
         console.error('Error polling order status:', error)
+        pollCount++ // Count errors as attempts
       }
     }
 
     const interval = setInterval(pollOrderStatus, 2000) // Poll every 2 seconds
-    return () => clearInterval(interval)
+    
+    // Set a timeout to stop polling after 5 minutes
+    timeoutId = setTimeout(() => {
+      console.log('Polling timeout reached, stopping polling')
+      clearInterval(interval)
+      setError('Order is taking longer than expected. Please check your orders page for updates.')
+    }, 300000) // 5 minutes
+
+    return () => {
+      clearInterval(interval)
+      clearTimeout(timeoutId)
+    }
   }, [currentOrder, session?.user?.id])
 
   // Update processing time

@@ -326,6 +326,14 @@ export class OrderManager {
     
     console.log('Status response from Nehtw API:', statusResponse)
 
+    console.log('Status response analysis:', {
+      success: statusResponse.success,
+      status: statusResponse.status,
+      error: statusResponse.error,
+      hasDownloadLink: !!statusResponse.downloadLink,
+      fullResponse: statusResponse
+    })
+
     if (statusResponse.success && statusResponse.status === 'ready') {
       console.log('Order is ready, generating download link...')
       // Generate download link
@@ -343,6 +351,15 @@ export class OrderManager {
             fileName: downloadResponse.fileName,
           },
         })
+      } else {
+        console.log('Download link generation failed:', downloadResponse)
+        // Update status to READY even if download link generation fails
+        await prisma.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'READY',
+          },
+        })
       }
     } else if (statusResponse.error) {
       console.log('Order failed with error:', statusResponse.error)
@@ -354,6 +371,15 @@ export class OrderManager {
       })
     } else {
       console.log('Order still processing, status:', statusResponse.status)
+      // Update the order status in database to reflect current status
+      if (statusResponse.status) {
+        await prisma.order.update({
+          where: { id: orderId },
+          data: {
+            status: statusResponse.status.toUpperCase(),
+          },
+        })
+      }
     }
 
     const updatedOrder = await prisma.order.findUnique({
