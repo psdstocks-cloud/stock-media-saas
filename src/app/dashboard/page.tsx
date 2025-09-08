@@ -177,19 +177,138 @@ export default function DashboardPage() {
         margin: '0 auto',
         padding: '32px 1rem'
       }}>
-        {/* Welcome Section */}
-        <div style={{ marginBottom: '32px' }}>
-          <h2 style={{
-            fontSize: '32px',
-            fontWeight: 'bold',
-            color: '#0f172a',
-            marginBottom: '8px'
+        {/* Hero Section with Value Proposition */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '20px',
+          padding: '48px',
+          marginBottom: '40px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-50px',
+            right: '-50px',
+            width: '200px',
+            height: '200px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '50%'
+          }}></div>
+          <div style={{
+            position: 'absolute',
+            bottom: '-100px',
+            left: '-100px',
+            width: '300px',
+            height: '300px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '50%'
+          }}></div>
+          
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h1 style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '16px',
+              lineHeight: '1.1'
+            }}>
+              Download Premium Stock Media
+              <span style={{ display: 'block', fontSize: '32px', fontWeight: '400', opacity: 0.9 }}>
+                for a fraction of the cost
+              </span>
+            </h1>
+            <p style={{
+              fontSize: '20px',
+              marginBottom: '32px',
+              opacity: 0.9,
+              maxWidth: '600px'
+            }}>
+              Access millions of high-quality images, videos, and graphics from top stock sites. 
+              Pay once, download forever - no recurring fees.
+            </p>
+            
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <Link href="/dashboard/browse">
+                <button style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '16px 32px',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '12px',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                }}>
+                  🔍 Start Browsing Now
+                </button>
+              </Link>
+              <button style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '16px 32px',
+                background: 'transparent',
+                color: 'white',
+                border: '2px solid rgba(255, 255, 255, 0.5)',
+                borderRadius: '12px',
+                fontSize: '18px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}>
+                📺 Watch Demo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Proof Section */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '32px',
+          marginBottom: '32px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '32px',
+            alignItems: 'center'
           }}>
-            Welcome back, {session.user.name || session.user.email}!
-          </h2>
-          <p style={{ color: '#64748b' }}>
-            Here's what's happening with your account today.
-          </p>
+            <div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#059669', marginBottom: '8px' }}>
+                10,000+
+              </div>
+              <div style={{ color: '#64748b', fontSize: '14px' }}>Happy Customers</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2563eb', marginBottom: '8px' }}>
+                50M+
+              </div>
+              <div style={{ color: '#64748b', fontSize: '14px' }}>Downloads</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#7c3aed', marginBottom: '8px' }}>
+                99.9%
+              </div>
+              <div style={{ color: '#64748b', fontSize: '14px' }}>Uptime</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#dc2626', marginBottom: '8px' }}>
+                24/7
+              </div>
+              <div style={{ color: '#64748b', fontSize: '14px' }}>Support</div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -202,38 +321,57 @@ export default function DashboardPage() {
           <div style={{
             background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
             border: '1px solid #93c5fd',
-            borderRadius: '12px',
-            padding: '24px'
+            borderRadius: '16px',
+            padding: '32px',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(59, 130, 246, 0.1)',
+              borderRadius: '50%'
+            }}></div>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              position: 'relative',
+              zIndex: 1
             }}>
             <div>
                 <p style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '16px',
+                  fontWeight: '600',
                   color: '#1e40af',
-                  marginBottom: '4px'
-                }}>Available Points</p>
+                  marginBottom: '8px'
+                }}>Your Balance</p>
                 <p style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: '#1e3a8a'
+                  fontSize: '40px',
+                  fontWeight: '800',
+                  color: '#1e3a8a',
+                  marginBottom: '4px'
                 }}>
                   {balance?.currentPoints || 0}
                 </p>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#1e40af',
+                  opacity: 0.8
+                }}>Points Available</p>
               </div>
               <div style={{
-                width: '48px',
-                height: '48px',
-                background: '#dbeafe',
-                borderRadius: '8px',
+                width: '64px',
+                height: '64px',
+                background: 'rgba(59, 130, 246, 0.2)',
+                borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '28px'
               }}>
                 ⚡
               </div>
@@ -364,6 +502,74 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Primary CTA Section */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          borderRadius: '20px',
+          padding: '40px',
+          marginBottom: '40px',
+          textAlign: 'center',
+          border: '1px solid #e2e8f0'
+        }}>
+          <h2 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            color: '#0f172a',
+            marginBottom: '16px'
+          }}>
+            Ready to Download Premium Content?
+          </h2>
+          <p style={{
+            fontSize: '18px',
+            color: '#64748b',
+            marginBottom: '32px',
+            maxWidth: '600px',
+            margin: '0 auto 32px auto'
+          }}>
+            Paste any stock media URL and get instant access to high-quality downloads
+          </p>
+          
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/dashboard/browse">
+              <button style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '18px 36px',
+                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '18px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 8px 25px rgba(37, 99, 235, 0.3)'
+              }}>
+                🔍 Start Browsing
+              </button>
+            </Link>
+            <Link href="/dashboard/orders">
+              <button style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '18px 36px',
+                background: 'white',
+                color: '#374151',
+                border: '2px solid #e2e8f0',
+                borderRadius: '12px',
+                fontSize: '18px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}>
+                📋 View My Orders
+              </button>
+            </Link>
+          </div>
+        </div>
+
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -373,38 +579,39 @@ export default function DashboardPage() {
           <div>
             <div style={{
               background: 'white',
-              borderRadius: '12px',
+              borderRadius: '16px',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              padding: '24px',
+              padding: '32px',
               marginBottom: '24px'
             }}>
               <h3 style={{
-                fontSize: '18px',
-                fontWeight: '600',
+                fontSize: '20px',
+                fontWeight: '700',
                 color: '#0f172a',
-                marginBottom: '16px',
+                marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '12px'
               }}>
                 ⚡ Quick Actions
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <Link href="/dashboard/browse" style={{ display: 'block' }}>
                   <button style={{
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
+                    gap: '12px',
+                    padding: '16px 20px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '12px',
                     background: 'white',
                     color: '#374151',
-                    fontSize: '14px',
-                    fontWeight: '500',
+                    fontSize: '16px',
+                    fontWeight: '600',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
                   }}>
                     🔍 Browse Media
                   </button>
@@ -414,16 +621,17 @@ export default function DashboardPage() {
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
+                    gap: '12px',
+                    padding: '16px 20px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '12px',
                     background: 'white',
                     color: '#374151',
-                    fontSize: '14px',
-                    fontWeight: '500',
+                    fontSize: '16px',
+                    fontWeight: '600',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
                   }}>
                     🕐 View Orders
                   </button>
@@ -433,16 +641,17 @@ export default function DashboardPage() {
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
+                    gap: '12px',
+                    padding: '16px 20px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '12px',
                     background: 'white',
                     color: '#374151',
-                    fontSize: '14px',
-                    fontWeight: '500',
+                    fontSize: '16px',
+                    fontWeight: '600',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
                   }}>
                     👁️ Manage Profile
                   </button>
