@@ -94,7 +94,7 @@ export default function OrdersPage() {
     return order.status.toLowerCase() === filter.toLowerCase()
   })
 
-  const getWebsiteLogo = (siteName: string) => {
+  const getWebsiteLogo = (siteName: string): string | undefined => {
     const logos: { [key: string]: string } = {
       'shutterstock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Shutterstock_logo.svg/200px-Shutterstock_logo.svg.png',
       'depositphotos': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Depositphotos_logo.svg/200px-Depositphotos_logo.svg.png',
@@ -105,7 +105,7 @@ export default function OrdersPage() {
       'pexels': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Pexels_logo.svg/200px-Pexels_logo.svg.png',
       'pixabay': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Pixabay_logo.svg/200px-Pixabay_logo.svg.png'
     }
-    return logos[siteName.toLowerCase()] || null
+    return logos[siteName.toLowerCase()]
   }
 
   const getStatusIcon = (status: string) => {
