@@ -181,6 +181,7 @@ export default function BrowsePage() {
         if (pollCount >= maxPolls) {
           console.log('Max polling attempts reached, stopping polling')
           setError('Order is taking longer than expected. Please check your orders page for updates.')
+          setOrderStatus('FAILED')
           return
         }
       } catch (error) {
@@ -966,10 +967,31 @@ export default function BrowsePage() {
                   borderRadius: '20px',
                   fontSize: '14px',
                   fontWeight: '500',
-                  color: '#92400e'
+                  color: '#92400e',
+                  marginBottom: '16px'
                 }}>
                   <Clock style={{ width: '16px', height: '16px' }} />
                   Processing: {Math.floor(processingTime / 60)}m {processingTime % 60}s
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setOrderStatus('FAILED')
+                      setError('Order processing cancelled by user')
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      background: '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Cancel Order
+                  </button>
                 </div>
               </div>
             ) : orderStatus === 'READY' || orderStatus === 'COMPLETED' ? (

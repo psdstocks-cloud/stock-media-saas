@@ -336,6 +336,31 @@ export class OrderManager {
       throw new Error('Order not found or no task ID')
     }
 
+    // Check if order has been processing for too long (30 minutes)
+    const processingTime = Date.now() - new Date(order.createdAt).getTime()
+    const maxProcessingTime = 30 * 60 * 1000 // 30 minutes in milliseconds
+    
+    if (processingTime > maxProcessingTime && order.status === 'PROCESSING') {
+      console.log('Order has been processing for too long, marking as failed:', {
+        processingTime: processingTime / 1000 / 60, // minutes
+        maxProcessingTime: maxProcessingTime / 1000 / 60
+      })
+      
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'FAILED',
+        },
+      })
+      
+      const failedOrder = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { stockSite: true },
+      })
+      
+      return failedOrder
+    }
+
     console.log('Checking status for taskId:', order.taskId)
 
     const api = new NehtwAPI(apiKey)
@@ -352,35 +377,70 @@ export class OrderManager {
       fullResponse: statusResponse
     })
 
-    if (statusResponse.success && statusResponse.status === 'ready') {
+    // Handle different response formats from Nehtw API
+    const isReady = statusResponse.success && (
+      statusResponse.status === 'ready' || 
+      statusResponse.status === 'completed' ||
+      statusResponse.status === 'finished' ||
+      statusResponse.downloadLink
+    )
+
+    const hasError = statusResponse.error || 
+      statusResponse.status === 'failed' || 
+      statusResponse.status === 'error' ||
+      (statusResponse.success === false && statusResponse.message)
+
+    if (isReady) {
       console.log('Order is ready, generating download link...')
-      // Generate download link
-      const downloadResponse = await api.generateDownloadLink(order.taskId)
       
-      console.log('Download link response:', downloadResponse)
-      
-      if (downloadResponse.success && downloadResponse.downloadLink) {
-        console.log('Updating order with download link:', downloadResponse.downloadLink)
-        await prisma.order.update({
-          where: { id: orderId },
-          data: {
-            status: 'READY',
-            downloadUrl: downloadResponse.downloadLink,
-            fileName: downloadResponse.fileName,
-          },
-        })
+      // Try to generate download link if not already provided
+      if (!statusResponse.downloadLink) {
+        try {
+          const downloadResponse = await api.generateDownloadLink(order.taskId)
+          console.log('Download link response:', downloadResponse)
+          
+          if (downloadResponse.success && downloadResponse.downloadLink) {
+            console.log('Updating order with download link:', downloadResponse.downloadLink)
+            await prisma.order.update({
+              where: { id: orderId },
+              data: {
+                status: 'READY',
+                downloadUrl: downloadResponse.downloadLink,
+                fileName: downloadResponse.fileName,
+              },
+            })
+          } else {
+            console.log('Download link generation failed, marking as ready without link')
+            await prisma.order.update({
+              where: { id: orderId },
+              data: {
+                status: 'READY',
+              },
+            })
+          }
+        } catch (downloadError) {
+          console.log('Download link generation error, marking as ready:', downloadError)
+          await prisma.order.update({
+            where: { id: orderId },
+            data: {
+              status: 'READY',
+            },
+          })
+        }
       } else {
-        console.log('Download link generation failed:', downloadResponse)
-        // Update status to READY even if download link generation fails
+        // Download link already provided
+        console.log('Download link already provided:', statusResponse.downloadLink)
         await prisma.order.update({
           where: { id: orderId },
           data: {
             status: 'READY',
+            downloadUrl: statusResponse.downloadLink,
+            fileName: statusResponse.fileName,
           },
         })
       }
-    } else if (statusResponse.error) {
-      console.log('Order failed with error:', statusResponse.error)
+    } else if (hasError) {
+      console.log('Order failed with error:', statusResponse.error || statusResponse.message)
       await prisma.order.update({
         where: { id: orderId },
         data: {
@@ -391,10 +451,23 @@ export class OrderManager {
       console.log('Order still processing, status:', statusResponse.status)
       // Update the order status in database to reflect current status
       if (statusResponse.status) {
+        const normalizedStatus = statusResponse.status.toUpperCase()
+        // Map common statuses to our enum
+        const statusMap: { [key: string]: string } = {
+          'PROCESSING': 'PROCESSING',
+          'PENDING': 'PENDING',
+          'IN_PROGRESS': 'PROCESSING',
+          'WORKING': 'PROCESSING',
+          'QUEUED': 'PENDING',
+          'WAITING': 'PENDING'
+        }
+        
+        const mappedStatus = statusMap[normalizedStatus] || 'PROCESSING'
+        
         await prisma.order.update({
           where: { id: orderId },
           data: {
-            status: statusResponse.status.toUpperCase(),
+            status: mappedStatus,
           },
         })
       }
