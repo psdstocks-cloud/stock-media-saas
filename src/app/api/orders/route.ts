@@ -63,6 +63,8 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
     const status = searchParams.get('status')
 
+    console.log('Fetching orders for userId:', userId, 'status:', status)
+
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
@@ -77,6 +79,9 @@ export async function GET(request: NextRequest) {
         stockSite: true,
       },
     })
+
+    console.log('Found orders:', orders.length, 'orders for user:', userId)
+    console.log('Orders data:', orders.map(o => ({ id: o.id, status: o.status, taskId: o.taskId })))
 
     return NextResponse.json({ orders })
   } catch (error) {
