@@ -1007,7 +1007,7 @@ export default function BrowsePage() {
                       setOrderStatus('FAILED')
                       setError('Order processing cancelled by user')
                       setCurrentOrder(null)
-                      setDownloadUrl(null)
+                      setDownloadUrl('')
                       setOrderSuccess(false)
                       setProcessingTime(0)
                     }}
