@@ -47,24 +47,36 @@ export async function POST(request: NextRequest) {
 
     // Find or create stock site
     console.log('Finding or creating stock site for:', site)
-    let stockSite = await prisma.stockSite.findFirst({
-      where: { name: site }
-    })
-    console.log('Stock site found:', { found: !!stockSite, id: stockSite?.id })
-
-    if (!stockSite) {
-      console.log('Creating new stock site...')
-      // Create stock site if it doesn't exist
-      stockSite = await prisma.stockSite.create({
-        data: {
-          name: site,
-          displayName: site.charAt(0).toUpperCase() + site.slice(1),
-          cost: cost,
-          category: 'images',
-          isActive: true
-        }
+    let stockSite
+    try {
+      stockSite = await prisma.stockSite.findFirst({
+        where: { name: site }
       })
-      console.log('Stock site created:', { id: stockSite.id, name: stockSite.name })
+      console.log('Stock site found:', { found: !!stockSite, id: stockSite?.id })
+
+      if (!stockSite) {
+        console.log('Creating new stock site...')
+        // Create stock site if it doesn't exist
+        stockSite = await prisma.stockSite.create({
+          data: {
+            name: site,
+            displayName: site.charAt(0).toUpperCase() + site.slice(1),
+            cost: cost,
+            category: 'images',
+            isActive: true
+          }
+        })
+        console.log('Stock site created:', { id: stockSite.id, name: stockSite.name })
+      }
+    } catch (error) {
+      console.error('Error with stock site operations:', error)
+      console.error('Stock site error details:', {
+        site,
+        cost,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined
+      })
+      throw error
     }
 
     // Create order in database
