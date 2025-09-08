@@ -4,8 +4,20 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  ArrowLeft,
+  Download,
+  ExternalLink,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
+  FileText,
+  Image as ImageIcon,
+  Video,
+  Music
+} from 'lucide-react'
 
 interface Order {
   id: string
@@ -36,6 +48,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'ready' | 'completed' | 'failed'>('all')
+  const [processingOrders, setProcessingOrders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (status === 'loading') return
@@ -46,7 +59,17 @@ export default function OrdersPage() {
     }
 
     fetchOrders()
-  }, [session, status, router])
+    
+    // Set up polling for processing orders
+    const interval = setInterval(() => {
+      const processing = orders.filter(o => o.status === 'PROCESSING' || o.status === 'PENDING')
+      if (processing.length > 0) {
+        fetchOrders()
+      }
+    }, 5000) // Poll every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [session, status, router, orders.length])
 
   const fetchOrders = async () => {
     try {
@@ -56,6 +79,9 @@ export default function OrdersPage() {
       
       if (data.orders) {
         setOrders(data.orders)
+        // Track processing orders
+        const processing = data.orders.filter((o: Order) => o.status === 'PROCESSING' || o.status === 'PENDING')
+        setProcessingOrders(new Set(processing.map((o: Order) => o.id)))
       } else {
         setError(data.error || 'Failed to fetch orders')
       }
@@ -69,25 +95,44 @@ export default function OrdersPage() {
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true
-    return order.status.toLowerCase() === filter.toUpperCase()
+    return order.status.toLowerCase() === filter.toLowerCase()
   })
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return <CheckCircle style={{ width: '16px', height: '16px', color: '#059669' }} />
+      case 'READY':
+        return <Download style={{ width: '16px', height: '16px', color: '#2563eb' }} />
+      case 'PROCESSING':
+        return <RefreshCw style={{ width: '16px', height: '16px', color: '#d97706', animation: 'spin 1s linear infinite' }} />
+      case 'PENDING':
+        return <Clock style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+      case 'FAILED':
+        return <XCircle style={{ width: '16px', height: '16px', color: '#dc2626' }} />
+      case 'CANCELED':
+        return <XCircle style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+      default:
+        return <AlertCircle style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return 'bg-green-100 text-green-800'
+        return { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' }
       case 'READY':
-        return 'bg-blue-100 text-blue-800'
+        return { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' }
       case 'PROCESSING':
-        return 'bg-yellow-100 text-yellow-800'
+        return { bg: '#fef3c7', text: '#92400e', border: '#fde68a' }
       case 'PENDING':
-        return 'bg-gray-100 text-gray-800'
+        return { bg: '#f3f4f6', text: '#374151', border: '#d1d5db' }
       case 'FAILED':
-        return 'bg-red-100 text-red-800'
+        return { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' }
       case 'CANCELED':
-        return 'bg-gray-100 text-gray-800'
+        return { bg: '#f3f4f6', text: '#6b7280', border: '#d1d5db' }
       default:
-        return 'bg-gray-100 text-gray-800'
+        return { bg: '#f3f4f6', text: '#6b7280', border: '#d1d5db' }
     }
   }
 
@@ -100,12 +145,69 @@ export default function OrdersPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  const getFileTypeIcon = (fileName: string | null) => {
+    if (!fileName) return <FileText style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+    
+    const ext = fileName.split('.').pop()?.toLowerCase()
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return <ImageIcon style={{ width: '16px', height: '16px', color: '#3b82f6' }} />
+      case 'mp4':
+      case 'mov':
+      case 'avi':
+      case 'mkv':
+        return <Video style={{ width: '16px', height: '16px', color: '#ef4444' }} />
+      case 'mp3':
+      case 'wav':
+      case 'ogg':
+        return <Music style={{ width: '16px', height: '16px', color: '#22c55e' }} />
+      default:
+        return <FileText style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+    }
+  }
+
+  const getProcessingTime = (createdAt: string) => {
+    const now = new Date()
+    const created = new Date(createdAt)
+    const diffMs = now.getTime() - created.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffSecs = Math.floor((diffMs % 60000) / 1000)
+    
+    if (diffMins > 0) {
+      return `${diffMins}m ${diffSecs}s`
+    }
+    return `${diffSecs}s`
+  }
+
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading orders...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }}></div>
+          <p style={{
+            marginTop: '16px',
+            color: '#64748b',
+            fontSize: '18px'
+          }}>Loading orders...</p>
         </div>
       </div>
     )
@@ -116,66 +218,162 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Link 
-                href="/dashboard" 
-                className="text-blue-600 hover:text-blue-700 font-medium"
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 0'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <Link
+                href="/dashboard"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  background: 'white',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                ← Back to Dashboard
+                <ArrowLeft style={{ width: '16px', height: '16px' }} />
+                Back to Dashboard
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: 'linear-gradient(135deg, #2563eb, #4f46e5)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
+              </div>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>My Orders</h1>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 1rem'
+      }}>
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div style={{
+            marginBottom: '24px',
+            padding: '16px',
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <XCircle style={{ width: '20px', height: '20px', color: '#dc2626' }} />
+            <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>{error}</p>
+          </div>
         )}
 
         {/* Filter Tabs */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {[
-                { id: 'all', name: 'All Orders', count: orders.length },
-                { id: 'pending', name: 'Pending', count: orders.filter(o => o.status === 'PENDING').length },
-                { id: 'processing', name: 'Processing', count: orders.filter(o => o.status === 'PROCESSING').length },
-                { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY').length },
-                { id: 'completed', name: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
-                { id: 'failed', name: 'Failed', count: orders.filter(o => o.status === 'FAILED').length },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setFilter(tab.id as any)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    filter === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.name} ({tab.count})
-                </button>
-              ))}
-            </nav>
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            flexWrap: 'wrap'
+          }}>
+            {[
+              { id: 'all', name: 'All Orders', count: orders.length },
+              { id: 'pending', name: 'Pending', count: orders.filter(o => o.status === 'PENDING').length },
+              { id: 'processing', name: 'Processing', count: orders.filter(o => o.status === 'PROCESSING').length },
+              { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY').length },
+              { id: 'completed', name: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
+              { id: 'failed', name: 'Failed', count: orders.filter(o => o.status === 'FAILED').length },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setFilter(tab.id as any)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: '1px solid',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  ...(filter === tab.id
+                    ? {
+                        background: '#2563eb',
+                        color: 'white',
+                        borderColor: '#2563eb'
+                      }
+                    : {
+                        background: 'white',
+                        color: '#6b7280',
+                        borderColor: '#d1d5db'
+                      }
+                  )
+                }}
+              >
+                {tab.name} ({tab.count})
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Orders List */}
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">
+          <div style={{
+            textAlign: 'center',
+            padding: '64px 32px',
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              fontSize: '18px',
+              color: '#6b7280',
+              marginBottom: '8px'
+            }}>
               {filter === 'all' ? 'No orders yet' : `No ${filter} orders`}
             </div>
-            <div className="text-gray-400 text-sm mt-2">
+            <div style={{
+              fontSize: '14px',
+              color: '#9ca3af',
+              marginBottom: '24px'
+            }}>
               {filter === 'all' 
                 ? 'Start browsing stock media to place your first order'
                 : 'Try a different filter or check back later'
@@ -184,68 +382,177 @@ export default function OrdersPage() {
             {filter === 'all' && (
               <Link 
                 href="/dashboard/browse"
-                className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                style={{
+                  display: 'inline-block',
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Browse Stock Media
               </Link>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {filteredOrders.map((order) => {
+              const statusColors = getStatusColor(order.status)
+              const isProcessing = order.status === 'PROCESSING' || order.status === 'PENDING'
+              
+              return (
+                <div
+                  key={order.id}
+                  style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    padding: '24px',
+                    border: '1px solid #e2e8f0'
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    gap: '16px'
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        marginBottom: '12px'
+                      }}>
+                        {getFileTypeIcon(order.fileName)}
+                        <h3 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          margin: 0
+                        }}>
                           {order.title || `${order.stockSite.displayName} #${order.stockItemId}`}
                         </h3>
-                        <div className="text-sm text-gray-500 mt-1">
-                          <div>Source: {order.stockSite.displayName}</div>
-                          <div>Cost: {order.cost} points</div>
-                          <div>Ordered: {new Date(order.createdAt).toLocaleDateString()}</div>
-                          {order.fileName && (
-                            <div>File: {order.fileName}</div>
-                          )}
-                          {order.fileSize && (
-                            <div>Size: {formatFileSize(order.fileSize)}</div>
-                          )}
+                      </div>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '12px',
+                        fontSize: '14px',
+                        color: '#6b7280'
+                      }}>
+                        <div>
+                          <strong>Source:</strong> {order.stockSite.displayName}
                         </div>
+                        <div>
+                          <strong>Cost:</strong> {order.cost} points
+                        </div>
+                        <div>
+                          <strong>Ordered:</strong> {new Date(order.createdAt).toLocaleDateString()}
+                        </div>
+                        {order.fileName && (
+                          <div>
+                            <strong>File:</strong> {order.fileName}
+                          </div>
+                        )}
+                        {order.fileSize && (
+                          <div>
+                            <strong>Size:</strong> {formatFileSize(order.fileSize)}
+                          </div>
+                        )}
+                        {isProcessing && (
+                          <div>
+                            <strong>Processing:</strong> {getProcessingTime(order.createdAt)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: '12px'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 12px',
+                        background: statusColors.bg,
+                        color: statusColors.text,
+                        border: `1px solid ${statusColors.border}`,
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>
+                        {getStatusIcon(order.status)}
+                        {order.status}
+                      </div>
+                      
+                      <div style={{
+                        display: 'flex',
+                        gap: '8px'
+                      }}>
+                        {order.downloadUrl && (order.status === 'READY' || order.status === 'COMPLETED') && (
+                          <a
+                            href={order.downloadUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '8px 16px',
+                              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                              color: 'white',
+                              borderRadius: '6px',
+                              textDecoration: 'none',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <Download style={{ width: '16px', height: '16px' }} />
+                            Download
+                          </a>
+                        )}
+                        
+                        {order.stockItemUrl && (
+                          <a
+                            href={order.stockItemUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '8px 12px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '6px',
+                              background: 'white',
+                              color: '#6b7280',
+                              textDecoration: 'none',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <ExternalLink style={{ width: '16px', height: '16px' }} />
+                            View Original
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                    
-                    {order.downloadUrl && order.status === 'READY' && (
-                      <a
-                        href={order.downloadUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
-                      >
-                        Download
-                      </a>
-                    )}
-                    
-                    {order.stockItemUrl && (
-                      <a
-                        href={order.stockItemUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-gray-700 text-sm"
-                      >
-                        View Original
-                      </a>
-                    )}
-                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
