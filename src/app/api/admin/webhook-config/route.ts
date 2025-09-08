@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       create: {
         key: 'webhook_config',
         value: JSON.stringify(config),
-        description: 'Nehtw.com webhook configuration'
+        type: 'json'
       }
     })
 

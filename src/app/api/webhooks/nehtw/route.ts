@@ -130,10 +130,10 @@ async function handleDownloadStatusChanged(
     console.log(`Order ${orderId} updated to status: ${newStatus}`)
 
     // Send notification to user if completed or failed
-    if (newStatus === 'COMPLETED') {
+    if (newStatus === 'COMPLETED' && downloadUrl) {
       await notifyUserDownloadReady(order.user.email, orderId, downloadUrl)
     } else if (newStatus === 'FAILED') {
-      await notifyUserDownloadFailed(order.user.email, orderId, error)
+      await notifyUserDownloadFailed(order.user.email, orderId, error || 'Unknown error')
     }
 
   } catch (error) {
@@ -181,18 +181,18 @@ async function refundOrderPoints(userId: string, points: number) {
     await prisma.pointsBalance.upsert({
       where: { userId },
       update: {
-        balance: {
+        currentPoints: {
           increment: points
         }
       },
       create: {
         userId,
-        balance: points
+        currentPoints: points
       }
     })
 
     // Add transaction record
-    await prisma.pointTransaction.create({
+    await prisma.pointsHistory.create({
       data: {
         userId,
         amount: points,
