@@ -15,6 +15,19 @@ interface Plan {
   isActive: boolean
 }
 
+interface PasswordStrength {
+  score: number
+  label: string
+  color: string
+  requirements: {
+    length: boolean
+    uppercase: boolean
+    lowercase: boolean
+    number: boolean
+    special: boolean
+  }
+}
+
 export default function RegisterPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [selectedPlan, setSelectedPlan] = useState<string>('')
@@ -27,7 +40,61 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [step, setStep] = useState(1)
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
+    score: 0,
+    label: '',
+    color: '',
+    requirements: {
+      length: false,
+      uppercase: false,
+      lowercase: false,
+      number: false,
+      special: false
+    }
+  })
+  const [showWeakPasswordPopup, setShowWeakPasswordPopup] = useState(false)
+  const [weakPasswordConsent, setWeakPasswordConsent] = useState(false)
   const router = useRouter()
+
+  // Password strength calculation
+  const calculatePasswordStrength = (password: string): PasswordStrength => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    }
+
+    let score = 0
+    if (requirements.length) score += 1
+    if (requirements.uppercase) score += 1
+    if (requirements.lowercase) score += 1
+    if (requirements.number) score += 1
+    if (requirements.special) score += 1
+
+    let label = ''
+    let color = ''
+    
+    if (score <= 1) {
+      label = 'Very Weak'
+      color = '#dc2626'
+    } else if (score === 2) {
+      label = 'Weak'
+      color = '#f59e0b'
+    } else if (score === 3) {
+      label = 'Fair'
+      color = '#eab308'
+    } else if (score === 4) {
+      label = 'Good'
+      color = '#10b981'
+    } else {
+      label = 'Strong'
+      color = '#059669'
+    }
+
+    return { score, label, color, requirements }
+  }
 
   useEffect(() => {
     // Fetch subscription plans
@@ -46,6 +113,27 @@ export default function RegisterPage() {
 
     fetchPlans()
   }, [])
+
+  // Update password strength when password changes
+  useEffect(() => {
+    if (formData.password) {
+      const strength = calculatePasswordStrength(formData.password)
+      setPasswordStrength(strength)
+    } else {
+      setPasswordStrength({
+        score: 0,
+        label: '',
+        color: '',
+        requirements: {
+          length: false,
+          uppercase: false,
+          lowercase: false,
+          number: false,
+          special: false
+        }
+      })
+    }
+  }, [formData.password])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -75,6 +163,13 @@ export default function RegisterPage() {
 
     if (!selectedPlan) {
       setError('Please select a plan')
+      setIsLoading(false)
+      return
+    }
+
+    // Check for weak password and show popup if needed
+    if (passwordStrength.score <= 2 && !weakPasswordConsent) {
+      setShowWeakPasswordPopup(true)
       setIsLoading(false)
       return
     }
@@ -116,6 +211,18 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleWeakPasswordConsent = () => {
+    setWeakPasswordConsent(true)
+    setShowWeakPasswordPopup(false)
+    // Retry form submission
+    handleSubmit(new Event('submit') as any)
+  }
+
+  const handleWeakPasswordCancel = () => {
+    setShowWeakPasswordPopup(false)
+    setWeakPasswordConsent(false)
   }
 
   const features = [
@@ -344,7 +451,7 @@ export default function RegisterPage() {
                           style={{
                             width: '100%',
                             padding: '12px 16px',
-                            border: '1px solid #d1d5db',
+                            border: passwordStrength.score > 0 ? `1px solid ${passwordStrength.color}` : '1px solid #d1d5db',
                             borderRadius: '8px',
                             fontSize: '16px',
                             transition: 'all 0.2s ease',
@@ -352,6 +459,137 @@ export default function RegisterPage() {
                           }}
                           placeholder="Create a strong password"
                         />
+                        
+                        {/* Password Strength Indicator */}
+                        {formData.password && (
+                          <div style={{ marginTop: '8px' }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              marginBottom: '8px'
+                            }}>
+                              <div style={{
+                                display: 'flex',
+                                gap: '2px',
+                                flex: 1
+                              }}>
+                                {[...Array(5)].map((_, i) => (
+                                  <div
+                                    key={i}
+                                    style={{
+                                      height: '4px',
+                                      flex: 1,
+                                      borderRadius: '2px',
+                                      background: i < passwordStrength.score ? passwordStrength.color : '#e5e7eb',
+                                      transition: 'all 0.3s ease'
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              <span style={{
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                color: passwordStrength.color
+                              }}>
+                                {passwordStrength.label}
+                              </span>
+                            </div>
+                            
+                            {/* Password Requirements */}
+                            <div style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px'
+                            }}>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px'
+                              }}>
+                                <span style={{
+                                  color: passwordStrength.requirements.length ? '#10b981' : '#6b7280'
+                                }}>
+                                  {passwordStrength.requirements.length ? '✓' : '○'}
+                                </span>
+                                <span style={{
+                                  color: passwordStrength.requirements.length ? '#10b981' : '#6b7280'
+                                }}>
+                                  At least 8 characters
+                                </span>
+                              </div>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px'
+                              }}>
+                                <span style={{
+                                  color: passwordStrength.requirements.uppercase ? '#10b981' : '#6b7280'
+                                }}>
+                                  {passwordStrength.requirements.uppercase ? '✓' : '○'}
+                                </span>
+                                <span style={{
+                                  color: passwordStrength.requirements.uppercase ? '#10b981' : '#6b7280'
+                                }}>
+                                  One uppercase letter
+                                </span>
+                              </div>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px'
+                              }}>
+                                <span style={{
+                                  color: passwordStrength.requirements.lowercase ? '#10b981' : '#6b7280'
+                                }}>
+                                  {passwordStrength.requirements.lowercase ? '✓' : '○'}
+                                </span>
+                                <span style={{
+                                  color: passwordStrength.requirements.lowercase ? '#10b981' : '#6b7280'
+                                }}>
+                                  One lowercase letter
+                                </span>
+                              </div>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px'
+                              }}>
+                                <span style={{
+                                  color: passwordStrength.requirements.number ? '#10b981' : '#6b7280'
+                                }}>
+                                  {passwordStrength.requirements.number ? '✓' : '○'}
+                                </span>
+                                <span style={{
+                                  color: passwordStrength.requirements.number ? '#10b981' : '#6b7280'
+                                }}>
+                                  One number
+                                </span>
+                              </div>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px'
+                              }}>
+                                <span style={{
+                                  color: passwordStrength.requirements.special ? '#10b981' : '#6b7280'
+                                }}>
+                                  {passwordStrength.requirements.special ? '✓' : '○'}
+                                </span>
+                                <span style={{
+                                  color: passwordStrength.requirements.special ? '#10b981' : '#6b7280'
+                                }}>
+                                  One special character
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label htmlFor="confirmPassword" style={{
@@ -791,6 +1029,176 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* Weak Password Popup */}
+      {showWeakPasswordPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#fef3c7',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                ⚠️
+              </div>
+              <div>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  margin: 0
+                }}>
+                  Weak Password Detected
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#64748b',
+                  margin: '4px 0 0 0'
+                }}>
+                  Your password strength is: <span style={{ color: passwordStrength.color, fontWeight: '600' }}>{passwordStrength.label}</span>
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '24px'
+            }}>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#dc2626',
+                margin: '0 0 12px 0'
+              }}>
+                Security Risks of Weak Passwords:
+              </h4>
+              <ul style={{
+                margin: 0,
+                paddingLeft: '20px',
+                color: '#7f1d1d',
+                fontSize: '14px',
+                lineHeight: '1.6'
+              }}>
+                <li>Easily guessed by attackers</li>
+                <li>Vulnerable to brute force attacks</li>
+                <li>Higher risk of account compromise</li>
+                <li>May not meet security standards</li>
+              </ul>
+            </div>
+
+            <div style={{
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '24px'
+            }}>
+              <h4 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#1e40af',
+                margin: '0 0 12px 0'
+              }}>
+                Recommendations:
+              </h4>
+              <ul style={{
+                margin: 0,
+                paddingLeft: '20px',
+                color: '#1e3a8a',
+                fontSize: '14px',
+                lineHeight: '1.6'
+              }}>
+                <li>Use at least 8 characters</li>
+                <li>Include uppercase and lowercase letters</li>
+                <li>Add numbers and special characters</li>
+                <li>Avoid common words or patterns</li>
+              </ul>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '16px'
+            }}>
+              <button
+                onClick={handleWeakPasswordCancel}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  background: 'white',
+                  color: '#374151',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Improve Password
+              </button>
+              <button
+                onClick={handleWeakPasswordConsent}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Use Weak Password
+              </button>
+            </div>
+
+            <p style={{
+              fontSize: '12px',
+              color: '#6b7280',
+              textAlign: 'center',
+              margin: '16px 0 0 0'
+            }}>
+              By proceeding, you acknowledge the security risks and accept responsibility for using a weak password.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
