@@ -86,8 +86,44 @@ export async function POST(request: NextRequest) {
       throw error
     }
 
+    // Validate all parameters before creating order
+    if (!session.user.id) {
+      console.log('ERROR: session.user.id is null or undefined')
+      return NextResponse.json({ error: 'Invalid user session' }, { status: 401 })
+    }
+    
+    if (!stockSite.id) {
+      console.log('ERROR: stockSite.id is null or undefined')
+      return NextResponse.json({ error: 'Invalid stock site' }, { status: 400 })
+    }
+    
+    if (!id) {
+      console.log('ERROR: id is null or undefined')
+      return NextResponse.json({ error: 'Invalid stock item ID' }, { status: 400 })
+    }
+
     // Create order in database
     console.log('Creating order in database...')
+    console.log('OrderManager.createOrder parameters:', {
+      userId: session.user.id,
+      userIdLength: session.user.id?.length,
+      userIdType: typeof session.user.id,
+      stockSiteId: stockSite.id,
+      stockSiteIdLength: stockSite.id?.length,
+      stockSiteIdType: typeof stockSite.id,
+      stockItemId: id,
+      stockItemIdLength: id?.length,
+      stockItemIdType: typeof id,
+      stockItemUrl: url,
+      stockItemUrlLength: url?.length,
+      stockItemUrlType: typeof url,
+      title: title || 'Untitled',
+      titleLength: (title || 'Untitled')?.length,
+      titleType: typeof (title || 'Untitled'),
+      cost: cost,
+      costType: typeof cost
+    })
+    
     const order = await OrderManager.createOrder(
       session.user.id,
       stockSite.id,
