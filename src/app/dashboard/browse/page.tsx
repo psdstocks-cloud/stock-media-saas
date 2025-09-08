@@ -1,50 +1,46 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-interface StockSite {
+interface StockInfo {
+  image: string
+  title: string
   id: string
-  name: string
-  displayName: string
-  category: string
+  source: string
   cost: number
-  isActive: boolean
+  ext: string
+  name: string
+  author: string
+  sizeInBytes: number
 }
 
-interface SearchResult {
-  id: string
-  title: string
-  description: string
-  url: string
-  thumbnailUrl: string
-  type: string
-  sizeInBytes: number
-  site: string
-  tags: string[]
+interface OrderResponse {
+  success: boolean
+  order?: {
+    id: string
+    status: string
+    title: string
+    cost: number
+    createdAt: string
+  }
+  error?: string
+  currentPoints?: number
+  requiredPoints?: number
 }
 
 export default function BrowsePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const selectedSite = searchParams.get('site')
 
-  const [stockSites, setStockSites] = useState<StockSite[]>([])
-  const [selectedSiteData, setSelectedSiteData] = useState<StockSite | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [isOrdering, setIsOrdering] = useState<string | null>(null)
+  const [url, setUrl] = useState('')
+  const [stockInfo, setStockInfo] = useState<StockInfo | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isOrdering, setIsOrdering] = useState(false)
   const [userBalance, setUserBalance] = useState<number>(0)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState({
-    type: 'all',
-    sortBy: 'relevance',
-    priceRange: 'all'
-  })
+  const [error, setError] = useState('')
+  const [orderSuccess, setOrderSuccess] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -54,97 +50,92 @@ export default function BrowsePage() {
       return
     }
 
-    // Fetch stock sites and user balance
-    const fetchData = async () => {
+    // Fetch user balance
+    const fetchBalance = async () => {
       try {
-        const [sitesResponse, balanceResponse] = await Promise.all([
-          fetch('/api/stock-sites'),
-          fetch(`/api/points?userId=${session.user.id}`)
-        ])
-
-        const sitesData = await sitesResponse.json()
-        const balanceData = await balanceResponse.json()
-
-        setStockSites(sitesData.stockSites || [])
-        setUserBalance(balanceData.balance?.currentPoints || 0)
-
-        // Set selected site if specified in URL
-        if (selectedSite) {
-          const site = sitesData.stockSites?.find((s: StockSite) => s.name === selectedSite)
-          if (site) {
-            setSelectedSiteData(site)
-          }
-        }
+        const response = await fetch(`/api/points?userId=${session.user.id}`)
+        const data = await response.json()
+        setUserBalance(data.balance?.currentPoints || 0)
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching balance:', error)
       }
     }
 
-    fetchData()
-  }, [session, status, router, selectedSite])
+    fetchBalance()
+  }, [session, status, router])
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!searchQuery.trim() || !selectedSiteData) return
+    if (!url.trim()) return
 
-    setIsSearching(true)
+    setIsLoading(true)
+    setError('')
+    setStockInfo(null)
+
     try {
-      const response = await fetch('/api/search', {
+      const response = await fetch('/api/stock-info', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          query: searchQuery,
-          site: selectedSiteData.name,
-          filters
-        }),
+        body: JSON.stringify({ url }),
       })
 
       const data = await response.json()
-      setSearchResults(data.results || [])
+
+      if (data.success && data.data) {
+        setStockInfo(data.data)
+      } else {
+        setError(data.error || 'Failed to process URL')
+      }
     } catch (error) {
-      console.error('Search error:', error)
+      setError('An error occurred while processing the URL')
     } finally {
-      setIsSearching(false)
+      setIsLoading(false)
     }
   }
 
-  const handleOrder = async (result: SearchResult) => {
-    if (!selectedSiteData) return
+  const handlePlaceOrder = async () => {
+    if (!stockInfo) return
 
-    setIsOrdering(result.id)
+    setIsOrdering(true)
+    setError('')
+
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: result.title,
-          description: result.description,
-          url: result.url,
-          thumbnailUrl: result.thumbnailUrl,
-          type: result.type,
-          sizeInBytes: result.sizeInBytes,
-          siteId: selectedSiteData.id,
-          cost: selectedSiteData.cost
+          url,
+          site: stockInfo.source,
+          id: stockInfo.id,
+          title: stockInfo.title,
+          cost: stockInfo.cost,
+          imageUrl: stockInfo.image
         }),
       })
 
-      const data = await response.json()
-      if (response.ok) {
-        // Update user balance
-        setUserBalance(prev => prev - selectedSiteData.cost)
-        // Show success message or redirect
-        router.push('/dashboard/orders')
+      const data: OrderResponse = await response.json()
+
+      if (data.success && data.order) {
+        setOrderSuccess(true)
+        setUserBalance(prev => prev - stockInfo.cost)
+        // Redirect to orders page after 2 seconds
+        setTimeout(() => {
+          router.push('/dashboard/orders')
+        }, 2000)
       } else {
-        console.error('Order failed:', data.error)
+        setError(data.error || 'Failed to place order')
+        if (data.currentPoints !== undefined && data.requiredPoints !== undefined) {
+          setError(`Insufficient points. You have ${data.currentPoints} points but need ${data.requiredPoints} points.`)
+        }
       }
     } catch (error) {
-      console.error('Order error:', error)
+      setError('An error occurred while placing the order')
     } finally {
-      setIsOrdering(null)
+      setIsOrdering(false)
     }
   }
 
@@ -156,13 +147,18 @@ export default function BrowsePage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'video':
+  const getFileTypeIcon = (ext: string) => {
+    switch (ext.toLowerCase()) {
+      case 'mp4':
+      case 'mov':
+      case 'avi':
         return '🎥'
-      case 'audio':
-      case 'music':
+      case 'mp3':
+      case 'wav':
+      case 'aac':
         return '🎵'
+      case 'pdf':
+        return '📄'
       default:
         return '🖼️'
     }
@@ -262,7 +258,7 @@ export default function BrowsePage() {
               }}>
                 <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
               </div>
-              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>Browse Media</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>Download Media</h1>
             </div>
             <div style={{
               display: 'flex',
@@ -300,177 +296,291 @@ export default function BrowsePage() {
       </header>
 
       <div style={{
-        maxWidth: '1280px',
+        maxWidth: '800px',
         margin: '0 auto',
         padding: '32px 1rem'
       }}>
-        {/* Site Selection */}
-        {!selectedSiteData && (
-          <div style={{ marginBottom: '32px' }}>
-            <h2 style={{
-              fontSize: '32px',
+        {/* Success Message */}
+        {orderSuccess && (
+          <div style={{
+            background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+            border: '1px solid #86efac',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '24px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
+            <h3 style={{
+              fontSize: '20px',
               fontWeight: 'bold',
-              color: '#0f172a',
-              marginBottom: '24px'
-            }}>Choose a Stock Site</h2>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px'
-            }}>
-              {stockSites.map((site) => (
-                <div
-                  key={site.id}
-                  onClick={() => setSelectedSiteData(site)}
-                  style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    padding: '24px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    border: 'none'
-                  }}
-                >
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '16px'
-                  }}>
-                    <h3 style={{
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      color: '#0f172a'
-                    }}>{site.displayName}</h3>
-                    <span style={{
-                      fontSize: '12px',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      background: site.isActive ? '#dcfce7' : '#f1f5f9',
-                      color: site.isActive ? '#166534' : '#64748b'
-                    }}>
-                      {site.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <p style={{
-                    color: '#64748b',
-                    marginBottom: '16px',
-                    textTransform: 'capitalize'
-                  }}>{site.category}</p>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                    <span style={{
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      color: '#0f172a'
-                    }}>{site.cost} pts</span>
-                    <button
-                      disabled={!site.isActive}
-                      style={{
-                        padding: '8px 16px',
-                        background: site.isActive ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#9ca3af',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        cursor: site.isActive ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      Browse
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+              color: '#166534',
+              marginBottom: '8px'
+            }}>Order Placed Successfully!</h3>
+            <p style={{ color: '#15803d', margin: 0 }}>
+              Your order is being processed. Redirecting to orders page...
+            </p>
           </div>
         )}
 
-        {/* Search Interface */}
-        {selectedSiteData && (
-          <div style={{ marginBottom: '32px' }}>
+        {/* URL Input Form */}
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          padding: '32px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: 'bold',
+              color: '#0f172a',
+              marginBottom: '8px'
+            }}>Paste Your Media URL</h2>
+            <p style={{
+              color: '#64748b',
+              fontSize: '16px'
+            }}>
+              Enter a link from Shutterstock, Getty Images, Adobe Stock, or other supported sites
+            </p>
+          </div>
+
+          <form onSubmit={handleUrlSubmit}>
+            <div style={{ marginBottom: '16px' }}>
+              <input
+                type="url"
+                placeholder="https://www.shutterstock.com/image-vector/letter-m-love-monogram-modern-logo-2275780825"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '16px 20px',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  transition: 'all 0.2s ease',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading || !url.trim()}
+              style={{
+                width: '100%',
+                padding: '16px 24px',
+                background: isLoading || !url.trim() ? '#9ca3af' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: isLoading || !url.trim() ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              {isLoading ? '⏳' : '🔍'} {isLoading ? 'Processing...' : 'Get Preview'}
+            </button>
+          </form>
+
+          {/* Supported Sites */}
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            background: '#f8fafc',
+            borderRadius: '8px'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#374151',
+              marginBottom: '8px'
+            }}>Supported Sites:</p>
             <div style={{
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '24px'
+              flexWrap: 'wrap',
+              gap: '8px'
             }}>
-              <div>
-                <h2 style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: '#0f172a',
-                  marginBottom: '8px'
-                }}>{selectedSiteData.displayName}</h2>
-                <p style={{ color: '#64748b' }}>Search from millions of {selectedSiteData.category} files</p>
-              </div>
-              <button
-                onClick={() => setSelectedSiteData(null)}
-                style={{
-                  padding: '8px 16px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  background: 'white',
-                  color: '#374151',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                Change Site
-              </button>
-            </div>
-
-            <form onSubmit={handleSearch} style={{ marginBottom: '24px' }}>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <input
-                    type="text"
-                    placeholder="Search for images, videos, or audio..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSearching || !searchQuery.trim()}
+              {['Shutterstock', 'Getty Images', 'Adobe Stock', 'Unsplash', 'Pexels', 'Depositphotos', '123RF', 'iStock', 'Dreamstime', 'Bigstock'].map((site) => (
+                <span
+                  key={site}
                   style={{
-                    padding: '12px 24px',
-                    background: isSearching || !searchQuery.trim() ? '#9ca3af' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: isSearching || !searchQuery.trim() ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    background: '#e2e8f0',
+                    borderRadius: '4px',
+                    color: '#64748b'
                   }}
                 >
-                  {isSearching ? '⏳' : '🔍'} Search
-                </button>
+                  {site}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '20px' }}>⚠️</div>
+            <p style={{ color: '#dc2626', margin: 0 }}>{error}</p>
+          </div>
+        )}
+
+        {/* Stock Info Preview */}
+        {stockInfo && (
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#1e40af',
+                marginBottom: '8px'
+              }}>Preview & Confirm Order</h3>
+              <p style={{ color: '#1e3a8a', margin: 0 }}>
+                Review the details below and confirm your order
+              </p>
+            </div>
+
+            <div style={{ padding: '24px' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 2fr',
+                gap: '24px',
+                marginBottom: '24px'
+              }}>
+                {/* Image Preview */}
+                <div style={{
+                  aspectRatio: '1',
+                  background: '#f1f5f9',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  <img
+                    src={stockInfo.image}
+                    alt={stockInfo.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: '500'
+                  }}>
+                    {getFileTypeIcon(stockInfo.ext)} {stockInfo.ext.toUpperCase()}
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div>
+                  <h4 style={{
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: '#0f172a',
+                    marginBottom: '12px',
+                    lineHeight: '1.4'
+                  }}>{stockInfo.title}</h4>
+                  
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Author:</span>
+                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.author}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Source:</span>
+                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.source}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Size:</span>
+                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{formatFileSize(stockInfo.sizeInBytes)}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Format:</span>
+                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.ext.toUpperCase()}</span>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px'
+                    }}>
+                      <span style={{ fontSize: '16px', fontWeight: '500', color: '#374151' }}>Cost:</span>
+                      <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>{stockInfo.cost} points</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      <span style={{ fontSize: '14px', color: '#64748b' }}>Your balance:</span>
+                      <span style={{ fontSize: '16px', fontWeight: '500', color: userBalance >= stockInfo.cost ? '#059669' : '#dc2626' }}>
+                        {userBalance} points
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                gap: '16px',
+                justifyContent: 'flex-end'
+              }}>
                 <button
-                  type="button"
-                  onClick={() => setShowFilters(!showFilters)}
+                  onClick={() => {
+                    setStockInfo(null)
+                    setUrl('')
+                    setError('')
+                  }}
                   style={{
-                    padding: '12px 16px',
+                    padding: '12px 24px',
                     border: '1px solid #d1d5db',
                     borderRadius: '8px',
                     background: 'white',
@@ -481,328 +591,49 @@ export default function BrowsePage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🔧 Filters
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={isOrdering || userBalance < stockInfo.cost}
+                  style={{
+                    padding: '12px 24px',
+                    background: isOrdering || userBalance < stockInfo.cost 
+                      ? '#9ca3af' 
+                      : 'linear-gradient(135deg, #059669, #047857)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: isOrdering || userBalance < stockInfo.cost 
+                      ? 'not-allowed' 
+                      : 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  {isOrdering ? '⏳' : '✅'} {isOrdering ? 'Placing Order...' : 'Confirm Order'}
                 </button>
               </div>
-            </form>
 
-            {/* Filters */}
-            {showFilters && (
-              <div style={{
-                background: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                padding: '24px',
-                marginBottom: '24px'
-              }}>
+              {userBalance < stockInfo.cost && (
                 <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '16px'
+                  marginTop: '16px',
+                  padding: '12px',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  textAlign: 'center'
                 }}>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>Type</label>
-                    <select
-                      value={filters.type}
-                      onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    >
-                      <option value="all">All Types</option>
-                      <option value="image">Images</option>
-                      <option value="video">Videos</option>
-                      <option value="audio">Audio</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>Sort By</label>
-                    <select
-                      value={filters.sortBy}
-                      onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    >
-                      <option value="relevance">Relevance</option>
-                      <option value="newest">Newest</option>
-                      <option value="popular">Most Popular</option>
-                      <option value="size">File Size</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '8px'
-                    }}>Price Range</label>
-                    <select
-                      value={filters.priceRange}
-                      onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                    >
-                      <option value="all">All Prices</option>
-                      <option value="free">Free</option>
-                      <option value="low">Low (1-10 pts)</option>
-                      <option value="medium">Medium (11-50 pts)</option>
-                      <option value="high">High (50+ pts)</option>
-                    </select>
-                  </div>
+                  <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>
+                    Insufficient points. You need {stockInfo.cost - userBalance} more points to complete this order.
+                  </p>
                 </div>
-              </div>
-            )}
-
-            {/* View Controls */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '24px'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px'
-              }}>
-                <span style={{
-                  fontSize: '14px',
-                  color: '#64748b'
-                }}>
-                  {searchResults.length} results found
-                </span>
-              </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  style={{
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    background: viewMode === 'grid' ? '#2563eb' : 'white',
-                    color: viewMode === 'grid' ? 'white' : '#374151',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  ⊞ Grid
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  style={{
-                    padding: '8px 12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    background: viewMode === 'list' ? '#2563eb' : 'white',
-                    color: viewMode === 'list' ? 'white' : '#374151',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  ☰ List
-                </button>
-              </div>
+              )}
             </div>
-
-            {/* Search Results */}
-            {searchResults.length === 0 && searchQuery && !isSearching && (
-              <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  marginBottom: '8px'
-                }}>No results found</h3>
-                <p style={{ color: '#64748b' }}>Try adjusting your search terms or filters</p>
-              </div>
-            )}
-
-            {searchResults.length > 0 && (
-              <div style={{
-                display: viewMode === 'grid' 
-                  ? 'grid' 
-                  : 'flex',
-                gridTemplateColumns: viewMode === 'grid' 
-                  ? 'repeat(auto-fit, minmax(250px, 1fr))' 
-                  : 'none',
-                flexDirection: viewMode === 'list' ? 'column' : 'row',
-                gap: '24px'
-              }}>
-                {searchResults.map((result) => (
-                  <div key={result.id} style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s ease',
-                    border: 'none'
-                  }}>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{
-                        aspectRatio: '1',
-                        background: '#f1f5f9',
-                        borderRadius: '12px 12px 0 0',
-                        overflow: 'hidden'
-                      }}>
-                        <img
-                          src={result.thumbnailUrl}
-                          alt={result.title}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                        />
-                      </div>
-                      <div style={{
-                        position: 'absolute',
-                        top: '8px',
-                        left: '8px'
-                      }}>
-                        <span style={{
-                          fontSize: '12px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          background: 'rgba(255, 255, 255, 0.9)',
-                          color: '#374151',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}>
-                          {getTypeIcon(result.type)}
-                          <span style={{ textTransform: 'capitalize' }}>{result.type}</span>
-                        </span>
-                      </div>
-                      <div style={{
-                        position: 'absolute',
-                        top: '8px',
-                        right: '8px'
-                      }}>
-                        <span style={{
-                          fontSize: '12px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          background: 'rgba(255, 255, 255, 0.9)',
-                          color: '#374151'
-                        }}>
-                          {formatFileSize(result.sizeInBytes)}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ padding: '16px' }}>
-                      <h3 style={{
-                        fontWeight: '600',
-                        color: '#0f172a',
-                        marginBottom: '8px',
-                        fontSize: '16px',
-                        lineHeight: '1.4',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>
-                        {result.title}
-                      </h3>
-                      <p style={{
-                        fontSize: '14px',
-                        color: '#64748b',
-                        marginBottom: '12px',
-                        lineHeight: '1.4',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>
-                        {result.description}
-                      </p>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}>
-                        <span style={{
-                          fontSize: '18px',
-                          fontWeight: 'bold',
-                          color: '#0f172a'
-                        }}>
-                          {selectedSiteData.cost} pts
-                        </span>
-                        <button
-                          onClick={() => handleOrder(result)}
-                          disabled={isOrdering === result.id || userBalance < selectedSiteData.cost}
-                          style={{
-                            padding: '8px 16px',
-                            background: isOrdering === result.id || userBalance < selectedSiteData.cost 
-                              ? '#9ca3af' 
-                              : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            cursor: isOrdering === result.id || userBalance < selectedSiteData.cost 
-                              ? 'not-allowed' 
-                              : 'pointer',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          {isOrdering === result.id ? '⏳' : '⬇️'} Download
-                        </button>
-                      </div>
-                      {userBalance < selectedSiteData.cost && (
-                        <p style={{
-                          fontSize: '12px',
-                          color: '#ef4444',
-                          marginTop: '8px',
-                          margin: 0
-                        }}>
-                          Insufficient points
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>
