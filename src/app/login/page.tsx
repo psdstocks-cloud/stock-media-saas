@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function LoginPage() {
   return (
     <div style={{
@@ -17,7 +19,30 @@ export default function LoginPage() {
         width: '100%',
         maxWidth: '400px'
       }}>
+        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
+            </div>
+            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>
+              StockMedia Pro
+            </span>
+          </div>
           <h1 style={{
             fontSize: '32px',
             fontWeight: 'bold',
@@ -34,7 +59,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form style={{
+        {/* Form */}
+        <form action="/api/auth/signin/credentials" method="POST" style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '24px'
@@ -51,6 +77,7 @@ export default function LoginPage() {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               required
               style={{
@@ -78,6 +105,7 @@ export default function LoginPage() {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
               required
               style={{
@@ -112,6 +140,7 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Footer */}
         <div style={{
           marginTop: '24px',
           textAlign: 'center'
@@ -122,13 +151,13 @@ export default function LoginPage() {
             margin: 0
           }}>
             Don't have an account?{' '}
-            <a href="/register" style={{
+            <Link href="/register" style={{
               color: '#2563eb',
               textDecoration: 'none',
               fontWeight: '500'
             }}>
               Sign up here
-            </a>
+            </Link>
           </p>
         </div>
       </div>
