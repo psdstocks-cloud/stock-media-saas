@@ -267,23 +267,34 @@ export class OrderManager {
    * Check and update order status
    */
   static async checkOrderStatus(orderId: string, apiKey: string) {
+    console.log('checkOrderStatus called for order:', orderId)
+    
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: { stockSite: true },
     })
 
     if (!order || !order.taskId) {
+      console.log('Order not found or no task ID:', { order: !!order, taskId: order?.taskId })
       throw new Error('Order not found or no task ID')
     }
 
+    console.log('Checking status for taskId:', order.taskId)
+
     const api = new NehtwAPI(apiKey)
     const statusResponse = await api.checkOrderStatus(order.taskId)
+    
+    console.log('Status response from Nehtw API:', statusResponse)
 
     if (statusResponse.success && statusResponse.status === 'ready') {
+      console.log('Order is ready, generating download link...')
       // Generate download link
       const downloadResponse = await api.generateDownloadLink(order.taskId)
       
+      console.log('Download link response:', downloadResponse)
+      
       if (downloadResponse.success && downloadResponse.downloadLink) {
+        console.log('Updating order with download link:', downloadResponse.downloadLink)
         await prisma.order.update({
           where: { id: orderId },
           data: {
@@ -294,18 +305,24 @@ export class OrderManager {
         })
       }
     } else if (statusResponse.error) {
+      console.log('Order failed with error:', statusResponse.error)
       await prisma.order.update({
         where: { id: orderId },
         data: {
           status: 'FAILED',
         },
       })
+    } else {
+      console.log('Order still processing, status:', statusResponse.status)
     }
 
-    return await prisma.order.findUnique({
+    const updatedOrder = await prisma.order.findUnique({
       where: { id: orderId },
       include: { stockSite: true },
     })
+    
+    console.log('Final order status:', updatedOrder?.status)
+    return updatedOrder
   }
 
   /**

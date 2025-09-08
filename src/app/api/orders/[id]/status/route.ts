@@ -46,23 +46,10 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { apiKey } = await request.json()
-
+    // Use server-side API key instead of requiring it from client
+    const apiKey = process.env.NEHTW_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key required' }, { status: 400 })
-    }
-
-    // Check if user has this API key
-    const userApiKey = await prisma.apiKey.findFirst({
-      where: { 
-        userId: session.user.id,
-        key: apiKey,
-        isActive: true
-      },
-    })
-
-    if (!userApiKey) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 })
+      return NextResponse.json({ error: 'NEHTW_API_KEY not configured' }, { status: 500 })
     }
 
     const order = await prisma.order.findFirst({
@@ -83,10 +70,17 @@ export async function POST(
       return NextResponse.json({ error: 'Order not yet processed' }, { status: 400 })
     }
 
+    console.log('Checking order status for order:', params.id, 'with taskId:', order.taskId)
+
     // Check order status with nehtw.com API
     const updatedOrder = await OrderManager.checkOrderStatus(params.id, apiKey)
 
-    return NextResponse.json({ order: updatedOrder })
+    console.log('Order status check result:', updatedOrder)
+
+    return NextResponse.json({ 
+      success: true, 
+      order: updatedOrder 
+    })
   } catch (error) {
     console.error('Error checking order status:', error)
     return NextResponse.json({ error: 'Failed to check order status' }, { status: 500 })

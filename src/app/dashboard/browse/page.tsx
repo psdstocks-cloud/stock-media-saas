@@ -109,17 +109,54 @@ export default function BrowsePage() {
 
     const pollOrderStatus = async () => {
       try {
-        const response = await fetch(`/api/orders?userId=${session.user.id}`)
-        const data = await response.json()
+        console.log('Polling order status for order:', currentOrder.id)
         
-        if (data.orders) {
-          const order = data.orders.find((o: any) => o.id === currentOrder.id)
-          if (order) {
+        // First, try to check the order status with the Nehtw API
+        const statusResponse = await fetch(`/api/orders/${currentOrder.id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json()
+          console.log('Order status check response:', statusData)
+          
+          if (statusData.success && statusData.order) {
+            const order = statusData.order
+            console.log('Order status updated to:', order.status)
             setOrderStatus(order.status)
+            
             if (order.downloadUrl) {
+              console.log('Download URL found:', order.downloadUrl)
               setDownloadUrl(order.downloadUrl)
               setOrderSuccess(true)
             }
+          }
+        }
+        
+        // Also check the orders list as a fallback
+        const response = await fetch(`/api/orders?userId=${session.user.id}`)
+        const data = await response.json()
+        
+        console.log('Order status response:', data)
+        
+        if (data.orders) {
+          const order = data.orders.find((o: any) => o.id === currentOrder.id)
+          console.log('Found order in response:', order)
+          
+          if (order) {
+            console.log('Updating order status to:', order.status)
+            setOrderStatus(order.status)
+            
+            if (order.downloadUrl) {
+              console.log('Download URL found:', order.downloadUrl)
+              setDownloadUrl(order.downloadUrl)
+              setOrderSuccess(true)
+            }
+          } else {
+            console.log('Order not found in response')
           }
         }
       } catch (error) {
