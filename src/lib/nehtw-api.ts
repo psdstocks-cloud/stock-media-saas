@@ -204,17 +204,43 @@ export class OrderManager {
     title: string | null,
     cost: number
   ) {
-    return await prisma.order.create({
-      data: {
+    console.log('OrderManager.createOrder called with:', {
+      userId,
+      stockSiteId,
+      stockItemId,
+      stockItemUrl,
+      title,
+      cost
+    })
+
+    try {
+      const order = await prisma.order.create({
+        data: {
+          userId,
+          stockSiteId,
+          stockItemId,
+          stockItemUrl,
+          title,
+          cost,
+          status: 'PENDING',
+        },
+      })
+      console.log('Order created successfully:', { id: order.id, status: order.status })
+      return order
+    } catch (error) {
+      console.error('Error in OrderManager.createOrder:', error)
+      console.error('OrderManager.createOrder error details:', {
         userId,
         stockSiteId,
         stockItemId,
         stockItemUrl,
         title,
         cost,
-        status: 'PENDING',
-      },
-    })
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined
+      })
+      throw error
+    }
   }
 
   /**
