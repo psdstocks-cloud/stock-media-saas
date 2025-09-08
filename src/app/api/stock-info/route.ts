@@ -157,6 +157,14 @@ function extractSiteAndId(url: string): { site: string | null; id: string | null
         }
       },
       {
+        match: /depositphotos\.com\/(editorial|photo|vector|illustration)\/([0-9a-z-]*)-([0-9]*)\.html/,
+        result: (string: RegExpMatchArray) => {
+          const stockSource = 'depositphotos'
+          const stockId = string[3]
+          return { source: stockSource, id: stockId, url: url }
+        }
+      },
+      {
         match: /123rf\.com\/(photo|free-photo)_([0-9]*)_/,
         result: (string: RegExpMatchArray) => {
           const stockSource = '123rf'
