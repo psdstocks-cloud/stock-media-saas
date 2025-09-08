@@ -86,13 +86,27 @@ export default function OrdersPage() {
   }
 
   const filteredOrders = orders.filter(order => {
-    // Always exclude processing orders
-    if (order.status === 'PROCESSING' || order.status === 'PENDING') return false
+    // Only show succeeded orders (READY and COMPLETED)
+    if (order.status !== 'READY' && order.status !== 'COMPLETED') return false
     
     if (filter === 'all') return true
     if (filter === 'ready') return order.status === 'READY' || order.status === 'COMPLETED'
     return order.status.toLowerCase() === filter.toLowerCase()
   })
+
+  const getWebsiteLogo = (siteName: string) => {
+    const logos: { [key: string]: string } = {
+      'shutterstock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Shutterstock_logo.svg/200px-Shutterstock_logo.svg.png',
+      'depositphotos': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Depositphotos_logo.svg/200px-Depositphotos_logo.svg.png',
+      'istockphoto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Adobe_Stock_logo.svg/200px-Adobe_Stock_logo.svg.png',
+      'adobestock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Adobe_Stock_logo.svg/200px-Adobe_Stock_logo.svg.png',
+      'gettyimages': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/200px-Google_2015_logo.svg.png',
+      'unsplash': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Unsplash_logo_2014.svg/200px-Unsplash_logo_2014.svg.png',
+      'pexels': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Pexels_logo.svg/200px-Pexels_logo.svg.png',
+      'pixabay': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Pixabay_logo.svg/200px-Pixabay_logo.svg.png'
+    }
+    return logos[siteName.toLowerCase()] || null
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -311,10 +325,9 @@ export default function OrdersPage() {
             flexWrap: 'wrap'
           }}>
             {[
-              { id: 'all', name: 'All Orders', count: orders.filter(o => o.status !== 'PROCESSING' && o.status !== 'PENDING').length },
+              { id: 'all', name: 'All Orders', count: orders.filter(o => o.status === 'READY' || o.status === 'COMPLETED').length },
               { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY' || o.status === 'COMPLETED').length },
               { id: 'completed', name: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
-              { id: 'failed', name: 'Failed', count: orders.filter(o => o.status === 'FAILED').length },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -432,16 +445,37 @@ export default function OrdersPage() {
                         <div style={{
                           width: '40px',
                           height: '40px',
-                          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                           borderRadius: '8px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '14px',
-                          fontWeight: 'bold'
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          overflow: 'hidden'
                         }}>
-                          {order.stockSite.displayName.charAt(0).toUpperCase()}
+                          {getWebsiteLogo(order.stockSite.name) ? (
+                            <img 
+                              src={getWebsiteLogo(order.stockSite.name)} 
+                              alt={order.stockSite.displayName}
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                objectFit: 'contain'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div style="color: #6b7280; font-size: 14px; font-weight: bold;">${order.stockSite.displayName.charAt(0).toUpperCase()}</div>`;
+                                }
+                              }}
+                            />
+                          ) : (
+                            <div style={{ color: '#6b7280', fontSize: '14px', fontWeight: 'bold' }}>
+                              {order.stockSite.displayName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <h3 style={{
@@ -457,10 +491,24 @@ export default function OrdersPage() {
                             <p style={{
                               fontSize: '14px',
                               color: '#6b7280',
-                              margin: 0,
+                              margin: '0 0 4px 0',
                               fontWeight: '500'
                             }}>
                               {order.title}
+                            </p>
+                          )}
+                          {order.taskId && (
+                            <p style={{
+                              fontSize: '12px',
+                              color: '#9ca3af',
+                              margin: 0,
+                              fontFamily: 'monospace',
+                              background: '#f1f5f9',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              display: 'inline-block'
+                            }}>
+                              Debug ID: {order.taskId}
                             </p>
                           )}
                         </div>
@@ -571,7 +619,9 @@ export default function OrdersPage() {
                       
                       <div style={{
                         display: 'flex',
-                        gap: '8px'
+                        flexDirection: 'column',
+                        gap: '8px',
+                        minWidth: '140px'
                       }}>
                         {order.downloadUrl && (order.status === 'READY' || order.status === 'COMPLETED') && (
                           <a
@@ -581,11 +631,12 @@ export default function OrdersPage() {
                             style={{
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'center',
                               gap: '8px',
-                              padding: '10px 20px',
+                              padding: '10px 16px',
                               background: 'linear-gradient(135deg, #059669, #047857)',
                               color: 'white',
-                              borderRadius: '10px',
+                              borderRadius: '8px',
                               textDecoration: 'none',
                               fontSize: '14px',
                               fontWeight: '600',
@@ -606,6 +657,7 @@ export default function OrdersPage() {
                             style={{
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'center',
                               gap: '6px',
                               padding: '8px 16px',
                               border: '1px solid #e5e7eb',

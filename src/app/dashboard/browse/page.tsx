@@ -1191,8 +1191,9 @@ export default function BrowsePage() {
               {/* Action Buttons */}
               <div style={{
                 display: 'flex',
-                gap: '16px',
-                justifyContent: 'flex-end'
+                flexDirection: 'column',
+                gap: '12px',
+                alignItems: 'flex-end'
               }}>
                 <button
                   onClick={() => {
