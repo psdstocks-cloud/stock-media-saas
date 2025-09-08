@@ -17,7 +17,8 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  Download
+  Download,
+  ExternalLink
 } from 'lucide-react'
 
 interface StockInfo {
