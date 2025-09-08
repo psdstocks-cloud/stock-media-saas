@@ -1,49 +1,4 @@
-'use client'
-
-import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const message = searchParams.get('message')
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError('Invalid email or password')
-      } else {
-        // Check if user is admin
-        const session = await getSession()
-        if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/dashboard')
-        }
-      }
-    } catch (error) {
-      setError('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -51,7 +6,8 @@ export default function LoginPage() {
       fontFamily: 'system-ui, -apple-system, sans-serif',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      padding: '20px'
     }}>
       <div style={{
         background: 'white',
@@ -78,29 +34,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {message && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '16px',
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: '8px',
-            marginBottom: '24px'
-          }}>
-            <div style={{
-              width: '20px',
-              height: '20px',
-              color: '#16a34a'
-            }}>
-              ✓
-            </div>
-            <p style={{ color: '#16a34a', margin: 0 }}>{message}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={{
+        <form style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '24px'
@@ -119,8 +53,6 @@ export default function LoginPage() {
               id="email"
               type="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -148,8 +80,6 @@ export default function LoginPage() {
               id="password"
               type="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -163,44 +93,22 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '16px',
-              background: '#fef2f2',
-              border: '1px solid #fecaca',
-              borderRadius: '8px'
-            }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                color: '#dc2626'
-              }}>
-                ⚠️
-              </div>
-              <p style={{ color: '#dc2626', margin: 0 }}>{error}</p>
-            </div>
-          )}
-
           <button
             type="submit"
-            disabled={isLoading}
             style={{
               width: '100%',
               padding: '12px 24px',
-              background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               fontSize: '16px',
               fontWeight: '500',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
           >
-            {isLoading ? 'Signing In...' : 'Sign In →'}
+            Sign In →
           </button>
         </form>
 
@@ -214,13 +122,13 @@ export default function LoginPage() {
             margin: 0
           }}>
             Don't have an account?{' '}
-            <Link href="/register" style={{
+            <a href="/register" style={{
               color: '#2563eb',
               textDecoration: 'none',
               fontWeight: '500'
             }}>
               Sign up here
-            </Link>
+            </a>
           </p>
         </div>
       </div>
