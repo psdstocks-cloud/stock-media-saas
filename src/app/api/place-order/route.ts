@@ -6,28 +6,37 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Place order API called')
+    
     const session = await getServerSession(authOptions)
+    console.log('Session check:', { hasSession: !!session, userId: session?.user?.id })
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { url, site, id, title, cost, imageUrl } = await request.json()
+    console.log('Request data:', { url, site, id, title, cost, imageUrl })
 
     if (!url || !site || !id || !cost) {
+      console.log('Missing required fields:', { url: !!url, site: !!site, id: !!id, cost: !!cost })
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     // Check user balance
+    console.log('Checking user balance...')
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { pointsBalance: true }
     })
+    console.log('User found:', { user: !!user, pointsBalance: !!user?.pointsBalance })
 
     if (!user || !user.pointsBalance) {
+      console.log('User not found or no points balance')
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    console.log('User points:', { current: user.pointsBalance.currentPoints, required: cost })
     if (user.pointsBalance.currentPoints < cost) {
       return NextResponse.json({ 
         error: 'Insufficient points', 
@@ -37,11 +46,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Find or create stock site
+    console.log('Finding or creating stock site for:', site)
     let stockSite = await prisma.stockSite.findFirst({
       where: { name: site }
     })
+    console.log('Stock site found:', { found: !!stockSite, id: stockSite?.id })
 
     if (!stockSite) {
+      console.log('Creating new stock site...')
       // Create stock site if it doesn't exist
       stockSite = await prisma.stockSite.create({
         data: {
@@ -52,9 +64,11 @@ export async function POST(request: NextRequest) {
           isActive: true
         }
       })
+      console.log('Stock site created:', { id: stockSite.id, name: stockSite.name })
     }
 
     // Create order in database
+    console.log('Creating order in database...')
     const order = await OrderManager.createOrder(
       session.user.id,
       stockSite.id,
@@ -63,8 +77,10 @@ export async function POST(request: NextRequest) {
       title || 'Untitled',
       cost
     )
+    console.log('Order created:', { id: order.id, status: order.status })
 
     // Deduct points
+    console.log('Deducting points...')
     await prisma.pointsBalance.update({
       where: { userId: session.user.id },
       data: {
@@ -73,8 +89,10 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+    console.log('Points deducted successfully')
 
     // Add points history
+    console.log('Adding points history...')
     await prisma.pointsHistory.create({
       data: {
         userId: session.user.id,
@@ -84,6 +102,7 @@ export async function POST(request: NextRequest) {
         orderId: order.id
       }
     })
+    console.log('Points history added successfully')
 
     // Process order with nehtw.com API
     const apiKey = process.env.NEHTW_API_KEY
