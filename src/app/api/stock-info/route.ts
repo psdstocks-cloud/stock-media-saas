@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    const stockInfo = await NehtwAPI.getStockInfo(apiKey, site, id, url)
+    const nehtwAPI = new NehtwAPI(apiKey)
+    const stockInfo = await nehtwAPI.getStockInfo(site, id, url)
     
     if (!stockInfo) {
       return NextResponse.json({ 
