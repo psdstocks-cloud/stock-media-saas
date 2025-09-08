@@ -12,7 +12,8 @@ export default function SupportPage() {
     subject: '',
     category: 'general',
     message: '',
-    priority: 'medium'
+    priority: 'medium',
+    attachments: [] as File[]
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -63,6 +64,21 @@ export default function SupportPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    })
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setFormData({
+      ...formData,
+      attachments: [...formData.attachments, ...files]
+    })
+  }
+
+  const removeAttachment = (index: number) => {
+    setFormData({
+      ...formData,
+      attachments: formData.attachments.filter((_, i) => i !== index)
     })
   }
 
@@ -344,6 +360,147 @@ export default function SupportPage() {
                         minHeight: '120px'
                       }}
                     />
+                  </div>
+
+                  <div style={{ marginBottom: '32px' }}>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>
+                      Attach Files (Optional)
+                    </label>
+                    <p style={{
+                      fontSize: '12px',
+                      color: '#64748b',
+                      margin: '0 0 12px 0'
+                    }}>
+                      Upload screenshots, videos, or documents to help us understand your issue better. Max 10MB per file.
+                    </p>
+                    
+                    <div style={{
+                      border: '2px dashed #d1d5db',
+                      borderRadius: '8px',
+                      padding: '20px',
+                      textAlign: 'center',
+                      background: '#f9fafb',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#2563eb'
+                      e.currentTarget.style.background = '#f0f9ff'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#d1d5db'
+                      e.currentTarget.style.background = '#f9fafb'
+                    }}>
+                      <div style={{ fontSize: '32px', marginBottom: '8px' }}>📎</div>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#374151',
+                        margin: '0 0 4px 0'
+                      }}>
+                        Click to upload files or drag and drop
+                      </p>
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        margin: 0
+                      }}>
+                        PNG, JPG, MP4, PDF up to 10MB each
+                      </p>
+                    </div>
+                    
+                    <input
+                      id="file-upload"
+                      type="file"
+                      multiple
+                      accept="image/*,video/*,.pdf"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                    />
+
+                    {formData.attachments.length > 0 && (
+                      <div style={{ marginTop: '16px' }}>
+                        <h5 style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#374151',
+                          margin: '0 0 8px 0'
+                        }}>
+                          Attached Files ({formData.attachments.length})
+                        </h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {formData.attachments.map((file, index) => (
+                            <div key={index} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '8px 12px',
+                              background: '#f3f4f6',
+                              borderRadius: '6px',
+                              border: '1px solid #e5e7eb'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  background: '#dbeafe',
+                                  borderRadius: '4px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '12px'
+                                }}>
+                                  {file.type.startsWith('image/') ? '🖼️' : 
+                                   file.type.startsWith('video/') ? '🎥' : '📄'}
+                                </div>
+                                <div>
+                                  <p style={{
+                                    fontSize: '12px',
+                                    fontWeight: '500',
+                                    color: '#374151',
+                                    margin: 0
+                                  }}>
+                                    {file.name}
+                                  </p>
+                                  <p style={{
+                                    fontSize: '10px',
+                                    color: '#6b7280',
+                                    margin: 0
+                                  }}>
+                                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeAttachment(index)}
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  background: '#ef4444',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '12px'
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button

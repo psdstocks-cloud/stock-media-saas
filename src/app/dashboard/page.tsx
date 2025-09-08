@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [showSupportedSites, setShowSupportedSites] = useState(false)
+  const [showDemo, setShowDemo] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -49,7 +50,7 @@ export default function DashboardPage() {
   }, [session, status, router])
 
   if (status === 'loading' || loading) {
-    return (
+  return (
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
@@ -250,20 +251,22 @@ export default function DashboardPage() {
                   🔍 Request Files Now
                 </button>
               </Link>
-              <button style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px 32px',
-                background: 'transparent',
-                color: 'white',
-                border: '2px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '12px',
-                fontSize: '18px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}>
+              <button 
+                onClick={() => setShowDemo(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '16px 32px',
+                  background: 'transparent',
+                  color: 'white',
+                  border: '2px solid rgba(255, 255, 255, 0.5)',
+                  borderRadius: '12px',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}>
                 📺 Watch Demo
               </button>
             </div>
@@ -288,7 +291,7 @@ export default function DashboardPage() {
             <div>
               <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#059669', marginBottom: '8px' }}>
                 10,000+
-              </div>
+            </div>
               <div style={{ color: '#64748b', fontSize: '14px' }}>Happy Customers</div>
             </div>
             <div>
@@ -356,7 +359,7 @@ export default function DashboardPage() {
                   color: '#1e3a8a',
                   marginBottom: '4px'
                 }}>
-                  {balance?.currentPoints || 0}
+                {balance?.currentPoints || 0}
                 </p>
                 <p style={{
                   fontSize: '14px',
@@ -378,7 +381,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
+          
           <div style={{
             background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
             border: '1px solid #86efac',
@@ -416,14 +419,14 @@ export default function DashboardPage() {
                   color: '#14532d',
                   marginBottom: '4px'
                 }}>
-                  {orders?.filter((order: any) => order.status === 'COMPLETED').length || 0}
+                  {orders?.filter((order: any) => order.status === 'COMPLETED' || order.status === 'READY').length || 0}
                 </p>
                 <p style={{
                   fontSize: '14px',
                   color: '#166534',
                   opacity: 0.8
                 }}>Files Downloaded</p>
-              </div>
+                </div>
               <div style={{
                 width: '64px',
                 height: '64px',
@@ -436,8 +439,8 @@ export default function DashboardPage() {
               }}>
                 ⬇️
               </div>
-            </div>
-          </div>
+                </div>
+              </div>
           
           <div style={{
             background: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)',
@@ -483,7 +486,7 @@ export default function DashboardPage() {
                   color: '#7c3aed',
                   opacity: 0.8
                 }}>All Time Orders</p>
-              </div>
+                </div>
               <div style={{
                 width: '64px',
                 height: '64px',
@@ -497,7 +500,7 @@ export default function DashboardPage() {
                 📈
               </div>
             </div>
-          </div>
+        </div>
 
           <div style={{
             background: 'linear-gradient(135deg, #fed7aa, #fdba74)',
@@ -524,7 +527,7 @@ export default function DashboardPage() {
                 }}>
                   {stockSites?.filter((site: any) => site.isActive).length || 0}
                 </p>
-              </div>
+            </div>
               <div style={{
                 width: '48px',
                 height: '48px',
@@ -615,7 +618,7 @@ export default function DashboardPage() {
           gap: '32px'
         }}>
           {/* Quick Actions */}
-          <div>
+                      <div>
             <div style={{
               background: 'white',
               borderRadius: '20px',
@@ -644,7 +647,7 @@ export default function DashboardPage() {
                   fontSize: '20px'
                 }}>
                   ⚡
-                </div>
+                        </div>
                 Quick Actions
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
@@ -681,7 +684,7 @@ export default function DashboardPage() {
                         fontSize: '24px'
                       }}>
                         🔍
-                      </div>
+                        </div>
                       <div style={{ flex: 1 }}>
                         <h4 style={{
                           fontSize: '18px',
@@ -900,7 +903,7 @@ export default function DashboardPage() {
                         color: site.isActive ? '#166534' : '#64748b'
                       }}>
                         {site.isActive ? 'Active' : 'Inactive'}
-                      </span>
+                        </span>
                     </div>
                   </div>
                 ))}
@@ -1072,7 +1075,7 @@ export default function DashboardPage() {
                       ➕ Start Browsing
                     </button>
                   </Link>
-                </div>
+            </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {recentOrders.map((order: any) => (
@@ -1111,7 +1114,7 @@ export default function DashboardPage() {
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                      </div>
+                        </div>
                       <div style={{ textAlign: 'right' }}>
                         <span style={{
                           fontSize: '12px',
@@ -1136,9 +1139,9 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
-          </div>
+            </div>
 
-            {/* Quick Tips & Stats */}
+            {/* Support & Help */}
             <div style={{
               background: 'white',
               borderRadius: '16px',
@@ -1154,7 +1157,7 @@ export default function DashboardPage() {
                 alignItems: 'center',
                 gap: '12px'
               }}>
-                💡 Quick Tips & Stats
+                🎧 Support & Help
               </h3>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1191,7 +1194,7 @@ export default function DashboardPage() {
                     color: '#0c4a6e',
                     margin: '0 0 8px 0'
                   }}>
-                    ${((orders?.filter((order: any) => order.status === 'COMPLETED').length || 0) * 15).toLocaleString()}
+                    ${((orders?.filter((order: any) => order.status === 'COMPLETED' || order.status === 'READY').length || 0) * 15).toLocaleString()}
                   </p>
                   <p style={{
                     fontSize: '14px',
@@ -1200,108 +1203,6 @@ export default function DashboardPage() {
                   }}>
                     Estimated savings vs. direct purchases
                   </p>
-                </div>
-
-                {/* Recent Activity Summary */}
-                <div style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  padding: '20px'
-                }}>
-                  <h4 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#0f172a',
-                    margin: '0 0 16px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    📊 Activity Summary
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px',
-                      background: 'white',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          background: '#10b981',
-                          borderRadius: '50%'
-                        }}></div>
-                        <span style={{ fontSize: '14px', color: '#374151' }}>Success Rate</span>
-                      </div>
-                      <span style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#10b981'
-                      }}>
-                        {orders?.length > 0 ? Math.round((orders.filter((order: any) => order.status === 'COMPLETED').length / orders.length) * 100) : 0}%
-                      </span>
-                    </div>
-                    
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px',
-                      background: 'white',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          background: '#f59e0b',
-                          borderRadius: '50%'
-                        }}></div>
-                        <span style={{ fontSize: '14px', color: '#374151' }}>Processing</span>
-                      </div>
-                      <span style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#f59e0b'
-                      }}>
-                        {orders?.filter((order: any) => order.status === 'PROCESSING').length || 0}
-                      </span>
-                    </div>
-
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px',
-                      background: 'white',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          background: '#6b7280',
-                          borderRadius: '50%'
-                        }}></div>
-                        <span style={{ fontSize: '14px', color: '#374151' }}>Last Order</span>
-                      </div>
-                      <span style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#6b7280'
-                      }}>
-                        {orders?.length > 0 ? new Date(orders[0].createdAt).toLocaleDateString() : 'Never'}
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Support */}
@@ -1343,7 +1244,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-          </div>
+      </div>
         </div>
       </div>
 
@@ -1536,6 +1437,202 @@ export default function DashboardPage() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Modal */}
+      {showDemo && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '32px',
+            maxWidth: '800px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setShowDemo(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                width: '32px',
+                height: '32px',
+                background: '#f3f4f6',
+                border: 'none',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px'
+              }}
+            >
+              ×
+            </button>
+            
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: 'bold',
+              color: '#0f172a',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}>
+              How It Works - Quick Demo
+            </h2>
+            
+            <div style={{
+              background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)',
+              borderRadius: '12px',
+              padding: '24px',
+              marginBottom: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎬</div>
+              <p style={{
+                fontSize: '16px',
+                color: '#64748b',
+                marginBottom: '20px'
+              }}>
+                Watch this quick demo to see how easy it is to download premium stock media
+              </p>
+              <div style={{
+                background: '#1f2937',
+                borderRadius: '8px',
+                padding: '40px',
+                color: 'white',
+                fontSize: '14px',
+                fontFamily: 'monospace',
+                textAlign: 'left',
+                marginBottom: '20px'
+              }}>
+                <div style={{ color: '#10b981' }}>// Step 1: Copy any stock media URL</div>
+                <div style={{ color: '#fbbf24', margin: '8px 0' }}>const url = "https://www.shutterstock.com/image-vector/..."</div>
+                <div style={{ color: '#10b981', marginTop: '16px' }}>// Step 2: Paste in our request box</div>
+                <div style={{ color: '#fbbf24', margin: '8px 0' }}>await requestFile(url)</div>
+                <div style={{ color: '#10b981', marginTop: '16px' }}>// Step 3: Download high-quality file instantly</div>
+                <div style={{ color: '#fbbf24', margin: '8px 0' }}>✅ File downloaded successfully!</div>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '16px',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                background: '#f0f9ff',
+                border: '1px solid #bae6fd',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>1️⃣</div>
+                <h3 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#0c4a6e',
+                  margin: '0 0 8px 0'
+                }}>Copy URL</h3>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#0369a1',
+                  margin: 0
+                }}>Copy any stock media URL from supported sites</p>
+              </div>
+              
+              <div style={{
+                background: '#f0fdf4',
+                border: '1px solid #86efac',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>2️⃣</div>
+                <h3 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#14532d',
+                  margin: '0 0 8px 0'
+                }}>Paste & Request</h3>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#166534',
+                  margin: 0
+                }}>Paste URL in our request box and click confirm</p>
+              </div>
+              
+              <div style={{
+                background: '#fef3c7',
+                border: '1px solid #f59e0b',
+                borderRadius: '12px',
+                padding: '20px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>3️⃣</div>
+                <h3 style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#92400e',
+                  margin: '0 0 8px 0'
+                }}>Download</h3>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#a16207',
+                  margin: 0
+                }}>Get high-quality file delivered instantly</p>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <Link href="/dashboard/browse">
+                <button style={{
+                  padding: '16px 32px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  marginRight: '12px'
+                }}>
+                  Try It Now
+                </button>
+              </Link>
+              <button
+                onClick={() => setShowDemo(false)}
+                style={{
+                  padding: '16px 32px',
+                  background: 'white',
+                  color: '#374151',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
