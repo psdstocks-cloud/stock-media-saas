@@ -71,14 +71,29 @@ export class NehtwAPI {
       ...(url && { url: encodeURIComponent(url) }),
     })
 
-    const response = await fetch(`${this.baseUrl}/stockorder/${site}/${id}?${params}`, {
+    const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}?${params}`
+    console.log('Nehtw placeOrder request:', {
+      site,
+      id,
+      url,
+      requestUrl,
+      apiKey: this.apiKey ? 'present' : 'missing'
+    })
+
+    const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {
         'X-Api-Key': this.apiKey,
       },
     })
 
-    return await response.json()
+    const responseData = await response.json()
+    console.log('Nehtw placeOrder response:', {
+      status: response.status,
+      data: responseData
+    })
+
+    return responseData
   }
 
   /**
@@ -194,16 +209,29 @@ export class OrderManager {
     id: string,
     url?: string
   ) {
+    console.log('OrderManager.processOrder called:', {
+      orderId,
+      site,
+      id,
+      url,
+      apiKey: apiKey ? 'present' : 'missing'
+    })
+
     const api = new NehtwAPI(apiKey)
     
     try {
       // Place order with nehtw.com
+      console.log('Calling Nehtw API placeOrder...')
       const orderResponse = await api.placeOrder(site, id, url)
       
+      console.log('Nehtw placeOrder result:', orderResponse)
+      
       if (!orderResponse.success || !orderResponse.task_id) {
+        console.error('Nehtw placeOrder failed:', orderResponse)
         throw new Error(orderResponse.message || 'Failed to place order')
       }
 
+      console.log('Updating order with task ID:', orderResponse.task_id)
       // Update order with task ID
       const order = await prisma.order.update({
         where: { id: orderId },
@@ -213,8 +241,11 @@ export class OrderManager {
         },
       })
 
+      console.log('Order updated successfully:', order.id)
       return order
     } catch (error) {
+      console.error('Error in processOrder:', error)
+      
       // Update order status to failed
       await prisma.order.update({
         where: { id: orderId },
