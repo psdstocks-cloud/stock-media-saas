@@ -67,9 +67,13 @@ export class NehtwAPI {
    * Place an order
    */
   async placeOrder(site: string, id: string, url?: string): Promise<NehtwOrderResponse> {
-    const params = new URLSearchParams({
-      ...(url && { url: encodeURIComponent(url) }),
-    })
+    // Try without URL parameter first, as some sites might not need it
+    const params = new URLSearchParams()
+    
+    // Only add URL parameter for specific sites that need it
+    if (url && (site === 'unsplash' || site === 'pexels' || site === 'pixabay')) {
+      params.append('url', encodeURIComponent(url))
+    }
 
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}?${params}`
     console.log('Nehtw placeOrder request:', {
@@ -77,7 +81,8 @@ export class NehtwAPI {
       id,
       url,
       requestUrl,
-      apiKey: this.apiKey ? 'present' : 'missing'
+      apiKey: this.apiKey ? 'present' : 'missing',
+      params: params.toString()
     })
 
     const response = await fetch(requestUrl, {
