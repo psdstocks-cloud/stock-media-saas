@@ -36,13 +36,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Find stock site
-    const stockSite = await prisma.stockSite.findFirst({
+    // Find or create stock site
+    let stockSite = await prisma.stockSite.findFirst({
       where: { name: site }
     })
 
     if (!stockSite) {
-      return NextResponse.json({ error: 'Stock site not found' }, { status: 404 })
+      // Create stock site if it doesn't exist
+      stockSite = await prisma.stockSite.create({
+        data: {
+          name: site,
+          displayName: site.charAt(0).toUpperCase() + site.slice(1),
+          cost: cost,
+          category: 'images',
+          isActive: true
+        }
+      })
     }
 
     // Create order in database

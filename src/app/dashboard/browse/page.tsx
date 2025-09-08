@@ -3,6 +3,22 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import {
+  ArrowLeft,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Video,
+  Music,
+  FileText,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Download
+} from 'lucide-react'
 
 interface StockInfo {
   image: string
@@ -53,6 +69,10 @@ export default function BrowsePage() {
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [supportedSites, setSupportedSites] = useState<SupportedSite[]>([])
   const [showSupportedSites, setShowSupportedSites] = useState(false)
+  const [currentOrder, setCurrentOrder] = useState<any>(null)
+  const [orderStatus, setOrderStatus] = useState<string>('')
+  const [downloadUrl, setDownloadUrl] = useState<string>('')
+  const [processingTime, setProcessingTime] = useState<number>(0)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -82,6 +102,44 @@ export default function BrowsePage() {
 
     fetchData()
   }, [session, status, router])
+
+  // Poll order status when there's a current order
+  useEffect(() => {
+    if (!currentOrder || !session?.user?.id) return
+
+    const pollOrderStatus = async () => {
+      try {
+        const response = await fetch(`/api/orders?userId=${session.user.id}`)
+        const data = await response.json()
+        
+        if (data.orders) {
+          const order = data.orders.find((o: any) => o.id === currentOrder.id)
+          if (order) {
+            setOrderStatus(order.status)
+            if (order.downloadUrl) {
+              setDownloadUrl(order.downloadUrl)
+              setOrderSuccess(true)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error polling order status:', error)
+      }
+    }
+
+    const interval = setInterval(pollOrderStatus, 2000) // Poll every 2 seconds
+    return () => clearInterval(interval)
+  }, [currentOrder, session?.user?.id])
+
+  // Update processing time
+  useEffect(() => {
+    if (orderStatus === 'PROCESSING' || orderStatus === 'PENDING') {
+      const interval = setInterval(() => {
+        setProcessingTime(prev => prev + 1)
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [orderStatus])
 
   const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -139,12 +197,11 @@ export default function BrowsePage() {
       const data: OrderResponse = await response.json()
 
       if (data.success && data.order) {
-        setOrderSuccess(true)
+        setCurrentOrder(data.order)
+        setOrderStatus('PENDING')
+        setProcessingTime(0)
         setUserBalance(prev => prev - stockInfo.cost)
-        // Redirect to orders page after 2 seconds
-        setTimeout(() => {
-          router.push('/dashboard/orders')
-        }, 2000)
+        // Don't redirect - show timer on same page
       } else {
         setError(data.error || 'Failed to place order')
         if (data.currentPoints !== undefined && data.requiredPoints !== undefined) {
@@ -669,10 +726,6 @@ export default function BrowsePage() {
                       <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.source}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Size:</span>
-                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{formatFileSize(stockInfo.sizeInBytes)}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Format:</span>
                       <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.ext.toUpperCase()}</span>
                     </div>
@@ -774,6 +827,167 @@ export default function BrowsePage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Order Processing Timer and Download Section */}
+        {currentOrder && (
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            padding: '32px',
+            marginTop: '32px',
+            textAlign: 'center'
+          }}>
+            {orderStatus === 'PENDING' || orderStatus === 'PROCESSING' ? (
+              <div>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  border: '4px solid #e2e8f0',
+                  borderTop: '4px solid #2563eb',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  margin: '0 auto 24px'
+                }}></div>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  marginBottom: '8px'
+                }}>
+                  Processing Your Order
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#64748b',
+                  marginBottom: '16px'
+                }}>
+                  {orderStatus === 'PENDING' ? 'Order placed, waiting to start...' : 'Downloading from stock site...'}
+                </p>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: '#fef3c7',
+                  border: '1px solid #fde68a',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#92400e'
+                }}>
+                  <Clock style={{ width: '16px', height: '16px' }} />
+                  Processing: {Math.floor(processingTime / 60)}m {processingTime % 60}s
+                </div>
+              </div>
+            ) : orderStatus === 'READY' || orderStatus === 'COMPLETED' ? (
+              <div>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: '#dcfce7',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}>
+                  <CheckCircle style={{ width: '40px', height: '40px', color: '#059669' }} />
+                </div>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  marginBottom: '8px'
+                }}>
+                  Download Ready!
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#64748b',
+                  marginBottom: '24px'
+                }}>
+                  Your file has been processed and is ready for download.
+                </p>
+                {downloadUrl && (
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      color: 'white',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Download style={{ width: '20px', height: '20px' }} />
+                    Download File
+                  </a>
+                )}
+              </div>
+            ) : orderStatus === 'FAILED' ? (
+              <div>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: '#fee2e2',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}>
+                  <XCircle style={{ width: '40px', height: '40px', color: '#dc2626' }} />
+                </div>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  marginBottom: '8px'
+                }}>
+                  Order Failed
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#64748b',
+                  marginBottom: '24px'
+                }}>
+                  Sorry, there was an issue processing your order. Please try again.
+                </p>
+                <button
+                  onClick={() => {
+                    setCurrentOrder(null)
+                    setOrderStatus('')
+                    setDownloadUrl('')
+                    setProcessingTime(0)
+                    setError('')
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : null}
           </div>
         )}
       </div>
