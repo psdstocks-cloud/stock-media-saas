@@ -209,6 +209,16 @@ export default function BrowsePage() {
       })
 
       console.log('Order response status:', response.status)
+      
+      // Check if the response is not ok
+      if (!response.ok) {
+        console.error('Order API returned error status:', response.status)
+        const errorText = await response.text()
+        console.error('Response text:', errorText)
+        setError(`Order failed with status ${response.status}: ${errorText}`)
+        return
+      }
+      
       const data: OrderResponse = await response.json()
       console.log('Order response data:', data)
 
