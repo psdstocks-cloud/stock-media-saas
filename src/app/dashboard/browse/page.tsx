@@ -30,6 +30,16 @@ interface OrderResponse {
   requiredPoints?: number
 }
 
+interface SupportedSite {
+  name: string
+  displayName: string
+  url: string
+  cost: number
+  description: string
+  category: string
+  isActive: boolean
+}
+
 export default function BrowsePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -41,6 +51,8 @@ export default function BrowsePage() {
   const [userBalance, setUserBalance] = useState<number>(0)
   const [error, setError] = useState('')
   const [orderSuccess, setOrderSuccess] = useState(false)
+  const [supportedSites, setSupportedSites] = useState<SupportedSite[]>([])
+  const [showSupportedSites, setShowSupportedSites] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -50,18 +62,25 @@ export default function BrowsePage() {
       return
     }
 
-    // Fetch user balance
-    const fetchBalance = async () => {
+    // Fetch user balance and supported sites
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/points?userId=${session.user.id}`)
-        const data = await response.json()
-        setUserBalance(data.balance?.currentPoints || 0)
+        const [balanceResponse, sitesResponse] = await Promise.all([
+          fetch(`/api/points?userId=${session.user.id}`),
+          fetch('/api/supported-sites')
+        ])
+
+        const balanceData = await balanceResponse.json()
+        const sitesData = await sitesResponse.json()
+
+        setUserBalance(balanceData.balance?.currentPoints || 0)
+        setSupportedSites(sitesData.sites || [])
       } catch (error) {
-        console.error('Error fetching balance:', error)
+        console.error('Error fetching data:', error)
       }
     }
 
-    fetchBalance()
+    fetchData()
   }, [session, status, router])
 
   const handleUrlSubmit = async (e: React.FormEvent) => {
@@ -86,10 +105,10 @@ export default function BrowsePage() {
       if (data.success && data.data) {
         setStockInfo(data.data)
       } else {
-        setError(data.error || 'Failed to process URL')
+        setError(data.error || 'Failed to process URL. Please check if the URL is from a supported site.')
       }
     } catch (error) {
-      setError('An error occurred while processing the URL')
+      setError('An error occurred while processing the URL. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -137,6 +156,12 @@ export default function BrowsePage() {
     } finally {
       setIsOrdering(false)
     }
+  }
+
+  const handleSiteClick = (site: SupportedSite) => {
+    setUrl(site.url)
+    setError('')
+    setStockInfo(null)
   }
 
   const formatFileSize = (bytes: number) => {
@@ -296,7 +321,7 @@ export default function BrowsePage() {
       </header>
 
       <div style={{
-        maxWidth: '800px',
+        maxWidth: '1200px',
         margin: '0 auto',
         padding: '32px 1rem'
       }}>
@@ -384,44 +409,102 @@ export default function BrowsePage() {
                 gap: '8px'
               }}
             >
-              {isLoading ? '⏳' : '🔍'} {isLoading ? 'Processing...' : 'Get Preview'}
+              {isLoading ? '⏳' : '🔗'} {isLoading ? 'Processing...' : 'Get Link'}
             </button>
           </form>
 
-          {/* Supported Sites */}
+          {/* Supported Sites Toggle */}
           <div style={{
             marginTop: '24px',
-            padding: '16px',
-            background: '#f8fafc',
-            borderRadius: '8px'
+            textAlign: 'center'
           }}>
-            <p style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151',
-              marginBottom: '8px'
-            }}>Supported Sites:</p>
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px'
-            }}>
-              {['Shutterstock', 'Getty Images', 'Adobe Stock', 'Unsplash', 'Pexels', 'Depositphotos', '123RF', 'iStock', 'Dreamstime', 'Bigstock'].map((site) => (
-                <span
-                  key={site}
-                  style={{
-                    fontSize: '12px',
-                    padding: '4px 8px',
-                    background: '#e2e8f0',
-                    borderRadius: '4px',
-                    color: '#64748b'
-                  }}
-                >
-                  {site}
-                </span>
-              ))}
-            </div>
+            <button
+              onClick={() => setShowSupportedSites(!showSupportedSites)}
+              style={{
+                padding: '12px 24px',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                background: 'white',
+                color: '#374151',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {showSupportedSites ? 'Hide' : 'Show'} Supported Sites ({supportedSites.length})
+            </button>
           </div>
+
+          {/* Supported Sites List */}
+          {showSupportedSites && (
+            <div style={{
+              marginTop: '24px',
+              padding: '20px',
+              background: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
+                textAlign: 'center'
+              }}>Supported Sites & Point Costs</h3>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '12px'
+              }}>
+                {supportedSites.map((site) => (
+                  <div
+                    key={site.name}
+                    onClick={() => handleSiteClick(site)}
+                    style={{
+                      padding: '16px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        marginBottom: '4px'
+                      }}>{site.displayName}</h4>
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        margin: 0
+                      }}>{site.description}</p>
+                    </div>
+                    <div style={{
+                      textAlign: 'right',
+                      marginLeft: '12px'
+                    }}>
+                      <div style={{
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        color: '#2563eb'
+                      }}>{site.cost} pts</div>
+                      <div style={{
+                        fontSize: '10px',
+                        color: '#64748b'
+                      }}>per download</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Error Message */}
