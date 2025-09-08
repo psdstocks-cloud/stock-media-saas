@@ -98,6 +98,17 @@ export class NehtwAPI {
       data: responseData
     })
 
+    // Check if the response indicates an error
+    if (responseData.error) {
+      console.error('Nehtw placeOrder failed:', responseData)
+      throw new Error(`Nehtw API error: ${responseData.message || 'Unknown error'}`)
+    }
+
+    if (!responseData.success && !responseData.task_id) {
+      console.error('Nehtw placeOrder failed - no success or task_id:', responseData)
+      throw new Error(`Nehtw API error: ${responseData.message || 'Order placement failed'}`)
+    }
+
     return responseData
   }
 
@@ -272,7 +283,14 @@ export class OrderManager {
       
       if (!orderResponse.success || !orderResponse.task_id) {
         console.error('Nehtw placeOrder failed:', orderResponse)
-        throw new Error(orderResponse.message || 'Failed to place order')
+        // Update order status to failed
+        await prisma.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'FAILED',
+          },
+        })
+        throw new Error(orderResponse.message || 'Failed to place order with Nehtw API')
       }
 
       console.log('Updating order with task ID:', orderResponse.task_id)
