@@ -4,24 +4,6 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { 
-  ArrowRight, 
-  Download, 
-  Search, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle,
-  TrendingUp,
-  Users,
-  Zap,
-  Star,
-  Plus,
-  Eye,
-  Filter
-} from 'lucide-react'
 
 interface DashboardData {
   balance: any
@@ -47,7 +29,7 @@ export default function DashboardPage() {
     // Fetch dashboard data
     const fetchData = async () => {
       try {
-        const [balance, history, orders, stockSites] = await Promise.all([
+  const [balance, history, orders, stockSites] = await Promise.all([
           fetch(`/api/points?userId=${session.user.id}`).then(res => res.json()).then(data => data.balance),
           fetch(`/api/points?userId=${session.user.id}`).then(res => res.json()).then(data => data.history),
           fetch(`/api/orders?userId=${session.user.id}`).then(res => res.json()).then(data => data.orders),
@@ -67,10 +49,29 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600 text-lg">Loading your dashboard...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '128px',
+            height: '128px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }}></div>
+          <p style={{
+            marginTop: '16px',
+            color: '#64748b',
+            fontSize: '18px'
+          }}>Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -85,304 +86,639 @@ export default function DashboardPage() {
   const recentHistory = history?.slice(0, 5) || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 0'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: 'linear-gradient(135deg, #2563eb, #4f46e5)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
               </div>
-              <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>Dashboard</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
               <Link href="/dashboard/browse">
-                <Button variant="outline" size="sm">
-                  <Search className="w-4 h-4 mr-2" />
-                  Browse Media
-                </Button>
+                <button style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  background: 'white',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}>
+                  🔍 Browse Media
+                </button>
               </Link>
-              <Button 
-                variant="ghost" 
-                size="sm"
+              <button 
                 onClick={() => signOut()}
+                style={{
+                  padding: '8px 16px',
+                  background: 'transparent',
+                  color: '#64748b',
+                  border: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Sign Out
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 1rem'
+      }}>
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+        <div style={{ marginBottom: '32px' }}>
+          <h2 style={{
+            fontSize: '32px',
+            fontWeight: 'bold',
+            color: '#0f172a',
+            marginBottom: '8px'
+          }}>
             Welcome back, {session.user.name || session.user.email}!
           </h2>
-          <p className="text-slate-600">
+          <p style={{ color: '#64748b' }}>
             Here's what's happening with your account today.
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600 mb-1">Available Points</p>
-                  <p className="text-3xl font-bold text-blue-900">
-                    {balance?.currentPoints || 0}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-blue-600" />
-                </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '24px',
+          marginBottom: '32px'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+            border: '1px solid #93c5fd',
+            borderRadius: '12px',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+            <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#1e40af',
+                  marginBottom: '4px'
+                }}>Available Points</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: '#1e3a8a'
+                }}>
+                  {balance?.currentPoints || 0}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#dbeafe',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                ⚡
+              </div>
+            </div>
+          </div>
 
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">Downloads This Month</p>
-                  <p className="text-3xl font-bold text-green-900">
-                    {orders?.filter((order: any) => order.status === 'COMPLETED').length || 0}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Download className="w-6 h-6 text-green-600" />
-                </div>
+          <div style={{
+            background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+            border: '1px solid #86efac',
+            borderRadius: '12px',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#166534',
+                  marginBottom: '4px'
+                }}>Downloads This Month</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: '#14532d'
+                }}>
+                  {orders?.filter((order: any) => order.status === 'COMPLETED').length || 0}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#dcfce7',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                ⬇️
+              </div>
+            </div>
+          </div>
+          
+          <div style={{
+            background: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)',
+            border: '1px solid #c4b5fd',
+            borderRadius: '12px',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#7c3aed',
+                  marginBottom: '4px'
+                }}>Total Orders</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: '#6b21a8'
+                }}>
+                  {orders?.length || 0}
+                </p>
+                </div>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#f3e8ff',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                📈
+              </div>
+            </div>
+                </div>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600 mb-1">Total Orders</p>
-                  <p className="text-3xl font-bold text-purple-900">
-                    {orders?.length || 0}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                </div>
+          <div style={{
+            background: 'linear-gradient(135deg, #fed7aa, #fdba74)',
+            border: '1px solid #fb923c',
+            borderRadius: '12px',
+            padding: '24px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#c2410c',
+                  marginBottom: '4px'
+                }}>Active Sites</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: '#9a3412'
+                }}>
+                  {stockSites?.filter((site: any) => site.isActive).length || 0}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600 mb-1">Active Sites</p>
-                  <p className="text-3xl font-bold text-orange-900">
-                    {stockSites?.filter((site: any) => site.isActive).length || 0}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-orange-600" />
-                </div>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#fed7aa',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                👥
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '32px'
+        }}>
           {/* Quick Actions */}
-          <div className="lg:col-span-1">
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Zap className="w-5 h-5 mr-2 text-blue-600" />
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Link href="/dashboard/browse" className="block">
-                  <Button className="w-full justify-start" variant="outline">
-                    <Search className="w-4 h-4 mr-2" />
-                    Browse Media
-                  </Button>
+          <div>
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              padding: '24px',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                ⚡ Quick Actions
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Link href="/dashboard/browse" style={{ display: 'block' }}>
+                  <button style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: 'white',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    🔍 Browse Media
+                  </button>
                 </Link>
-                <Link href="/dashboard/orders" className="block">
-                  <Button className="w-full justify-start" variant="outline">
-                    <Clock className="w-4 h-4 mr-2" />
-                    View Orders
-                  </Button>
+                <Link href="/dashboard/orders" style={{ display: 'block' }}>
+                  <button style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: 'white',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    🕐 View Orders
+                  </button>
                 </Link>
-                <Link href="/dashboard/profile" className="block">
-                  <Button className="w-full justify-start" variant="outline">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Manage Profile
-                  </Button>
+                <Link href="/dashboard/profile" style={{ display: 'block' }}>
+                  <button style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: 'white',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    👁️ Manage Profile
+                  </button>
                 </Link>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Available Sites */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Users className="w-5 h-5 mr-2 text-green-600" />
-                  Available Sites
-                </CardTitle>
-                <CardDescription>
-                  {stockSites?.length || 0} stock sites ready for downloads
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stockSites?.slice(0, 5).map((site: any) => (
-                    <div key={site.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              padding: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                👥 Available Sites
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#64748b',
+                marginBottom: '16px'
+              }}>
+                {stockSites?.length || 0} stock sites ready for downloads
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {stockSites?.slice(0, 5).map((site: any) => (
+                  <div key={site.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px',
+                    background: '#f8fafc',
+                    borderRadius: '8px'
+                  }}>
+                    <div>
+                      <p style={{
+                        fontWeight: '500',
+                        color: '#0f172a',
+                        margin: 0
+                      }}>{site.displayName}</p>
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        margin: 0
+                      }}>{site.category}</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        margin: 0
+                      }}>{site.cost} pts</p>
+                      <span style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        background: site.isActive ? '#dcfce7' : '#f1f5f9',
+                        color: site.isActive ? '#166534' : '#64748b'
+                      }}>
+                        {site.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Link href="/dashboard/browse" style={{ display: 'block', marginTop: '16px' }}>
+                <button style={{
+                  width: '100%',
+                  padding: '8px 16px',
+                  background: 'transparent',
+                  color: '#2563eb',
+                  border: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}>
+                  View All Sites →
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div>
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              padding: '24px',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🕐 Recent Orders
+              </h3>
+              {recentOrders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>⬇️</div>
+                  <p style={{ color: '#64748b', marginBottom: '16px' }}>No orders yet</p>
+                  <Link href="/dashboard/browse">
+                    <button style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      margin: '0 auto'
+                    }}>
+                      ➕ Start Browsing
+                    </button>
+                  </Link>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {recentOrders.map((order: any) => (
+                    <div key={order.id} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '16px',
+                      background: '#f8fafc',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px'
+                      }}>
+                        <div style={{
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          background: order.status === 'COMPLETED' ? '#10b981' :
+                                     order.status === 'PROCESSING' ? '#f59e0b' :
+                                     order.status === 'FAILED' ? '#ef4444' : '#6b7280'
+                        }} />
                       <div>
-                        <p className="font-medium text-slate-900">{site.displayName}</p>
-                        <p className="text-sm text-slate-600">{site.category}</p>
+                          <p style={{
+                            fontWeight: '500',
+                            color: '#0f172a',
+                            margin: 0
+                          }}>{order.title}</p>
+                          <p style={{
+                            fontSize: '12px',
+                            color: '#64748b',
+                            margin: 0
+                          }}>
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-slate-900">{site.cost} pts</p>
-                        <Badge variant={site.isActive ? "success" : "secondary"} className="text-xs">
-                          {site.isActive ? "Active" : "Inactive"}
-                        </Badge>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{
+                          fontSize: '12px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: order.status === 'COMPLETED' ? '#dcfce7' :
+                                     order.status === 'PROCESSING' ? '#fef3c7' :
+                                     order.status === 'FAILED' ? '#fecaca' : '#f1f5f9',
+                          color: order.status === 'COMPLETED' ? '#166534' :
+                                 order.status === 'PROCESSING' ? '#92400e' :
+                                 order.status === 'FAILED' ? '#991b1b' : '#64748b'
+                        }}>
+                          {order.status}
+                        </span>
+                        <p style={{
+                          fontSize: '12px',
+                          color: '#64748b',
+                          margin: '4px 0 0 0'
+                        }}>{order.cost} points</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Link href="/dashboard/browse" className="block mt-4">
-                  <Button variant="ghost" className="w-full">
-                    View All Sites
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              )}
           </div>
 
-          {/* Recent Activity */}
-          <div className="lg:col-span-2">
-            <div className="grid gap-6">
-              {/* Recent Orders */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Clock className="w-5 h-5 mr-2 text-blue-600" />
-                      Recent Orders
-                    </div>
-                    <Link href="/dashboard/orders">
-                      <Button variant="ghost" size="sm">
-                        View All
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </Link>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {recentOrders.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Download className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                      <p className="text-slate-500 mb-4">No orders yet</p>
-                      <Link href="/dashboard/browse">
-                        <Button>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Start Browsing
-                        </Button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {recentOrders.map((order: any) => (
-                        <div key={order.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                          <div className="flex items-center space-x-4">
-                            <div className={`w-3 h-3 rounded-full ${
-                              order.status === 'COMPLETED' ? 'bg-green-500' :
-                              order.status === 'PROCESSING' ? 'bg-yellow-500' :
-                              order.status === 'FAILED' ? 'bg-red-500' :
-                              'bg-slate-400'
-                            }`} />
-                            <div>
-                              <p className="font-medium text-slate-900">{order.title}</p>
-                              <p className="text-sm text-slate-600">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <Badge variant={
-                              order.status === 'COMPLETED' ? 'success' :
-                              order.status === 'PROCESSING' ? 'warning' :
-                              order.status === 'FAILED' ? 'error' :
-                              'secondary'
-                            }>
-                              {order.status}
-                            </Badge>
-                            <p className="text-sm text-slate-600 mt-1">{order.cost} points</p>
-                          </div>
+            {/* Recent Activity */}
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              padding: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                📈 Recent Activity
+              </h3>
+              {recentHistory.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>⭐</div>
+                  <p style={{ color: '#64748b' }}>No recent activity</p>
+            </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {recentHistory.map((activity: any, index: number) => (
+                    <div key={index} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      padding: '12px',
+                      background: '#f8fafc',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: activity.type === 'SUBSCRIPTION' ? '#dbeafe' :
+                                   activity.type === 'DOWNLOAD' ? '#dcfce7' :
+                                   activity.type === 'REFUND' ? '#fed7aa' : '#f1f5f9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '16px'
+                      }}>
+                        {activity.type === 'SUBSCRIPTION' ? '➕' :
+                         activity.type === 'DOWNLOAD' ? '⬇️' :
+                         activity.type === 'REFUND' ? '↩️' : '⭐'}
                         </div>
-                      ))}
+                      <div style={{ flex: 1 }}>
+                        <p style={{
+                          fontWeight: '500',
+                          color: '#0f172a',
+                          margin: 0
+                        }}>{activity.description}</p>
+                        <p style={{
+                          fontSize: '12px',
+                          color: '#64748b',
+                          margin: 0
+                        }}>
+                          {new Date(activity.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{
+                          fontWeight: '600',
+                          color: activity.amount > 0 ? '#10b981' : '#ef4444',
+                          margin: 0
+                        }}>
+                          {activity.amount > 0 ? '+' : ''}{activity.amount} pts
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                    Recent Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {recentHistory.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                      <p className="text-slate-500">No recent activity</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {recentHistory.map((activity: any, index: number) => (
-                        <div key={index} className="flex items-center space-x-4 p-3 bg-slate-50 rounded-lg">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            activity.type === 'SUBSCRIPTION' ? 'bg-blue-100' :
-                            activity.type === 'DOWNLOAD' ? 'bg-green-100' :
-                            activity.type === 'REFUND' ? 'bg-orange-100' :
-                            'bg-slate-100'
-                          }`}>
-                            {activity.type === 'SUBSCRIPTION' ? (
-                              <Plus className="w-4 h-4 text-blue-600" />
-                            ) : activity.type === 'DOWNLOAD' ? (
-                              <Download className="w-4 h-4 text-green-600" />
-                            ) : activity.type === 'REFUND' ? (
-                              <ArrowRight className="w-4 h-4 text-orange-600" />
-                            ) : (
-                              <Star className="w-4 h-4 text-slate-600" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-slate-900">{activity.description}</p>
-                            <p className="text-sm text-slate-600">
-                              {new Date(activity.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className={`font-semibold ${
-                              activity.amount > 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
-                              {activity.amount > 0 ? '+' : ''}{activity.amount} pts
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://stock-media-saas.vercel.app/sitemap.xml
+
+# Disallow admin and API routes for better SEO
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /_next/
+Disallow: /login
+Disallow: /register
+
+# Allow important pages
+Allow: /
+Allow: /sitemap.xml
