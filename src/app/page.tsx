@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
