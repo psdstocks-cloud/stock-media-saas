@@ -329,7 +329,7 @@ export default function BrowsePage() {
         setOrderStatus('PENDING')
         setProcessingTime(0)
         setUserBalance(prev => prev - stockInfo.cost)
-        // Don't redirect - show timer on same page
+        // No success message - go straight to processing
       } else {
         console.log('Order failed:', data.error)
         setError(data.error || 'Failed to place order')
@@ -870,6 +870,201 @@ export default function BrowsePage() {
                 </div>
               </div>
 
+              {/* Order Processing Status */}
+              {currentOrder && (orderStatus === 'PENDING' || orderStatus === 'PROCESSING') ? (
+                <div style={{
+                  background: '#fef3c7',
+                  border: '1px solid #fde68a',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    border: '4px solid #e2e8f0',
+                    borderTop: '4px solid #2563eb',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 16px'
+                  }}></div>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#0f172a',
+                    marginBottom: '8px'
+                  }}>
+                    Processing Your Order
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#64748b',
+                    marginBottom: '12px'
+                  }}>
+                    {orderStatus === 'PENDING' ? 'Order placed, waiting to start...' : 'Downloading from stock site...'}
+                  </p>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 12px',
+                    background: '#fbbf24',
+                    borderRadius: '16px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#92400e',
+                    marginBottom: '12px'
+                  }}>
+                    <Clock style={{ width: '14px', height: '14px' }} />
+                    Processing: {Math.floor(processingTime / 60)}m {processingTime % 60}s
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => {
+                        console.log('Cancel order clicked')
+                        setOrderStatus('FAILED')
+                        setError('Order processing cancelled by user')
+                        setCurrentOrder(null)
+                        setDownloadUrl('')
+                        setOrderSuccess(false)
+                        setProcessingTime(0)
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        background: '#dc2626',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Cancel Order
+                    </button>
+                  </div>
+                </div>
+              ) : currentOrder && (orderStatus === 'READY' || orderStatus === 'COMPLETED') ? (
+                <div style={{
+                  background: '#dcfce7',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: '#059669',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px'
+                  }}>
+                    <CheckCircle style={{ width: '30px', height: '30px', color: 'white' }} />
+                  </div>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#0f172a',
+                    marginBottom: '8px'
+                  }}>
+                    Download Ready!
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#64748b',
+                    marginBottom: '16px'
+                  }}>
+                    Your file is ready for download
+                  </p>
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #059669, #047857)',
+                      color: 'white',
+                      textDecoration: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Download style={{ width: '16px', height: '16px' }} />
+                    Download File
+                  </a>
+                </div>
+              ) : currentOrder && orderStatus === 'FAILED' ? (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: '#dc2626',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px'
+                  }}>
+                    <XCircle style={{ width: '30px', height: '30px', color: 'white' }} />
+                  </div>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#0f172a',
+                    marginBottom: '8px'
+                  }}>
+                    Order Failed
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#64748b',
+                    marginBottom: '16px'
+                  }}>
+                    {error || 'Something went wrong with your order'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setCurrentOrder(null)
+                      setOrderStatus('')
+                      setDownloadUrl('')
+                      setOrderSuccess(false)
+                      setProcessingTime(0)
+                      setError('')
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      background: '#6b7280',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : null}
+
               {/* Action Buttons */}
               <div style={{
                 display: 'flex',
@@ -881,6 +1076,11 @@ export default function BrowsePage() {
                     setStockInfo(null)
                     setUrl('')
                     setError('')
+                    setCurrentOrder(null)
+                    setOrderStatus('')
+                    setDownloadUrl('')
+                    setOrderSuccess(false)
+                    setProcessingTime(0)
                   }}
                   style={{
                     padding: '12px 24px',
@@ -896,38 +1096,40 @@ export default function BrowsePage() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={() => {
-                    console.log('Confirm Order button clicked', { 
-                      isOrdering, 
-                      userBalance, 
-                      cost: stockInfo.cost,
-                      disabled: isOrdering || userBalance < stockInfo.cost 
-                    })
-                    handlePlaceOrder()
-                  }}
-                  disabled={isOrdering || userBalance < stockInfo.cost}
-                  style={{
-                    padding: '12px 24px',
-                    background: isOrdering || userBalance < stockInfo.cost 
-                      ? '#9ca3af' 
-                      : 'linear-gradient(135deg, #059669, #047857)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: isOrdering || userBalance < stockInfo.cost 
-                      ? 'not-allowed' 
-                      : 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  {isOrdering ? '⏳' : '✅'} {isOrdering ? 'Placing Order...' : 'Confirm Order'}
-                </button>
+                {!currentOrder && (
+                  <button
+                    onClick={() => {
+                      console.log('Confirm Order button clicked', { 
+                        isOrdering, 
+                        userBalance, 
+                        cost: stockInfo.cost,
+                        disabled: isOrdering || userBalance < stockInfo.cost 
+                      })
+                      handlePlaceOrder()
+                    }}
+                    disabled={isOrdering || userBalance < stockInfo.cost}
+                    style={{
+                      padding: '12px 24px',
+                      background: isOrdering || userBalance < stockInfo.cost 
+                        ? '#9ca3af' 
+                        : 'linear-gradient(135deg, #059669, #047857)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: isOrdering || userBalance < stockInfo.cost 
+                        ? 'not-allowed' 
+                        : 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    {isOrdering ? '⏳' : '✅'} {isOrdering ? 'Placing Order...' : 'Confirm Order'}
+                  </button>
+                )}
               </div>
 
               {userBalance < stockInfo.cost && (
@@ -948,192 +1150,6 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {/* Order Processing Timer and Download Section */}
-        {currentOrder && (
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            padding: '32px',
-            marginTop: '32px',
-            textAlign: 'center'
-          }}>
-            {orderStatus === 'PENDING' || orderStatus === 'PROCESSING' ? (
-              <div>
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  border: '4px solid #e2e8f0',
-                  borderTop: '4px solid #2563eb',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite',
-                  margin: '0 auto 24px'
-                }}></div>
-                <h3 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#0f172a',
-                  marginBottom: '8px'
-                }}>
-                  Processing Your Order
-                </h3>
-                <p style={{
-                  fontSize: '16px',
-                  color: '#64748b',
-                  marginBottom: '16px'
-                }}>
-                  {orderStatus === 'PENDING' ? 'Order placed, waiting to start...' : 'Downloading from stock site...'}
-                </p>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  background: '#fef3c7',
-                  border: '1px solid #fde68a',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#92400e',
-                  marginBottom: '16px'
-                }}>
-                  <Clock style={{ width: '16px', height: '16px' }} />
-                  Processing: {Math.floor(processingTime / 60)}m {processingTime % 60}s
-                </div>
-                <div>
-                  <button
-                    onClick={() => {
-                      console.log('Cancel order clicked')
-                      setOrderStatus('FAILED')
-                      setError('Order processing cancelled by user')
-                      setCurrentOrder(null)
-                      setDownloadUrl('')
-                      setOrderSuccess(false)
-                      setProcessingTime(0)
-                    }}
-                    style={{
-                      padding: '8px 16px',
-                      background: '#dc2626',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      fontWeight: '500'
-                    }}
-                  >
-                    Cancel Order
-                  </button>
-                </div>
-              </div>
-            ) : orderStatus === 'READY' || orderStatus === 'COMPLETED' ? (
-              <div>
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  background: '#dcfce7',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 24px'
-                }}>
-                  <CheckCircle style={{ width: '40px', height: '40px', color: '#059669' }} />
-                </div>
-                <h3 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#0f172a',
-                  marginBottom: '8px'
-                }}>
-                  Download Ready!
-                </h3>
-                <p style={{
-                  fontSize: '16px',
-                  color: '#64748b',
-                  marginBottom: '24px'
-                }}>
-                  Your file has been processed and is ready for download.
-                </p>
-                {downloadUrl && (
-                  <a
-                    href={downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px 24px',
-                      background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                      color: 'white',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontSize: '16px',
-                      fontWeight: '500',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <Download style={{ width: '20px', height: '20px' }} />
-                    Download File
-                  </a>
-                )}
-              </div>
-            ) : orderStatus === 'FAILED' ? (
-              <div>
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  background: '#fee2e2',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 24px'
-                }}>
-                  <XCircle style={{ width: '40px', height: '40px', color: '#dc2626' }} />
-                </div>
-                <h3 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#0f172a',
-                  marginBottom: '8px'
-                }}>
-                  Order Failed
-                </h3>
-                <p style={{
-                  fontSize: '16px',
-                  color: '#64748b',
-                  marginBottom: '24px'
-                }}>
-                  Sorry, there was an issue processing your order. Please try again.
-                </p>
-                <button
-                  onClick={() => {
-                    setCurrentOrder(null)
-                    setOrderStatus('')
-                    setDownloadUrl('')
-                    setProcessingTime(0)
-                    setError('')
-                  }}
-                  style={{
-                    padding: '12px 24px',
-                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  Try Again
-                </button>
-              </div>
-            ) : null}
-          </div>
-        )}
       </div>
     </div>
   )
