@@ -1,0 +1,177 @@
+// Production Prisma schema for PostgreSQL
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and profile
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  password  String?  // Add password field
+  role      String   @default("USER") // USER, ADMIN, SUPER_ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+  orders        Order[]
+  pointsHistory PointsHistory[]
+  apiKeys       ApiKey[]
+  pointsBalance PointsBalance?
+
+  @@map("users")
+}
+
+// Subscription plans
+model SubscriptionPlan {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  price       Float   // Monthly price in USD
+  points      Int     // Points included per month
+  rolloverLimit Int   // Maximum points that can rollover (percentage of monthly points)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+// User subscriptions
+model Subscription {
+  id                String             @id @default(cuid())
+  userId            String
+  planId            String
+  stripeCustomerId  String?            @unique
+  stripeSubscriptionId String?         @unique
+  status            String             @default("ACTIVE") // ACTIVE, CANCELED, PAST_DUE, UNPAID, INCOMPLETE, INCOMPLETE_EXPIRED, TRIALING
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd Boolean            @default(false)
+  canceledAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+// Points management
+model PointsBalance {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  currentPoints   Int      @default(0)
+  totalPurchased  Int      @default(0) // Total points ever purchased
+  totalUsed       Int      @default(0) // Total points ever used
+  lastRollover    DateTime? // Last time points were rolled over
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("points_balances")
+}
+
+// Points transaction history
+model PointsHistory {
+  id          String        @id @default(cuid())
+  userId      String
+  type        String // SUBSCRIPTION, PURCHASE, ROLLOVER, DOWNLOAD, REFUND, BONUS, ADMIN_ADJUSTMENT
+  amount      Int           // Positive for additions, negative for deductions
+  description String?
+  orderId     String?       // Reference to order if applicable
+  createdAt   DateTime      @default(now())
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@map("points_history")
+}
+
+// Stock sites configuration
+model StockSite {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  displayName String
+  cost        Float   // Cost in points
+  isActive    Boolean @default(true)
+  category    String? // e.g., "photos", "videos", "music"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orders Order[]
+
+  @@map("stock_sites")
+}
+
+// Orders for stock media downloads
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  stockSiteId     String
+  stockItemId     String      // ID from the stock site
+  stockItemUrl    String?     // Original URL if provided
+  title           String?
+  cost            Float       // Points cost
+  status          String      @default("PENDING") // PENDING, PROCESSING, READY, COMPLETED, FAILED, CANCELED, REFUNDED
+  taskId          String?     // Task ID from nehtw.com API
+  downloadUrl     String?     // Final download URL
+  fileName        String?
+  fileSize        Int?        // File size in bytes
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stockSite StockSite  @relation(fields: [stockSiteId], references: [id])
+  pointsHistory PointsHistory[]
+
+  @@map("orders")
+}
+
+// API keys for nehtw.com integration
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   @unique
+  isActive  Boolean  @default(true)
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+// System settings
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("string") // string, number, boolean, json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}

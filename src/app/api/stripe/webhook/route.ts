@@ -1,0 +1,174 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { stripe } from '@/lib/stripe'
+import { prisma } from '@/lib/prisma'
+import { PointsManager } from '@/lib/points'
+import Stripe from 'stripe'
+
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.text()
+    const signature = request.headers.get('stripe-signature')!
+
+    let event: Stripe.Event
+
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err)
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        
+        if (session.mode === 'subscription') {
+          await handleSubscriptionCreated(session)
+        }
+        break
+      }
+
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription
+        await handleSubscriptionUpdated(subscription)
+        break
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription
+        await handleSubscriptionDeleted(subscription)
+        break
+      }
+
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as Stripe.Invoice
+        
+        if (invoice.subscription) {
+          await handleSubscriptionRenewal(invoice)
+        }
+        break
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice
+        await handlePaymentFailed(invoice)
+        break
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`)
+    }
+
+    return NextResponse.json({ received: true })
+  } catch (error) {
+    console.error('Webhook error:', error)
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
+  }
+}
+
+async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
+  const { userId, planId } = session.metadata!
+  const subscriptionId = session.subscription as string
+
+  // Get the subscription details from Stripe
+  const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
+  const plan = await prisma.subscriptionPlan.findUnique({
+    where: { id: planId },
+  })
+
+  if (!plan) {
+    console.error('Plan not found:', planId)
+    return
+  }
+
+  // Create or update subscription in database
+  await prisma.subscription.upsert({
+    where: { stripeSubscriptionId: subscriptionId },
+    update: {
+      status: 'ACTIVE',
+      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+    },
+    create: {
+      userId: userId!,
+      planId: planId!,
+      stripeCustomerId: stripeSubscription.customer as string,
+      stripeSubscriptionId: subscriptionId,
+      status: 'ACTIVE',
+      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+    },
+  })
+
+  // Add initial points to user
+  await PointsManager.addPoints(
+    userId!,
+    plan.points,
+    'SUBSCRIPTION',
+    `Initial subscription points for ${plan.name} plan`
+  )
+}
+
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  const status = subscription.status === 'active' ? 'ACTIVE' : 'CANCELED'
+
+  await prisma.subscription.updateMany({
+    where: { stripeSubscriptionId: subscription.id },
+    data: {
+      status: status as any,
+      currentPeriodStart: new Date(subscription.current_period_start * 1000),
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    },
+  })
+}
+
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+  await prisma.subscription.updateMany({
+    where: { stripeSubscriptionId: subscription.id },
+    data: {
+      status: 'CANCELED',
+      canceledAt: new Date(),
+    },
+  })
+}
+
+async function handleSubscriptionRenewal(invoice: Stripe.Invoice) {
+  const subscription = await prisma.subscription.findFirst({
+    where: { stripeSubscriptionId: invoice.subscription as string },
+    include: { plan: true },
+  })
+
+  if (!subscription) {
+    console.error('Subscription not found for renewal:', invoice.subscription)
+    return
+  }
+
+  // Process subscription renewal with rollover
+  await PointsManager.processSubscriptionRenewal(
+    subscription.userId,
+    subscription.planId,
+    subscription.plan.points
+  )
+
+  // Update subscription period
+  await prisma.subscription.update({
+    where: { id: subscription.id },
+    data: {
+      currentPeriodStart: new Date(invoice.period_start * 1000),
+      currentPeriodEnd: new Date(invoice.period_end * 1000),
+    },
+  })
+}
+
+async function handlePaymentFailed(invoice: Stripe.Invoice) {
+  await prisma.subscription.updateMany({
+    where: { stripeSubscriptionId: invoice.subscription as string },
+    data: {
+      status: 'PAST_DUE',
+    },
+  })
+}

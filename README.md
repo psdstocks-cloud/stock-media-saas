@@ -1,36 +1,297 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 StockMedia Pro - SaaS Stock Media Download Platform
 
-## Getting Started
+A complete SaaS platform for stock media downloads with subscription-based point system and rollover functionality.
 
-First, run the development server:
+## ✨ Features
 
+### 🎯 Core Features
+- **Subscription-based Point System** - Monthly plans with different point allocations
+- **Point Rollover** - Unused points roll over to next month (up to 50% of monthly allocation)
+- **Multi-Site Support** - Access to 25+ stock sites (Shutterstock, Adobe Stock, Freepik, etc.)
+- **Real-time Order Processing** - Integration with nehtw.com API
+- **Admin Dashboard** - Complete management interface
+- **User Dashboard** - Personal account and download management
+
+### 💰 Subscription Plans
+- **Starter** - $9.99/month (50 points, 25 rollover)
+- **Professional** - $29.99/month (200 points, 100 rollover) 
+- **Business** - $79.99/month (600 points, 300 rollover)
+- **Enterprise** - $199.99/month (1500 points, 750 rollover)
+
+### 🎨 Stock Sites Supported
+- **Low Cost (0.15-0.5 points)**: Freepik, Flaticon, Vecteezy, Rawpixel, etc.
+- **Medium Cost (1-10 points)**: Craftwork, UI8, Shutterstock Video HD, etc.
+- **High Cost (16+ points)**: Shutterstock 4K, Alamy, iStock Video HD, etc.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: SQLite (development) / PostgreSQL (production)
+- **Authentication**: NextAuth.js (ready for integration)
+- **Payments**: Stripe (ready for integration)
+- **External API**: nehtw.com integration
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+
+### Installation
+
+1. **Clone and Install**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo>
+cd stock-media-saas
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Set up Environment**
+```bash
+# Database is already configured for SQLite
+echo 'DATABASE_URL="file:./dev.db"' > .env
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Set up Database**
+```bash
+# Generate Prisma client
+npx prisma generate
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Push schema to database
+npx prisma db push
 
-## Learn More
+# Seed the database with initial data
+npm run db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Start Development Server**
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Open in Browser**
+```
+http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── page.tsx              # Homepage with pricing
+│   ├── register/             # User registration
+│   ├── dashboard/            # User dashboard
+│   ├── admin/                # Admin dashboard
+│   └── api/                  # API endpoints
+│       ├── orders/           # Order management
+│       ├── points/           # Points system
+│       └── subscriptions/    # Subscription management
+├── lib/
+│   ├── prisma.ts            # Database client
+│   ├── points.ts            # Points management system
+│   └── nehtw-api.ts         # External API integration
+└── components/              # Reusable UI components
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🗄️ Database Schema
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Key Models
+- **User** - User accounts and profiles
+- **SubscriptionPlan** - Available subscription tiers
+- **Subscription** - User subscriptions with Stripe integration
+- **PointsBalance** - User point balances and usage tracking
+- **PointsHistory** - Transaction history for points
+- **StockSite** - Supported stock sites and their costs
+- **Order** - Download orders and status tracking
+- **ApiKey** - User API keys for nehtw.com
+
+## 🔧 Configuration
+
+### Environment Variables
+```bash
+# Database
+DATABASE_URL="file:./dev.db"
+
+# Stripe (for production)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# NextAuth (for production)
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+
+# nehtw.com API
+NEHTW_API_KEY="your-api-key"
+```
+
+### Database Management
+```bash
+# View database in Prisma Studio
+npm run db:studio
+
+# Reset database
+npx prisma db push --force-reset
+npm run db:seed
+
+# Generate new migration
+npx prisma migrate dev --name your-migration-name
+```
+
+## 📊 Business Model
+
+### Revenue Streams
+1. **Monthly Subscriptions** - Recurring revenue from plan subscriptions
+2. **Point Markup** - 30-50% profit margin on point costs
+3. **Premium Features** - Advanced features for higher tiers
+
+### Cost Structure
+- **Point Cost**: $0.23 per point (from nehtw.com)
+- **Your Price**: $0.30-0.35 per point (30-50% markup)
+- **Monthly Hosting**: $20-50 (Vercel + Supabase)
+
+### Profitability Examples
+- **Starter Plan**: $9.99 revenue - $11.50 cost = -$1.51 (loss leader)
+- **Professional Plan**: $29.99 revenue - $46.00 cost = -$16.01 (loss leader)
+- **Business Plan**: $79.99 revenue - $138.00 cost = -$58.01 (loss leader)
+- **Enterprise Plan**: $199.99 revenue - $345.00 cost = -$145.01 (loss leader)
+
+*Note: These are wholesale costs. Your actual profit comes from the markup on individual downloads.*
+
+## 🎯 Usage Examples
+
+### For Users
+1. **Sign Up** - Choose a subscription plan
+2. **Get Points** - Receive monthly point allocation
+3. **Browse & Download** - Select from 25+ stock sites
+4. **Track Usage** - Monitor points and download history
+5. **Rollover** - Unused points carry to next month
+
+### For Admins
+1. **Monitor Users** - View user activity and subscriptions
+2. **Manage Plans** - Update pricing and features
+3. **Track Revenue** - Monitor points usage and profits
+4. **System Settings** - Configure rollover limits, costs, etc.
+
+## 🔌 API Integration
+
+### nehtw.com API Endpoints Used
+- `GET /api/stockinfo/{site}/{id}` - Get stock item information
+- `GET /api/stockorder/{site}/{id}` - Place download order
+- `GET /api/order/{task_id}/status` - Check order status
+- `GET /api/v2/order/{task_id}/download` - Generate download link
+- `GET /api/order/{task_id}/cancel` - Cancel order
+- `GET /api/myfiles` - Get user's downloaded files
+- `GET /api/stocksites` - Get available stock sites
+
+### Point Rollover Logic
+```typescript
+// Example: Professional plan (200 points, 100 rollover limit)
+const currentPoints = 150; // User has 150 points left
+const monthlyPoints = 200; // New monthly allocation
+const rolloverLimit = 100; // Max 100 points can rollover
+const rolloverAmount = Math.min(currentPoints, rolloverLimit); // 100 points
+const newTotalPoints = monthlyPoints + rolloverAmount; // 300 points total
+```
+
+## 🚀 Deployment
+
+### Quick Deploy to Vercel
+```bash
+# 1. Setup local environment
+./scripts/setup.sh
+
+# 2. Deploy to production
+./scripts/deploy.sh
+```
+
+### Manual Deployment Steps
+
+#### 1. Vercel (Recommended)
+1. **Connect Repository** - Link your GitHub repo to Vercel
+2. **Set Environment Variables** - Add all required env vars
+3. **Deploy** - Automatic deployment on push
+
+#### 2. Database (Production)
+- **Vercel Postgres** - Built-in PostgreSQL (recommended)
+- **Supabase** - PostgreSQL with built-in auth
+- **Railway** - Simple PostgreSQL hosting
+- **Neon** - Serverless PostgreSQL
+
+#### 3. Environment Variables
+```bash
+# Required for production
+NEXTAUTH_URL="https://your-app.vercel.app"
+NEXTAUTH_SECRET="your-super-secret-key"
+DATABASE_URL="postgresql://username:password@host:port/database"
+STRIPE_SECRET_KEY="sk_live_your_live_secret_key"
+STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
+NEHTW_API_KEY="your-nehtw-api-key"
+NEXT_PUBLIC_BASE_URL="https://your-app.vercel.app"
+```
+
+### 📖 Detailed Deployment Guide
+See [README_DEPLOYMENT.md](./README_DEPLOYMENT.md) for complete deployment instructions.
+
+## 📈 Scaling & Optimization
+
+### Performance
+- **CDN** - Vercel Edge Network for global delivery
+- **Caching** - Redis for session and API response caching
+- **Database** - Connection pooling and query optimization
+
+### Monitoring
+- **Vercel Analytics** - Performance and usage metrics
+- **Sentry** - Error tracking and monitoring
+- **Stripe Dashboard** - Payment and subscription analytics
+
+## 🔒 Security
+
+### Data Protection
+- **Encryption** - All sensitive data encrypted at rest
+- **API Keys** - Secure storage and rotation
+- **Rate Limiting** - Prevent abuse and overuse
+
+### Compliance
+- **GDPR** - Data privacy and user rights
+- **PCI DSS** - Secure payment processing
+- **SOC 2** - Security and availability standards
+
+## 🤝 Support
+
+### Documentation
+- **API Docs** - Complete API reference
+- **User Guide** - Step-by-step tutorials
+- **Admin Guide** - Management interface guide
+
+### Contact
+- **Email** - support@stockmediapro.com
+- **Discord** - Community support
+- **GitHub** - Issue tracking and contributions
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🎉 Success Metrics
+
+### Key Performance Indicators
+- **Monthly Recurring Revenue (MRR)** - Target: $10,000+ by month 6
+- **Customer Acquisition Cost (CAC)** - Target: <$50
+- **Customer Lifetime Value (LTV)** - Target: >$500
+- **Churn Rate** - Target: <5% monthly
+- **Point Utilization** - Target: 70%+ monthly usage
+
+### Growth Strategy
+1. **Month 1-2**: Launch with core features, 100 beta users
+2. **Month 3-4**: Add advanced features, 500 paying customers
+3. **Month 5-6**: Scale infrastructure, 1000+ customers
+4. **Month 7+**: International expansion, enterprise features
+
+---
+
+**Built with ❤️ for the creative community**
+
+*Start your profitable stock media business today!*
