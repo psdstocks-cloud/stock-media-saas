@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    console.log('Extracted site:', site, 'id:', id, 'from URL:', url)
+    
     const api = new NehtwAPI(apiKey)
     const stockInfo = await api.getStockInfo(site, id, url)
 
@@ -68,7 +70,8 @@ function extractSiteAndId(url: string): { site: string | null; id: string | null
 
     // Shutterstock
     if (hostname.includes('shutterstock.com')) {
-      const match = url.match(/\/image-vector\/([^\/\?]+)/)
+      // Extract ID from the end of the URL (e.g., 2275780825 from letter-m-love-monogram-modern-logo-2275780825)
+      const match = url.match(/(\d+)$/)
       if (match) {
         return { site: 'shutterstock', id: match[1] }
       }
