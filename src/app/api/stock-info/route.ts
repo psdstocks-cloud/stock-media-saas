@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
         site,
         id,
         url,
-        title: stockInfo.title,
-        cost: stockInfo.cost,
-        imageUrl: stockInfo.imageUrl,
-        description: stockInfo.description
+        title: stockInfo.data?.title || 'Untitled',
+        cost: stockInfo.data?.cost || 0,
+        imageUrl: stockInfo.data?.image || '',
+        description: stockInfo.data?.name || ''
       }
     })
   } catch (error) {
