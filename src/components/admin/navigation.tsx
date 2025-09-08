@@ -12,6 +12,7 @@ import {
   BarChart3,
   CreditCard
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -24,6 +25,30 @@ const navigation = [
 
 export function AdminNavigation() {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <span className="text-sm text-gray-600">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+    )
+  }
 
   return (
     <nav className="bg-white shadow-sm border-b">

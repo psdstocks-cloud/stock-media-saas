@@ -55,12 +55,23 @@ export async function POST(request: NextRequest) {
       })
 
       // Initialize points balance with subscription points
-      await PointsManager.addPoints(
-        user.id,
-        plan.points,
-        'SUBSCRIPTION',
-        `Initial subscription points for ${plan.name} plan`
-      )
+      const pointsBalance = await tx.pointsBalance.create({
+        data: {
+          userId: user.id,
+          currentPoints: plan.points,
+          totalPurchased: plan.points,
+        }
+      })
+
+      // Create points history entry
+      await tx.pointsHistory.create({
+        data: {
+          userId: user.id,
+          type: 'SUBSCRIPTION',
+          amount: plan.points,
+          description: `Initial subscription points for ${plan.name} plan`,
+        }
+      })
 
       return { user, subscription }
     })
