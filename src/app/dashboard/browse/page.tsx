@@ -3,27 +3,6 @@
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Eye, 
-  Clock, 
-  Star,
-  Grid3X3,
-  List,
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  Image as ImageIcon,
-  Video,
-  Music
-} from 'lucide-react'
 
 interface StockSite {
   id: string
@@ -180,21 +159,40 @@ export default function BrowsePage() {
   const getTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'video':
-        return <Video className="w-4 h-4" />
+        return '🎥'
       case 'audio':
       case 'music':
-        return <Music className="w-4 h-4" />
+        return '🎵'
       default:
-        return <ImageIcon className="w-4 h-4" />
+        return '🖼️'
     }
   }
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600 text-lg">Loading...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '128px',
+            height: '128px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }}></div>
+          <p style={{
+            marginTop: '16px',
+            color: '#64748b',
+            fontSize: '18px'
+          }}>Loading...</p>
         </div>
       </div>
     )
@@ -205,66 +203,189 @@ export default function BrowsePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 0'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <button
                 onClick={() => router.back()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: 'transparent',
+                  color: '#64748b',
+                  border: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
+                ← Back
+              </button>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: 'linear-gradient(135deg, #2563eb, #4f46e5)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
               </div>
-              <h1 className="text-xl font-bold text-slate-900">Browse Media</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>Browse Media</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-slate-600">
-                <span className="font-medium">{userBalance}</span> points available
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <div style={{
+                fontSize: '14px',
+                color: '#64748b'
+              }}>
+                <span style={{ fontWeight: '500' }}>{userBalance}</span> points available
               </div>
-              <Button variant="outline" size="sm">
-                <Eye className="w-4 h-4 mr-2" />
-                My Orders
-              </Button>
+              <button
+                onClick={() => router.push('/dashboard/orders')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  background: 'white',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                👁️ My Orders
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 1rem'
+      }}>
         {/* Site Selection */}
         {!selectedSiteData && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Choose a Stock Site</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div style={{ marginBottom: '32px' }}>
+            <h2 style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              color: '#0f172a',
+              marginBottom: '24px'
+            }}>Choose a Stock Site</h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '24px'
+            }}>
               {stockSites.map((site) => (
-                <Card 
-                  key={site.id} 
-                  className="cursor-pointer hover:shadow-lg transition-all duration-300 border-0 shadow-md"
+                <div
+                  key={site.id}
                   onClick={() => setSelectedSiteData(site)}
+                  style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    padding: '24px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    border: 'none'
+                  }}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-slate-900">{site.displayName}</h3>
-                      <Badge variant={site.isActive ? "success" : "secondary"}>
-                        {site.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                    <p className="text-slate-600 mb-4 capitalize">{site.category}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-slate-900">{site.cost} pts</span>
-                      <Button size="sm" disabled={!site.isActive}>
-                        Browse
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px'
+                  }}>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      color: '#0f172a'
+                    }}>{site.displayName}</h3>
+                    <span style={{
+                      fontSize: '12px',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      background: site.isActive ? '#dcfce7' : '#f1f5f9',
+                      color: site.isActive ? '#166534' : '#64748b'
+                    }}>
+                      {site.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <p style={{
+                    color: '#64748b',
+                    marginBottom: '16px',
+                    textTransform: 'capitalize'
+                  }}>{site.category}</p>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span style={{
+                      fontSize: '24px',
+                      fontWeight: 'bold',
+                      color: '#0f172a'
+                    }}>{site.cost} pts</span>
+                    <button
+                      disabled={!site.isActive}
+                      style={{
+                        padding: '8px 16px',
+                        background: site.isActive ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#9ca3af',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: site.isActive ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Browse
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -272,196 +393,413 @@ export default function BrowsePage() {
 
         {/* Search Interface */}
         {selectedSiteData && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px'
+            }}>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{selectedSiteData.displayName}</h2>
-                <p className="text-slate-600">Search from millions of {selectedSiteData.category} files</p>
+                <h2 style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  marginBottom: '8px'
+                }}>{selectedSiteData.displayName}</h2>
+                <p style={{ color: '#64748b' }}>Search from millions of {selectedSiteData.category} files</p>
               </div>
-              <Button
-                variant="outline"
+              <button
                 onClick={() => setSelectedSiteData(null)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  background: 'white',
+                  color: '#374151',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Change Site
-              </Button>
+              </button>
             </div>
 
-            <form onSubmit={handleSearch} className="mb-6">
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Input
+            <form onSubmit={handleSearch} style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <input
                     type="text"
                     placeholder="Search for images, videos, or audio..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="text-lg py-3"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box'
+                    }}
                   />
                 </div>
-                <Button
+                <button
                   type="submit"
                   disabled={isSearching || !searchQuery.trim()}
-                  className="px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  style={{
+                    padding: '12px 24px',
+                    background: isSearching || !searchQuery.trim() ? '#9ca3af' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: isSearching || !searchQuery.trim() ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
                 >
-                  {isSearching ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Search className="w-5 h-5" />
-                  )}
-                </Button>
-                <Button
+                  {isSearching ? '⏳' : '🔍'} Search
+                </button>
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
+                  style={{
+                    padding: '12px 16px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: 'white',
+                    color: '#374151',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <Filter className="w-5 h-5" />
-                </Button>
+                  🔧 Filters
+                </button>
               </div>
             </form>
 
             {/* Filters */}
             {showFilters && (
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
-                      <select
-                        value={filters.type}
-                        onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                        className="w-full p-2 border border-slate-300 rounded-lg"
-                      >
-                        <option value="all">All Types</option>
-                        <option value="image">Images</option>
-                        <option value="video">Videos</option>
-                        <option value="audio">Audio</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Sort By</label>
-                      <select
-                        value={filters.sortBy}
-                        onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                        className="w-full p-2 border border-slate-300 rounded-lg"
-                      >
-                        <option value="relevance">Relevance</option>
-                        <option value="newest">Newest</option>
-                        <option value="popular">Most Popular</option>
-                        <option value="size">File Size</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Price Range</label>
-                      <select
-                        value={filters.priceRange}
-                        onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
-                        className="w-full p-2 border border-slate-300 rounded-lg"
-                      >
-                        <option value="all">All Prices</option>
-                        <option value="free">Free</option>
-                        <option value="low">Low (1-10 pts)</option>
-                        <option value="medium">Medium (11-50 pts)</option>
-                        <option value="high">High (50+ pts)</option>
-                      </select>
-                    </div>
+              <div style={{
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                padding: '24px',
+                marginBottom: '24px'
+              }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '16px'
+                }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>Type</label>
+                    <select
+                      value={filters.type}
+                      onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="all">All Types</option>
+                      <option value="image">Images</option>
+                      <option value="video">Videos</option>
+                      <option value="audio">Audio</option>
+                    </select>
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>Sort By</label>
+                    <select
+                      value={filters.sortBy}
+                      onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="relevance">Relevance</option>
+                      <option value="newest">Newest</option>
+                      <option value="popular">Most Popular</option>
+                      <option value="size">File Size</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px'
+                    }}>Price Range</label>
+                    <select
+                      value={filters.priceRange}
+                      onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <option value="all">All Prices</option>
+                      <option value="free">Free</option>
+                      <option value="low">Low (1-10 pts)</option>
+                      <option value="medium">Medium (11-50 pts)</option>
+                      <option value="high">High (50+ pts)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* View Controls */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-slate-600">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px'
+              }}>
+                <span style={{
+                  fontSize: '14px',
+                  color: '#64748b'
+                }}>
                   {searchResults.length} results found
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <button
                   onClick={() => setViewMode('grid')}
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    background: viewMode === 'grid' ? '#2563eb' : 'white',
+                    color: viewMode === 'grid' ? 'white' : '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
+                  ⊞ Grid
+                </button>
+                <button
                   onClick={() => setViewMode('list')}
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    background: viewMode === 'list' ? '#2563eb' : 'white',
+                    color: viewMode === 'list' ? 'white' : '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <List className="w-4 h-4" />
-                </Button>
+                  ☰ List
+                </button>
               </div>
             </div>
 
             {/* Search Results */}
             {searchResults.length === 0 && searchQuery && !isSearching && (
-              <div className="text-center py-12">
-                <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">No results found</h3>
-                <p className="text-slate-600">Try adjusting your search terms or filters</p>
+              <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  color: '#0f172a',
+                  marginBottom: '8px'
+                }}>No results found</h3>
+                <p style={{ color: '#64748b' }}>Try adjusting your search terms or filters</p>
               </div>
             )}
 
             {searchResults.length > 0 && (
-              <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-                : 'space-y-4'
-              }>
+              <div style={{
+                display: viewMode === 'grid' 
+                  ? 'grid' 
+                  : 'flex',
+                gridTemplateColumns: viewMode === 'grid' 
+                  ? 'repeat(auto-fit, minmax(250px, 1fr))' 
+                  : 'none',
+                flexDirection: viewMode === 'list' ? 'column' : 'row',
+                gap: '24px'
+              }}>
                 {searchResults.map((result) => (
-                  <Card key={result.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
-                    <CardContent className="p-0">
-                      <div className="relative">
-                        <div className="aspect-square bg-slate-100 rounded-t-lg overflow-hidden">
-                          <img
-                            src={result.thumbnailUrl}
-                            alt={result.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="absolute top-2 left-2">
-                          <Badge variant="secondary" className="bg-white/90 text-slate-700">
-                            {getTypeIcon(result.type)}
-                            <span className="ml-1 capitalize">{result.type}</span>
-                          </Badge>
-                        </div>
-                        <div className="absolute top-2 right-2">
-                          <Badge variant="secondary" className="bg-white/90 text-slate-700">
-                            {formatFileSize(result.sizeInBytes)}
-                          </Badge>
-                        </div>
+                  <div key={result.id} style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    border: 'none'
+                  }}>
+                    <div style={{ position: 'relative' }}>
+                      <div style={{
+                        aspectRatio: '1',
+                        background: '#f1f5f9',
+                        borderRadius: '12px 12px 0 0',
+                        overflow: 'hidden'
+                      }}>
+                        <img
+                          src={result.thumbnailUrl}
+                          alt={result.title}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
-                          {result.title}
-                        </h3>
-                        <p className="text-sm text-slate-600 mb-3 line-clamp-2">
-                          {result.description}
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px'
+                      }}>
+                        <span style={{
+                          fontSize: '12px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          color: '#374151',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          {getTypeIcon(result.type)}
+                          <span style={{ textTransform: 'capitalize' }}>{result.type}</span>
+                        </span>
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px'
+                      }}>
+                        <span style={{
+                          fontSize: '12px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          color: '#374151'
+                        }}>
+                          {formatFileSize(result.sizeInBytes)}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                      <h3 style={{
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        marginBottom: '8px',
+                        fontSize: '16px',
+                        lineHeight: '1.4',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {result.title}
+                      </h3>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#64748b',
+                        marginBottom: '12px',
+                        lineHeight: '1.4',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {result.description}
+                      </p>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}>
+                        <span style={{
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          color: '#0f172a'
+                        }}>
+                          {selectedSiteData.cost} pts
+                        </span>
+                        <button
+                          onClick={() => handleOrder(result)}
+                          disabled={isOrdering === result.id || userBalance < selectedSiteData.cost}
+                          style={{
+                            padding: '8px 16px',
+                            background: isOrdering === result.id || userBalance < selectedSiteData.cost 
+                              ? '#9ca3af' 
+                              : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: isOrdering === result.id || userBalance < selectedSiteData.cost 
+                              ? 'not-allowed' 
+                              : 'pointer',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          {isOrdering === result.id ? '⏳' : '⬇️'} Download
+                        </button>
+                      </div>
+                      {userBalance < selectedSiteData.cost && (
+                        <p style={{
+                          fontSize: '12px',
+                          color: '#ef4444',
+                          marginTop: '8px',
+                          margin: 0
+                        }}>
+                          Insufficient points
                         </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-slate-900">
-                            {selectedSiteData.cost} pts
-                          </span>
-                          <Button
-                            size="sm"
-                            onClick={() => handleOrder(result)}
-                            disabled={isOrdering === result.id || userBalance < selectedSiteData.cost}
-                            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                          >
-                            {isOrdering === result.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Download className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                        {userBalance < selectedSiteData.cost && (
-                          <p className="text-xs text-red-600 mt-2">
-                            Insufficient points
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
