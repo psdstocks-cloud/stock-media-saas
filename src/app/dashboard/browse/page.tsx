@@ -105,7 +105,7 @@ export default function BrowsePage() {
       if (data.success && data.data) {
         setStockInfo(data.data)
       } else {
-        setError(data.error || 'Failed to process URL. Please check if the URL is from a supported site.')
+        setError(data.error || 'Failed to process URL. Please check if the URL is from a supported site and try again.')
       }
     } catch (error) {
       setError('An error occurred while processing the URL. Please try again.')

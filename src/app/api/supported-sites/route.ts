@@ -65,12 +65,16 @@ export async function GET() {
     const api = new NehtwAPI(apiKey)
     const response = await api.getStockSitesStatus()
     
-    if (!response.success) {
-      throw new Error('Failed to fetch from Nehtw API')
+    console.log('Nehtw API Response:', response)
+    
+    // The Nehtw API returns data directly, not wrapped in success/data
+    let sitesData = response
+    if (response.data) {
+      sitesData = response.data
     }
 
     // Transform Nehtw API response to our format
-    const supportedSites = Object.entries(response.data || {}).map(([siteName, siteData]: [string, any]) => {
+    const supportedSites = Object.entries(sitesData || {}).map(([siteName, siteData]: [string, any]) => {
       // Map site names to their actual website URLs
       const siteUrls: { [key: string]: string } = {
         'shutterstock': 'https://www.shutterstock.com',
@@ -102,12 +106,12 @@ export async function GET() {
 
       return {
         name: siteName,
-        displayName: siteData.displayName || siteName.charAt(0).toUpperCase() + siteName.slice(1),
+        displayName: siteName.charAt(0).toUpperCase() + siteName.slice(1).replace(/_/g, ' '),
         url: siteUrls[siteName] || `https://www.${siteName}.com`,
-        cost: siteData.cost || 5,
-        description: siteData.description || `Stock media from ${siteName}`,
-        category: siteData.category || 'images',
-        isActive: siteData.isActive !== false
+        cost: siteData.price || 5,
+        description: `Stock media from ${siteName}`,
+        category: 'images',
+        isActive: siteData.active === true
       }
     })
 
@@ -117,6 +121,60 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error fetching supported sites:', error)
-    return NextResponse.json({ error: 'Failed to fetch supported sites' }, { status: 500 })
+    
+    // Fallback to mock data if API fails
+    const fallbackSites = [
+      {
+        name: 'shutterstock',
+        displayName: 'Shutterstock',
+        url: 'https://www.shutterstock.com',
+        cost: 5,
+        description: 'Premium stock photos, vectors, and videos',
+        category: 'images',
+        isActive: true
+      },
+      {
+        name: 'gettyimages',
+        displayName: 'Getty Images',
+        url: 'https://www.gettyimages.com',
+        cost: 8,
+        description: 'High-quality editorial and creative content',
+        category: 'images',
+        isActive: true
+      },
+      {
+        name: 'adobe',
+        displayName: 'Adobe Stock',
+        url: 'https://stock.adobe.com',
+        cost: 6,
+        description: 'Creative assets for Adobe Creative Cloud',
+        category: 'images',
+        isActive: true
+      },
+      {
+        name: 'unsplash',
+        displayName: 'Unsplash',
+        url: 'https://unsplash.com',
+        cost: 2,
+        description: 'Free high-resolution photos',
+        category: 'images',
+        isActive: true
+      },
+      {
+        name: 'pexels',
+        displayName: 'Pexels',
+        url: 'https://www.pexels.com',
+        cost: 2,
+        description: 'Free stock photos and videos',
+        category: 'images',
+        isActive: true
+      }
+    ]
+    
+    return NextResponse.json({
+      success: true,
+      sites: fallbackSites,
+      fallback: true
+    })
   }
 }

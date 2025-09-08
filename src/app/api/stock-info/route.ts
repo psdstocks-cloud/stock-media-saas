@@ -42,9 +42,12 @@ export async function POST(request: NextRequest) {
     const api = new NehtwAPI(apiKey)
     const stockInfo = await api.getStockInfo(site, id, url)
 
+    console.log('Stock Info API Response:', stockInfo)
+
     if (!stockInfo.success || !stockInfo.data) {
+      console.error('Stock Info API Error:', stockInfo)
       return NextResponse.json({ 
-        error: stockInfo.message || 'Failed to get stock information' 
+        error: stockInfo.message || 'Failed to get stock information. Please check if the URL is from a supported site.' 
       }, { status: 400 })
     }
 
