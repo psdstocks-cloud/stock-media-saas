@@ -105,14 +105,27 @@ export class NehtwAPI {
    * Check order status
    */
   async checkOrderStatus(taskId: string, responseType: 'any' | 'gdrive' = 'any'): Promise<NehtwOrderStatus> {
-    const response = await fetch(`${this.baseUrl}/order/${taskId}/status?responsetype=${responseType}`, {
+    const requestUrl = `${this.baseUrl}/order/${taskId}/status?responsetype=${responseType}`
+    console.log('Nehtw checkOrderStatus request:', {
+      taskId,
+      requestUrl,
+      apiKey: this.apiKey ? 'present' : 'missing'
+    })
+
+    const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {
         'X-Api-Key': this.apiKey,
       },
     })
 
-    return await response.json()
+    const responseData = await response.json()
+    console.log('Nehtw checkOrderStatus response:', {
+      status: response.status,
+      data: responseData
+    })
+
+    return responseData
   }
 
   /**
@@ -282,6 +295,7 @@ export class OrderManager {
     console.log('Checking status for taskId:', order.taskId)
 
     const api = new NehtwAPI(apiKey)
+    console.log('Calling Nehtw API checkOrderStatus for taskId:', order.taskId)
     const statusResponse = await api.checkOrderStatus(order.taskId)
     
     console.log('Status response from Nehtw API:', statusResponse)

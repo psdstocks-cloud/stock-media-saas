@@ -88,13 +88,26 @@ export async function POST(request: NextRequest) {
     // Process order with nehtw.com API
     const apiKey = process.env.NEHTW_API_KEY
     if (!apiKey) {
+      console.log('NEHTW_API_KEY not configured')
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
+    console.log('Starting order processing for order:', order.id, 'with site:', site, 'id:', id)
+
     try {
+      console.log('Calling OrderManager.processOrder...')
       await OrderManager.processOrder(order.id, apiKey, site, id, url)
+      console.log('OrderManager.processOrder completed successfully')
     } catch (error) {
       console.error('Order processing error:', error)
+      console.error('Order processing error details:', {
+        orderId: order.id,
+        site,
+        id,
+        url,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined
+      })
       // Order was created but processing failed - this is handled by the order status
     }
 
