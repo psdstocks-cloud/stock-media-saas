@@ -380,14 +380,14 @@ export class OrderManager {
     // Handle different response formats from Nehtw API
     const isReady = statusResponse.success && (
       statusResponse.status === 'ready' || 
-      statusResponse.status === 'completed' ||
-      statusResponse.status === 'finished' ||
+      (statusResponse.status as string) === 'completed' ||
+      (statusResponse.status as string) === 'finished' ||
       statusResponse.downloadLink
     )
 
     const hasError = statusResponse.error || 
-      statusResponse.status === 'failed' || 
-      statusResponse.status === 'error' ||
+      (statusResponse.status as string) === 'failed' || 
+      (statusResponse.status as string) === 'error' ||
       (statusResponse.success === false && statusResponse.message)
 
     if (isReady) {
