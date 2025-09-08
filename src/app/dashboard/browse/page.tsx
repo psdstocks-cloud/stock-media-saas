@@ -836,8 +836,21 @@ export default function BrowsePage() {
                       <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.site}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Description:</span>
-                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.description}</span>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Image Link:</span>
+                      <a 
+                        href={stockInfo.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          fontSize: '14px', 
+                          color: '#2563eb', 
+                          fontWeight: '500',
+                          textDecoration: 'underline',
+                          wordBreak: 'break-all'
+                        }}
+                      >
+                        {stockInfo.url}
+                      </a>
                     </div>
                   </div>
 

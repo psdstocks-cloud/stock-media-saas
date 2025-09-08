@@ -409,10 +409,13 @@ export default function OrdersPage() {
                   key={order.id}
                   style={{
                     background: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     padding: '24px',
-                    border: '1px solid #e2e8f0'
+                    border: '1px solid #e5e7eb',
+                    transition: 'all 0.2s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
                 >
                   <div style={{
@@ -426,48 +429,120 @@ export default function OrdersPage() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
-                        marginBottom: '12px'
+                        marginBottom: '16px'
                       }}>
-                        {getFileTypeIcon(order.fileName)}
-                        <h3 style={{
-                          fontSize: '18px',
-                          fontWeight: '600',
-                          color: '#0f172a',
-                          margin: 0
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '14px',
+                          fontWeight: 'bold'
                         }}>
-                          {order.title || `${order.stockSite.displayName} #${order.stockItemId}`}
-                        </h3>
+                          {order.stockSite.displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: '#0f172a',
+                            margin: '0 0 4px 0',
+                            lineHeight: '1.3'
+                          }}>
+                            {order.stockSite.displayName} #{order.stockItemId}
+                          </h3>
+                          {order.title && (
+                            <p style={{
+                              fontSize: '14px',
+                              color: '#6b7280',
+                              margin: 0,
+                              fontWeight: '500'
+                            }}>
+                              {order.title}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '12px',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                        gap: '16px',
                         fontSize: '14px',
-                        color: '#6b7280'
+                        color: '#6b7280',
+                        background: '#f8fafc',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        border: '1px solid #e5e7eb'
                       }}>
-                        <div>
-                          <strong>Source:</strong> {order.stockSite.displayName}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            background: '#2563eb',
+                            borderRadius: '50%'
+                          }}></div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Source:</span>
+                          <span style={{ color: '#6b7280' }}>{order.stockSite.displayName}</span>
                         </div>
-                        <div>
-                          <strong>Cost:</strong> {order.cost} points
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            background: '#059669',
+                            borderRadius: '50%'
+                          }}></div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Cost:</span>
+                          <span style={{ color: '#6b7280' }}>{order.cost} points</span>
                         </div>
-                        <div>
-                          <strong>Ordered:</strong> {new Date(order.createdAt).toLocaleDateString()}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            width: '6px',
+                            height: '6px',
+                            background: '#7c3aed',
+                            borderRadius: '50%'
+                          }}></div>
+                          <span style={{ fontWeight: '600', color: '#374151' }}>Ordered:</span>
+                          <span style={{ color: '#6b7280' }}>{new Date(order.createdAt).toLocaleDateString()}</span>
                         </div>
                         {order.fileName && (
-                          <div>
-                            <strong>File:</strong> {order.fileName}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: '6px',
+                              height: '6px',
+                              background: '#dc2626',
+                              borderRadius: '50%'
+                            }}></div>
+                            <span style={{ fontWeight: '600', color: '#374151' }}>File:</span>
+                            <span style={{ color: '#6b7280' }}>{order.fileName}</span>
                           </div>
                         )}
                         {order.fileSize && (
-                          <div>
-                            <strong>Size:</strong> {formatFileSize(order.fileSize)}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: '6px',
+                              height: '6px',
+                              background: '#ea580c',
+                              borderRadius: '50%'
+                            }}></div>
+                            <span style={{ fontWeight: '600', color: '#374151' }}>Size:</span>
+                            <span style={{ color: '#6b7280' }}>{formatFileSize(order.fileSize)}</span>
                           </div>
                         )}
                         {isProcessing && (
-                          <div>
-                            <strong>Processing:</strong> {getProcessingTime(order.createdAt)}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: '6px',
+                              height: '6px',
+                              background: '#f59e0b',
+                              borderRadius: '50%'
+                            }}></div>
+                            <span style={{ fontWeight: '600', color: '#374151' }}>Processing:</span>
+                            <span style={{ color: '#6b7280' }}>{getProcessingTime(order.createdAt)}</span>
                           </div>
                         )}
                       </div>
@@ -483,13 +558,14 @@ export default function OrdersPage() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        padding: '6px 12px',
+                        padding: '8px 16px',
                         background: statusColors.bg,
                         color: statusColors.text,
                         border: `1px solid ${statusColors.border}`,
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        fontWeight: '500'
+                        borderRadius: '12px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
                       }}>
                         {getStatusIcon(order.status)}
                         {order.status}
@@ -507,19 +583,20 @@ export default function OrdersPage() {
                             style={{
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '6px',
-                              padding: '8px 16px',
-                              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                              gap: '8px',
+                              padding: '10px 20px',
+                              background: 'linear-gradient(135deg, #059669, #047857)',
                               color: 'white',
-                              borderRadius: '6px',
+                              borderRadius: '10px',
                               textDecoration: 'none',
                               fontSize: '14px',
-                              fontWeight: '500',
-                              transition: 'all 0.2s ease'
+                              fontWeight: '600',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 2px 4px rgba(5, 150, 105, 0.3)'
                             }}
                           >
                             <Download style={{ width: '16px', height: '16px' }} />
-                            Download
+                            Download File
                           </a>
                         )}
                         
@@ -532,19 +609,20 @@ export default function OrdersPage() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '6px',
-                              padding: '8px 12px',
-                              border: '1px solid #d1d5db',
-                              borderRadius: '6px',
-                              background: 'white',
-                              color: '#6b7280',
+                              padding: '8px 16px',
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '8px',
+                              background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+                              color: '#374151',
                               textDecoration: 'none',
                               fontSize: '14px',
-                              fontWeight: '500',
-                              transition: 'all 0.2s ease'
+                              fontWeight: '600',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
                             }}
                           >
                             <ExternalLink style={{ width: '16px', height: '16px' }} />
-                            View Original
+                            View Image Link
                           </a>
                         )}
                       </div>
