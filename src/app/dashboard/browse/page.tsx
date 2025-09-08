@@ -1,29 +1,49 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Search, 
+  Filter, 
+  Download, 
+  Eye, 
+  Clock, 
+  Star,
+  Grid3X3,
+  List,
+  ArrowLeft,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Image as ImageIcon,
+  Video,
+  Music
+} from 'lucide-react'
 
 interface StockSite {
   id: string
   name: string
   displayName: string
+  category: string
   cost: number
-  category: string | null
   isActive: boolean
 }
 
 interface SearchResult {
   id: string
   title: string
-  image: string
-  source: string
-  cost: number
-  ext: string
-  name: string
-  author: string
+  description: string
+  url: string
+  thumbnailUrl: string
+  type: string
   sizeInBytes: number
+  site: string
+  tags: string[]
 }
 
 export default function BrowsePage() {
@@ -39,6 +59,13 @@ export default function BrowsePage() {
   const [isSearching, setIsSearching] = useState(false)
   const [isOrdering, setIsOrdering] = useState<string | null>(null)
   const [userBalance, setUserBalance] = useState<number>(0)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    type: 'all',
+    sortBy: 'relevance',
+    priceRange: 'all'
+  })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -79,30 +106,35 @@ export default function BrowsePage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedSiteData || !searchQuery.trim()) return
+    if (!searchQuery.trim() || !selectedSiteData) return
 
     setIsSearching(true)
     try {
-      const response = await fetch(`/api/search?site=${selectedSiteData.name}&query=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: searchQuery,
+          site: selectedSiteData.name,
+          filters
+        }),
+      })
+
       const data = await response.json()
-      
-      if (data.success && data.results) {
-        setSearchResults(data.results)
-      } else {
-        setSearchResults([])
-      }
+      setSearchResults(data.results || [])
     } catch (error) {
       console.error('Search error:', error)
-      setSearchResults([])
     } finally {
       setIsSearching(false)
     }
   }
 
-  const handleOrder = async (item: SearchResult) => {
-    if (!session?.user?.id || !selectedSiteData) return
+  const handleOrder = async (result: SearchResult) => {
+    if (!selectedSiteData) return
 
-    setIsOrdering(item.id)
+    setIsOrdering(result.id)
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -110,30 +142,28 @@ export default function BrowsePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: session.user.id,
-          stockSiteId: selectedSiteData.id,
-          stockItemId: item.id,
-          stockItemUrl: `https://${selectedSiteData.name}.com/item/${item.id}`,
-          title: item.title,
+          title: result.title,
+          description: result.description,
+          url: result.url,
+          thumbnailUrl: result.thumbnailUrl,
+          type: result.type,
+          sizeInBytes: result.sizeInBytes,
+          siteId: selectedSiteData.id,
+          cost: selectedSiteData.cost
         }),
       })
 
       const data = await response.json()
-      
-      if (data.success) {
-        // Refresh user balance
-        const balanceResponse = await fetch(`/api/points?userId=${session.user.id}`)
-        const balanceData = await balanceResponse.json()
-        setUserBalance(balanceData.balance?.currentPoints || 0)
-        
-        // Show success message or redirect to orders
-        alert('Order placed successfully! Check your dashboard for updates.')
+      if (response.ok) {
+        // Update user balance
+        setUserBalance(prev => prev - selectedSiteData.cost)
+        // Show success message or redirect
+        router.push('/dashboard/orders')
       } else {
-        alert(data.error || 'Failed to place order')
+        console.error('Order failed:', data.error)
       }
     } catch (error) {
       console.error('Order error:', error)
-      alert('Failed to place order')
     } finally {
       setIsOrdering(null)
     }
@@ -147,12 +177,24 @@ export default function BrowsePage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  const getTypeIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'video':
+        return <Video className="w-4 h-4" />
+      case 'audio':
+      case 'music':
+        return <Music className="w-4 h-4" />
+      default:
+        return <ImageIcon className="w-4 h-4" />
+    }
+  }
+
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-slate-600 text-lg">Loading...</p>
         </div>
       </div>
     )
@@ -163,24 +205,33 @@ export default function BrowsePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/dashboard" 
-                className="text-blue-600 hover:text-blue-700 font-medium"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
               >
-                ← Back to Dashboard
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Browse Stock Media</h1>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SM</span>
+              </div>
+              <h1 className="text-xl font-bold text-slate-900">Browse Media</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                {userBalance} points available
+              <div className="text-sm text-slate-600">
+                <span className="font-medium">{userBalance}</span> points available
               </div>
+              <Button variant="outline" size="sm">
+                <Eye className="w-4 h-4 mr-2" />
+                My Orders
+              </Button>
             </div>
           </div>
         </div>
@@ -190,26 +241,30 @@ export default function BrowsePage() {
         {/* Site Selection */}
         {!selectedSiteData && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Select a Stock Site</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Choose a Stock Site</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {stockSites.map((site) => (
-                <Link
-                  key={site.id}
-                  href={`/dashboard/browse?site=${site.name}`}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                <Card 
+                  key={site.id} 
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300 border-0 shadow-md"
+                  onClick={() => setSelectedSiteData(site)}
                 >
-                  <div className="text-center">
-                    <div className="font-medium text-gray-900 text-sm">
-                      {site.displayName}
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-slate-900">{site.displayName}</h3>
+                      <Badge variant={site.isActive ? "success" : "secondary"}>
+                        {site.isActive ? "Active" : "Inactive"}
+                      </Badge>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {site.cost} points
+                    <p className="text-slate-600 mb-4 capitalize">{site.category}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-slate-900">{site.cost} pts</span>
+                      <Button size="sm" disabled={!site.isActive}>
+                        Browse
+                      </Button>
                     </div>
-                    <div className="text-xs text-gray-400 mt-1 capitalize">
-                      {site.category}
-                    </div>
-                  </div>
-                </Link>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -218,99 +273,198 @@ export default function BrowsePage() {
         {/* Search Interface */}
         {selectedSiteData && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Search {selectedSiteData.displayName}
-              </h2>
-              <button
-                onClick={() => {
-                  setSelectedSiteData(null)
-                  setSearchResults([])
-                  setSearchQuery('')
-                  router.push('/dashboard/browse')
-                }}
-                className="text-gray-500 hover:text-gray-700"
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">{selectedSiteData.displayName}</h2>
+                <p className="text-slate-600">Search from millions of {selectedSiteData.category} files</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedSiteData(null)}
               >
                 Change Site
-              </button>
+              </Button>
             </div>
 
-            <form onSubmit={handleSearch} className="flex space-x-4">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Search ${selectedSiteData.displayName}...`}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={isSearching || !searchQuery.trim()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSearching ? 'Searching...' : 'Search'}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Search Results ({searchResults.length})
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {searchResults.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="aspect-w-16 aspect-h-9">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-48 object-cover"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
-                      {item.title}
-                    </h4>
-                    <div className="text-xs text-gray-500 mb-2">
-                      <div>Author: {item.author}</div>
-                      <div>Size: {formatFileSize(item.sizeInBytes)}</div>
-                      <div>Format: {item.ext.toUpperCase()}</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-blue-600">
-                        {selectedSiteData?.cost} points
-                      </span>
-                      <button
-                        onClick={() => handleOrder(item)}
-                        disabled={isOrdering === item.id || userBalance < (selectedSiteData?.cost || 0)}
-                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isOrdering === item.id ? 'Ordering...' : 'Order'}
-                      </button>
-                    </div>
-                  </div>
+            <form onSubmit={handleSearch} className="mb-6">
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Search for images, videos, or audio..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="text-lg py-3"
+                  />
                 </div>
-              ))}
+                <Button
+                  type="submit"
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                >
+                  {isSearching ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Search className="w-5 h-5" />
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="w-5 h-5" />
+                </Button>
+              </div>
+            </form>
+
+            {/* Filters */}
+            {showFilters && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
+                      <select
+                        value={filters.type}
+                        onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                        className="w-full p-2 border border-slate-300 rounded-lg"
+                      >
+                        <option value="all">All Types</option>
+                        <option value="image">Images</option>
+                        <option value="video">Videos</option>
+                        <option value="audio">Audio</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Sort By</label>
+                      <select
+                        value={filters.sortBy}
+                        onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                        className="w-full p-2 border border-slate-300 rounded-lg"
+                      >
+                        <option value="relevance">Relevance</option>
+                        <option value="newest">Newest</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="size">File Size</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Price Range</label>
+                      <select
+                        value={filters.priceRange}
+                        onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
+                        className="w-full p-2 border border-slate-300 rounded-lg"
+                      >
+                        <option value="all">All Prices</option>
+                        <option value="free">Free</option>
+                        <option value="low">Low (1-10 pts)</option>
+                        <option value="medium">Medium (11-50 pts)</option>
+                        <option value="high">High (50+ pts)</option>
+                      </select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* View Controls */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-slate-600">
+                  {searchResults.length} results found
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* No Results */}
-        {selectedSiteData && searchQuery && !isSearching && searchResults.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">No results found for "{searchQuery}"</div>
-            <div className="text-gray-400 text-sm mt-2">Try a different search term</div>
-          </div>
-        )}
+            {/* Search Results */}
+            {searchResults.length === 0 && searchQuery && !isSearching && (
+              <div className="text-center py-12">
+                <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">No results found</h3>
+                <p className="text-slate-600">Try adjusting your search terms or filters</p>
+              </div>
+            )}
 
-        {/* Instructions */}
-        {!selectedSiteData && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">Select a stock site to start browsing</div>
-            <div className="text-gray-400 text-sm mt-2">Choose from the available sites above</div>
+            {searchResults.length > 0 && (
+              <div className={viewMode === 'grid' 
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                : 'space-y-4'
+              }>
+                {searchResults.map((result) => (
+                  <Card key={result.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+                    <CardContent className="p-0">
+                      <div className="relative">
+                        <div className="aspect-square bg-slate-100 rounded-t-lg overflow-hidden">
+                          <img
+                            src={result.thumbnailUrl}
+                            alt={result.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="absolute top-2 left-2">
+                          <Badge variant="secondary" className="bg-white/90 text-slate-700">
+                            {getTypeIcon(result.type)}
+                            <span className="ml-1 capitalize">{result.type}</span>
+                          </Badge>
+                        </div>
+                        <div className="absolute top-2 right-2">
+                          <Badge variant="secondary" className="bg-white/90 text-slate-700">
+                            {formatFileSize(result.sizeInBytes)}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
+                          {result.title}
+                        </h3>
+                        <p className="text-sm text-slate-600 mb-3 line-clamp-2">
+                          {result.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-slate-900">
+                            {selectedSiteData.cost} pts
+                          </span>
+                          <Button
+                            size="sm"
+                            onClick={() => handleOrder(result)}
+                            disabled={isOrdering === result.id || userBalance < selectedSiteData.cost}
+                            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                          >
+                            {isOrdering === result.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                        {userBalance < selectedSiteData.cost && (
+                          <p className="text-xs text-red-600 mt-2">
+                            Insufficient points
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

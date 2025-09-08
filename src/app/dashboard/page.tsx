@@ -1,11 +1,27 @@
 'use client'
 
-import { prisma } from '@/lib/prisma'
-import { PointsManager } from '@/lib/points'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { 
+  ArrowRight, 
+  Download, 
+  Search, 
+  Clock, 
+  CheckCircle, 
+  AlertCircle,
+  TrendingUp,
+  Users,
+  Zap,
+  Star,
+  Plus,
+  Eye,
+  Filter
+} from 'lucide-react'
 
 interface DashboardData {
   balance: any
@@ -51,10 +67,10 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-slate-600 text-lg">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -65,182 +81,308 @@ export default function DashboardPage() {
   }
 
   const { balance, history, orders, stockSites } = data
+  const recentOrders = orders?.slice(0, 5) || []
+  const recentHistory = history?.slice(0, 5) || []
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                Welcome back, {session.user.name || session.user.email}!
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SM</span>
               </div>
-              <Link 
-                href="/dashboard/orders"
-                className="text-gray-500 hover:text-gray-900"
-              >
-                Orders
+              <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link href="/dashboard/browse">
+                <Button variant="outline" size="sm">
+                  <Search className="w-4 h-4 mr-2" />
+                  Browse Media
+                </Button>
               </Link>
-              <Link 
-                href="/dashboard/profile"
-                className="text-gray-500 hover:text-gray-900"
-              >
-                Profile
-              </Link>
-              <button 
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="text-gray-500 hover:text-gray-900"
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => signOut()}
               >
                 Sign Out
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Points Balance Card */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Points Balance</h2>
-              <p className="text-gray-600">Your current points and usage</p>
-            </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold text-blue-600">
-                {balance?.currentPoints || 0}
-              </div>
-              <div className="text-sm text-gray-500">points available</div>
-            </div>
-          </div>
-          
-          {balance && (
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-semibold text-gray-900">
-                  {balance.totalPurchased}
-                </div>
-                <div className="text-sm text-gray-500">Total Purchased</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-semibold text-gray-900">
-                  {balance.totalUsed}
-                </div>
-                <div className="text-sm text-gray-500">Total Used</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-semibold text-gray-900">
-                  {balance.lastRollover ? new Date(balance.lastRollover).toLocaleDateString() : 'Never'}
-                </div>
-                <div className="text-sm text-gray-500">Last Rollover</div>
-              </div>
-            </div>
-          )}
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+            Welcome back, {session.user.name || session.user.email}!
+          </h2>
+          <p className="text-slate-600">
+            Here's what's happening with your account today.
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Recent Orders */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
-            </div>
-            <div className="p-6">
-              {orders.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No orders yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {orders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600 mb-1">Available Points</p>
+                  <p className="text-3xl font-bold text-blue-900">
+                    {balance?.currentPoints || 0}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600 mb-1">Downloads This Month</p>
+                  <p className="text-3xl font-bold text-green-900">
+                    {orders?.filter((order: any) => order.status === 'COMPLETED').length || 0}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Download className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-600 mb-1">Total Orders</p>
+                  <p className="text-3xl font-bold text-purple-900">
+                    {orders?.length || 0}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-orange-600 mb-1">Active Sites</p>
+                  <p className="text-3xl font-bold text-orange-900">
+                    {stockSites?.filter((site: any) => site.isActive).length || 0}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Quick Actions */}
+          <div className="lg:col-span-1">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Zap className="w-5 h-5 mr-2 text-blue-600" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Link href="/dashboard/browse" className="block">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Search className="w-4 h-4 mr-2" />
+                    Browse Media
+                  </Button>
+                </Link>
+                <Link href="/dashboard/orders" className="block">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Clock className="w-4 h-4 mr-2" />
+                    View Orders
+                  </Button>
+                </Link>
+                <Link href="/dashboard/profile" className="block">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Eye className="w-4 h-4 mr-2" />
+                    Manage Profile
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Available Sites */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-green-600" />
+                  Available Sites
+                </CardTitle>
+                <CardDescription>
+                  {stockSites?.length || 0} stock sites ready for downloads
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {stockSites?.slice(0, 5).map((site: any) => (
+                    <div key={site.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">
-                          {order.title || `${order.stockSite.displayName} #${order.stockItemId}`}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {order.stockSite.displayName} • {order.cost} points
-                        </div>
+                        <p className="font-medium text-slate-900">{site.displayName}</p>
+                        <p className="text-sm text-slate-600">{site.category}</p>
                       </div>
                       <div className="text-right">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                          order.status === 'PROCESSING' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </div>
+                        <p className="font-semibold text-slate-900">{site.cost} pts</p>
+                        <Badge variant={site.isActive ? "success" : "secondary"} className="text-xs">
+                          {site.isActive ? "Active" : "Inactive"}
+                        </Badge>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Points History */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Points History</h3>
-            </div>
-            <div className="p-6">
-              {history.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No history yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {history.map((entry) => (
-                    <div key={entry.id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {entry.description || entry.type}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(entry.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className={`font-medium ${
-                        entry.amount > 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {entry.amount > 0 ? '+' : ''}{entry.amount}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Stock Sites */}
-        <div className="mt-8 bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Available Stock Sites</h3>
-            <p className="text-gray-600">Click on any site to start downloading</p>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {stockSites.map((site) => (
-                <Link
-                  key={site.id}
-                  href={`/dashboard/browse?site=${site.name}`}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="text-center">
-                    <div className="font-medium text-gray-900 text-sm">
-                      {site.displayName}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {site.cost} points
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1 capitalize">
-                      {site.category}
-                    </div>
-                  </div>
+                <Link href="/dashboard/browse" className="block mt-4">
+                  <Button variant="ghost" className="w-full">
+                    View All Sites
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </Link>
-              ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-2">
+            <div className="grid gap-6">
+              {/* Recent Orders */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                      Recent Orders
+                    </div>
+                    <Link href="/dashboard/orders">
+                      <Button variant="ghost" size="sm">
+                        View All
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </Link>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {recentOrders.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Download className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-slate-500 mb-4">No orders yet</p>
+                      <Link href="/dashboard/browse">
+                        <Button>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Start Browsing
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentOrders.map((order: any) => (
+                        <div key={order.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-3 h-3 rounded-full ${
+                              order.status === 'COMPLETED' ? 'bg-green-500' :
+                              order.status === 'PROCESSING' ? 'bg-yellow-500' :
+                              order.status === 'FAILED' ? 'bg-red-500' :
+                              'bg-slate-400'
+                            }`} />
+                            <div>
+                              <p className="font-medium text-slate-900">{order.title}</p>
+                              <p className="text-sm text-slate-600">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={
+                              order.status === 'COMPLETED' ? 'success' :
+                              order.status === 'PROCESSING' ? 'warning' :
+                              order.status === 'FAILED' ? 'error' :
+                              'secondary'
+                            }>
+                              {order.status}
+                            </Badge>
+                            <p className="text-sm text-slate-600 mt-1">{order.cost} points</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
+                    Recent Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {recentHistory.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                      <p className="text-slate-500">No recent activity</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentHistory.map((activity: any, index: number) => (
+                        <div key={index} className="flex items-center space-x-4 p-3 bg-slate-50 rounded-lg">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            activity.type === 'SUBSCRIPTION' ? 'bg-blue-100' :
+                            activity.type === 'DOWNLOAD' ? 'bg-green-100' :
+                            activity.type === 'REFUND' ? 'bg-orange-100' :
+                            'bg-slate-100'
+                          }`}>
+                            {activity.type === 'SUBSCRIPTION' ? (
+                              <Plus className="w-4 h-4 text-blue-600" />
+                            ) : activity.type === 'DOWNLOAD' ? (
+                              <Download className="w-4 h-4 text-green-600" />
+                            ) : activity.type === 'REFUND' ? (
+                              <ArrowRight className="w-4 h-4 text-orange-600" />
+                            ) : (
+                              <Star className="w-4 h-4 text-slate-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">{activity.description}</p>
+                            <p className="text-sm text-slate-600">
+                              {new Date(activity.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-semibold ${
+                              activity.amount > 0 ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                              {activity.amount > 0 ? '+' : ''}{activity.amount} pts
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
