@@ -49,13 +49,20 @@ export async function POST(request: NextRequest) {
     console.log('Finding or creating stock site for:', site)
     let stockSite
     try {
+      console.log('Attempting to find stock site with name:', site)
       stockSite = await prisma.stockSite.findFirst({
         where: { name: site }
       })
-      console.log('Stock site found:', { found: !!stockSite, id: stockSite?.id })
+      console.log('Stock site found:', { found: !!stockSite, id: stockSite?.id, name: stockSite?.name })
 
       if (!stockSite) {
-        console.log('Creating new stock site...')
+        console.log('Creating new stock site with data:', {
+          name: site,
+          displayName: site.charAt(0).toUpperCase() + site.slice(1),
+          cost: cost,
+          category: 'images',
+          isActive: true
+        })
         // Create stock site if it doesn't exist
         stockSite = await prisma.stockSite.create({
           data: {
@@ -66,7 +73,7 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         })
-        console.log('Stock site created:', { id: stockSite.id, name: stockSite.name })
+        console.log('Stock site created successfully:', { id: stockSite.id, name: stockSite.name })
       }
     } catch (error) {
       console.error('Error with stock site operations:', error)
