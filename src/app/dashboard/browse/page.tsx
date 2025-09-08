@@ -21,15 +21,13 @@ import {
 } from 'lucide-react'
 
 interface StockInfo {
-  image: string
-  title: string
+  site: string
   id: string
-  source: string
+  url: string
+  title: string
   cost: number
-  ext: string
-  name: string
-  author: string
-  sizeInBytes: number
+  imageUrl: string
+  description: string
 }
 
 interface OrderResponse {
@@ -223,11 +221,11 @@ export default function BrowsePage() {
     try {
       console.log('Sending order request:', {
         url,
-        site: stockInfo.source,
+        site: stockInfo.site,
         id: stockInfo.id,
         title: stockInfo.title,
         cost: stockInfo.cost,
-        imageUrl: stockInfo.image
+        imageUrl: stockInfo.imageUrl
       })
 
       const response = await fetch('/api/place-order', {
@@ -237,11 +235,11 @@ export default function BrowsePage() {
         },
         body: JSON.stringify({
           url,
-          site: stockInfo.source,
+          site: stockInfo.site,
           id: stockInfo.id,
           title: stockInfo.title,
           cost: stockInfo.cost,
-          imageUrl: stockInfo.image
+          imageUrl: stockInfo.imageUrl
         }),
       })
 
@@ -300,22 +298,6 @@ export default function BrowsePage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const getFileTypeIcon = (ext: string) => {
-    switch (ext.toLowerCase()) {
-      case 'mp4':
-      case 'mov':
-      case 'avi':
-        return '🎥'
-      case 'mp3':
-      case 'wav':
-      case 'aac':
-        return '🎵'
-      case 'pdf':
-        return '📄'
-      default:
-        return '🖼️'
-    }
-  }
 
   if (status === 'loading') {
     return (
@@ -744,7 +726,7 @@ export default function BrowsePage() {
                   position: 'relative'
                 }}>
                   <img
-                    src={stockInfo.image}
+                    src={stockInfo.imageUrl}
                     alt={stockInfo.title}
                     style={{
                       width: '100%',
@@ -763,7 +745,7 @@ export default function BrowsePage() {
                     fontSize: '12px',
                     fontWeight: '500'
                   }}>
-                    {getFileTypeIcon(stockInfo.ext)} {stockInfo.ext.toUpperCase()}
+                    📷 IMAGE
                   </div>
                 </div>
 
@@ -784,16 +766,12 @@ export default function BrowsePage() {
                     marginBottom: '16px'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Author:</span>
-                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.author}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Source:</span>
-                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.source}</span>
+                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.site}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Format:</span>
-                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.ext.toUpperCase()}</span>
+                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Description:</span>
+                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>{stockInfo.description}</span>
                     </div>
                   </div>
 
