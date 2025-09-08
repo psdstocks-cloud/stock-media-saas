@@ -173,12 +173,26 @@ export default function BrowsePage() {
   }
 
   const handlePlaceOrder = async () => {
-    if (!stockInfo) return
+    console.log('handlePlaceOrder called', { stockInfo, url })
+    
+    if (!stockInfo) {
+      console.log('No stockInfo available')
+      return
+    }
 
     setIsOrdering(true)
     setError('')
 
     try {
+      console.log('Sending order request:', {
+        url,
+        site: stockInfo.source,
+        id: stockInfo.id,
+        title: stockInfo.title,
+        cost: stockInfo.cost,
+        imageUrl: stockInfo.image
+      })
+
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: {
@@ -194,21 +208,26 @@ export default function BrowsePage() {
         }),
       })
 
+      console.log('Order response status:', response.status)
       const data: OrderResponse = await response.json()
+      console.log('Order response data:', data)
 
       if (data.success && data.order) {
+        console.log('Order placed successfully:', data.order)
         setCurrentOrder(data.order)
         setOrderStatus('PENDING')
         setProcessingTime(0)
         setUserBalance(prev => prev - stockInfo.cost)
         // Don't redirect - show timer on same page
       } else {
+        console.log('Order failed:', data.error)
         setError(data.error || 'Failed to place order')
         if (data.currentPoints !== undefined && data.requiredPoints !== undefined) {
           setError(`Insufficient points. You have ${data.currentPoints} points but need ${data.requiredPoints} points.`)
         }
       }
     } catch (error) {
+      console.error('Order error:', error)
       setError('An error occurred while placing the order')
     } finally {
       setIsOrdering(false)
@@ -787,7 +806,15 @@ export default function BrowsePage() {
                   Cancel
                 </button>
                 <button
-                  onClick={handlePlaceOrder}
+                  onClick={() => {
+                    console.log('Confirm Order button clicked', { 
+                      isOrdering, 
+                      userBalance, 
+                      cost: stockInfo.cost,
+                      disabled: isOrdering || userBalance < stockInfo.cost 
+                    })
+                    handlePlaceOrder()
+                  }}
                   disabled={isOrdering || userBalance < stockInfo.cost}
                   style={{
                     padding: '12px 24px',
