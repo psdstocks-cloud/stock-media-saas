@@ -159,6 +159,11 @@ export default function BrowsePage() {
   }
 
   const handleSiteClick = (site: SupportedSite) => {
+    // Open the site in a new tab
+    window.open(site.url, '_blank')
+  }
+
+  const handleSiteUrlClick = (site: SupportedSite) => {
     setUrl(site.url)
     setError('')
     setStockInfo(null)
@@ -454,51 +459,103 @@ export default function BrowsePage() {
               }}>Supported Sites & Point Costs</h3>
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '12px'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                gap: '16px'
               }}>
                 {supportedSites.map((site) => (
                   <div
                     key={site.name}
-                    onClick={() => handleSiteClick(site)}
                     style={{
-                      padding: '16px',
+                      padding: '20px',
                       background: 'white',
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       border: '1px solid #e2e8f0',
-                      cursor: 'pointer',
                       transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}
+                  >
+                    <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between'
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#0f172a',
-                        marginBottom: '4px'
-                      }}>{site.displayName}</h4>
-                      <p style={{
-                        fontSize: '12px',
-                        color: '#64748b',
-                        margin: 0
-                      }}>{site.description}</p>
-                    </div>
-                    <div style={{
-                      textAlign: 'right',
-                      marginLeft: '12px'
                     }}>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          marginBottom: '4px'
+                        }}>{site.displayName}</h4>
+                        <p style={{
+                          fontSize: '13px',
+                          color: '#64748b',
+                          margin: 0
+                        }}>{site.description}</p>
+                      </div>
                       <div style={{
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#2563eb'
-                      }}>{site.cost} pts</div>
-                      <div style={{
-                        fontSize: '10px',
-                        color: '#64748b'
-                      }}>per download</div>
+                        textAlign: 'right',
+                        marginLeft: '12px'
+                      }}>
+                        <div style={{
+                          fontSize: '20px',
+                          fontWeight: 'bold',
+                          color: '#2563eb'
+                        }}>{site.cost} pts</div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: '#64748b'
+                        }}>per download</div>
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px'
+                    }}>
+                      <button
+                        onClick={() => handleSiteClick(site)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 16px',
+                          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        🌐 Visit Site
+                      </button>
+                      <button
+                        onClick={() => handleSiteUrlClick(site)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 16px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          background: 'white',
+                          color: '#374151',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        🔗 Use URL
+                      </button>
                     </div>
                   </div>
                 ))}

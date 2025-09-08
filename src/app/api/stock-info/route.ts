@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       // Return mock data for testing when API key is not configured
       const mockData = {
         image: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-        title: 'Sample Stock Media',
+        title: 'Sample Stock Media - ' + site.charAt(0).toUpperCase() + site.slice(1),
         id: id,
         source: site,
         cost: 5, // Default cost
