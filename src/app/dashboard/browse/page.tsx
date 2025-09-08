@@ -103,14 +103,26 @@ export default function BrowsePage() {
 
   // Poll order status when there's a current order
   useEffect(() => {
-    if (!currentOrder || !session?.user?.id) return
+    if (!currentOrder || !session?.user?.id) {
+      console.log('No current order or session, stopping polling')
+      return
+    }
 
     let pollCount = 0
     const maxPolls = 150 // 5 minutes of polling (150 * 2 seconds)
     let timeoutId: NodeJS.Timeout
+    let intervalId: NodeJS.Timeout
 
     const pollOrderStatus = async () => {
       try {
+        // Check if we should stop polling
+        if (!currentOrder || orderStatus === 'FAILED' || orderStatus === 'READY' || orderStatus === 'COMPLETED') {
+          console.log('Stopping polling - order status:', orderStatus, 'currentOrder:', !!currentOrder)
+          clearInterval(intervalId)
+          clearTimeout(timeoutId)
+          return
+        }
+
         pollCount++
         console.log(`Polling order status for order: ${currentOrder.id} (attempt ${pollCount}/${maxPolls})`)
         
@@ -135,12 +147,16 @@ export default function BrowsePage() {
               console.log('Download URL found:', order.downloadUrl)
               setDownloadUrl(order.downloadUrl)
               setOrderSuccess(true)
+              clearInterval(intervalId)
+              clearTimeout(timeoutId)
               return // Stop polling when download URL is found
             }
             
             // Stop polling if order is completed or failed
             if (order.status === 'READY' || order.status === 'COMPLETED' || order.status === 'FAILED') {
               console.log('Order reached final status:', order.status)
+              clearInterval(intervalId)
+              clearTimeout(timeoutId)
               return
             }
           }
@@ -164,12 +180,16 @@ export default function BrowsePage() {
               console.log('Download URL found:', order.downloadUrl)
               setDownloadUrl(order.downloadUrl)
               setOrderSuccess(true)
+              clearInterval(intervalId)
+              clearTimeout(timeoutId)
               return // Stop polling when download URL is found
             }
             
             // Stop polling if order is completed or failed
             if (order.status === 'READY' || order.status === 'COMPLETED' || order.status === 'FAILED') {
               console.log('Order reached final status:', order.status)
+              clearInterval(intervalId)
+              clearTimeout(timeoutId)
               return
             }
           } else {
@@ -182,6 +202,8 @@ export default function BrowsePage() {
           console.log('Max polling attempts reached, stopping polling')
           setError('Order is taking longer than expected. Please check your orders page for updates.')
           setOrderStatus('FAILED')
+          clearInterval(intervalId)
+          clearTimeout(timeoutId)
           return
         }
       } catch (error) {
@@ -190,20 +212,22 @@ export default function BrowsePage() {
       }
     }
 
-    const interval = setInterval(pollOrderStatus, 2000) // Poll every 2 seconds
+    intervalId = setInterval(pollOrderStatus, 2000) // Poll every 2 seconds
     
     // Set a timeout to stop polling after 5 minutes
     timeoutId = setTimeout(() => {
       console.log('Polling timeout reached, stopping polling')
-      clearInterval(interval)
+      clearInterval(intervalId)
       setError('Order is taking longer than expected. Please check your orders page for updates.')
+      setOrderStatus('FAILED')
     }, 300000) // 5 minutes
 
     return () => {
-      clearInterval(interval)
+      console.log('Cleaning up polling intervals')
+      clearInterval(intervalId)
       clearTimeout(timeoutId)
     }
-  }, [currentOrder, session?.user?.id])
+  }, [currentOrder, session?.user?.id, orderStatus])
 
   // Update processing time
   useEffect(() => {
@@ -212,6 +236,9 @@ export default function BrowsePage() {
         setProcessingTime(prev => prev + 1)
       }, 1000)
       return () => clearInterval(interval)
+    } else {
+      // Reset processing time when order is not processing
+      setProcessingTime(0)
     }
   }, [orderStatus])
 
@@ -976,8 +1003,13 @@ export default function BrowsePage() {
                 <div>
                   <button
                     onClick={() => {
+                      console.log('Cancel order clicked')
                       setOrderStatus('FAILED')
                       setError('Order processing cancelled by user')
+                      setCurrentOrder(null)
+                      setDownloadUrl(null)
+                      setOrderSuccess(false)
+                      setProcessingTime(0)
                     }}
                     style={{
                       padding: '8px 16px',
