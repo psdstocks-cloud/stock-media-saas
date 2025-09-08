@@ -47,7 +47,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'ready' | 'completed' | 'failed'>('all')
+  const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'ready' | 'completed' | 'failed'>('ready')
   const [processingOrders, setProcessingOrders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
@@ -59,17 +59,21 @@ export default function OrdersPage() {
     }
 
     fetchOrders()
+  }, [session, status, router])
+
+  // Separate effect for polling processing orders only
+  useEffect(() => {
+    if (!session?.user?.id) return
     
-    // Set up polling for processing orders
+    const processing = orders.filter(o => o.status === 'PROCESSING' || o.status === 'PENDING')
+    if (processing.length === 0) return
+
     const interval = setInterval(() => {
-      const processing = orders.filter(o => o.status === 'PROCESSING' || o.status === 'PENDING')
-      if (processing.length > 0) {
-        fetchOrders()
-      }
+      fetchOrders()
     }, 5000) // Poll every 5 seconds
 
     return () => clearInterval(interval)
-  }, [session, status, router, orders.length])
+  }, [orders.filter(o => o.status === 'PROCESSING' || o.status === 'PENDING').length])
 
   const fetchOrders = async () => {
     try {
@@ -95,6 +99,7 @@ export default function OrdersPage() {
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true
+    if (filter === 'ready') return order.status === 'READY' || order.status === 'COMPLETED'
     return order.status.toLowerCase() === filter.toLowerCase()
   })
 
@@ -318,7 +323,7 @@ export default function OrdersPage() {
               { id: 'all', name: 'All Orders', count: orders.length },
               { id: 'pending', name: 'Pending', count: orders.filter(o => o.status === 'PENDING').length },
               { id: 'processing', name: 'Processing', count: orders.filter(o => o.status === 'PROCESSING').length },
-              { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY').length },
+              { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY' || o.status === 'COMPLETED').length },
               { id: 'completed', name: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
               { id: 'failed', name: 'Failed', count: orders.filter(o => o.status === 'FAILED').length },
             ].map((tab) => (
@@ -367,7 +372,9 @@ export default function OrdersPage() {
               color: '#6b7280',
               marginBottom: '8px'
             }}>
-              {filter === 'all' ? 'No orders yet' : `No ${filter} orders`}
+              {filter === 'all' ? 'No orders yet' : 
+               filter === 'ready' ? 'No ready orders yet' : 
+               `No ${filter} orders`}
             </div>
             <div style={{
               fontSize: '14px',
@@ -376,6 +383,8 @@ export default function OrdersPage() {
             }}>
               {filter === 'all' 
                 ? 'Start browsing stock media to place your first order'
+                : filter === 'ready'
+                ? 'Your completed orders will appear here. Place an order to get started!'
                 : 'Try a different filter or check back later'
               }
             </div>
@@ -596,7 +605,7 @@ export default function OrdersPage() {
                             }}
                           >
                             <Download style={{ width: '16px', height: '16px' }} />
-                            Download File
+                            Download for Free
                           </a>
                         )}
                         
