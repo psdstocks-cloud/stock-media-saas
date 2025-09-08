@@ -80,6 +80,7 @@ export async function GET() {
         'shutterstock': 'https://www.shutterstock.com',
         'gettyimages': 'https://www.gettyimages.com',
         'adobe': 'https://stock.adobe.com',
+        'adobestock': 'https://stock.adobe.com',
         'unsplash': 'https://unsplash.com',
         'pexels': 'https://www.pexels.com',
         'depositphotos': 'https://depositphotos.com',

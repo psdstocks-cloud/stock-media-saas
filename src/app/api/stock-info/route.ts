@@ -87,9 +87,10 @@ function extractSiteAndId(url: string): { site: string | null; id: string | null
 
     // Adobe Stock
     if (hostname.includes('adobe.com') || hostname.includes('stock.adobe.com')) {
-      const match = url.match(/\/stock-photo\/([^\/\?]+)/)
+      // Extract ID from the end of the URL (e.g., 452613406 from templates/paint-art-portrait-effect/452613406)
+      const match = url.match(/(\d+)$/)
       if (match) {
-        return { site: 'adobe', id: match[1] }
+        return { site: 'adobestock', id: match[1] }
       }
     }
 
