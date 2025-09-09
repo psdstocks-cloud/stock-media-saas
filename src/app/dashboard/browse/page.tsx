@@ -799,147 +799,146 @@ export default function BrowsePage() {
               </p>
             </div>
 
-            <div style={{ padding: '24px' }}>
+            <div style={{ padding: '20px' }}>
+              {/* Compact Header with Title and Cost - Responsive */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 2fr',
-                gap: '24px',
-                marginBottom: '24px'
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                marginBottom: '20px'
               }}>
-                {/* Image Preview */}
+                {/* Mobile: Stack vertically, Desktop: Side by side */}
                 <div style={{
-                  height: '400px',
-                  background: '#f8fafc',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  position: 'relative',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid #e2e8f0'
+                  flexDirection: 'column',
+                  gap: '16px'
                 }}>
-                  <img
-                    src={stockInfo.imageUrl}
-                    alt={stockInfo.title}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      borderRadius: '8px'
-                    }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = `
-                          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6b7280;">
-                            <div style="font-size: 48px; margin-bottom: 16px;">🖼️</div>
-                            <div style="font-size: 16px; font-weight: 500;">Image Preview</div>
-                            <div style="font-size: 14px; margin-top: 4px;">Click to view original</div>
-                          </div>
-                        `;
-                      }
-                    }}
-                  />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{
+                      fontSize: '22px',
+                      fontWeight: '700',
+                      color: '#0f172a',
+                      marginBottom: '8px',
+                      lineHeight: '1.3'
+                    }}>{stockInfo.title}</h4>
+                    
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      marginBottom: '12px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        background: '#f1f5f9',
+                        borderRadius: '20px',
+                        fontSize: '14px',
+                        color: '#475569',
+                        fontWeight: '500'
+                      }}>
+                        <span style={{ textTransform: 'capitalize' }}>{stockInfo.site}</span>
+                      </div>
+                      
+                      <a 
+                        href={stockInfo.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 12px',
+                          background: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          borderRadius: '20px',
+                          fontSize: '13px', 
+                          color: '#2563eb', 
+                          textDecoration: 'none',
+                          fontWeight: '500',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        🔗 View Original
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Cost Display - Prominent */}
                   <div style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    background: 'rgba(0, 0, 0, 0.8)',
+                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
                     color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    backdropFilter: 'blur(4px)'
+                    padding: '16px 20px',
+                    borderRadius: '12px',
+                    textAlign: 'center',
+                    minWidth: '140px',
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                    alignSelf: 'flex-start'
                   }}>
-                    📷 IMAGE
+                    <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '4px' }}>Cost</div>
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>{stockInfo.cost} pts</div>
+                    <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
+                      Balance: {userBalance} pts
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Details */}
-                <div>
-                  <h4 style={{
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    color: '#0f172a',
-                    marginBottom: '12px',
-                    lineHeight: '1.4'
-                  }}>{stockInfo.title}</h4>
-                  
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    marginBottom: '16px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px' }}>Source:</span>
-                      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500', textTransform: 'capitalize' }}>{stockInfo.site}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                      <span style={{ fontSize: '14px', color: '#64748b', minWidth: '80px', marginTop: '2px' }}>Image Link:</span>
-                      <div style={{ flex: 1 }}>
-                        <a 
-                          href={stockInfo.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          style={{ 
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '8px 12px',
-                            background: '#f8fafc',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '8px',
-                            fontSize: '12px', 
-                            color: '#374151', 
-                            fontWeight: '500',
-                            textDecoration: 'none',
-                            wordBreak: 'break-all',
-                            transition: 'all 0.2s ease',
-                            maxWidth: '100%',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          <ExternalLink style={{ width: '14px', height: '14px', color: '#6b7280', flexShrink: 0 }} />
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {stockInfo.url}
-                          </span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{
-                    background: '#f8fafc',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    border: '1px solid #e2e8f0'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '8px'
-                    }}>
-                      <span style={{ fontSize: '16px', fontWeight: '500', color: '#374151' }}>Cost:</span>
-                      <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>{stockInfo.cost} points</span>
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}>
-                      <span style={{ fontSize: '14px', color: '#64748b' }}>Your balance:</span>
-                      <span style={{ fontSize: '16px', fontWeight: '500', color: userBalance >= stockInfo.cost ? '#059669' : '#dc2626' }}>
-                        {userBalance} points
-                      </span>
-                    </div>
-                  </div>
+              {/* Image Preview - Optimized Size */}
+              <div style={{
+                height: '300px',
+                background: '#f8fafc',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid #e2e8f0',
+                marginBottom: '20px'
+              }}>
+                <img
+                  src={stockInfo.imageUrl}
+                  alt={stockInfo.title}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: '8px'
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6b7280;">
+                          <div style="font-size: 48px; margin-bottom: 16px;">🖼️</div>
+                          <div style="font-size: 16px; font-weight: 500;">Image Preview</div>
+                          <div style="font-size: 14px; margin-top: 4px;">Click to view original</div>
+                        </div>
+                      `;
+                    }
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  background: 'rgba(0, 0, 0, 0.8)',
+                  color: 'white',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  backdropFilter: 'blur(4px)'
+                }}>
+                  📷 IMAGE
                 </div>
               </div>
 
@@ -1188,73 +1187,110 @@ export default function BrowsePage() {
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons - Redesigned for Better CTO & Mobile Responsive */}
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                alignItems: 'flex-end'
+                padding: '20px',
+                background: '#f8fafc',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                marginTop: '16px'
               }}>
-                <button
-                  onClick={() => {
-                    setStockInfo(null)
-                    setUrl('')
-                    setError('')
-                    setCurrentOrder(null)
-                    setOrderStatus('')
-                    setDownloadUrl('')
-                    setOrderSuccess(false)
-                    setProcessingTime(0)
-                    setExistingOrder(null)
-                  }}
-                  style={{
-                    padding: '12px 24px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    background: 'white',
-                    color: '#374151',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  Cancel
-                </button>
-                {!currentOrder && !existingOrder && (
+                {/* Button Container - Responsive Layout */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  width: '100%'
+                }}>
+                  {/* Confirm Order button (Primary CTA) - Full width on mobile */}
+                  {!currentOrder && !existingOrder && (
+                    <button
+                      onClick={() => {
+                        console.log('Confirm Order button clicked', { 
+                          isOrdering, 
+                          userBalance, 
+                          cost: stockInfo.cost,
+                          disabled: isOrdering || userBalance < stockInfo.cost 
+                        })
+                        handlePlaceOrder()
+                      }}
+                      disabled={isOrdering || userBalance < stockInfo.cost}
+                      style={{
+                        padding: '16px 24px',
+                        background: isOrdering || userBalance < stockInfo.cost 
+                          ? '#9ca3af' 
+                          : 'linear-gradient(135deg, #059669, #047857)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        cursor: isOrdering || userBalance < stockInfo.cost 
+                          ? 'not-allowed' 
+                          : 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        width: '100%',
+                        justifyContent: 'center',
+                        boxShadow: isOrdering || userBalance < stockInfo.cost 
+                          ? 'none'
+                          : '0 4px 12px rgba(5, 150, 105, 0.3)',
+                        transform: isOrdering || userBalance < stockInfo.cost 
+                          ? 'none'
+                          : 'translateY(-1px)'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isOrdering && userBalance >= stockInfo.cost) {
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(5, 150, 105, 0.4)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isOrdering && userBalance >= stockInfo.cost) {
+                          e.currentTarget.style.transform = 'translateY(-1px)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.3)'
+                        }
+                      }}
+                    >
+                      {isOrdering ? '⏳' : '✅'} 
+                      <span>{isOrdering ? 'Placing Order...' : 'Confirm Order'}</span>
+                    </button>
+                  )}
+
+                  {/* Cancel button - Secondary action */}
                   <button
                     onClick={() => {
-                      console.log('Confirm Order button clicked', { 
-                        isOrdering, 
-                        userBalance, 
-                        cost: stockInfo.cost,
-                        disabled: isOrdering || userBalance < stockInfo.cost 
-                      })
-                      handlePlaceOrder()
+                      setStockInfo(null)
+                      setUrl('')
+                      setError('')
+                      setCurrentOrder(null)
+                      setOrderStatus('')
+                      setDownloadUrl('')
+                      setOrderSuccess(false)
+                      setProcessingTime(0)
+                      setExistingOrder(null)
                     }}
-                    disabled={isOrdering || userBalance < stockInfo.cost}
                     style={{
                       padding: '12px 24px',
-                      background: isOrdering || userBalance < stockInfo.cost 
-                        ? '#9ca3af' 
-                        : 'linear-gradient(135deg, #059669, #047857)',
-                      color: 'white',
-                      border: 'none',
+                      border: '1px solid #d1d5db',
                       borderRadius: '8px',
+                      background: 'white',
+                      color: '#6b7280',
                       fontSize: '16px',
-                      fontWeight: '600',
-                      cursor: isOrdering || userBalance < stockInfo.cost 
-                        ? 'not-allowed' 
-                        : 'pointer',
+                      fontWeight: '500',
+                      cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
+                      width: '100%'
                     }}
                   >
-                    {isOrdering ? '⏳' : '✅'} {isOrdering ? 'Placing Order...' : 'Confirm Order'}
+                    Cancel
                   </button>
-                )}
+                </div>
               </div>
 
               {userBalance < stockInfo.cost && (
