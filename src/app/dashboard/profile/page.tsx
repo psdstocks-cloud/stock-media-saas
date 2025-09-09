@@ -80,6 +80,8 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -127,6 +129,97 @@ export default function ProfilePage() {
   const refreshProfile = () => {
     setDataLoaded(false)
     fetchProfile(true)
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Clear previous errors
+    setErrors({ image: '' })
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setErrors({ image: 'Please select a valid image file (JPG, PNG, GIF, WebP)' })
+      return
+    }
+
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024 // 2MB
+    if (file.size > maxSize) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
+      setErrors({ 
+        image: `Image size (${fileSizeMB}MB) exceeds the 2MB limit. Please compress your image or choose a smaller file.` 
+      })
+      return
+    }
+
+    try {
+      setIsUploadingImage(true)
+      setErrors({ image: '' })
+
+      // Create preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      // Upload image
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await fetch('/api/profile/upload-image', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setSuccess('Profile picture updated successfully!')
+        // Update profile with new image URL
+        if (profile) {
+          setProfile({ ...profile, image: data.imageUrl })
+        }
+        // Clear preview after successful upload
+        setTimeout(() => {
+          setImagePreview(null)
+          setSuccess('')
+        }, 3000)
+      } else {
+        setErrors({ image: data.error || 'Failed to upload image' })
+      }
+    } catch (error) {
+      setErrors({ image: 'Failed to upload image' })
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  const triggerImageUpload = () => {
+    const fileInput = document.getElementById('profile-image-upload') as HTMLInputElement
+    fileInput?.click()
+  }
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Immediate validation feedback
+    const maxSize = 2 * 1024 * 1024 // 2MB
+    if (file.size > maxSize) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
+      setErrors({ 
+        image: `File too large (${fileSizeMB}MB). Maximum size is 2MB.` 
+      })
+      // Clear the file input
+      event.target.value = ''
+      return
+    }
+
+    // If file is valid, proceed with upload
+    handleImageUpload(event)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -492,7 +585,11 @@ export default function ProfilePage() {
                 position: 'relative',
                 width: '80px',
                 height: '80px',
-                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                background: profile?.image || imagePreview 
+                  ? `url(${profile?.image || imagePreview})` 
+                  : 'linear-gradient(135deg, #667eea, #764ba2)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -500,29 +597,66 @@ export default function ProfilePage() {
                 color: 'white',
                 fontSize: '32px',
                 fontWeight: 'bold',
-                textTransform: 'uppercase'
+                textTransform: 'uppercase',
+                overflow: 'hidden'
               }}>
-                {profile?.name?.charAt(0) || 'U'}
+                {!profile?.image && !imagePreview && (
+                  <span>{profile?.name?.charAt(0) || 'U'}</span>
+                )}
                 <button
+                  onClick={triggerImageUpload}
+                  disabled={isUploadingImage}
                   style={{
                     position: 'absolute',
                     bottom: '0',
                     right: '0',
                     width: '24px',
                     height: '24px',
-                    background: '#10b981',
+                    background: isUploadingImage ? '#e2e8f0' : '#10b981',
                     border: '2px solid white',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '12px'
+                    cursor: isUploadingImage ? 'not-allowed' : 'pointer',
+                    fontSize: '12px',
+                    opacity: isUploadingImage ? 0.6 : 1,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isUploadingImage) {
+                      e.currentTarget.style.transform = 'scale(1.1)'
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isUploadingImage) {
+                      e.currentTarget.style.transform = 'scale(1)'
+                    }
                   }}
                 >
-                  <Camera size={12} />
+                  {isUploadingImage ? (
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      border: '2px solid #e2e8f0',
+                      borderTop: '2px solid #10b981',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                  ) : (
+                    <Camera size={12} />
+                  )}
                 </button>
+                
+                {/* Hidden file input */}
+                <input
+                  id="profile-image-upload"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
               </div>
 
               <div style={{ flex: 1 }}>
@@ -541,6 +675,48 @@ export default function ProfilePage() {
                 }}>
                   {profile?.email}
                 </p>
+                
+                {/* Image upload messages */}
+                {errors.image && (
+                  <div style={{
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    color: '#dc2626',
+                    fontSize: '14px'
+                  }}>
+                    {errors.image}
+                  </div>
+                )}
+                
+                {success && (
+                  <div style={{
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    color: '#16a34a',
+                    fontSize: '14px'
+                  }}>
+                    {success}
+                  </div>
+                )}
+
+                {/* File size info */}
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  marginBottom: '16px',
+                  fontSize: '12px',
+                  color: '#64748b'
+                }}>
+                  💡 <strong>Tip:</strong> Maximum file size is 2MB. For best results, use JPG or PNG format.
+                </div>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
