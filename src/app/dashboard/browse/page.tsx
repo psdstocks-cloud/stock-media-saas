@@ -436,65 +436,26 @@ export default function BrowsePage() {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: '16px',
             flexWrap: 'wrap'
           }}>
-            {/* User Info - Clean & Professional */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '8px 16px',
-              background: 'rgba(255, 255, 255, 0.15)',
-              borderRadius: '20px',
-              color: 'white',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              minWidth: 'fit-content'
-            }}>
-              {/* User Avatar */}
-              <div style={{
-                width: '32px',
-                height: '32px',
-                background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                textTransform: 'uppercase'
-              }}>
-                {(session?.user?.name || 'U').charAt(0)}
-              </div>
-              
-              {/* User Name - First Name Only */}
-              <span style={{ 
-                fontWeight: '600',
-                fontSize: '14px'
-              }}>
-                {session?.user?.name?.split(' ')[0] || 'User'}
-              </span>
-            </div>
-
-            {/* Points Balance - Prominent Display */}
+            {/* Points Balance - Primary Focus */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '10px 18px',
+              padding: '12px 20px',
               background: 'linear-gradient(135deg, #10b981, #059669)',
-              borderRadius: '20px',
+              borderRadius: '25px',
               color: 'white',
               fontWeight: 'bold',
-              fontSize: '15px',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              fontSize: '16px',
+              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
               minWidth: 'fit-content'
             }}>
               <div style={{
-                width: '6px',
-                height: '6px',
+                width: '8px',
+                height: '8px',
                 background: 'white',
                 borderRadius: '50%',
                 animation: 'pulse 2s infinite'
@@ -502,10 +463,10 @@ export default function BrowsePage() {
               <span>{userBalance}</span>
               <span style={{ 
                 opacity: 0.9,
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: '500'
               }}>
-                points
+                points available
               </span>
               
               {/* Refresh Button */}
@@ -516,8 +477,8 @@ export default function BrowsePage() {
                   border: 'none',
                   color: 'white',
                   cursor: 'pointer',
-                  padding: '6px',
-                  borderRadius: '8px',
+                  padding: '8px',
+                  borderRadius: '10px',
                   transition: 'all 0.2s ease',
                   display: 'flex',
                   alignItems: 'center',
@@ -533,41 +494,80 @@ export default function BrowsePage() {
                 }}
                 title="Refresh Balance"
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={16} />
               </button>
             </div>
 
-            {/* My Orders Button */}
-            <button
-              onClick={() => router.push('/dashboard/orders')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                background: 'white',
-                border: 'none',
-                borderRadius: '20px',
-                color: '#374151',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                fontWeight: '600',
-                fontSize: '14px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                minWidth: 'fit-content'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <Download size={16} />
-              My Orders
-            </button>
+            {/* Quick Actions */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              {/* My Orders Button */}
+              <button
+                onClick={() => router.push('/dashboard/orders')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  background: 'white',
+                  border: 'none',
+                  borderRadius: '25px',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  minWidth: 'fit-content'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                <Download size={16} />
+                My Orders
+              </button>
+
+              {/* Browse All Sites Button */}
+              <button
+                onClick={() => setShowSupportedSites(!showSupportedSites)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '25px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  backdropFilter: 'blur(10px)',
+                  minWidth: 'fit-content'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                <ExternalLink size={16} />
+                {showSupportedSites ? 'Hide Sites' : 'Browse Sites'}
+              </button>
+            </div>
           </div>
         </div>
 
