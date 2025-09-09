@@ -111,7 +111,7 @@ export default function RegisterPage() {
         // Fallback plans if API fails
         const fallbackPlans = [
           {
-            id: 'starter-fallback',
+            id: 'starter',
             name: 'starter',
             description: 'Perfect for individuals and small projects',
             price: 9.99,
@@ -120,7 +120,7 @@ export default function RegisterPage() {
             isActive: true
           },
           {
-            id: 'professional-fallback',
+            id: 'professional',
             name: 'professional',
             description: 'Ideal for freelancers and small agencies',
             price: 29.99,
@@ -129,7 +129,7 @@ export default function RegisterPage() {
             isActive: true
           },
           {
-            id: 'business-fallback',
+            id: 'business',
             name: 'business',
             description: 'Perfect for agencies and design teams',
             price: 79.99,
@@ -138,7 +138,7 @@ export default function RegisterPage() {
             isActive: true
           },
           {
-            id: 'enterprise-fallback',
+            id: 'enterprise',
             name: 'enterprise',
             description: 'For large agencies and enterprises',
             price: 199.99,
@@ -188,6 +188,8 @@ export default function RegisterPage() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+
+    console.log('Form submission:', { formData, selectedPlan, plans })
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
@@ -688,7 +690,10 @@ export default function RegisterPage() {
                                 transition: 'all 0.3s ease',
                                 background: selectedPlan === plan.name ? '#eff6ff' : 'white'
                               }}
-                              onClick={() => setSelectedPlan(plan.name)}
+                              onClick={() => {
+                                console.log('Plan clicked:', plan.name)
+                                setSelectedPlan(plan.name)
+                              }}
                             >
                               <div style={{
                                 display: 'flex',
@@ -704,13 +709,13 @@ export default function RegisterPage() {
                                     width: '20px',
                                     height: '20px',
                                     borderRadius: '50%',
-                                    border: selectedPlan === plan.id ? '2px solid #3b82f6' : '2px solid #d1d5db',
-                                    background: selectedPlan === plan.id ? '#3b82f6' : 'transparent',
+                                    border: selectedPlan === plan.name ? '2px solid #3b82f6' : '2px solid #d1d5db',
+                                    background: selectedPlan === plan.name ? '#3b82f6' : 'transparent',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                   }}>
-                                    {selectedPlan === plan.id && (
+                                    {selectedPlan === plan.name && (
                                       <div style={{
                                         width: '8px',
                                         height: '8px',
