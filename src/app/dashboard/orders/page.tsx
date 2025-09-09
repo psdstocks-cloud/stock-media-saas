@@ -99,7 +99,7 @@ export default function OrdersPage() {
     }
   }
 
-  // Smart download functionality - seamless background process
+  // Direct download functionality - no API calls, just open existing URL
   const handleSmartDownload = async (order: Order) => {
     console.log('🔄 handleSmartDownload called for order:', order.id)
     
@@ -110,153 +110,58 @@ export default function OrdersPage() {
     }
     
     // Prevent multiple simultaneous downloads of the same order
-    if (regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) {
+    if (downloadingOrders.has(order.id)) {
       console.log('⏳ Download already in progress for order:', order.id)
       return
     }
     
+    // Check if order has a download URL
+    if (!order.downloadUrl) {
+      console.error('❌ No download URL available for order:', order.id)
+      return
+    }
+    
     try {
-      console.log('🚀 Starting download process for order:', order.id)
+      console.log('🚀 Starting direct download for order:', order.id)
       setIsAnyDownloadActive(true)
-      setRegeneratingLinks(prev => new Set(prev).add(order.id))
       setDownloadingOrders(prev => new Set(prev).add(order.id))
       
-      console.log('🔄 Starting seamless download for order:', {
-        orderId: order.id,
-        status: order.status,
-        taskId: order.taskId,
-        stockItemId: order.stockItemId
-      })
+      console.log('🔗 Opening existing download URL:', order.downloadUrl)
       
-      const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      console.log('📡 API response status:', response.status)
+      // Method 1: Direct window.open (bypasses popup blockers when triggered by user action)
+      console.log('🔧 Opening download in new tab...')
+      const newWindow = window.open(order.downloadUrl, '_blank', 'noopener,noreferrer')
       
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ API Error:', errorText)
-        let errorData
-        try {
-          errorData = JSON.parse(errorText)
-        } catch {
-          errorData = { error: errorText }
-        }
-        throw new Error(errorData.error || `HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-      console.log('📡 API response data:', data)
-      console.log('📡 API response success:', data.success)
-      console.log('📡 API response order:', data.order)
-      console.log('📡 API response downloadLink:', data.downloadLink)
-
-      // Determine the download URL and update order
-      let downloadUrl = null
-      let updatedOrder = order
-      
-      if (data.success) {
-        console.log('✅ API response indicates success')
-        if (data.order && data.order.downloadUrl) {
-          console.log('✅ Download ready (order response) - downloadUrl:', data.order.downloadUrl)
-          downloadUrl = data.order.downloadUrl
-          updatedOrder = data.order
-          
-          // Update the order in local state
-          console.log('🔄 Updating order in local state...')
-          setOrders(prevOrders => 
-            prevOrders.map(o => 
-              o.id === order.id ? data.order : o
-            )
-          )
-          console.log('✅ Order updated in local state')
-        } else if (data.downloadLink) {
-          console.log('✅ Download ready (direct response) - downloadLink:', data.downloadLink)
-          downloadUrl = data.downloadLink
-          
-          // Update the order in local state with the new download link
-          const newOrder = {
-            ...order,
-            downloadUrl: data.downloadLink,
-            fileName: data.fileName || order.fileName,
-            status: 'READY' as const,
-            updatedAt: new Date().toISOString()
-          }
-          updatedOrder = newOrder
-          
-          console.log('🔄 Updating order in local state with new download link...')
-          setOrders(prevOrders => 
-            prevOrders.map(o => 
-              o.id === order.id ? newOrder : o
-            )
-          )
-          console.log('✅ Order updated in local state with new download link')
-        } else {
-          console.warn('⚠️ API success but no download URL found')
-        }
+      if (newWindow) {
+        console.log('✅ Download opened in new tab successfully')
+        // Focus the new window
+        newWindow.focus()
       } else {
-        console.error('❌ API response indicates failure')
-      }
-      
-      console.log('🎯 Final downloadUrl determined:', downloadUrl)
-      
-      // Open download link only once
-      if (downloadUrl) {
-        console.log('🔗 Opening download:', downloadUrl)
+        console.warn('⚠️ Popup blocked, trying fallback method...')
         
-        try {
-          // Add a small delay to ensure state is properly set
-          console.log('⏳ Adding delay before download...')
-          await new Promise(resolve => setTimeout(resolve, 100))
-          console.log('✅ Delay completed')
-          
-          // Method 1: Direct window.open (bypasses popup blockers when triggered by user action)
-          console.log('🔧 Opening download in new tab...')
-          const newWindow = window.open(downloadUrl, '_blank', 'noopener,noreferrer')
-          
-          if (newWindow) {
-            console.log('✅ Download opened in new tab successfully')
-            // Focus the new window
-            newWindow.focus()
-          } else {
-            console.warn('⚠️ Popup blocked, trying fallback method...')
-            
-            // Method 2: Fallback - create temporary link
-            console.log('🔧 Creating temporary link element as fallback...')
-            const link = document.createElement('a')
-            link.href = downloadUrl
-            link.target = '_blank'
-            link.rel = 'noopener noreferrer'
-            link.style.display = 'none'
-            
-            console.log('📎 Adding link to DOM...')
-            document.body.appendChild(link)
-            console.log('✅ Link added to DOM')
-            
-            console.log('🖱️ Clicking link...')
-            link.click()
-            console.log('✅ Link clicked')
-            
-            console.log('🗑️ Removing link from DOM...')
-            document.body.removeChild(link)
-            console.log('✅ Link removed from DOM')
-          }
-          
-          // Prevent any further download attempts for this order
-          console.log('✅ Download initiated successfully for order:', order.id)
-        } catch (downloadError) {
-          console.error('💥 Error during download execution:', downloadError)
-          throw downloadError
-        }
-      } else {
-        console.error('❌ Download failed - no download URL:', data)
-        // Silent fail - no popup, just log the error
-        console.warn('Download not available for this order')
+        // Method 2: Fallback - create temporary link
+        console.log('🔧 Creating temporary link element as fallback...')
+        const link = document.createElement('a')
+        link.href = order.downloadUrl
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        link.style.display = 'none'
+        
+        console.log('📎 Adding link to DOM...')
+        document.body.appendChild(link)
+        console.log('✅ Link added to DOM')
+        
+        console.log('🖱️ Clicking link...')
+        link.click()
+        console.log('✅ Link clicked')
+        
+        console.log('🗑️ Removing link from DOM...')
+        document.body.removeChild(link)
+        console.log('✅ Link removed from DOM')
       }
+      
+      // Prevent any further download attempts for this order
+      console.log('✅ Download initiated successfully for order:', order.id)
     } catch (error) {
       console.error('💥 Download error:', error)
       // Silent fail - no popup, just log the error
@@ -264,11 +169,6 @@ export default function OrdersPage() {
     } finally {
       console.log('🧹 Cleaning up download state for order:', order.id)
       setIsAnyDownloadActive(false)
-      setRegeneratingLinks(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(order.id)
-        return newSet
-      })
       setDownloadingOrders(prev => {
         const newSet = new Set(prev)
         newSet.delete(order.id)
@@ -894,36 +794,31 @@ export default function OrdersPage() {
                     }}>
                       {order.status === 'READY' && (
                         <button
-                          onClick={() => !isAnyDownloadActive && !regeneratingLinks.has(order.id) && !downloadingOrders.has(order.id) && handleSmartDownload(order)}
-                          disabled={isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)}
+                          onClick={() => !isAnyDownloadActive && !downloadingOrders.has(order.id) && handleSmartDownload(order)}
+                          disabled={isAnyDownloadActive || downloadingOrders.has(order.id)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '8px',
                             padding: '12px 20px',
-                            background: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id))
+                            background: (isAnyDownloadActive || downloadingOrders.has(order.id))
                               ? '#f3f4f6' 
                               : 'linear-gradient(135deg, #059669, #047857)',
-                            color: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) ? '#9ca3af' : 'white',
+                            color: (isAnyDownloadActive || downloadingOrders.has(order.id)) ? '#9ca3af' : 'white',
                             border: 'none',
                             borderRadius: '10px',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) ? 'not-allowed' : 'pointer',
+                            cursor: (isAnyDownloadActive || downloadingOrders.has(order.id)) ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s ease',
-                            boxShadow: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id))
+                            boxShadow: (isAnyDownloadActive || downloadingOrders.has(order.id))
                               ? 'none' 
                               : '0 4px 12px rgba(5, 150, 105, 0.3)',
-                            opacity: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) ? 0.7 : 1
+                            opacity: (isAnyDownloadActive || downloadingOrders.has(order.id)) ? 0.7 : 1
                           }}
                         >
-                        {regeneratingLinks.has(order.id) ? (
-                          <>
-                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-                            Preparing...
-                          </>
-                        ) : downloadingOrders.has(order.id) ? (
+                        {downloadingOrders.has(order.id) ? (
                           <>
                             <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
                             Downloading...
