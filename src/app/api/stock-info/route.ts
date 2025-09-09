@@ -207,45 +207,54 @@ export async function POST(request: NextRequest) {
 function getDefaultCostForSite(site: string): number {
   const siteName = site.toLowerCase()
   
-  // Default cost mapping for different stock sites
+  // All stock sites cost 10 points as per business requirements
   const costMap: { [key: string]: number } = {
-    'shutterstock': 5,
-    'vshutter': 8,
-    'mshutter': 6,
-    'adobestock': 7,
-    'adobe': 7,
-    'depositphotos': 4,
-    'depositphotos_video': 6,
-    'istockphoto': 6,
-    'istock': 6,
-    'gettyimages': 8,
-    'freepik': 3,
-    'vfreepik': 5,
-    'flaticon': 2,
-    'flaticonpack': 4,
-    '123rf': 4,
-    'dreamstime': 3,
-    'vectorstock': 3,
-    'alamy': 5,
-    'storyblocks': 6,
-    'vecteezy': 3,
-    'creativefabrica': 4,
-    'rawpixel': 3,
-    'motionarray': 8,
-    'envato': 6,
-    'pixelsquid': 5,
-    'ui8': 4,
-    'iconscout': 3,
-    'lovepik': 2,
-    'pngtree': 2,
-    'deeezy': 4,
-    'footagecrate': 6,
-    'artgrid_hd': 7,
-    'yellowimages': 3,
-    'epidemicsound': 5
+    'shutterstock': 10,
+    'vshutter': 10, // SS video HD
+    'mshutter': 10, // SS music
+    'adobestock': 10,
+    'adobe': 10,
+    'depositphotos': 10,
+    'depositphotos_video': 10,
+    'istockphoto': 10,
+    'istock': 10,
+    'gettyimages': 10,
+    'freepik': 10,
+    'vfreepik': 10, // Freepik video
+    'flaticon': 10,
+    'flaticonpack': 10,
+    '123rf': 10,
+    'dreamstime': 10,
+    'vectorstock': 10,
+    'alamy': 10,
+    'storyblocks': 10,
+    'vecteezy': 10,
+    'creativefabrica': 10,
+    'rawpixel': 10,
+    'motionarray': 10,
+    'envato': 10,
+    'pixelsquid': 10,
+    'ui8': 10,
+    'iconscout': 10,
+    'lovepik': 10,
+    'pngtree': 10,
+    'deeezy': 10,
+    'footagecrate': 10,
+    'artgrid_hd': 10,
+    'yellowimages': 10,
+    'epidemicsound': 10,
+    'pixeden': 10,
+    'pixelbuddha': 10,
+    'mockupcloud': 10,
+    'designi': 10,
+    'craftwork': 10,
+    'soundstripe': 10,
+    'artlist_footage': 10, // artlist video/template
+    'artlist_sound': 10, // artlist music/sfx
+    'motionelements': 10
   }
   
-  return costMap[siteName] || 5 // Default cost of 5 points
+  return costMap[siteName] || 10 // Default cost of 10 points for all sites
 }
 
 function extractSiteAndId(url: string): { site: string | null; id: string | null } {

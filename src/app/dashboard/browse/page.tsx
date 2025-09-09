@@ -301,6 +301,9 @@ export default function BrowsePage() {
       const data = await response.json()
 
       if (data.success && data.data) {
+        console.log('Stock info received:', data.data)
+        console.log('Cost from API:', data.data.cost)
+        console.log('User balance:', userBalance)
         setStockInfo(data.data)
         // Check if this item was already ordered
         await checkExistingOrder(data.data.site, data.data.id)
@@ -1303,7 +1306,8 @@ export default function BrowsePage() {
                           isOrdering, 
                           userBalance, 
                           cost: stockInfo.cost,
-                          disabled: isOrdering || userBalance < stockInfo.cost 
+                          disabled: isOrdering || userBalance < stockInfo.cost,
+                          stockInfo: stockInfo
                         })
                         handlePlaceOrder()
                       }}
