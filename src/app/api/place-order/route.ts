@@ -23,8 +23,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Check user balance
-    console.log('Checking user balance...')
+    // Check if this item was already ordered (free download)
+    console.log('Checking for existing order...')
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        userId: session.user.id,
+        stockItemId: id,
+        status: { in: ['READY', 'COMPLETED'] }
+      },
+      include: { stockSite: true }
+    })
+
+    if (existingOrder) {
+      console.log('Existing order found - providing free download')
+      return NextResponse.json({
+        success: true,
+        existingOrder: true,
+        order: existingOrder,
+        message: 'You have already ordered this item. Download is free!'
+      })
+    }
+
+    // Check user balance for new orders
+    console.log('Checking user balance for new order...')
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { pointsBalance: true }

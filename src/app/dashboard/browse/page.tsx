@@ -33,16 +33,19 @@ interface StockInfo {
 
 interface OrderResponse {
   success: boolean
+  existingOrder?: boolean
   order?: {
     id: string
     status: string
     title: string
     cost: number
     createdAt: string
+    downloadUrl?: string
   }
   error?: string
   currentPoints?: number
   requiredPoints?: number
+  message?: string
 }
 
 interface SupportedSite {
@@ -346,8 +349,14 @@ export default function BrowsePage() {
       const data: OrderResponse = await response.json()
       console.log('Order response data:', data)
 
-      if (data.success && data.order) {
-        console.log('Order placed successfully:', data.order)
+      if (data.success && data.existingOrder && data.order) {
+        console.log('Existing order found - free download:', data.order)
+        setExistingOrder(data.order)
+        setCurrentOrder(null)
+        setOrderStatus('')
+        // No points deducted for existing orders
+      } else if (data.success && data.order) {
+        console.log('New order placed successfully:', data.order)
         setCurrentOrder(data.order)
         setOrderStatus('PENDING')
         setProcessingTime(0)
@@ -490,10 +499,41 @@ export default function BrowsePage() {
               gap: '16px'
             }}>
               <div style={{
-                fontSize: '14px',
-                color: '#64748b'
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '8px 16px',
+                background: 'linear-gradient(135deg, #f1f5f9, #e2e8f0)',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1'
               }}>
-                <span style={{ fontWeight: '500' }}>{userBalance}</span> points available
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    background: '#10b981',
+                    borderRadius: '50%'
+                  }}></div>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>
+                    {session?.user?.name || 'User'}
+                  </span>
+                </div>
+                <div style={{
+                  width: '1px',
+                  height: '20px',
+                  background: '#cbd5e1'
+                }}></div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#475569',
+                  fontWeight: '500'
+                }}>
+                  <span style={{ color: '#2563eb', fontWeight: '700' }}>{userBalance}</span> points
+                </div>
               </div>
               <button
                 onClick={() => router.push('/dashboard/orders')}
@@ -799,13 +839,13 @@ export default function BrowsePage() {
               </p>
             </div>
 
-            <div style={{ padding: '20px' }}>
+            <div style={{ padding: '16px' }}>
               {/* Compact Header with Title and Cost - Responsive */}
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px',
-                marginBottom: '20px'
+                gap: '12px',
+                marginBottom: '16px'
               }}>
                 {/* Mobile: Stack vertically, Desktop: Side by side */}
                 <div style={{
@@ -887,18 +927,18 @@ export default function BrowsePage() {
                 </div>
               </div>
 
-              {/* Image Preview - Optimized Size */}
+              {/* Image Preview - Minimal Size */}
               <div style={{
-                height: '300px',
+                height: '150px',
                 background: '#f8fafc',
-                borderRadius: '12px',
+                borderRadius: '8px',
                 overflow: 'hidden',
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 border: '1px solid #e2e8f0',
-                marginBottom: '20px'
+                marginBottom: '16px'
               }}>
                 <img
                   src={stockInfo.imageUrl}

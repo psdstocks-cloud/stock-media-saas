@@ -247,9 +247,9 @@ export default function DashboardPage() {
               marginBottom: '16px',
               lineHeight: '1.1'
             }}>
-              Download Premium Stock Media
+              Welcome back, {session?.user?.name || 'User'}! 👋
               <span style={{ display: 'block', fontSize: '32px', fontWeight: '400', opacity: 0.9 }}>
-                for a fraction of the cost
+                Download premium stock media for a fraction of the cost
               </span>
             </h1>
             <p style={{
