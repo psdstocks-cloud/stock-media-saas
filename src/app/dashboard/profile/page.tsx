@@ -1,53 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, User, Mail, Calendar, CreditCard, Settings, Save, Edit3 } from 'lucide-react'
 
 interface UserProfile {
   id: string
-  name: string | null
+  name: string
   email: string
-  image: string | null
-  role: string
   createdAt: string
-}
-
-interface Subscription {
-  id: string
-  status: string
-  currentPeriodStart: string
-  currentPeriodEnd: string
-  cancelAtPeriodEnd: boolean
-  plan: {
-    id: string
-    name: string
-    description: string | null
-    price: number
-    points: number
-    rolloverLimit: number
-  }
-}
-
-interface ApiKey {
-  id: string
-  key: string
-  isActive: boolean
-  lastUsed: string | null
-  createdAt: string
+  pointsBalance: number
+  totalOrders: number
+  successfulDownloads: number
 }
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  
   const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'profile' | 'subscription' | 'api-keys'>('profile')
-  const [isGeneratingKey, setIsGeneratingKey] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: ''
+  })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -57,114 +34,85 @@ export default function ProfilePage() {
       return
     }
 
-    // Fetch profile data
-    const fetchProfileData = async () => {
+    // Fetch user profile data
+    const fetchProfile = async () => {
       try {
-        const [profileResponse, subscriptionResponse, apiKeysResponse] = await Promise.all([
-          fetch('/api/profile'),
-          fetch('/api/subscription'),
-          fetch('/api/api-keys')
+        const [balanceResponse, ordersResponse] = await Promise.all([
+          fetch(`/api/points?userId=${session.user.id}`),
+          fetch(`/api/orders?userId=${session.user.id}`)
         ])
 
-        const profileData = await profileResponse.json()
-        const subscriptionData = await subscriptionResponse.json()
-        const apiKeysData = await apiKeysResponse.json()
+        const balanceData = await balanceResponse.json()
+        const ordersData = await ordersResponse.json()
 
-        setProfile(profileData.profile)
-        setSubscription(subscriptionData.subscription)
-        setApiKeys(apiKeysData.apiKeys || [])
+        const userProfile: UserProfile = {
+          id: session.user.id,
+          name: session.user.name || 'User',
+          email: session.user.email || '',
+          createdAt: new Date().toISOString(), // You might want to get this from the database
+          pointsBalance: balanceData.balance?.currentPoints || 0,
+          totalOrders: ordersData.orders?.length || 0,
+          successfulDownloads: ordersData.orders?.filter((order: any) => 
+            order.status === 'COMPLETED' || order.status === 'READY'
+          ).length || 0
+        }
+
+        setProfile(userProfile)
+        setFormData({
+          name: userProfile.name,
+          email: userProfile.email
+        })
       } catch (error) {
-        console.error('Error fetching profile data:', error)
+        console.error('Error fetching profile:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchProfileData()
+    fetchProfile()
   }, [session, status, router])
 
-  const generateApiKey = async () => {
-    setIsGeneratingKey(true)
-    try {
-      const response = await fetch('/api/api-keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+  const handleSave = async () => {
+    // Here you would typically update the user profile in the database
+    // For now, we'll just update the local state
+    if (profile) {
+      setProfile({
+        ...profile,
+        name: formData.name,
+        email: formData.email
       })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        // Refresh API keys
-        const apiKeysResponse = await fetch('/api/api-keys')
-        const apiKeysData = await apiKeysResponse.json()
-        setApiKeys(apiKeysData.apiKeys || [])
-      } else {
-        alert(data.error || 'Failed to generate API key')
-      }
-    } catch (error) {
-      console.error('Error generating API key:', error)
-      alert('Failed to generate API key')
-    } finally {
-      setIsGeneratingKey(false)
     }
+    setIsEditing(false)
   }
 
-  const toggleApiKey = async (keyId: string, isActive: boolean) => {
-    try {
-      const response = await fetch(`/api/api-keys/${keyId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isActive: !isActive }),
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        // Refresh API keys
-        const apiKeysResponse = await fetch('/api/api-keys')
-        const apiKeysData = await apiKeysResponse.json()
-        setApiKeys(apiKeysData.apiKeys || [])
-      } else {
-        alert(data.error || 'Failed to update API key')
-      }
-    } catch (error) {
-      console.error('Error updating API key:', error)
-      alert('Failed to update API key')
-    }
-  }
-
-  const handleManageSubscription = async () => {
-    try {
-      const response = await fetch('/api/stripe/portal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-      
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        alert(data.error || 'Failed to open subscription management')
-      }
-    } catch (error) {
-      console.error('Error opening subscription portal:', error)
-      alert('Failed to open subscription management')
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
   }
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }}></div>
+          <p style={{ marginTop: '16px', color: '#64748b' }}>Loading profile...</p>
         </div>
       </div>
     )
@@ -175,270 +123,538 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Link 
-                href="/dashboard" 
-                className="text-blue-600 hover:text-blue-700 font-medium"
+      <header style={{
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '16px 0'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <button
+                onClick={() => router.back()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  background: 'transparent',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                ← Back to Dashboard
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                <ArrowLeft size={16} />
+                Back
+              </button>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>My Profile</h1>
             </div>
-            <button 
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-gray-500 hover:text-gray-900"
-            >
-              Sign Out
-            </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: 'profile', name: 'Profile', icon: '👤' },
-              { id: 'subscription', name: 'Subscription', icon: '💳' },
-              { id: 'api-keys', name: 'API Keys', icon: '🔑' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Profile Tab */}
-        {activeTab === 'profile' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Profile Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={profile.name || ''}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={profile.email}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role
-                </label>
-                <input
-                  type="text"
-                  value={profile.role}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Member Since
-                </label>
-                <input
-                  type="text"
-                  value={new Date(profile.createdAt).toLocaleDateString()}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Subscription Tab */}
-        {activeTab === 'subscription' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Subscription Details</h3>
-            {subscription ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Current Plan
-                    </label>
-                    <div className="text-lg font-semibold text-gray-900 capitalize">
-                      {subscription.plan.name}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {subscription.plan.description}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Monthly Price
-                    </label>
-                    <div className="text-lg font-semibold text-gray-900">
-                      ${subscription.plan.price}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Points per Month
-                    </label>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {subscription.plan.points}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Rollover Limit
-                    </label>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {subscription.plan.rolloverLimit}%
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Status
-                      </label>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        subscription.status === 'ACTIVE' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {subscription.status}
-                      </span>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Next Billing Date
-                      </label>
-                      <div className="text-gray-900">
-                        {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t pt-6">
-                  <button 
-                    onClick={handleManageSubscription}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 mr-4"
-                  >
-                    Manage Subscription
-                  </button>
-                  <button className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
-                    Cancel Subscription
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="text-gray-500 text-lg">No active subscription</div>
-                <Link 
-                  href="/" 
-                  className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 1rem'
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 400px',
+          gap: '32px'
+        }}>
+          {/* Main Profile Content */}
+          <div>
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '32px',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '32px'
+              }}>
+                <h2 style={{
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  color: '#0f172a',
+                  margin: 0
+                }}>
+                  Account Information
+                </h2>
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 20px',
+                    background: isEditing ? '#ef4444' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  View Plans
-                </Link>
+                  {isEditing ? <Save size={16} /> : <Edit3 size={16} />}
+                  {isEditing ? 'Save Changes' : 'Edit Profile'}
+                </button>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* API Keys Tab */}
-        {activeTab === 'api-keys' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">API Keys</h3>
-              <button
-                onClick={generateApiKey}
-                disabled={isGeneratingKey}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isGeneratingKey ? 'Generating...' : 'Generate New Key'}
-              </button>
-            </div>
-            
-            <div className="text-sm text-gray-600 mb-6">
-              API keys allow you to integrate with our service programmatically. Keep your keys secure and don't share them publicly.
-            </div>
-
-            {apiKeys.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-500 text-lg">No API keys generated yet</div>
-                <div className="text-gray-400 text-sm mt-2">Generate your first API key to get started</div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {apiKeys.map((key) => (
-                  <div key={key.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-mono text-sm text-gray-900 mb-1">
-                          {key.key.substring(0, 8)}...{key.key.substring(key.key.length - 8)}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Created: {new Date(key.createdAt).toLocaleDateString()}
-                          {key.lastUsed && (
-                            <span className="ml-4">
-                              Last used: {new Date(key.lastUsed).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          key.isActive 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {key.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                        <button
-                          onClick={() => toggleApiKey(key.id, key.isActive)}
-                          className={`px-3 py-1 rounded text-xs font-medium ${
-                            key.isActive
-                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200'
-                          }`}
-                        >
-                          {key.isActive ? 'Deactivate' : 'Activate'}
-                        </button>
-                      </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151',
+                    marginBottom: '8px'
+                  }}>
+                    Full Name
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        transition: 'border-color 0.2s ease'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      padding: '12px 16px',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      color: '#374151'
+                    }}>
+                      {profile.name}
                     </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151',
+                    marginBottom: '8px'
+                  }}>
+                    Email Address
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        transition: 'border-color 0.2s ease'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      padding: '12px 16px',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      color: '#374151'
+                    }}>
+                      {profile.email}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151',
+                    marginBottom: '8px'
+                  }}>
+                    Member Since
+                  </label>
+                  <div style={{
+                    padding: '12px 16px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    color: '#374151'
+                  }}>
+                    {new Date(profile.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </div>
-                ))}
+                </div>
               </div>
-            )}
+
+              {isEditing && (
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  marginTop: '24px',
+                  paddingTop: '24px',
+                  borderTop: '1px solid #e2e8f0'
+                }}>
+                  <button
+                    onClick={handleSave}
+                    style={{
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false)
+                      setFormData({
+                        name: profile.name,
+                        email: profile.email
+                      })
+                    }}
+                    style={{
+                      padding: '12px 24px',
+                      background: 'white',
+                      color: '#374151',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Account Statistics */}
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '32px',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+            }}>
+              <h3 style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#0f172a',
+                marginBottom: '24px'
+              }}>
+                Account Statistics
+              </h3>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '20px'
+              }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+                  border: '1px solid #93c5fd',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    background: '#2563eb',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 12px auto',
+                    fontSize: '24px'
+                  }}>
+                    ⚡
+                  </div>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#1e40af',
+                    margin: '0 0 4px 0'
+                  }}>
+                    {profile.pointsBalance}
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#1e40af',
+                    margin: 0
+                  }}>
+                    Available Points
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+                  border: '1px solid #86efac',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    background: '#10b981',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 12px auto',
+                    fontSize: '24px'
+                  }}>
+                    📋
+                  </div>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#166534',
+                    margin: '0 0 4px 0'
+                  }}>
+                    {profile.totalOrders}
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#166534',
+                    margin: 0
+                  }}>
+                    Total Orders
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)',
+                  border: '1px solid #c4b5fd',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    background: '#7c3aed',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 12px auto',
+                    fontSize: '24px'
+                  }}>
+                    ⬇️
+                  </div>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#6b21a8',
+                    margin: '0 0 4px 0'
+                  }}>
+                    {profile.successfulDownloads}
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#6b21a8',
+                    margin: 0
+                  }}>
+                    Downloads
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Sidebar */}
+          <div>
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Settings size={20} />
+                Quick Actions
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button
+                  onClick={() => router.push('/dashboard/browse')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🔍 Request Files
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard/orders')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  📋 My Orders
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard/support')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🎧 Get Support
+                </button>
+              </div>
+            </div>
+
+            <div style={{
+              background: 'white',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <CreditCard size={20} />
+                Account Status
+              </h3>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px',
+                background: '#f0fdf4',
+                border: '1px solid #86efac',
+                borderRadius: '8px',
+                marginBottom: '12px'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  background: '#10b981',
+                  borderRadius: '50%'
+                }}></div>
+                <span style={{
+                  fontSize: '14px',
+                  color: '#166534',
+                  fontWeight: '500'
+                }}>
+                  Active Account
+                </span>
+              </div>
+              <p style={{
+                fontSize: '12px',
+                color: '#64748b',
+                margin: 0
+              }}>
+                Your account is in good standing with full access to all features.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
