@@ -207,8 +207,7 @@ export default function OrdersPage() {
       'freepik': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Freepik_logo.svg/200px-Freepik_logo.svg.png',
       'unsplash': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Unsplash_logo.svg/200px-Unsplash_logo.svg.png',
       'pixabay': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Pixabay_logo.svg/200px-Pixabay_logo.svg.png',
-      'pexels': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Pexels_logo.svg/200px-Pexels_logo.svg.png',
-      'pixabay': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Pixabay_logo.svg/200px-Pixabay_logo.svg.png'
+      'pexels': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Pexels_logo.svg/200px-Pexels_logo.svg.png'
     }
     return logos[siteName.toLowerCase()]
   }
@@ -740,7 +739,10 @@ export default function OrdersPage() {
                           }}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none'
-                            e.currentTarget.nextElementSibling.style.display = 'flex'
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement
+                            if (nextElement) {
+                              nextElement.style.display = 'flex'
+                            }
                           }}
                         />
                         <div style={{
@@ -827,7 +829,10 @@ export default function OrdersPage() {
                           }}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none'
-                            e.currentTarget.nextElementSibling.style.display = 'flex'
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement
+                            if (nextElement) {
+                              nextElement.style.display = 'flex'
+                            }
                           }}
                         />
                         <div style={{
