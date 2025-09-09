@@ -40,7 +40,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         existingOrder: true,
-        order: existingOrder,
+        order: {
+          id: existingOrder.id,
+          status: existingOrder.status,
+          title: existingOrder.title,
+          cost: existingOrder.cost,
+          createdAt: existingOrder.createdAt,
+          downloadUrl: existingOrder.downloadUrl,
+          stockSite: existingOrder.stockSite
+        },
         message: 'You have already ordered this item. Download is free!'
       })
     }

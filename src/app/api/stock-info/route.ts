@@ -181,6 +181,11 @@ export async function POST(request: NextRequest) {
     const fallbackImageUrl = generatePreviewImage(site, id)
     const finalImageUrl = apiImageUrl || fallbackImageUrl
 
+    // Get cost from API or use default cost mapping
+    const apiCost = stockInfo.data?.cost || 0
+    const defaultCost = getDefaultCostForSite(site)
+    const finalCost = apiCost > 0 ? apiCost : defaultCost
+
     return NextResponse.json({
       success: true,
       data: {
@@ -188,7 +193,7 @@ export async function POST(request: NextRequest) {
         id,
         url,
         title: stockInfo.data?.title || 'Untitled',
-        cost: stockInfo.data?.cost || 0,
+        cost: finalCost,
         imageUrl: finalImageUrl,
         description: stockInfo.data?.name || ''
       }
@@ -197,6 +202,50 @@ export async function POST(request: NextRequest) {
     console.error('Stock info error:', error)
     return NextResponse.json({ error: 'Failed to process URL' }, { status: 500 })
   }
+}
+
+function getDefaultCostForSite(site: string): number {
+  const siteName = site.toLowerCase()
+  
+  // Default cost mapping for different stock sites
+  const costMap: { [key: string]: number } = {
+    'shutterstock': 5,
+    'vshutter': 8,
+    'mshutter': 6,
+    'adobestock': 7,
+    'adobe': 7,
+    'depositphotos': 4,
+    'depositphotos_video': 6,
+    'istockphoto': 6,
+    'istock': 6,
+    'gettyimages': 8,
+    'freepik': 3,
+    'vfreepik': 5,
+    'flaticon': 2,
+    'flaticonpack': 4,
+    '123rf': 4,
+    'dreamstime': 3,
+    'vectorstock': 3,
+    'alamy': 5,
+    'storyblocks': 6,
+    'vecteezy': 3,
+    'creativefabrica': 4,
+    'rawpixel': 3,
+    'motionarray': 8,
+    'envato': 6,
+    'pixelsquid': 5,
+    'ui8': 4,
+    'iconscout': 3,
+    'lovepik': 2,
+    'pngtree': 2,
+    'deeezy': 4,
+    'footagecrate': 6,
+    'artgrid_hd': 7,
+    'yellowimages': 3,
+    'epidemicsound': 5
+  }
+  
+  return costMap[siteName] || 5 // Default cost of 5 points
 }
 
 function extractSiteAndId(url: string): { site: string | null; id: string | null } {
