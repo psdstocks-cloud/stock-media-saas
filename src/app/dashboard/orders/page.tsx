@@ -152,9 +152,6 @@ export default function OrdersPage() {
   }
 
   const filteredOrders = orders.filter(order => {
-    // Only show succeeded orders (READY)
-    if (order.status !== 'READY') return false
-    
     if (filter === 'all') return true
     if (filter === 'ready') return order.status === 'READY'
     return false
@@ -162,6 +159,15 @@ export default function OrdersPage() {
 
   // Use search results if searching, otherwise use filtered orders
   const displayOrders = searchQuery.trim() ? searchResults : filteredOrders
+  
+  // Debug logging
+  console.log('Orders debug:', {
+    totalOrders: orders.length,
+    filteredOrders: filteredOrders.length,
+    displayOrders: displayOrders.length,
+    filter,
+    searchQuery: searchQuery.trim()
+  })
 
   // Search functionality
   const handleSearch = async (query: string) => {
