@@ -103,11 +103,11 @@ async function main() {
 
   // Create system settings
   const systemSettings = [
-    { key: 'point_cost_usd', value: '0.23', type: 'number' }, // Cost per point in USD
-    { key: 'default_markup_percentage', value: '50', type: 'number' }, // Default markup percentage
-    { key: 'nehtw_api_base_url', value: 'https://nehtw.com/api', type: 'string' },
-    { key: 'max_rollover_percentage', value: '50', type: 'number' }, // Max rollover percentage
-    { key: 'trial_days', value: '7', type: 'number' }, // Free trial days
+    { key: 'point_cost_usd', value: '0.23', type: 'number' as const }, // Cost per point in USD
+    { key: 'default_markup_percentage', value: '50', type: 'number' as const }, // Default markup percentage
+    { key: 'nehtw_api_base_url', value: 'https://nehtw.com/api', type: 'string' as const },
+    { key: 'max_rollover_percentage', value: '50', type: 'number' as const }, // Max rollover percentage
+    { key: 'trial_days', value: '7', type: 'number' as const }, // Free trial days
   ]
 
   for (const setting of systemSettings) {
