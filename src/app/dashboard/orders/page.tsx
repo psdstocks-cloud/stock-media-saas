@@ -50,6 +50,7 @@ export default function OrdersPage() {
   const [regeneratingLinks, setRegeneratingLinks] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [isAnyDownloadActive, setIsAnyDownloadActive] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -99,6 +100,12 @@ export default function OrdersPage() {
 
   // Smart download functionality - seamless background process
   const handleSmartDownload = async (order: Order) => {
+    // Prevent multiple simultaneous downloads globally
+    if (isAnyDownloadActive) {
+      console.log('⏳ Another download is already in progress. Please wait...')
+      return
+    }
+    
     // Prevent multiple simultaneous downloads of the same order
     if (regeneratingLinks.has(order.id)) {
       console.log('⏳ Download already in progress for order:', order.id)
@@ -106,6 +113,7 @@ export default function OrdersPage() {
     }
     
     try {
+      setIsAnyDownloadActive(true)
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
       console.log('🔄 Starting seamless download for order:', {
@@ -196,6 +204,7 @@ export default function OrdersPage() {
       // Silent fail - no popup, just log the error
       console.warn('Download failed silently')
     } finally {
+      setIsAnyDownloadActive(false)
       setRegeneratingLinks(prev => {
         const newSet = new Set(prev)
         newSet.delete(order.id)
@@ -821,33 +830,39 @@ export default function OrdersPage() {
                     }}>
                       {order.status === 'READY' && (
                         <button
-                          onClick={() => !regeneratingLinks.has(order.id) && handleSmartDownload(order)}
-                          disabled={regeneratingLinks.has(order.id)}
+                          onClick={() => !isAnyDownloadActive && !regeneratingLinks.has(order.id) && handleSmartDownload(order)}
+                          disabled={isAnyDownloadActive || regeneratingLinks.has(order.id)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '8px',
                             padding: '12px 20px',
-                            background: regeneratingLinks.has(order.id) 
+                            background: (isAnyDownloadActive || regeneratingLinks.has(order.id))
                               ? '#f3f4f6' 
                               : 'linear-gradient(135deg, #059669, #047857)',
-                            color: regeneratingLinks.has(order.id) ? '#9ca3af' : 'white',
+                            color: (isAnyDownloadActive || regeneratingLinks.has(order.id)) ? '#9ca3af' : 'white',
                             border: 'none',
                             borderRadius: '10px',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: regeneratingLinks.has(order.id) ? 'not-allowed' : 'pointer',
+                            cursor: (isAnyDownloadActive || regeneratingLinks.has(order.id)) ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s ease',
-                            boxShadow: regeneratingLinks.has(order.id) 
+                            boxShadow: (isAnyDownloadActive || regeneratingLinks.has(order.id))
                               ? 'none' 
-                              : '0 4px 12px rgba(5, 150, 105, 0.3)'
+                              : '0 4px 12px rgba(5, 150, 105, 0.3)',
+                            opacity: (isAnyDownloadActive || regeneratingLinks.has(order.id)) ? 0.7 : 1
                           }}
                         >
                         {regeneratingLinks.has(order.id) ? (
                           <>
                             <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
                             Preparing...
+                          </>
+                        ) : isAnyDownloadActive ? (
+                          <>
+                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                            Download in Progress...
                           </>
                         ) : (
                           <>
