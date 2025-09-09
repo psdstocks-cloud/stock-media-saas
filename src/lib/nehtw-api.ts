@@ -201,6 +201,28 @@ export class NehtwAPI {
 
     return await response.json()
   }
+
+  /**
+   * Regenerate download link for an existing order
+   */
+  async regenerateDownloadLink(taskId: string, responseType: 'any' | 'gdrive' | 'mydrivelink' | 'asia' = 'any'): Promise<NehtwOrderStatus> {
+    console.log('Regenerating download link for taskId:', taskId)
+    
+    const response = await fetch(`${this.baseUrl}/v2/order/${taskId}/download?responsetype=${responseType}`, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': this.apiKey,
+      },
+    })
+
+    const responseData = await response.json()
+    console.log('Regenerate download link response:', {
+      status: response.status,
+      data: responseData
+    })
+
+    return responseData
+  }
 }
 
 export class OrderManager {
@@ -507,5 +529,59 @@ export class OrderManager {
     }
 
     return cancelResponse
+  }
+
+  /**
+   * Regenerate download link for an existing order
+   */
+  static async regenerateDownloadLink(orderId: string, apiKey: string) {
+    console.log('OrderManager.regenerateDownloadLink called for order:', orderId)
+    
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { stockSite: true },
+    })
+
+    if (!order || !order.taskId) {
+      throw new Error('Order not found or no task ID')
+    }
+
+    if (order.status !== 'READY' && order.status !== 'COMPLETED') {
+      throw new Error('Order must be ready or completed to regenerate download link')
+    }
+
+    const api = new NehtwAPI(apiKey)
+    
+    try {
+      console.log('Calling Nehtw API regenerateDownloadLink for taskId:', order.taskId)
+      const response = await api.regenerateDownloadLink(order.taskId)
+      
+      console.log('Regenerate download link response:', response)
+      
+      if (response.success && response.downloadLink) {
+        console.log('Successfully regenerated download link:', response.downloadLink)
+        
+        // Update order with new download link
+        const updatedOrder = await prisma.order.update({
+          where: { id: orderId },
+          data: {
+            downloadUrl: response.downloadLink,
+            fileName: response.fileName || order.fileName,
+            status: 'READY', // Ensure status is READY
+            updatedAt: new Date(),
+          },
+          include: { stockSite: true },
+        })
+        
+        console.log('Order updated with new download link:', updatedOrder.id)
+        return updatedOrder
+      } else {
+        console.error('Failed to regenerate download link:', response)
+        throw new Error(response.message || 'Failed to regenerate download link')
+      }
+    } catch (error) {
+      console.error('Error regenerating download link:', error)
+      throw error
+    }
   }
 }
