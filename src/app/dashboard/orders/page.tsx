@@ -17,8 +17,7 @@ import {
   Image as ImageIcon,
   Video,
   Music,
-  Search,
-  RotateCcw
+  Search
 } from 'lucide-react'
 
 interface Order {
@@ -138,40 +137,50 @@ export default function OrdersPage() {
     setIsSearching(false)
   }
 
-  // Regenerate download link functionality
-  const handleRegenerateLink = async (orderId: string) => {
+  // Smart download functionality that handles expired links automatically
+  const handleSmartDownload = async (order: Order) => {
     try {
-      setRegeneratingLinks(prev => new Set(prev).add(orderId))
+      setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
-      const response = await fetch(`/api/orders/${orderId}/regenerate-link`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-
-      if (data.success && data.order) {
-        // Update the order in the local state
-        setOrders(prevOrders => 
-          prevOrders.map(order => 
-            order.id === orderId ? data.order : order
-          )
-        )
+      // If link is expired or doesn't exist, regenerate it first
+      if (isDownloadLinkExpired(order) || !order.downloadUrl) {
+        console.log('Link expired or missing, regenerating for order:', order.id)
         
-        // Show success message
-        alert('Download link regenerated successfully!')
+        const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const data = await response.json()
+
+        if (data.success && data.order) {
+          // Update the order in the local state
+          setOrders(prevOrders => 
+            prevOrders.map(o => 
+              o.id === order.id ? data.order : o
+            )
+          )
+          
+          // Open the new download link
+          if (data.order.downloadUrl) {
+            window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
+          }
+        } else {
+          throw new Error(data.error || 'Failed to regenerate download link')
+        }
       } else {
-        throw new Error(data.error || 'Failed to regenerate download link')
+        // Link is fresh, download directly
+        window.open(order.downloadUrl, '_blank', 'noopener,noreferrer')
       }
     } catch (error) {
-      console.error('Error regenerating download link:', error)
-      alert(`Failed to regenerate download link: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error handling download:', error)
+      alert(`Failed to prepare download: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setRegeneratingLinks(prev => {
         const newSet = new Set(prev)
-        newSet.delete(orderId)
+        newSet.delete(order.id)
         return newSet
       })
     }
@@ -848,73 +857,56 @@ export default function OrdersPage() {
                         gap: '8px',
                         minWidth: '140px'
                       }}>
-                        {order.downloadUrl && (order.status === 'READY' || order.status === 'COMPLETED') && (
-                          <>
-                            <a
-                              href={order.downloadUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                padding: '10px 16px',
-                                background: isDownloadLinkExpired(order) 
-                                  ? 'linear-gradient(135deg, #f59e0b, #d97706)' 
-                                  : 'linear-gradient(135deg, #059669, #047857)',
-                                color: 'white',
-                                borderRadius: '8px',
-                                textDecoration: 'none',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                transition: 'all 0.2s ease',
-                                boxShadow: isDownloadLinkExpired(order) 
-                                  ? '0 2px 4px rgba(245, 158, 11, 0.3)' 
-                                  : '0 2px 4px rgba(5, 150, 105, 0.3)'
-                              }}
-                            >
-                              <Download style={{ width: '16px', height: '16px' }} />
-                              {isDownloadLinkExpired(order) ? 'Link May Be Expired' : 'Download for Free'}
-                            </a>
-                            
-                            <button
-                              onClick={() => handleRegenerateLink(order.id)}
-                              disabled={regeneratingLinks.has(order.id)}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                padding: '8px 16px',
-                                background: regeneratingLinks.has(order.id) 
-                                  ? '#f3f4f6' 
-                                  : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                                color: regeneratingLinks.has(order.id) ? '#9ca3af' : 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '13px',
-                                fontWeight: '600',
-                                cursor: regeneratingLinks.has(order.id) ? 'not-allowed' : 'pointer',
-                                transition: 'all 0.2s ease',
-                                boxShadow: regeneratingLinks.has(order.id) 
-                                  ? 'none' 
-                                  : '0 2px 4px rgba(37, 99, 235, 0.3)'
-                              }}
-                            >
-                              {regeneratingLinks.has(order.id) ? (
-                                <>
-                                  <RefreshCw style={{ width: '14px', height: '14px', animation: 'spin 1s linear infinite' }} />
-                                  Regenerating...
-                                </>
-                              ) : (
-                                <>
-                                  <RotateCcw style={{ width: '14px', height: '14px' }} />
-                                  Regenerate Link
-                                </>
-                              )}
-                            </button>
-                          </>
+                        {(order.status === 'READY' || order.status === 'COMPLETED') && (
+                          <button
+                            onClick={() => handleSmartDownload(order)}
+                            disabled={regeneratingLinks.has(order.id)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              padding: '12px 20px',
+                              background: regeneratingLinks.has(order.id) 
+                                ? '#f3f4f6' 
+                                : 'linear-gradient(135deg, #059669, #047857)',
+                              color: regeneratingLinks.has(order.id) ? '#9ca3af' : 'white',
+                              border: 'none',
+                              borderRadius: '10px',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              cursor: regeneratingLinks.has(order.id) ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: regeneratingLinks.has(order.id) 
+                                ? 'none' 
+                                : '0 4px 12px rgba(5, 150, 105, 0.3)',
+                              minWidth: '160px'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!regeneratingLinks.has(order.id)) {
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(5, 150, 105, 0.4)'
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!regeneratingLinks.has(order.id)) {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.3)'
+                              }
+                            }}
+                          >
+                            {regeneratingLinks.has(order.id) ? (
+                              <>
+                                <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                                Preparing Download...
+                              </>
+                            ) : (
+                              <>
+                                <Download style={{ width: '16px', height: '16px' }} />
+                                Download for Free
+                              </>
+                            )}
+                          </button>
                         )}
                         
                         {order.stockItemUrl && (
