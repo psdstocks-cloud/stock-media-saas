@@ -87,6 +87,43 @@ export default function DashboardPage() {
   const recentOrders = orders?.slice(0, 5) || []
   const recentHistory = history?.slice(0, 5) || []
 
+  // Map stock site names to their actual URLs
+  const getSiteUrl = (siteName: string): string => {
+    const siteUrls: { [key: string]: string } = {
+      'shutterstock': 'https://www.shutterstock.com',
+      'depositphotos': 'https://depositphotos.com',
+      'istockphoto': 'https://www.istockphoto.com',
+      'adobestock': 'https://stock.adobe.com',
+      'gettyimages': 'https://www.gettyimages.com',
+      'unsplash': 'https://unsplash.com',
+      'pexels': 'https://www.pexels.com',
+      'pixabay': 'https://pixabay.com',
+      'freepik': 'https://www.freepik.com',
+      'vecteezy': 'https://www.vecteezy.com',
+      '123rf': 'https://www.123rf.com',
+      'dreamstime': 'https://www.dreamstime.com',
+      'alamy': 'https://www.alamy.com',
+      'plainpicture': 'https://www.plainpicture.com',
+      'westend61': 'https://www.westend61.com',
+      'agefotostock': 'https://www.agefotostock.com',
+      'mauritius': 'https://www.mauritius-images.com',
+      'imagebank': 'https://www.imagebank.com',
+      'photocase': 'https://www.photocase.com',
+      'imagebroker': 'https://www.imagebroker.com',
+      'imagepartner': 'https://www.imagepartner.com',
+      'imagepress': 'https://www.imagepress.com',
+      'imagevault': 'https://www.imagevault.com',
+      'imageworks': 'https://www.imageworks.com',
+      'imagezoo': 'https://www.imagezoo.com',
+      'imago': 'https://www.imago-images.com',
+      'imago2': 'https://www.imago-images.com',
+      'imago3': 'https://www.imago-images.com',
+      'imago4': 'https://www.imago-images.com',
+      'imago5': 'https://www.imago-images.com'
+    }
+    return siteUrls[siteName.toLowerCase()] || '#'
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -367,7 +404,7 @@ export default function DashboardPage() {
                   marginBottom: '4px',
                   lineHeight: '1'
                 }}>
-                  {balance?.currentPoints || 0}
+                {balance?.currentPoints || 0}
                 </p>
                 <p style={{
                   fontSize: '14px',
@@ -391,7 +428,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
+          
           {/* Successful Downloads Card */}
           <div style={{
             background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
@@ -445,7 +482,7 @@ export default function DashboardPage() {
                   opacity: 0.8,
                   lineHeight: '1.2'
                 }}>Files Downloaded</p>
-              </div>
+                </div>
               <div style={{
                 width: '56px',
                 height: '56px',
@@ -459,8 +496,8 @@ export default function DashboardPage() {
               }}>
                 📁
               </div>
-            </div>
-          </div>
+                </div>
+              </div>
           
           {/* Total Requests Card */}
           <div style={{
@@ -515,7 +552,7 @@ export default function DashboardPage() {
                   opacity: 0.8,
                   lineHeight: '1.2'
                 }}>All Time Orders</p>
-              </div>
+                </div>
               <div style={{
                 width: '56px',
                 height: '56px',
@@ -530,7 +567,7 @@ export default function DashboardPage() {
                 📋
               </div>
             </div>
-          </div>
+        </div>
 
           {/* Active Sites Card */}
           <div style={{
@@ -585,7 +622,7 @@ export default function DashboardPage() {
                   opacity: 0.8,
                   lineHeight: '1.2'
                 }}>Stock Media Sources</p>
-              </div>
+            </div>
               <div style={{
                 width: '56px',
                 height: '56px',
@@ -1014,7 +1051,7 @@ export default function DashboardPage() {
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
                     }}
-                    onClick={() => window.open(site.url, '_blank')}
+                    onClick={() => window.open(getSiteUrl(site.name), '_blank')}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = '#f8fafc'
                       e.currentTarget.style.transform = 'translateY(-2px)'
@@ -1239,7 +1276,7 @@ export default function DashboardPage() {
                       fontSize: '20px'
                     }}>
                       💰
-                    </div>
+          </div>
                     <h4 style={{
                       fontSize: '16px',
                       fontWeight: '600',
@@ -1262,7 +1299,7 @@ export default function DashboardPage() {
                   }}>
                     Estimated savings vs. direct purchases
                   </p>
-                </div>
+        </div>
 
                 {/* Support */}
                 <div style={{
@@ -1300,11 +1337,11 @@ export default function DashboardPage() {
                       Contact Support
                     </button>
                   </Link>
-                </div>
-              </div>
-            </div>
-      </div>
-        </div>
+          </div>
+                    </div>
+                    </div>
+                    </div>
+                  </div>
       </div>
 
       {/* Footer */}
@@ -1417,8 +1454,8 @@ export default function DashboardPage() {
                 <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
                   Support
                 </Link>
-              </div>
             </div>
+          </div>
 
             <div>
               <h4 style={{
@@ -1439,8 +1476,8 @@ export default function DashboardPage() {
                 <Link href="/dashboard/support" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>
                   Status Page
                 </Link>
-              </div>
-            </div>
+        </div>
+      </div>
 
             <div>
               <h4 style={{
