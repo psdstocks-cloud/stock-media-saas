@@ -22,9 +22,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the selected plan
-    const plan = await prisma.subscriptionPlan.findUnique({
+    let plan = await prisma.subscriptionPlan.findUnique({
       where: { id: planId }
     })
+
+    // If plan not found and it's a fallback plan, create it
+    if (!plan && planId.includes('-fallback')) {
+      const planName = planId.replace('-fallback', '')
+      const fallbackPlans = {
+        'starter-fallback': { name: 'starter', description: 'Perfect for individuals and small projects', price: 9.99, points: 50, rolloverLimit: 25 },
+        'professional-fallback': { name: 'professional', description: 'Ideal for freelancers and small agencies', price: 29.99, points: 200, rolloverLimit: 100 },
+        'business-fallback': { name: 'business', description: 'Perfect for agencies and design teams', price: 79.99, points: 600, rolloverLimit: 300 },
+        'enterprise-fallback': { name: 'enterprise', description: 'For large agencies and enterprises', price: 199.99, points: 1500, rolloverLimit: 750 }
+      }
+      
+      const fallbackPlan = fallbackPlans[planId as keyof typeof fallbackPlans]
+      if (fallbackPlan) {
+        plan = await prisma.subscriptionPlan.create({
+          data: {
+            name: fallbackPlan.name,
+            description: fallbackPlan.description,
+            price: fallbackPlan.price,
+            points: fallbackPlan.points,
+            rolloverLimit: fallbackPlan.rolloverLimit,
+            isActive: true
+          }
+        })
+      }
+    }
 
     if (!plan) {
       return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 })

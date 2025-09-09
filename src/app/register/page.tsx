@@ -108,6 +108,47 @@ export default function RegisterPage() {
         }
       } catch (error) {
         console.error('Error fetching plans:', error)
+        // Fallback plans if API fails
+        const fallbackPlans = [
+          {
+            id: 'starter-fallback',
+            name: 'starter',
+            description: 'Perfect for individuals and small projects',
+            price: 9.99,
+            points: 50,
+            rolloverLimit: 25,
+            isActive: true
+          },
+          {
+            id: 'professional-fallback',
+            name: 'professional',
+            description: 'Ideal for freelancers and small agencies',
+            price: 29.99,
+            points: 200,
+            rolloverLimit: 100,
+            isActive: true
+          },
+          {
+            id: 'business-fallback',
+            name: 'business',
+            description: 'Perfect for agencies and design teams',
+            price: 79.99,
+            points: 600,
+            rolloverLimit: 300,
+            isActive: true
+          },
+          {
+            id: 'enterprise-fallback',
+            name: 'enterprise',
+            description: 'For large agencies and enterprises',
+            price: 199.99,
+            points: 1500,
+            rolloverLimit: 750,
+            isActive: true
+          }
+        ]
+        setPlans(fallbackPlans)
+        setSelectedPlan(fallbackPlans[0].id)
       }
     }
 
