@@ -561,85 +561,357 @@ export default function BrowsePage() {
               </div>
             </div>
 
-            {/* Supported Sites Grid */}
+            {/* Enhanced Supported Sites Section */}
             {showSupportedSites && (
               <div style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: '20px',
-                padding: '24px',
+                padding: '32px',
                 marginBottom: '24px',
                 backdropFilter: 'blur(10px)',
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
               }}>
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  color: '#1f2937',
-                  marginBottom: '20px',
-                  textAlign: 'center'
-                }}>
-                  Choose from 40+ Stock Sites
-                </h3>
+                {/* Header */}
                 <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '12px'
+                  textAlign: 'center',
+                  marginBottom: '32px'
                 }}>
-                  {supportedSites.slice(0, 12).map((site) => (
-                    <div
-                      key={site.name}
+                  <h3 style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    marginBottom: '8px',
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}>
+                    Choose from 40+ Stock Sites
+                  </h3>
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#6b7280',
+                    margin: 0
+                  }}>
+                    Access premium content from all major stock media platforms
+                  </p>
+                </div>
+
+                {/* Search and Filter */}
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  marginBottom: '24px',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{
+                    flex: 1,
+                    minWidth: '200px',
+                    position: 'relative'
+                  }}>
+                    <input
+                      type="text"
+                      placeholder="Search stock sites..."
                       style={{
-                        padding: '16px',
-                        background: 'white',
+                        width: '100%',
+                        padding: '12px 16px',
+                        paddingLeft: '40px',
+                        border: '2px solid #e5e7eb',
                         borderRadius: '12px',
-                        border: '1px solid #e5e7eb',
+                        fontSize: '14px',
+                        outline: 'none',
                         transition: 'all 0.2s ease',
-                        cursor: 'pointer'
+                        background: 'white'
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = '#667eea'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)'
-                        e.currentTarget.style.transform = 'translateY(-2px)'
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#667eea'
+                        e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)'
                       }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = '#e5e7eb'
-                        e.currentTarget.style.boxShadow = 'none'
-                        e.currentTarget.style.transform = 'translateY(0)'
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e5e7eb'
+                        e.target.style.boxShadow = 'none'
                       }}
-                      onClick={() => handleSiteUrlClick(site)}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        marginBottom: '8px'
-                      }}>
-                        <h4 style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#1f2937',
-                          margin: 0
-                        }}>
-                          {site.displayName}
-                        </h4>
-                        <span style={{
-                          fontSize: '12px',
-                          color: '#667eea',
-                          fontWeight: '500'
-                        }}>
-                          {site.cost} pts
-                        </span>
-                      </div>
-                      <p style={{
-                        fontSize: '12px',
-                        color: '#6b7280',
-                        margin: 0,
-                        lineHeight: '1.4'
-                      }}>
-                        {site.description}
-                      </p>
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: '#9ca3af'
+                    }}>
+                      🔍
                     </div>
-                  ))}
+                  </div>
+                  
+                  <select style={{
+                    padding: '12px 16px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    background: 'white',
+                    cursor: 'pointer',
+                    minWidth: '150px'
+                  }}>
+                    <option value="">All Categories</option>
+                    <option value="photos">Photos</option>
+                    <option value="videos">Videos</option>
+                    <option value="music">Music</option>
+                    <option value="vectors">Vectors</option>
+                    <option value="icons">Icons</option>
+                    <option value="design">Design</option>
+                  </select>
+                </div>
+
+                {/* Categories */}
+                {['Popular', 'Photos', 'Videos', 'Music', 'Vectors', 'Icons', 'Design'].map((category) => (
+                  <div key={category} style={{ marginBottom: '32px' }}>
+                    <h4 style={{
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      color: '#1f2937',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      {category === 'Popular' && '⭐'}
+                      {category === 'Photos' && '📸'}
+                      {category === 'Videos' && '🎥'}
+                      {category === 'Music' && '🎵'}
+                      {category === 'Vectors' && '🎨'}
+                      {category === 'Icons' && '🔷'}
+                      {category === 'Design' && '💎'}
+                      {category}
+                    </h4>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: '16px'
+                    }}>
+                      {supportedSites
+                        .filter(site => {
+                          if (category === 'Popular') return ['shutterstock', 'adobestock', 'freepik', 'depositphotos'].includes(site.name)
+                          return site.category === category.toLowerCase()
+                        })
+                        .slice(0, category === 'Popular' ? 8 : 6)
+                        .map((site) => (
+                        <div
+                          key={site.name}
+                          style={{
+                            background: 'white',
+                            borderRadius: '16px',
+                            border: '1px solid #e5e7eb',
+                            overflow: 'hidden',
+                            transition: 'all 0.3s ease',
+                            cursor: 'pointer',
+                            position: 'relative'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#667eea'
+                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.15)'
+                            e.currentTarget.style.transform = 'translateY(-4px)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#e5e7eb'
+                            e.currentTarget.style.boxShadow = 'none'
+                            e.currentTarget.style.transform = 'translateY(0)'
+                          }}
+                        >
+                          {/* Site Header */}
+                          <div style={{
+                            padding: '20px 20px 16px',
+                            background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+                            borderBottom: '1px solid #e5e7eb'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginBottom: '8px'
+                            }}>
+                              <h5 style={{
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                color: '#1f2937',
+                                margin: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}>
+                                <div style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                  borderRadius: '6px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '12px',
+                                  fontWeight: 'bold'
+                                }}>
+                                  {site.displayName.charAt(0)}
+                                </div>
+                                {site.displayName}
+                              </h5>
+                              
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}>
+                                <span style={{
+                                  fontSize: '12px',
+                                  color: '#10b981',
+                                  fontWeight: '600',
+                                  background: '#dcfce7',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px'
+                                }}>
+                                  {site.cost} pts
+                                </span>
+                                <div style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  background: '#10b981',
+                                  borderRadius: '50%'
+                                }} />
+                              </div>
+                            </div>
+                            
+                            <p style={{
+                              fontSize: '13px',
+                              color: '#6b7280',
+                              margin: 0,
+                              lineHeight: '1.4'
+                            }}>
+                              {site.description || `Premium ${site.category} content`}
+                            </p>
+                          </div>
+
+                          {/* Site Actions */}
+                          <div style={{
+                            padding: '16px 20px',
+                            display: 'flex',
+                            gap: '8px'
+                          }}>
+                            <button
+                              onClick={() => handleSiteClick(site)}
+                              style={{
+                                flex: 1,
+                                padding: '10px 16px',
+                                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '10px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-1px)'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = 'none'
+                              }}
+                            >
+                              🌐 Visit Site
+                            </button>
+                            
+                            <button
+                              onClick={() => handleSiteUrlClick(site)}
+                              style={{
+                                flex: 1,
+                                padding: '10px 16px',
+                                background: 'white',
+                                color: '#667eea',
+                                border: '1px solid #667eea',
+                                borderRadius: '10px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#667eea'
+                                e.currentTarget.style.color = 'white'
+                                e.currentTarget.style.transform = 'translateY(-1px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'white'
+                                e.currentTarget.style.color = '#667eea'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              🔗 Use URL
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Footer CTA */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: '24px',
+                  background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+                  borderRadius: '16px',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <h4 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    marginBottom: '8px'
+                  }}>
+                    Can't find your site?
+                  </h4>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#6b7280',
+                    margin: '0 0 16px 0'
+                  }}>
+                    We're constantly adding new stock sites. Contact us to request support for your favorite platform.
+                  </p>
+                  <button style={{
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                  >
+                    💬 Request New Site
+                  </button>
                 </div>
               </div>
             )}
