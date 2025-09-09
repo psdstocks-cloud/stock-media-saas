@@ -258,7 +258,7 @@ export class OrderManager {
           imageUrl,
           title,
           cost,
-          status: 'PENDING',
+          status: 'PENDING' as any,
         },
       })
       console.log('Order created successfully:', { id: order.id, status: order.status })
@@ -313,7 +313,7 @@ export class OrderManager {
         await prisma.order.update({
           where: { id: orderId },
           data: {
-            status: 'FAILED',
+            status: 'FAILED' as any,
           },
         })
         throw new Error(orderResponse.message || 'Failed to place order with Nehtw API')
@@ -325,7 +325,7 @@ export class OrderManager {
         where: { id: orderId },
         data: {
           taskId: orderResponse.task_id,
-          status: 'PROCESSING',
+          status: 'PROCESSING' as any,
         },
       })
 
@@ -430,7 +430,7 @@ export class OrderManager {
             await prisma.order.update({
               where: { id: orderId },
               data: {
-                status: 'READY',
+                status: 'READY' as any,
                 downloadUrl: downloadResponse.downloadLink,
                 fileName: downloadResponse.fileName,
               },
@@ -440,7 +440,7 @@ export class OrderManager {
             await prisma.order.update({
               where: { id: orderId },
               data: {
-                status: 'READY',
+                status: 'READY' as any,
               },
             })
           }
@@ -479,13 +479,19 @@ export class OrderManager {
       if (statusResponse.status) {
         const normalizedStatus = statusResponse.status.toUpperCase()
         // Map common statuses to our enum
-        const statusMap: { [key: string]: string } = {
+        const statusMap: { [key: string]: 'PENDING' | 'PROCESSING' | 'READY' | 'COMPLETED' | 'FAILED' | 'CANCELED' | 'REFUNDED' } = {
           'PROCESSING': 'PROCESSING',
           'PENDING': 'PENDING',
           'IN_PROGRESS': 'PROCESSING',
           'WORKING': 'PROCESSING',
           'QUEUED': 'PENDING',
-          'WAITING': 'PENDING'
+          'WAITING': 'PENDING',
+          'READY': 'READY',
+          'COMPLETED': 'COMPLETED',
+          'FAILED': 'FAILED',
+          'CANCELED': 'CANCELED',
+          'CANCELLED': 'CANCELED',
+          'REFUNDED': 'REFUNDED'
         }
         
         const mappedStatus = statusMap[normalizedStatus] || 'PROCESSING'
@@ -493,7 +499,7 @@ export class OrderManager {
         await prisma.order.update({
           where: { id: orderId },
           data: {
-            status: mappedStatus,
+            status: mappedStatus as any,
           },
         })
       }
@@ -527,7 +533,7 @@ export class OrderManager {
       await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'CANCELED',
+          status: 'CANCELED' as any,
         },
       })
     }
@@ -573,7 +579,7 @@ export class OrderManager {
           data: {
             downloadUrl: response.downloadLink,
             fileName: response.fileName || order.fileName,
-            status: 'READY', // Ensure status is READY
+            status: 'READY' as any, // Ensure status is READY
             updatedAt: new Date(),
           },
           include: { stockSite: true },
