@@ -7,8 +7,52 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+}
+
+enum PointsHistoryType {
+  SUBSCRIPTION
+  PURCHASE
+  ROLLOVER
+  DOWNLOAD
+  REFUND
+  BONUS
+  ADMIN_ADJUSTMENT
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  READY
+  COMPLETED
+  FAILED
+  CANCELED
+  REFUNDED
+}
+
+enum SettingType {
+  string
+  number
+  boolean
+  json
 }
 
 // User model for authentication and profile
@@ -18,7 +62,7 @@ model User {
   name      String?
   image     String?
   password  String?  // Add password field
-  role      String   @default("USER") // USER, ADMIN, SUPER_ADMIN
+  role      UserRole @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -57,7 +101,7 @@ model Subscription {
   planId            String
   stripeCustomerId  String?            @unique
   stripeSubscriptionId String?         @unique
-  status            String             @default("ACTIVE") // ACTIVE, CANCELED, PAST_DUE, UNPAID, INCOMPLETE, INCOMPLETE_EXPIRED, TRIALING
+  status            SubscriptionStatus @default(ACTIVE)
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
   cancelAtPeriodEnd Boolean            @default(false)
@@ -93,7 +137,7 @@ model PointsBalance {
 model PointsHistory {
   id          String        @id @default(cuid())
   userId      String
-  type        String // SUBSCRIPTION, PURCHASE, ROLLOVER, DOWNLOAD, REFUND, BONUS, ADMIN_ADJUSTMENT
+  type        PointsHistoryType
   amount      Int           // Positive for additions, negative for deductions
   description String?
   orderId     String?       // Reference to order if applicable
@@ -133,7 +177,7 @@ model Order {
   imageUrl        String?     // Preview image URL from API
   title           String?
   cost            Float       // Points cost
-  status          String      @default("PENDING") // PENDING, PROCESSING, READY, COMPLETED, FAILED, CANCELED, REFUNDED
+  status          OrderStatus @default(PENDING)
   taskId          String?     // Task ID from nehtw.com API
   downloadUrl     String?     // Final download URL
   fileName        String?
@@ -170,7 +214,7 @@ model SystemSetting {
   id    String @id @default(cuid())
   key   String @unique
   value String
-  type  String @default("string") // string, number, boolean, json
+  type  SettingType @default(string)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

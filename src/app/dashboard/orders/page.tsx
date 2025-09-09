@@ -22,7 +22,7 @@ import {
 
 interface Order {
   id: string
-  status: 'READY' | 'PROCESSING' | 'PENDING' | 'FAILED' | 'CANCELED'
+  status: 'READY' | 'PROCESSING' | 'PENDING' | 'FAILED' | 'CANCELED' | 'COMPLETED' | 'REFUNDED'
   taskId: string | null
   downloadUrl: string | null
   fileName: string | null
