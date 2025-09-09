@@ -78,6 +78,7 @@ export default function ProfilePage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [success, setSuccess] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -87,12 +88,17 @@ export default function ProfilePage() {
       return
     }
 
-    fetchProfile()
-  }, [session, status, router])
+    // Only fetch profile data if we haven't loaded it yet
+    if (!dataLoaded) {
+      fetchProfile()
+    }
+  }, [session, status, router, dataLoaded])
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (forceRefresh = false) => {
     try {
-      setLoading(true)
+      if (forceRefresh) {
+        setLoading(true)
+      }
       
       const response = await fetch('/api/profile')
       const data = await response.json()
@@ -106,6 +112,7 @@ export default function ProfilePage() {
           newPassword: '',
           confirmPassword: ''
         })
+        setDataLoaded(true) // Mark data as loaded
       } else {
         setErrors({ general: data.error || 'Failed to load profile data' })
       }
@@ -114,6 +121,11 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const refreshProfile = () => {
+    setDataLoaded(false)
+    fetchProfile(true)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,7 +242,7 @@ export default function ProfilePage() {
     { id: 'privacy', label: 'Privacy', icon: Lock }
   ]
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || (loading && !dataLoaded)) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -419,7 +431,37 @@ export default function ProfilePage() {
                   <ArrowLeft size={16} />
                   Back
                 </button>
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a' }}>My Profile</h1>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>My Profile</h1>
+                  <button
+                    onClick={refreshProfile}
+                    style={{
+                      padding: '8px 16px',
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      color: '#64748b',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 1)'
+                      e.currentTarget.style.color = '#1e40af'
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)'
+                      e.currentTarget.style.color = '#64748b'
+                    }}
+                  >
+                    <RotateCcw size={16} />
+                    Refresh
+                  </button>
+                </div>
               </div>
             </div>
           </div>
