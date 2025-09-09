@@ -88,8 +88,8 @@ export default function OrdersPage() {
           } else {
             // Duplicate found, keep the one with the latest status or most recent
             const existing = acc[existingIndex]
-            if (current.status === 'COMPLETED' || current.status === 'READY' || 
-                (current.status === 'PROCESSING' && existing.status !== 'COMPLETED' && existing.status !== 'READY') ||
+            if (current.status === 'READY' || 
+                (current.status === 'PROCESSING' && existing.status !== 'READY') ||
                 new Date(current.updatedAt) > new Date(existing.updatedAt)) {
               acc[existingIndex] = current
             }
@@ -198,11 +198,11 @@ export default function OrdersPage() {
   }
 
   const filteredOrders = orders.filter(order => {
-    // Only show succeeded orders (READY and COMPLETED)
-    if (order.status !== 'READY' && order.status !== 'COMPLETED') return false
+    // Only show succeeded orders (READY)
+    if (order.status !== 'READY') return false
     
     if (filter === 'all') return true
-    if (filter === 'ready') return order.status === 'READY' || order.status === 'COMPLETED'
+    if (filter === 'ready') return order.status === 'READY'
     return order.status.toLowerCase() === filter.toLowerCase()
   })
 
@@ -244,10 +244,8 @@ export default function OrdersPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
-        return { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' }
       case 'READY':
-        return { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' }
+        return { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' }
       case 'PROCESSING':
         return { bg: '#fef3c7', text: '#92400e', border: '#fde68a' }
       case 'PENDING':
@@ -556,9 +554,8 @@ export default function OrdersPage() {
             flexWrap: 'wrap'
           }}>
             {[
-              { id: 'all', name: 'All Orders', count: orders.filter(o => o.status === 'READY' || o.status === 'COMPLETED').length },
-              { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY' || o.status === 'COMPLETED').length },
-              { id: 'completed', name: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
+              { id: 'all', name: 'All Orders', count: orders.filter(o => o.status === 'READY').length },
+              { id: 'ready', name: 'Ready', count: orders.filter(o => o.status === 'READY').length },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -857,7 +854,7 @@ export default function OrdersPage() {
                         gap: '8px',
                         minWidth: '140px'
                       }}>
-                        {(order.status === 'READY' || order.status === 'COMPLETED') && (
+                        {order.status === 'READY' && (
                           <button
                             onClick={() => handleSmartDownload(order)}
                             disabled={regeneratingLinks.has(order.id)}
