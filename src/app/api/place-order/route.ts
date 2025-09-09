@@ -130,7 +130,8 @@ export async function POST(request: NextRequest) {
       id,
       url,
       title || 'Untitled',
-      cost
+      cost,
+      imageUrl || null
     )
     console.log('Order created:', { id: order.id, status: order.status })
 

@@ -235,7 +235,8 @@ export class OrderManager {
     stockItemId: string,
     stockItemUrl: string | null,
     title: string | null,
-    cost: number
+    cost: number,
+    imageUrl: string | null = null
   ) {
     console.log('OrderManager.createOrder called with:', {
       userId,
@@ -243,7 +244,8 @@ export class OrderManager {
       stockItemId,
       stockItemUrl,
       title,
-      cost
+      cost,
+      imageUrl
     })
 
     try {
@@ -253,6 +255,7 @@ export class OrderManager {
           stockSiteId,
           stockItemId,
           stockItemUrl,
+          imageUrl,
           title,
           cost,
           status: 'PENDING',
@@ -267,6 +270,7 @@ export class OrderManager {
         stockSiteId,
         stockItemId,
         stockItemUrl,
+        imageUrl,
         title,
         cost,
         errorMessage: error instanceof Error ? error.message : String(error),

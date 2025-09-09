@@ -27,6 +27,7 @@ interface Order {
   downloadUrl: string | null
   fileName: string | null
   stockItemUrl: string | null
+  imageUrl: string | null
   title: string | null
   stockItemId: string | null
   createdAt: string
@@ -610,7 +611,7 @@ export default function OrdersPage() {
                   }}
                 >
                   {/* File Preview for List View */}
-                  {viewMode === 'list' && order.stockItemUrl && (
+                  {viewMode === 'list' && (order.imageUrl || order.stockItemUrl) && (
                     <div style={{
                       flexShrink: 0,
                       width: '120px',
@@ -621,7 +622,7 @@ export default function OrdersPage() {
                       border: '1px solid #e5e7eb'
                     }}>
                       <img
-                        src={order.stockItemUrl}
+                        src={order.imageUrl || order.stockItemUrl}
                         alt="File preview"
                         style={{
                           width: '100%',
@@ -761,7 +762,7 @@ export default function OrdersPage() {
                   </div>
 
                     {/* File Preview for Grid View */}
-                    {viewMode === 'grid' && order.stockItemUrl && (
+                    {viewMode === 'grid' && (order.imageUrl || order.stockItemUrl) && (
                       <div style={{
                         marginBottom: '16px',
                         borderRadius: '8px',
@@ -770,7 +771,7 @@ export default function OrdersPage() {
                         border: '1px solid #e5e7eb'
                       }}>
                         <img
-                          src={order.stockItemUrl}
+                          src={order.imageUrl || order.stockItemUrl}
                           alt="File preview"
                           style={{
                             width: '100%',
