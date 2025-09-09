@@ -37,6 +37,150 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Generate fallback preview image if API doesn't provide one
+    const generatePreviewImage = (site: string, id: string): string => {
+      const siteName = site.toLowerCase()
+      
+      // Shutterstock: Standard preview format
+      if (siteName === 'shutterstock' || siteName === 'vshutter' || siteName === 'mshutter') {
+        return `https://image.shutterstock.com/image-photo/${id}-260nw-${id}.jpg`
+      }
+      
+      // Adobe Stock: Multiple preview formats
+      if (siteName === 'adobestock' || siteName === 'adobe') {
+        if (id.length >= 4) {
+          return `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_1.jpg`
+        }
+        return `https://as1.ftcdn.net/v2/jpg/00/00/${id}_1.jpg`
+      }
+      
+      // iStock/Getty Images: Standard preview format
+      if (siteName === 'istockphoto' || siteName === 'istock' || siteName === 'gettyimages') {
+        return `https://media.istockphoto.com/id/${id}/photo/stock-photo.jpg`
+      }
+      
+      // Depositphotos: Multiple preview formats
+      if (siteName === 'depositphotos' || siteName === 'depositphotos_video') {
+        return `https://st2.depositphotos.com/${id}/photo.jpg`
+      }
+      
+      // Freepik: Standard preview format
+      if (siteName === 'freepik' || siteName === 'vfreepik') {
+        return `https://img.freepik.com/free-photo/${id}.jpg`
+      }
+      
+      // Flaticon: Icon preview format
+      if (siteName === 'flaticon' || siteName === 'flaticonpack') {
+        return `https://cdn-icons-png.flaticon.com/512/${id}/${id}.png`
+      }
+      
+      // 123RF: Standard preview format
+      if (siteName === '123rf') {
+        return `https://us.123rf.com/450wm/${id}/${id}.jpg`
+      }
+      
+      // Dreamstime: Standard preview format
+      if (siteName === 'dreamstime') {
+        return `https://thumbs.dreamstime.com/z/${id}.jpg`
+      }
+      
+      // Vectorstock: Vector preview format
+      if (siteName === 'vectorstock') {
+        return `https://cdn3.vectorstock.com/i/1000x1000/${id}/vector-stock.jpg`
+      }
+      
+      // Alamy: Standard preview format
+      if (siteName === 'alamy') {
+        return `https://c8.alamy.com/comp/${id}/stock-photo.jpg`
+      }
+      
+      // Storyblocks: Video/Image preview format
+      if (siteName === 'storyblocks') {
+        return `https://dm0qx8t0i0gc9.cloudfront.net/thumbnails/video/${id}/stock-video.jpg`
+      }
+      
+      // Vecteezy: Vector preview format
+      if (siteName === 'vecteezy') {
+        return `https://static.vecteezy.com/system/resources/previews/${id}/vector.jpg`
+      }
+      
+      // Creative Fabrica: Product preview format
+      if (siteName === 'creativefabrica') {
+        return `https://cf.shopify.com/images/products/${id}/preview.jpg`
+      }
+      
+      // Rawpixel: Image preview format
+      if (siteName === 'rawpixel') {
+        return `https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvcm00MjgtYy0xLmpwZw==.png`
+      }
+      
+      // Motion Array: Video preview format
+      if (siteName === 'motionarray') {
+        return `https://motionarray.imgix.net/preview-${id}.jpg`
+      }
+      
+      // Envato Elements: Product preview format
+      if (siteName === 'envato') {
+        return `https://elements-cover-images-0.imgix.net/${id}/preview.jpg`
+      }
+      
+      // Pixelsquid: 3D preview format
+      if (siteName === 'pixelsquid') {
+        return `https://cdn.pixelsquid.com/stock-photos/${id}/preview.jpg`
+      }
+      
+      // UI8: Design preview format
+      if (siteName === 'ui8') {
+        return `https://ui8.net/images/${id}/preview.jpg`
+      }
+      
+      // IconScout: Icon preview format
+      if (siteName === 'iconscout') {
+        return `https://iconscout.com/icon/${id}/preview`
+      }
+      
+      // Lovepik: Image preview format
+      if (siteName === 'lovepik') {
+        return `https://img.lovepik.com/photo/${id}.jpg`
+      }
+      
+      // Pngtree: Image preview format
+      if (siteName === 'pngtree') {
+        return `https://png.pngtree.com/png-vector/${id}/preview.png`
+      }
+      
+      // Deezy: Product preview format
+      if (siteName === 'deeezy') {
+        return `https://deeezy.com/images/products/${id}/preview.jpg`
+      }
+      
+      // Footage Crate: Video preview format
+      if (siteName === 'footagecrate') {
+        return `https://footagecrate.com/videos/${id}/preview.jpg`
+      }
+      
+      // Art Grid: Video preview format
+      if (siteName === 'artgrid_hd') {
+        return `https://artgrid.io/clips/${id}/preview.jpg`
+      }
+      
+      // Yellow Images: Product preview format
+      if (siteName === 'yellowimages') {
+        return `https://yellowimages.com/stock/${id}/preview.jpg`
+      }
+      
+      // Epidemic Sound: Audio preview format (waveform)
+      if (siteName === 'epidemicsound') {
+        return `https://epic7static.s3.amazonaws.com/audio/${id}/waveform.png`
+      }
+      
+      return ''
+    }
+
+    const apiImageUrl = stockInfo.data?.image || ''
+    const fallbackImageUrl = generatePreviewImage(site, id)
+    const finalImageUrl = apiImageUrl || fallbackImageUrl
+
     return NextResponse.json({
       success: true,
       data: {
@@ -45,7 +189,7 @@ export async function POST(request: NextRequest) {
         url,
         title: stockInfo.data?.title || 'Untitled',
         cost: stockInfo.data?.cost || 0,
-        imageUrl: stockInfo.data?.image || '',
+        imageUrl: finalImageUrl,
         description: stockInfo.data?.name || ''
       }
     })

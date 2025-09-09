@@ -373,8 +373,8 @@ export default function RegisterPage() {
             margin: '0 auto'
           }}>
             Join thousands of creators who trust StockMedia Pro for their premium stock media needs.
-          </p>
-        </div>
+        </p>
+      </div>
 
         <div style={{
           display: 'grid',
@@ -416,7 +416,7 @@ export default function RegisterPage() {
                   {/* Step 1: Personal Information */}
                   {step === 1 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                      <div>
+            <div>
                         <label htmlFor="name" style={{
                           display: 'block',
                           fontSize: '14px',
@@ -424,13 +424,13 @@ export default function RegisterPage() {
                           color: '#374151',
                           marginBottom: '8px'
                         }}>
-                          Full Name
-                        </label>
-                        <input
-                          id="name"
-                          name="name"
-                          type="text"
-                          required
+                Full Name
+              </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
                           value={formData.name}
                           onChange={handleInputChange}
                           style={{
@@ -443,9 +443,9 @@ export default function RegisterPage() {
                             boxSizing: 'border-box'
                           }}
                           placeholder="Enter your full name"
-                        />
-                      </div>
-                      <div>
+                />
+              </div>
+            <div>
                         <label htmlFor="email" style={{
                           display: 'block',
                           fontSize: '14px',
@@ -453,13 +453,13 @@ export default function RegisterPage() {
                           color: '#374151',
                           marginBottom: '8px'
                         }}>
-                          Email Address
-                        </label>
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
+                Email Address
+              </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
                           value={formData.email}
                           onChange={handleInputChange}
                           style={{
@@ -472,9 +472,9 @@ export default function RegisterPage() {
                             boxSizing: 'border-box'
                           }}
                           placeholder="Enter your email address"
-                        />
-                      </div>
-                      <div>
+                />
+              </div>
+            <div>
                         <label htmlFor="password" style={{
                           display: 'block',
                           fontSize: '14px',
@@ -482,13 +482,13 @@ export default function RegisterPage() {
                           color: '#374151',
                           marginBottom: '8px'
                         }}>
-                          Password
-                        </label>
-                        <input
-                          id="password"
-                          name="password"
-                          type="password"
-                          required
+                Password
+              </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
                           value={formData.password}
                           onChange={handleInputChange}
                           style={{
@@ -661,25 +661,25 @@ export default function RegisterPage() {
                             boxSizing: 'border-box'
                           }}
                           placeholder="Confirm your password"
-                        />
-                      </div>
-                    </div>
+                />
+              </div>
+            </div>
                   )}
 
                   {/* Step 2: Plan Selection */}
                   {step === 2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                      <div>
+            <div>
                         <h3 style={{
                           fontSize: '18px',
                           fontWeight: '600',
                           color: '#0f172a',
                           marginBottom: '16px'
                         }}>
-                          Choose Your Plan
+                Choose Your Plan
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                          {plans.map((plan) => (
+                {plans.map((plan) => (
                             <div
                               key={plan.id}
                               style={{
@@ -730,7 +730,7 @@ export default function RegisterPage() {
                                       color: '#0f172a',
                                       textTransform: 'capitalize'
                                     }}>
-                                      {plan.name}
+                            {plan.name}
                                     </h4>
                                     <p style={{
                                       fontSize: '14px',
@@ -749,8 +749,8 @@ export default function RegisterPage() {
                                     fontWeight: 'bold',
                                     color: '#0f172a'
                                   }}>
-                                    ${plan.price}
-                                  </div>
+                              ${plan.price}
+                            </div>
                                   <div style={{
                                     fontSize: '14px',
                                     color: '#64748b'
@@ -770,8 +770,8 @@ export default function RegisterPage() {
                                 <span>{plan.points} points/month</span>
                                 <span>•</span>
                                 <span>{plan.rolloverLimit}% rollover</span>
-                              </div>
-                            </div>
+                          </div>
+                        </div>
                           ))}
                         </div>
                       </div>
@@ -1117,7 +1117,7 @@ export default function RegisterPage() {
               }}>
                 ⚠️
               </div>
-              <div>
+            <div>
                 <h3 style={{
                   fontSize: '24px',
                   fontWeight: 'bold',
@@ -1241,8 +1241,8 @@ export default function RegisterPage() {
               margin: '16px 0 0 0'
             }}>
               By proceeding, you acknowledge the security risks and accept responsibility for using a weak password.
-            </p>
-          </div>
+              </p>
+            </div>
         </div>
       )}
     </div>

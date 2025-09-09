@@ -125,7 +125,7 @@ export default async function HomePage() {
               </span>
               <br />
               Platform
-            </h1>
+          </h1>
             <p style={{
               fontSize: 'clamp(20px, 3vw, 24px)',
               color: '#64748b',
@@ -155,7 +155,7 @@ export default async function HomePage() {
                   border: 'none',
                   cursor: 'pointer'
                 }}>Start Free Trial</button>
-              </Link>
+            </Link>
               <button style={{
                 padding: '16px 32px',
                 border: '1px solid #cbd5e1',
@@ -254,7 +254,7 @@ export default async function HomePage() {
                   marginBottom: '16px'
                 }}>
                   {feature.icon}
-                </div>
+              </div>
                 <h3 style={{
                   fontSize: '20px',
                   fontWeight: '600',
@@ -336,7 +336,7 @@ export default async function HomePage() {
                     fontSize: '14px',
                     fontWeight: '500'
                   }}>
-                    Most Popular
+                      Most Popular
                   </div>
                 )}
                 <div style={{ marginBottom: '24px' }}>
@@ -373,7 +373,7 @@ export default async function HomePage() {
                       /month
                     </span>
                   </div>
-                </div>
+                    </div>
                 <div>
                   <ul style={{
                     listStyle: 'none',
@@ -418,7 +418,7 @@ export default async function HomePage() {
                         background: 'transparent'
                       })
                     }}>
-                      Get Started
+                    Get Started
                     </button>
                   </Link>
                 </div>

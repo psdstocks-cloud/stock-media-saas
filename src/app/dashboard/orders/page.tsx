@@ -220,40 +220,150 @@ export default function OrdersPage() {
     return logos[siteName.toLowerCase()]
   }
 
-  // Generate preview image URL from stockItemUrl
+  // Generate preview image URL from stockItemUrl for all supported sites
   const getPreviewImageUrl = (order: Order) => {
     // If imageUrl exists, use it
     if (order.imageUrl) {
       return order.imageUrl
     }
 
-    // If no imageUrl, try to generate from stockItemUrl
-    if (order.stockItemUrl) {
+    // If no imageUrl, try to generate from stockItemId and site
+    if (order.stockItemId) {
       const siteName = order.stockSite.name.toLowerCase()
       
-      // Shutterstock: extract ID from URL and create preview URL
-      if (siteName === 'shutterstock' && order.stockItemId) {
+      // Shutterstock: Standard preview format
+      if (siteName === 'shutterstock' || siteName === 'vshutter' || siteName === 'mshutter') {
         return `https://image.shutterstock.com/image-photo/${order.stockItemId}-260nw-${order.stockItemId}.jpg`
       }
       
-      // Adobe Stock: extract ID and create preview URL
-      if (siteName === 'adobestock' && order.stockItemId) {
-        return `https://as1.ftcdn.net/v2/jpg/${order.stockItemId.slice(0, 2)}/${order.stockItemId.slice(2, 4)}/${order.stockItemId}_1.jpg`
+      // Adobe Stock: Multiple preview formats
+      if (siteName === 'adobestock' || siteName === 'adobe') {
+        // Try different Adobe Stock preview formats
+        const id = order.stockItemId
+        if (id.length >= 4) {
+          return `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_1.jpg`
+        }
+        return `https://as1.ftcdn.net/v2/jpg/00/00/${id}_1.jpg`
       }
       
-      // iStock: extract ID and create preview URL
-      if (siteName === 'istockphoto' && order.stockItemId) {
+      // iStock/Getty Images: Standard preview format
+      if (siteName === 'istockphoto' || siteName === 'istock' || siteName === 'gettyimages') {
         return `https://media.istockphoto.com/id/${order.stockItemId}/photo/stock-photo.jpg`
       }
       
-      // Depositphotos: extract ID and create preview URL
-      if (siteName === 'depositphotos' && order.stockItemId) {
+      // Depositphotos: Multiple preview formats
+      if (siteName === 'depositphotos' || siteName === 'depositphotos_video') {
         return `https://st2.depositphotos.com/${order.stockItemId}/photo.jpg`
       }
       
-      // Freepik: extract ID and create preview URL
-      if (siteName === 'freepik' && order.stockItemId) {
+      // Freepik: Standard preview format
+      if (siteName === 'freepik' || siteName === 'vfreepik') {
         return `https://img.freepik.com/free-photo/${order.stockItemId}.jpg`
+      }
+      
+      // Flaticon: Icon preview format
+      if (siteName === 'flaticon' || siteName === 'flaticonpack') {
+        return `https://cdn-icons-png.flaticon.com/512/${order.stockItemId}/${order.stockItemId}.png`
+      }
+      
+      // 123RF: Standard preview format
+      if (siteName === '123rf') {
+        return `https://us.123rf.com/450wm/${order.stockItemId}/${order.stockItemId}.jpg`
+      }
+      
+      // Dreamstime: Standard preview format
+      if (siteName === 'dreamstime') {
+        return `https://thumbs.dreamstime.com/z/${order.stockItemId}.jpg`
+      }
+      
+      // Vectorstock: Vector preview format
+      if (siteName === 'vectorstock') {
+        return `https://cdn3.vectorstock.com/i/1000x1000/${order.stockItemId}/vector-stock.jpg`
+      }
+      
+      // Alamy: Standard preview format
+      if (siteName === 'alamy') {
+        return `https://c8.alamy.com/comp/${order.stockItemId}/stock-photo.jpg`
+      }
+      
+      // Storyblocks: Video/Image preview format
+      if (siteName === 'storyblocks') {
+        return `https://dm0qx8t0i0gc9.cloudfront.net/thumbnails/video/${order.stockItemId}/stock-video.jpg`
+      }
+      
+      // Vecteezy: Vector preview format
+      if (siteName === 'vecteezy') {
+        return `https://static.vecteezy.com/system/resources/previews/${order.stockItemId}/vector.jpg`
+      }
+      
+      // Creative Fabrica: Product preview format
+      if (siteName === 'creativefabrica') {
+        return `https://cf.shopify.com/images/products/${order.stockItemId}/preview.jpg`
+      }
+      
+      // Rawpixel: Image preview format
+      if (siteName === 'rawpixel') {
+        return `https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvcm00MjgtYy0xLmpwZw==.png`
+      }
+      
+      // Motion Array: Video preview format
+      if (siteName === 'motionarray') {
+        return `https://motionarray.imgix.net/preview-${order.stockItemId}.jpg`
+      }
+      
+      // Envato Elements: Product preview format
+      if (siteName === 'envato') {
+        return `https://elements-cover-images-0.imgix.net/${order.stockItemId}/preview.jpg`
+      }
+      
+      // Pixelsquid: 3D preview format
+      if (siteName === 'pixelsquid') {
+        return `https://cdn.pixelsquid.com/stock-photos/${order.stockItemId}/preview.jpg`
+      }
+      
+      // UI8: Design preview format
+      if (siteName === 'ui8') {
+        return `https://ui8.net/images/${order.stockItemId}/preview.jpg`
+      }
+      
+      // IconScout: Icon preview format
+      if (siteName === 'iconscout') {
+        return `https://iconscout.com/icon/${order.stockItemId}/preview`
+      }
+      
+      // Lovepik: Image preview format
+      if (siteName === 'lovepik') {
+        return `https://img.lovepik.com/photo/${order.stockItemId}.jpg`
+      }
+      
+      // Pngtree: Image preview format
+      if (siteName === 'pngtree') {
+        return `https://png.pngtree.com/png-vector/${order.stockItemId}/preview.png`
+      }
+      
+      // Deezy: Product preview format
+      if (siteName === 'deeezy') {
+        return `https://deeezy.com/images/products/${order.stockItemId}/preview.jpg`
+      }
+      
+      // Footage Crate: Video preview format
+      if (siteName === 'footagecrate') {
+        return `https://footagecrate.com/videos/${order.stockItemId}/preview.jpg`
+      }
+      
+      // Art Grid: Video preview format
+      if (siteName === 'artgrid_hd') {
+        return `https://artgrid.io/clips/${order.stockItemId}/preview.jpg`
+      }
+      
+      // Yellow Images: Product preview format
+      if (siteName === 'yellowimages') {
+        return `https://yellowimages.com/stock/${order.stockItemId}/preview.jpg`
+      }
+      
+      // Epidemic Sound: Audio preview format (waveform)
+      if (siteName === 'epidemicsound') {
+        return `https://epic7static.s3.amazonaws.com/audio/${order.stockItemId}/waveform.png`
       }
     }
 
