@@ -96,21 +96,17 @@ export default function OrdersPage() {
     }
   }
 
-  // Smart download functionality
+  // Smart download functionality - seamless background process
   const handleSmartDownload = async (order: Order) => {
     try {
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
-      console.log('🔄 Starting download link regeneration for order:', {
+      console.log('🔄 Starting seamless download for order:', {
         orderId: order.id,
         status: order.status,
         taskId: order.taskId,
-        stockItemId: order.stockItemId,
-        currentDownloadUrl: order.downloadUrl
+        stockItemId: order.stockItemId
       })
-      
-      // Show user feedback
-      alert('Regenerating fresh download link... Please wait.')
       
       const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
         method: 'POST',
@@ -119,30 +115,25 @@ export default function OrdersPage() {
         },
       })
 
-      console.log('📡 Regenerate API response status:', response.status)
-      console.log('📡 Regenerate API response headers:', Object.fromEntries(response.headers.entries()))
+      console.log('📡 API response status:', response.status)
       
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ API Error Response:', errorText)
+        console.error('❌ API Error:', errorText)
         let errorData
         try {
           errorData = JSON.parse(errorText)
         } catch {
           errorData = { error: errorText }
         }
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
       const data = await response.json()
-      console.log('📡 Regenerate API response data:', data)
+      console.log('📡 API response data:', data)
 
       if (data.success && data.order) {
-        console.log('✅ Download link regenerated successfully:', {
-          newDownloadUrl: data.order.downloadUrl,
-          newStatus: data.order.status,
-          newTaskId: data.order.taskId
-        })
+        console.log('✅ Download ready (order response)')
         
         // Update the order in local state
         setOrders(prevOrders => 
@@ -151,22 +142,14 @@ export default function OrdersPage() {
           )
         )
         
-        // Open the download link
+        // Open the download link silently
         if (data.order.downloadUrl) {
-          console.log('🔗 Opening fresh download URL:', data.order.downloadUrl)
+          console.log('🔗 Opening download:', data.order.downloadUrl)
           window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
-          alert('Fresh download link opened in new tab!')
-        } else {
-          console.warn('⚠️ No download URL in response after regeneration')
-          alert('Download link not available yet. The file might still be processing. Please try again later.')
         }
       } else if (data.success && data.downloadLink) {
         // Handle direct download link response (from Nehtw API)
-        console.log('✅ Download link regenerated successfully (direct response):', {
-          newDownloadUrl: data.downloadLink,
-          fileName: data.fileName,
-          status: data.status
-        })
+        console.log('✅ Download ready (direct response)')
         
         // Update the order in local state with the new download link
         setOrders(prevOrders => 
@@ -181,18 +164,18 @@ export default function OrdersPage() {
           )
         )
         
-        // Open the download link
-        console.log('🔗 Opening fresh download URL:', data.downloadLink)
+        // Open the download link silently
+        console.log('🔗 Opening download:', data.downloadLink)
         window.open(data.downloadLink, '_blank', 'noopener,noreferrer')
-        alert('Fresh download link opened in new tab!')
       } else {
-        console.error('❌ Regenerate failed - no success or download data:', data)
-        throw new Error(data.error || 'Failed to regenerate download link - no data returned')
+        console.error('❌ Download failed:', data)
+        // Silent fail - no popup, just log the error
+        console.warn('Download not available for this order')
       }
     } catch (error) {
-      console.error('💥 Error handling download:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      alert(`Failed to regenerate download link: ${errorMessage}`)
+      console.error('💥 Download error:', error)
+      // Silent fail - no popup, just log the error
+      console.warn('Download failed silently')
     } finally {
       setRegeneratingLinks(prev => {
         const newSet = new Set(prev)
@@ -842,17 +825,17 @@ export default function OrdersPage() {
                               : '0 4px 12px rgba(5, 150, 105, 0.3)'
                           }}
                         >
-                          {regeneratingLinks.has(order.id) ? (
-                            <>
-                              <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-                              Preparing Download...
-                            </>
-                          ) : (
-                            <>
-                              <Download style={{ width: '16px', height: '16px' }} />
-                              Get Fresh Download Link
-                            </>
-                          )}
+                        {regeneratingLinks.has(order.id) ? (
+                          <>
+                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                            Preparing...
+                          </>
+                        ) : (
+                          <>
+                            <Download style={{ width: '16px', height: '16px' }} />
+                            Download for Free
+                          </>
+                        )}
                         </button>
                       )}
                     </div>
