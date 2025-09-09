@@ -1485,116 +1485,266 @@ export default function DashboardPage() {
             </button>
             
             <h2 style={{
-              fontSize: '28px',
+              fontSize: '32px',
               fontWeight: 'bold',
               color: '#0f172a',
-              marginBottom: '16px',
+              marginBottom: '8px',
               textAlign: 'center'
             }}>
-              How It Works - Quick Demo
+              How to Use Our Service
             </h2>
-            
-            <div style={{
-              background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)',
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '24px',
+            <p style={{
+              fontSize: '18px',
+              color: '#64748b',
+              marginBottom: '32px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎬</div>
-              <p style={{
-                fontSize: '16px',
-                color: '#64748b',
-                marginBottom: '20px'
-              }}>
-                Watch this quick demo to see how easy it is to download premium stock media
-              </p>
+              Get premium stock media in just 3 simple steps
+            </p>
+            
+            {/* Step-by-Step Visual Guide */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              marginBottom: '32px'
+            }}>
+              {/* Step 1 */}
               <div style={{
-                background: '#1f2937',
-                borderRadius: '8px',
-                padding: '40px',
-                color: 'white',
-                fontSize: '14px',
-                fontFamily: 'monospace',
-                textAlign: 'left',
-                marginBottom: '20px'
+                display: 'flex',
+                alignItems: 'center',
+                gap: '24px',
+                padding: '24px',
+                background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                borderRadius: '16px',
+                border: '2px solid #bae6fd'
               }}>
-                <div style={{ color: '#10b981' }}>// Step 1: Copy any stock media URL</div>
-                <div style={{ color: '#fbbf24', margin: '8px 0' }}>const url = "https://www.shutterstock.com/image-vector/..."</div>
-                <div style={{ color: '#10b981', marginTop: '16px' }}>// Step 2: Paste in our request box</div>
-                <div style={{ color: '#fbbf24', margin: '8px 0' }}>await requestFile(url)</div>
-                <div style={{ color: '#10b981', marginTop: '16px' }}>// Step 3: Download high-quality file instantly</div>
-                <div style={{ color: '#fbbf24', margin: '8px 0' }}>✅ File downloaded successfully!</div>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  flexShrink: 0
+                }}>
+                  1
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: '#0c4a6e',
+                    margin: '0 0 8px 0'
+                  }}>
+                    Find Any Stock Media URL
+                  </h3>
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#0369a1',
+                    margin: '0 0 12px 0'
+                  }}>
+                    Browse Shutterstock, Adobe Stock, iStock, or any supported site and copy the URL of the image/video you want
+                  </p>
+                  <div style={{
+                    background: '#1e293b',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    color: '#e2e8f0'
+                  }}>
+                    https://www.shutterstock.com/image-vector/example-1234567890
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '24px',
+                padding: '24px',
+                background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                borderRadius: '16px',
+                border: '2px solid #86efac'
+              }}>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  flexShrink: 0
+                }}>
+                  2
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: '#14532d',
+                    margin: '0 0 8px 0'
+                  }}>
+                    Paste & Request Download
+                  </h3>
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#166534',
+                    margin: '0 0 12px 0'
+                  }}>
+                    Go to our "Request Files" page, paste the URL, and click "Get Link" to see the file details
+                  </p>
+                  <div style={{
+                    background: 'white',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '2px solid #22c55e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      background: '#22c55e',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '12px'
+                    }}>
+                      ✓
+                    </div>
+                    <span style={{ color: '#166534', fontWeight: '500' }}>
+                      File preview • Cost: 0.4 points • Click "Confirm Order"
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '24px',
+                padding: '24px',
+                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                borderRadius: '16px',
+                border: '2px solid #f59e0b'
+              }}>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  flexShrink: 0
+                }}>
+                  3
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: '#92400e',
+                    margin: '0 0 8px 0'
+                  }}>
+                    Download High-Quality File
+                  </h3>
+                  <p style={{
+                    fontSize: '16px',
+                    color: '#a16207',
+                    margin: '0 0 12px 0'
+                  }}>
+                    Wait 5-10 minutes for processing, then download your high-resolution file instantly
+                  </p>
+                  <div style={{
+                    background: 'white',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '2px solid #f59e0b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      background: '#f59e0b',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '12px'
+                    }}>
+                      ⬇️
+                    </div>
+                    <span style={{ color: '#92400e', fontWeight: '500' }}>
+                      Download for Free • Unlimited re-downloads • Commercial license included
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
+            {/* Benefits Section */}
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
+              background: 'linear-gradient(135deg, #f8fafc, #e2e8f0)',
+              borderRadius: '16px',
+              padding: '24px',
               marginBottom: '24px'
             }}>
-              <div style={{
-                background: '#f0f9ff',
-                border: '1px solid #bae6fd',
-                borderRadius: '12px',
-                padding: '20px',
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#0f172a',
+                marginBottom: '16px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>1️⃣</div>
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#0c4a6e',
-                  margin: '0 0 8px 0'
-                }}>Copy URL</h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#0369a1',
-                  margin: 0
-                }}>Copy any stock media URL from supported sites</p>
-              </div>
-              
+                Why Choose Our Service?
+              </h3>
               <div style={{
-                background: '#f0fdf4',
-                border: '1px solid #86efac',
-                borderRadius: '12px',
-                padding: '20px',
-                textAlign: 'center'
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px'
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>2️⃣</div>
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#14532d',
-                  margin: '0 0 8px 0'
-                }}>Paste & Request</h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#166534',
-                  margin: 0
-                }}>Paste URL in our request box and click confirm</p>
-              </div>
-              
-              <div style={{
-                background: '#fef3c7',
-                border: '1px solid #f59e0b',
-                borderRadius: '12px',
-                padding: '20px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>3️⃣</div>
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#92400e',
-                  margin: '0 0 8px 0'
-                }}>Download</h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#a16207',
-                  margin: 0
-                }}>Get high-quality file delivered instantly</p>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>💰</div>
+                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#0f172a', margin: '0 0 4px 0' }}>Save 90%</h4>
+                  <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>vs direct purchases</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>⚡</div>
+                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#0f172a', margin: '0 0 4px 0' }}>Instant Access</h4>
+                  <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>5-10 minute processing</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔄</div>
+                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#0f172a', margin: '0 0 4px 0' }}>Unlimited Downloads</h4>
+                  <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Download anytime</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>📄</div>
+                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#0f172a', margin: '0 0 4px 0' }}>Commercial License</h4>
+                  <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Use for any project</p>
+                </div>
               </div>
             </div>
 
