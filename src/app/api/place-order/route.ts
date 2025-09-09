@@ -145,6 +145,13 @@ export async function POST(request: NextRequest) {
       costType: typeof cost
     })
     
+    console.log('🔍 DEBUG: Stock Item ID from API:', {
+      id,
+      idType: typeof id,
+      idLength: id?.length,
+      idValue: JSON.stringify(id)
+    })
+    
     const order = await OrderManager.createOrder(
       session.user.id,
       stockSite.id,

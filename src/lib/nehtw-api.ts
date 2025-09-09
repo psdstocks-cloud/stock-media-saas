@@ -247,6 +247,13 @@ export class OrderManager {
       cost,
       imageUrl
     })
+    
+    console.log('🔍 DEBUG: Stock Item ID in OrderManager:', {
+      stockItemId,
+      stockItemIdType: typeof stockItemId,
+      stockItemIdLength: stockItemId?.length,
+      stockItemIdValue: JSON.stringify(stockItemId)
+    })
 
     try {
       const order = await prisma.order.create({
@@ -262,6 +269,12 @@ export class OrderManager {
         },
       })
       console.log('Order created successfully:', { id: order.id, status: order.status })
+      console.log('🔍 DEBUG: Created order stockItemId:', {
+        orderId: order.id,
+        stockItemId: order.stockItemId,
+        stockItemIdType: typeof order.stockItemId,
+        stockItemIdLength: order.stockItemId?.length
+      })
       return order
     } catch (error) {
       console.error('Error in OrderManager.createOrder:', error)
