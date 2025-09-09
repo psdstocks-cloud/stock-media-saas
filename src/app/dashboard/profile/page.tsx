@@ -403,7 +403,7 @@ export default function ProfilePage() {
                 fontWeight: 'bold',
                 textTransform: 'uppercase'
               }}>
-                {profile.name?.charAt(0) || 'U'}
+                {profile?.name?.charAt(0) || 'U'}
                 <button
                   style={{
                     position: 'absolute',
@@ -433,14 +433,14 @@ export default function ProfilePage() {
                   color: '#0f172a',
                   margin: '0 0 8px 0'
                 }}>
-                  {profile.name}
+                  {profile?.name}
                 </h2>
                 <p style={{
                   fontSize: '16px',
                   color: '#64748b',
                   margin: '0 0 8px 0'
                 }}>
-                  {profile.email}
+                  {profile?.email}
                 </p>
                 <div style={{
                   display: 'flex',
@@ -517,7 +517,7 @@ export default function ProfilePage() {
                   color: '#1e40af',
                   margin: '0 0 4px 0'
                 }}>
-                  {profile.pointsBalance?.currentPoints || 0}
+                  {profile?.pointsBalance?.currentPoints || 0}
                 </h4>
                 <p style={{
                   fontSize: '14px',
@@ -554,7 +554,7 @@ export default function ProfilePage() {
                   color: '#166534',
                   margin: '0 0 4px 0'
                 }}>
-                  {profile.pointsBalance?.totalUsed || 0}
+                  {profile?.pointsBalance?.totalUsed || 0}
                 </h4>
                 <p style={{
                   fontSize: '14px',
@@ -591,7 +591,7 @@ export default function ProfilePage() {
                   color: '#6b21a8',
                   margin: '0 0 4px 0'
                 }}>
-                  {profile.role}
+                  {profile?.role}
                 </h4>
                 <p style={{
                   fontSize: '14px',
@@ -729,7 +729,7 @@ export default function ProfilePage() {
                         fontSize: '16px',
                         color: '#374151'
                       }}>
-                        {profile.name}
+                        {profile?.name}
                       </div>
                     )}
                     {errors.name && (
@@ -771,7 +771,7 @@ export default function ProfilePage() {
                         fontSize: '16px',
                         color: '#374151'
                       }}>
-                        {profile.email}
+                        {profile?.email}
                       </div>
                     )}
                     {errors.email && (
@@ -797,7 +797,7 @@ export default function ProfilePage() {
                       fontSize: '16px',
                       color: '#374151'
                     }}>
-                      {new Date(profile.createdAt).toLocaleDateString('en-US', {
+                      {new Date(profile?.createdAt || new Date()).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -838,8 +838,8 @@ export default function ProfilePage() {
                       onClick={() => {
                         setIsEditing(false)
                         setFormData({
-                          name: profile.name,
-                          email: profile.email,
+                          name: profile?.name || '',
+                          email: profile?.email || '',
                           currentPassword: '',
                           newPassword: '',
                           confirmPassword: ''
@@ -1028,7 +1028,7 @@ export default function ProfilePage() {
                   Subscription Details
                 </h3>
                 
-                {profile.subscriptions && profile.subscriptions.length > 0 ? (
+                {profile?.subscriptions && profile.subscriptions.length > 0 ? (
                   <div style={{
                     background: '#f8fafc',
                     border: '1px solid #e2e8f0',
