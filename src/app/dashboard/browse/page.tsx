@@ -271,11 +271,6 @@ export default function BrowsePage() {
     window.open(site.url, '_blank')
   }
 
-  const handleSiteUrlClick = (site: SupportedSite) => {
-    setUrl(site.url)
-    setError('')
-    setStockInfo(null)
-  }
 
   if (status === 'loading') {
     return (
@@ -833,72 +828,38 @@ export default function BrowsePage() {
                           </p>
                         </div>
 
-                        {/* Site Actions */}
+                        {/* Site Action */}
                         <div style={{
-                          padding: '16px 20px',
-                          display: 'flex',
-                          gap: '8px'
+                          padding: '16px 20px'
                         }}>
                           <button
                             onClick={() => window.open(getWebsiteUrl(site.name), '_blank')}
                             style={{
-                              flex: 1,
-                              padding: '10px 16px',
+                              width: '100%',
+                              padding: '12px 20px',
                               background: 'linear-gradient(135deg, #667eea, #764ba2)',
                               color: 'white',
                               border: 'none',
-                              borderRadius: '10px',
-                              fontSize: '13px',
+                              borderRadius: '12px',
+                              fontSize: '14px',
                               fontWeight: '600',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '6px'
+                              gap: '8px'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-1px)'
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                              e.currentTarget.style.transform = 'translateY(-2px)'
+                              e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.transform = 'translateY(0)'
                               e.currentTarget.style.boxShadow = 'none'
                             }}
                           >
-                            🌐 Visit Site
-                          </button>
-                          
-                          <button
-                            onClick={() => handleSiteUrlClick(site)}
-                            style={{
-                              flex: 1,
-                              padding: '10px 16px',
-                              background: 'white',
-                              color: '#667eea',
-                              border: '1px solid #667eea',
-                              borderRadius: '10px',
-                              fontSize: '13px',
-                              fontWeight: '600',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '6px'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#667eea'
-                              e.currentTarget.style.color = 'white'
-                              e.currentTarget.style.transform = 'translateY(-1px)'
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'white'
-                              e.currentTarget.style.color = '#667eea'
-                              e.currentTarget.style.transform = 'translateY(0)'
-                            }}
-                          >
-                            🔗 Use URL
+                            🌐 Visit {site.displayName}
                           </button>
                         </div>
                       </div>
