@@ -89,6 +89,15 @@ export default function BrowsePage() {
   const [copied, setCopied] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredSites, setFilteredSites] = useState<SupportedSite[]>([])
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [requestData, setRequestData] = useState({
+    siteName: '',
+    siteUrl: '',
+    reason: '',
+    userEmail: ''
+  })
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false)
+  const [requestSubmitted, setRequestSubmitted] = useState(false)
 
   // Function to refresh user balance from database
   const refreshUserBalance = async () => {
@@ -269,6 +278,52 @@ export default function BrowsePage() {
 
   const handleSiteClick = (site: SupportedSite) => {
     window.open(site.url, '_blank')
+  }
+
+  const handleRequestSite = () => {
+    setShowRequestModal(true)
+    setRequestData({
+      siteName: '',
+      siteUrl: '',
+      reason: '',
+      userEmail: session?.user?.email || ''
+    })
+    setRequestSubmitted(false)
+  }
+
+  const handleRequestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmittingRequest(true)
+
+    try {
+      // Simulate API call - in real implementation, this would send to backend
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      setRequestSubmitted(true)
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setShowRequestModal(false)
+        setRequestSubmitted(false)
+        setRequestData({
+          siteName: '',
+          siteUrl: '',
+          reason: '',
+          userEmail: ''
+        })
+      }, 3000)
+    } catch (error) {
+      console.error('Request submission error:', error)
+    } finally {
+      setIsSubmittingRequest(false)
+    }
+  }
+
+  const handleRequestInputChange = (field: string, value: string) => {
+    setRequestData(prev => ({
+      ...prev,
+      [field]: value
+    }))
   }
 
 
@@ -946,28 +1001,30 @@ export default function BrowsePage() {
                   }}>
                     We're constantly adding new stock sites. Contact us to request support for your favorite platform.
                   </p>
-                  <button style={{
-                    padding: '12px 24px',
-                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
+                  <button 
+                    onClick={handleRequestSite}
+                    style={{
+                      padding: '12px 24px',
+                      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
                   >
                     💬 Request New Site
                   </button>
@@ -1421,6 +1478,357 @@ export default function BrowsePage() {
           </div>
         </div>
       </div>
+
+      {/* Request New Site Modal */}
+      {showRequestModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+            position: 'relative'
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setShowRequestModal(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#6b7280',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f3f4f6'
+                e.currentTarget.style.color = '#374151'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none'
+                e.currentTarget.style.color = '#6b7280'
+              }}
+            >
+              ×
+            </button>
+
+            {!requestSubmitted ? (
+              <>
+                {/* Header */}
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                    fontSize: '28px'
+                  }}>
+                    💬
+                  </div>
+                  <h3 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    color: '#1e293b'
+                  }}>
+                    Request New Site
+                  </h3>
+                  <p style={{
+                    margin: '0',
+                    fontSize: '16px',
+                    color: '#64748b',
+                    lineHeight: '1.5'
+                  }}>
+                    Help us expand our platform support by requesting your favorite stock site
+                  </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleRequestSubmit}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {/* Site Name */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#374151',
+                        marginBottom: '8px'
+                      }}>
+                        Site Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={requestData.siteName}
+                        onChange={(e) => handleRequestInputChange('siteName', e.target.value)}
+                        placeholder="e.g., Getty Images, Unsplash, Pexels"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#667eea'
+                          e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)'
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb'
+                          e.target.style.boxShadow = 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Site URL */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#374151',
+                        marginBottom: '8px'
+                      }}>
+                        Website URL *
+                      </label>
+                      <input
+                        type="url"
+                        value={requestData.siteUrl}
+                        onChange={(e) => handleRequestInputChange('siteUrl', e.target.value)}
+                        placeholder="https://www.example.com"
+                        required
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#667eea'
+                          e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)'
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb'
+                          e.target.style.boxShadow = 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Reason */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#374151',
+                        marginBottom: '8px'
+                      }}>
+                        Why do you need this site? *
+                      </label>
+                      <textarea
+                        value={requestData.reason}
+                        onChange={(e) => handleRequestInputChange('reason', e.target.value)}
+                        placeholder="Tell us why this site would be valuable for our users..."
+                        required
+                        rows={4}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s ease',
+                          outline: 'none',
+                          resize: 'vertical',
+                          minHeight: '100px'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#667eea'
+                          e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)'
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb'
+                          e.target.style.boxShadow = 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#374151',
+                        marginBottom: '8px'
+                      }}>
+                        Your Email
+                      </label>
+                      <input
+                        type="email"
+                        value={requestData.userEmail}
+                        onChange={(e) => handleRequestInputChange('userEmail', e.target.value)}
+                        placeholder="your@email.com"
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          border: '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          transition: 'all 0.2s ease',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#667eea'
+                          e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)'
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e5e7eb'
+                          e.target.style.boxShadow = 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={isSubmittingRequest}
+                      style={{
+                        width: '100%',
+                        padding: '16px 24px',
+                        background: isSubmittingRequest 
+                          ? '#9ca3af' 
+                          : 'linear-gradient(135deg, #667eea, #764ba2)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: isSubmittingRequest ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSubmittingRequest) {
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
+                      {isSubmittingRequest ? (
+                        <>
+                          <div style={{
+                            width: '16px',
+                            height: '16px',
+                            border: '2px solid transparent',
+                            borderTop: '2px solid white',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite'
+                          }} />
+                          Submitting Request...
+                        </>
+                      ) : (
+                        <>
+                          💬 Submit Request
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              /* Success State */
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderRadius: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px',
+                  fontSize: '36px'
+                }}>
+                  ✅
+                </div>
+                <h3 style={{
+                  margin: '0 0 12px 0',
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#1e293b'
+                }}>
+                  Request Submitted!
+                </h3>
+                <p style={{
+                  margin: '0 0 24px 0',
+                  fontSize: '16px',
+                  color: '#64748b',
+                  lineHeight: '1.5'
+                }}>
+                  Thank you for your request! We'll review it and get back to you within 2-3 business days.
+                </p>
+                <div style={{
+                  background: '#f0f9ff',
+                  border: '1px solid #bae6fd',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  fontSize: '14px',
+                  color: '#0369a1'
+                }}>
+                  <strong>What happens next?</strong><br />
+                  • We'll evaluate the site's compatibility<br />
+                  • Check licensing and technical requirements<br />
+                  • Add it to our roadmap if approved<br />
+                  • Notify you when it's available
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
