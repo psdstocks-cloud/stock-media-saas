@@ -74,11 +74,11 @@ export default function OrdersPage() {
       const data = await response.json()
       
       if (data.orders) {
-        // Deduplicate orders by stockItemId and stockSiteId
+        // Deduplicate orders by stockItemId and stockSite.id
         const uniqueOrders = data.orders.reduce((acc: Order[], current: Order) => {
           const existingIndex = acc.findIndex(order => 
             order.stockItemId === current.stockItemId && 
-            order.stockSiteId === current.stockSiteId
+            order.stockSite.id === current.stockSite.id
           )
           
           if (existingIndex === -1) {
