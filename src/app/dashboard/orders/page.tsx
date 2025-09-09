@@ -77,7 +77,12 @@ export default function OrdersPage() {
     try {
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
-      console.log('Regenerating fresh download link for order:', order.id)
+      console.log('🔄 Regenerating fresh download link for order:', {
+        orderId: order.id,
+        currentStatus: order.status,
+        taskId: order.taskId,
+        currentDownloadUrl: order.downloadUrl
+      })
       
       // Always regenerate the download link to get a fresh URL
       const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
@@ -87,9 +92,16 @@ export default function OrdersPage() {
         },
       })
 
+      console.log('📡 Regenerate API response status:', response.status)
       const data = await response.json()
+      console.log('📡 Regenerate API response data:', data)
 
       if (data.success && data.order) {
+        console.log('✅ Successfully regenerated download link:', {
+          newDownloadUrl: data.order.downloadUrl,
+          newStatus: data.order.status
+        })
+        
         // Update the order in the local state
         setOrders(prevOrders => 
           prevOrders.map(o => 
@@ -99,13 +111,17 @@ export default function OrdersPage() {
         
         // Open the new download link
         if (data.order.downloadUrl) {
+          console.log('🔗 Opening download URL:', data.order.downloadUrl)
           window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
+        } else {
+          console.warn('⚠️ No download URL in response')
         }
       } else {
+        console.error('❌ Regenerate failed:', data.error)
         throw new Error(data.error || 'Failed to regenerate download link')
       }
     } catch (error) {
-      console.error('Error handling download:', error)
+      console.error('💥 Error handling download:', error)
       alert(`Failed to prepare download: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setRegeneratingLinks(prev => {

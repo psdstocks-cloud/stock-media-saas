@@ -546,8 +546,10 @@ export class OrderManager {
       throw new Error('Order not found or no task ID')
     }
 
-    if (order.status !== 'READY' && order.status !== 'COMPLETED') {
-      throw new Error('Order must be ready or completed to regenerate download link')
+    // Allow regeneration for any order that has a taskId (regardless of status)
+    // This allows users to get fresh download links even for processing orders
+    if (!order.taskId) {
+      throw new Error('Order must have a task ID to regenerate download link')
     }
 
     const api = new NehtwAPI(apiKey)
