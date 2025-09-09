@@ -48,7 +48,6 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Order[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const [regeneratingLinks, setRegeneratingLinks] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isAnyDownloadActive, setIsAnyDownloadActive] = useState(false)
@@ -57,6 +56,7 @@ export default function OrdersPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (status === 'loading') return
+    
     if (!session) {
       router.push('/auth/login')
       return
@@ -411,8 +411,7 @@ export default function OrdersPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '16px',
-            marginBottom: '24px',
+            gap: '24px',
             flexWrap: 'wrap'
           }}>
             {/* View Toggle */}
@@ -429,15 +428,15 @@ export default function OrdersPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '8px 16px',
-                  background: viewMode === 'grid' ? 'rgba(255,255,255,0.9)' : 'transparent',
-                  color: viewMode === 'grid' ? '#1f2937' : 'rgba(255,255,255,0.8)',
-                  border: 'none',
+                  padding: '10px 20px',
                   borderRadius: '8px',
+                  border: 'none',
+                  background: viewMode === 'grid' ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  color: 'white',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  fontSize: '14px',
-                  fontWeight: '600'
+                  fontWeight: '500',
+                  fontSize: '14px'
                 }}
               >
                 <Grid3X3 style={{ width: '16px', height: '16px' }} />
@@ -449,40 +448,36 @@ export default function OrdersPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '8px 16px',
-                  background: viewMode === 'list' ? 'rgba(255,255,255,0.9)' : 'transparent',
-                  color: viewMode === 'list' ? '#1f2937' : 'rgba(255,255,255,0.8)',
-                  border: 'none',
+                  padding: '10px 20px',
                   borderRadius: '8px',
+                  border: 'none',
+                  background: viewMode === 'list' ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  color: 'white',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  fontSize: '14px',
-                  fontWeight: '600'
+                  fontWeight: '500',
+                  fontSize: '14px'
                 }}
               >
                 <List style={{ width: '16px', height: '16px' }} />
                 List
               </button>
             </div>
-          </div>
-          
-          {/* Search Bar */}
-          <div style={{
-            position: 'relative',
-            maxWidth: '500px',
-            margin: '0 auto'
-          }}>
+
+            {/* Search Bar */}
             <div style={{
               position: 'relative',
-              display: 'flex',
-              alignItems: 'center'
+              maxWidth: '400px',
+              width: '100%'
             }}>
               <Search style={{
                 position: 'absolute',
                 left: '16px',
+                top: '50%',
+                transform: 'translateY(-50%)',
                 width: '20px',
                 height: '20px',
-                color: '#6b7280',
+                color: 'rgba(255,255,255,0.6)',
                 zIndex: 1
               }} />
               <input
@@ -492,361 +487,643 @@ export default function OrdersPage() {
                 onChange={(e) => handleSearch(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '16px 16px 16px 48px',
-                  border: 'none',
+                  padding: '12px 16px 12px 48px',
                   borderRadius: '12px',
-                  fontSize: '16px',
-                  background: 'rgba(255,255,255,0.95)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  fontSize: '14px',
                   backdropFilter: 'blur(10px)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                   outline: 'none',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.2)'
+                  e.target.style.border = '1px solid rgba(255,255,255,0.4)'
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.1)'
+                  e.target.style.border = '1px solid rgba(255,255,255,0.2)'
                 }}
               />
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery('')
-                    setSearchResults([])
-                    setIsSearching(false)
-                  }}
-                  style={{
-                    position: 'absolute',
-                    right: '16px',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#6b7280',
-                    padding: '4px'
-                  }}
-                >
-                  <XCircle style={{ width: '20px', height: '20px' }} />
-                </button>
-              )}
             </div>
-            
-            {searchQuery && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: '0',
-                right: '0',
-                background: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                marginTop: '8px',
-                padding: '16px',
-                zIndex: 10
-              }}>
-                <p style={{
-                  margin: '0 0 8px 0',
-                  fontSize: '14px',
-                  color: '#6b7280'
-                }}>
-                  {isSearching ? 'Searching...' : `Found ${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}`}
-                </p>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Orders List */}
-        <div style={{
-          display: viewMode === 'grid' ? 'grid' : 'flex',
-          gap: '24px',
-          gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(400px, 1fr))' : 'none',
-          flexDirection: viewMode === 'list' ? 'column' : 'row'
-        }}>
-          {displayOrders.length === 0 ? (
+        {/* Orders Content */}
+        {displayOrders.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
             <div style={{
-              gridColumn: '1 / -1',
-              textAlign: 'center',
-              padding: '64px 24px',
+              width: '80px',
+              height: '80px',
               background: 'rgba(255,255,255,0.1)',
-              borderRadius: '16px',
-              backdropFilter: 'blur(10px)'
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+              color: 'rgba(255,255,255,0.6)'
             }}>
-              <FileText style={{
-                width: '64px',
-                height: '64px',
-                color: 'rgba(255,255,255,0.6)',
-                marginBottom: '16px'
-              }} />
-              <h3 style={{
-                color: 'white',
-                fontSize: '24px',
-                fontWeight: '600',
-                margin: '0 0 8px 0'
-              }}>
-                {searchQuery ? 'No matching orders found' : 'No orders yet'}
-              </h3>
-              <p style={{
-                color: 'rgba(255,255,255,0.8)',
-                fontSize: '16px',
-                margin: '0'
-              }}>
-                {searchQuery ? 'Try a different search term' : 'Start requesting files to see them here'}
-              </p>
+              <Download style={{ width: '32px', height: '32px' }} />
             </div>
-          ) : (
-            displayOrders.map((order) => {
-              const statusColors = getStatusColor(order.status)
-              const orderDate = formatOrderDate(order.createdAt)
-              
-              return (
-                <div
-                  key={order.id}
-                  style={{
-                    background: 'rgba(255,255,255,0.95)',
-                    borderRadius: '16px',
-                    padding: viewMode === 'list' ? '20px' : '24px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    transition: 'all 0.3s ease',
-                    display: viewMode === 'list' ? 'flex' : 'block',
-                    gap: viewMode === 'list' ? '20px' : '0'
-                  }}
-                >
-                  {/* File Preview for List View */}
-                  {viewMode === 'list' && (order.imageUrl || order.stockItemUrl) && (
-                    <div style={{
-                      flexShrink: 0,
-                      width: '120px',
-                      height: '120px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      background: '#f9fafb',
-                      border: '1px solid #e5e7eb'
-                    }}>
-                      <img
-                        src={order.imageUrl || order.stockItemUrl}
-                        alt="File preview"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                          background: '#f9fafb'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Main Content */}
-                  <div style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column'
+            <h3 style={{
+              color: 'white',
+              fontSize: '24px',
+              fontWeight: '600',
+              margin: '0 0 12px 0'
+            }}>
+              {searchQuery.trim() ? 'No orders found' : 'No orders yet'}
+            </h3>
+            <p style={{
+              color: 'rgba(255,255,255,0.8)',
+              fontSize: '16px',
+              margin: '0 0 24px 0',
+              lineHeight: '1.5'
+            }}>
+              {searchQuery.trim() 
+                ? 'Try adjusting your search terms or browse our media collection.'
+                : 'Start by browsing our media collection and placing your first order.'
+              }
+            </p>
+            {!searchQuery.trim() && (
+              <button
+                onClick={() => router.push('/dashboard/browse')}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  backdropFilter: 'blur(10px)'
+                }}
+              >
+                Browse Media
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Orders Count */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px',
+              flexWrap: 'wrap',
+              gap: '16px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <span style={{
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: '14px'
                   }}>
-                    {/* Order Header */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '16px'
-                    }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px'
-                    }}>
-                      <img
-                        src={getSiteLogo(order.stockSite.name)}
-                        alt={order.stockSite.displayName}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '6px',
-                          objectFit: 'contain'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                      <div>
-                        <h3 style={{
-                          margin: '0 0 4px 0',
-                          fontSize: '18px',
-                          fontWeight: '600',
-                          color: '#1f2937'
-                        }}>
-                          {order.stockSite.displayName} {order.stockItemId ? `#${order.stockItemId}` : ''}
-                        </h3>
-                        <div style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '2px'
-                        }}>
-                          {order.taskId && (
-                            <p style={{
-                              margin: '0',
-                              fontSize: '12px',
-                              color: '#9ca3af',
-                              fontFamily: 'monospace'
-                            }}>
-                              Debug ID: {order.taskId}
-                            </p>
-                          )}
-                          <p style={{
-                            margin: '0',
-                            fontSize: '12px',
-                            color: '#6b7280'
-                          }}>
-                            Order: {order.id.slice(-8)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '6px 12px',
-                      background: statusColors.bg,
-                      color: statusColors.text,
-                      borderRadius: '20px',
-                      border: `1px solid ${statusColors.border}`,
-                      fontSize: '12px',
-                      fontWeight: '600'
-                    }}>
-                      {getStatusIcon(order.status)}
-                      {order.status}
-                    </div>
+                    {displayOrders.length} {displayOrders.length === 1 ? 'Order' : 'Orders'}
+                  </span>
+                </div>
+                {isSearching && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'rgba(255,255,255,0.8)',
+                    fontSize: '14px'
+                  }}>
+                    <RefreshCw style={{ 
+                      width: '16px', 
+                      height: '16px', 
+                      animation: 'spin 1s linear infinite' 
+                    }} />
+                    Searching...
                   </div>
+                )}
+              </div>
+              
+              <button
+                onClick={fetchOrders}
+                disabled={loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  opacity: loading ? 0.6 : 1,
+                  backdropFilter: 'blur(10px)'
+                }}
+              >
+                <RefreshCw style={{ 
+                  width: '16px', 
+                  height: '16px',
+                  animation: loading ? 'spin 1s linear infinite' : 'none'
+                }} />
+                Refresh
+              </button>
+            </div>
 
-                    {/* Order Details */}
-                    <div style={{
-                      marginBottom: '16px'
-                    }}>
-                    
-                    <div style={{
-                      fontSize: '12px',
-                      color: '#9ca3af',
-                      marginBottom: '8px'
-                    }}>
-                      Ordered: {orderDate.date} at {orderDate.time} ({orderDate.timezone})
-                    </div>
-                    
-                    {order.stockItemUrl && (
+            {/* Orders Grid/List */}
+            {viewMode === 'grid' ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                gap: '24px'
+              }}>
+                {displayOrders.map((order) => {
+                  const statusColor = getStatusColor(order.status)
+                  const dateInfo = formatOrderDate(order.createdAt)
+                  const isDownloading = downloadingOrders.has(order.id)
+                  
+                  return (
+                    <div
+                      key={order.id}
+                      style={{
+                        background: 'rgba(255,255,255,0.95)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {/* Status Badge */}
                       <div style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '8px'
+                        gap: '6px',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        background: statusColor.bg,
+                        border: `1px solid ${statusColor.border}`,
+                        color: statusColor.text,
+                        fontSize: '12px',
+                        fontWeight: '600'
                       }}>
-                        <ExternalLink style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                        <a
-                          href={order.stockItemUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            fontSize: '12px',
-                            color: '#3b82f6',
-                            textDecoration: 'none',
-                            maxWidth: '200px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          View Original
-                        </a>
+                        {getStatusIcon(order.status)}
+                        {order.status}
                       </div>
-                    )}
-                  </div>
 
-                    {/* File Preview for Grid View */}
-                    {viewMode === 'grid' && (order.imageUrl || order.stockItemUrl) && (
+                      {/* Preview Image */}
                       <div style={{
-                        marginBottom: '16px',
-                        borderRadius: '8px',
+                        width: '100%',
+                        height: '180px',
+                        borderRadius: '12px',
                         overflow: 'hidden',
-                        background: '#f9fafb',
-                        border: '1px solid #e5e7eb'
+                        marginBottom: '16px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}>
-                        <img
-                          src={order.imageUrl || order.stockItemUrl}
-                          alt="File preview"
-                          style={{
-                            width: '100%',
-                            height: '120px',
-                            objectFit: 'contain',
-                            background: '#f9fafb'
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
+                        {(order.imageUrl || order.stockItemUrl) && (
+                          <img
+                            src={order.imageUrl || order.stockItemUrl || ''}
+                            alt="Preview"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        )}
+                        {!order.imageUrl && !order.stockItemUrl && (
+                          <div style={{
+                            color: '#94a3b8',
+                            fontSize: '14px',
+                            textAlign: 'center'
+                          }}>
+                            No preview available
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    {/* Actions */}
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
-                      marginTop: 'auto'
-                    }}>
-                      {order.status === 'READY' && (
+                      {/* Order Info */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <h3 style={{
+                          fontSize: '18px',
+                          fontWeight: '700',
+                          color: '#1e293b',
+                          margin: '0 0 8px 0',
+                          lineHeight: '1.4'
+                        }}>
+                          {order.stockSite.displayName} #{order.stockItemId || order.id.slice(-8)}
+                        </h3>
+                        
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '8px'
+                        }}>
+                          <div style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '6px',
+                            overflow: 'hidden',
+                            background: '#f1f5f9'
+                          }}>
+                            {getSiteLogo(order.stockSite.name) && (
+                              <img
+                                src={getSiteLogo(order.stockSite.name)}
+                                alt={order.stockSite.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'contain'
+                                }}
+                              />
+                            )}
+                          </div>
+                          <span style={{
+                            fontSize: '14px',
+                            color: '#64748b',
+                            fontWeight: '500'
+                          }}>
+                            {order.stockSite.name}
+                          </span>
+                        </div>
+
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#64748b',
+                          marginBottom: '4px'
+                        }}>
+                          Debug ID: {order.id}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#64748b',
+                          marginBottom: '8px'
+                        }}>
+                          Order: {order.taskId || 'N/A'}
+                        </div>
+                      </div>
+
+                      {/* Date */}
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        marginBottom: '16px',
+                        padding: '8px 12px',
+                        background: '#f8fafc',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        Ordered: {dateInfo.date} at {dateInfo.time} ({dateInfo.timezone})
+                      </div>
+
+                      {/* Actions */}
+                      <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'center'
+                      }}>
+                        {order.stockItemUrl && (
+                          <a
+                            href={order.stockItemUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '8px 12px',
+                              background: 'transparent',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '8px',
+                              color: '#6b7280',
+                              textDecoration: 'none',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <ExternalLink style={{ width: '14px', height: '14px' }} />
+                            View Original
+                          </a>
+                        )}
+                        
                         <button
-                          onClick={() => !isAnyDownloadActive && !downloadingOrders.has(order.id) && handleSmartDownload(order)}
-                          disabled={isAnyDownloadActive || downloadingOrders.has(order.id)}
+                          onClick={() => handleSmartDownload(order)}
+                          disabled={isAnyDownloadActive || isDownloading || !order.downloadUrl}
                           style={{
+                            flex: 1,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '8px',
-                            padding: '12px 20px',
-                            background: (isAnyDownloadActive || downloadingOrders.has(order.id))
-                              ? '#f3f4f6' 
-                              : 'linear-gradient(135deg, #059669, #047857)',
-                            color: (isAnyDownloadActive || downloadingOrders.has(order.id)) ? '#9ca3af' : 'white',
+                            padding: '12px 16px',
+                            background: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                              ? '#e5e7eb'
+                              : '#10b981',
                             border: 'none',
-                            borderRadius: '10px',
+                            borderRadius: '8px',
+                            color: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                              ? '#9ca3af'
+                              : 'white',
+                            cursor: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                              ? 'not-allowed'
+                              : 'pointer',
+                            transition: 'all 0.2s ease',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: (isAnyDownloadActive || downloadingOrders.has(order.id)) ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: (isAnyDownloadActive || downloadingOrders.has(order.id))
-                              ? 'none' 
-                              : '0 4px 12px rgba(5, 150, 105, 0.3)',
-                            opacity: (isAnyDownloadActive || downloadingOrders.has(order.id)) ? 0.7 : 1
+                            opacity: isAnyDownloadActive || isDownloading || !order.downloadUrl ? 0.6 : 1
                           }}
                         >
-                        {downloadingOrders.has(order.id) ? (
-                          <>
-                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-                            Downloading...
-                          </>
-                        ) : isAnyDownloadActive ? (
-                          <>
-                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-                            Download in Progress...
-                          </>
-                        ) : (
-                          <>
-                            <Download style={{ width: '16px', height: '16px' }} />
-                            Download for Free
-                          </>
-                        )}
+                          <Download style={{ width: '16px', height: '16px' }} />
+                          {isAnyDownloadActive
+                            ? 'Download in Progress...'
+                            : isDownloading
+                            ? 'Preparing...'
+                            : 'Download for Free'
+                          }
                         </button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+              }}>
+                {displayOrders.map((order) => {
+                  const statusColor = getStatusColor(order.status)
+                  const dateInfo = formatOrderDate(order.createdAt)
+                  const isDownloading = downloadingOrders.has(order.id)
+                  
+                  return (
+                    <div
+                      key={order.id}
+                      style={{
+                        background: 'rgba(255,255,255,0.95)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        transition: 'all 0.3s ease',
+                        position: 'relative'
+                      }}
+                    >
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '120px 1fr auto',
+                        gap: '20px',
+                        alignItems: 'center'
+                      }}>
+                        {/* Preview Image */}
+                        <div style={{
+                          width: '120px',
+                          height: '80px',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          {(order.imageUrl || order.stockItemUrl) && (
+                            <img
+                              src={order.imageUrl || order.stockItemUrl || ''}
+                              alt="Preview"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                              }}
+                            />
+                          )}
+                          {!order.imageUrl && !order.stockItemUrl && (
+                            <div style={{
+                              color: '#94a3b8',
+                              fontSize: '12px',
+                              textAlign: 'center'
+                            }}>
+                              No preview
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Order Details */}
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            marginBottom: '8px'
+                          }}>
+                            <h3 style={{
+                              fontSize: '18px',
+                              fontWeight: '700',
+                              color: '#1e293b',
+                              margin: 0,
+                              lineHeight: '1.4'
+                            }}>
+                              {order.stockSite.displayName} #{order.stockItemId || order.id.slice(-8)}
+                            </h3>
+                            
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              background: statusColor.bg,
+                              border: `1px solid ${statusColor.border}`,
+                              color: statusColor.text,
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}>
+                              {getStatusIcon(order.status)}
+                              {order.status}
+                            </div>
+                          </div>
+
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '8px'
+                          }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '4px',
+                              overflow: 'hidden',
+                              background: '#f1f5f9'
+                            }}>
+                              {getSiteLogo(order.stockSite.name) && (
+                                <img
+                                  src={getSiteLogo(order.stockSite.name)}
+                                  alt={order.stockSite.name}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain'
+                                  }}
+                                />
+                              )}
+                            </div>
+                            <span style={{
+                              fontSize: '14px',
+                              color: '#64748b',
+                              fontWeight: '500'
+                            }}>
+                              {order.stockSite.name}
+                            </span>
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#94a3b8'
+                            }}>
+                              •
+                            </span>
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#64748b'
+                            }}>
+                              {dateInfo.date} at {dateInfo.time}
+                            </span>
+                          </div>
+
+                          <div style={{
+                            display: 'flex',
+                            gap: '16px',
+                            fontSize: '11px',
+                            color: '#64748b'
+                          }}>
+                            <span>Debug ID: {order.id}</span>
+                            <span>Order: {order.taskId || 'N/A'}</span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{
+                          display: 'flex',
+                          gap: '12px',
+                          alignItems: 'center',
+                          flexShrink: 0
+                        }}>
+                          {order.stockItemUrl && (
+                            <a
+                              href={order.stockItemUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '8px 12px',
+                                background: 'transparent',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                color: '#6b7280',
+                                textDecoration: 'none',
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <ExternalLink style={{ width: '14px', height: '14px' }} />
+                              View Original
+                            </a>
+                          )}
+                          
+                          <button
+                            onClick={() => handleSmartDownload(order)}
+                            disabled={isAnyDownloadActive || isDownloading || !order.downloadUrl}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '12px 20px',
+                              background: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                                ? '#e5e7eb'
+                                : '#10b981',
+                              border: 'none',
+                              borderRadius: '8px',
+                              color: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                                ? '#9ca3af'
+                                : 'white',
+                              cursor: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                                ? 'not-allowed'
+                                : 'pointer',
+                              transition: 'all 0.2s ease',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              opacity: isAnyDownloadActive || isDownloading || !order.downloadUrl ? 0.6 : 1
+                            }}
+                          >
+                            <Download style={{ width: '16px', height: '16px' }} />
+                            {isAnyDownloadActive
+                              ? 'Download in Progress...'
+                              : isDownloading
+                              ? 'Preparing...'
+                              : 'Download for Free'
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
 
         {/* Debug Info */}
         {process.env.NODE_ENV === 'development' && (
           <div style={{
-            marginTop: '32px',
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
             padding: '16px',
             background: 'rgba(0,0,0,0.1)',
             borderRadius: '8px',
@@ -857,5 +1134,6 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+    </div>
   )
 }
