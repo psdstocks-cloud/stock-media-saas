@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { NehtwAPI, OrderManager } from '@/lib/nehtw-api'
 import { prisma } from '@/lib/prisma'
+import { PointsManager } from '@/lib/points'
 
 export async function POST(request: NextRequest) {
   try {
@@ -163,30 +164,15 @@ export async function POST(request: NextRequest) {
     )
     console.log('Order created:', { id: order.id, status: order.status })
 
-    // Deduct points
-    console.log('Deducting points...')
-    await prisma.pointsBalance.update({
-      where: { userId: session.user.id },
-      data: {
-        currentPoints: {
-          decrement: cost
-        }
-      }
-    })
-    console.log('Points deducted successfully')
-
-    // Add points history
-    console.log('Adding points history...')
-    await prisma.pointsHistory.create({
-      data: {
-        userId: session.user.id,
-        amount: -cost,
-        type: 'DOWNLOAD',
-        description: `Download: ${title || 'Untitled'} from ${site}`,
-        orderId: order.id
-      }
-    })
-    console.log('Points history added successfully')
+    // Deduct points using PointsManager (proper transaction handling)
+    console.log('Deducting points using PointsManager...')
+    await PointsManager.deductPoints(
+      session.user.id,
+      cost,
+      `Download: ${title || 'Untitled'} from ${site}`,
+      order.id
+    )
+    console.log('Points deducted successfully using PointsManager')
 
     // Process order with nehtw.com API
     const apiKey = process.env.NEHTW_API_KEY

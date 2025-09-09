@@ -18,7 +18,8 @@ import {
   ChevronUp,
   Clock,
   Download,
-  ExternalLink
+  ExternalLink,
+  RotateCcw
 } from 'lucide-react'
 
 interface StockInfo {
@@ -76,6 +77,20 @@ export default function BrowsePage() {
   const [downloadUrl, setDownloadUrl] = useState<string>('')
   const [processingTime, setProcessingTime] = useState<number>(0)
   const [existingOrder, setExistingOrder] = useState<any>(null)
+
+  // Function to refresh user balance from database
+  const refreshUserBalance = async () => {
+    if (!session?.user?.id) return
+    
+    try {
+      const balanceResponse = await fetch(`/api/points?userId=${session.user.id}`)
+      const balanceData = await balanceResponse.json()
+      setUserBalance(balanceData.balance?.currentPoints || 0)
+      console.log('Balance refreshed:', balanceData.balance?.currentPoints)
+    } catch (error) {
+      console.error('Error refreshing balance:', error)
+    }
+  }
 
   useEffect(() => {
     if (status === 'loading') return
@@ -360,7 +375,9 @@ export default function BrowsePage() {
         setCurrentOrder(data.order)
         setOrderStatus('PENDING')
         setProcessingTime(0)
-        setUserBalance(prev => prev - stockInfo.cost)
+        
+        // Refetch balance from database to ensure accuracy
+        await refreshUserBalance()
         // No success message - go straight to processing
       } else {
         console.log('Order failed:', data.error)
@@ -528,11 +545,44 @@ export default function BrowsePage() {
                   background: '#cbd5e1'
                 }}></div>
                 <div style={{
-                  fontSize: '14px',
-                  color: '#475569',
-                  fontWeight: '500'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}>
-                  <span style={{ color: '#2563eb', fontWeight: '700' }}>{userBalance}</span> points
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    <span style={{ color: '#2563eb', fontWeight: '700' }}>{userBalance}</span> points
+                  </div>
+                  <button
+                    onClick={refreshUserBalance}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '24px',
+                      height: '24px',
+                      background: 'transparent',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      color: '#6b7280',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#f3f4f6'
+                      e.currentTarget.style.color = '#374151'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = '#6b7280'
+                    }}
+                    title="Refresh balance"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
                 </div>
               </div>
               <button
