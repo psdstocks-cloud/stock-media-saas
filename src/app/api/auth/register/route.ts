@@ -38,8 +38,10 @@ export async function POST(request: NextRequest) {
       
       const fallbackPlan = fallbackPlans[planId as keyof typeof fallbackPlans]
       if (fallbackPlan) {
-        plan = await prisma.subscriptionPlan.create({
-          data: {
+        plan = await prisma.subscriptionPlan.upsert({
+          where: { name: fallbackPlan.name },
+          update: {},
+          create: {
             name: fallbackPlan.name,
             description: fallbackPlan.description,
             price: fallbackPlan.price,
@@ -111,6 +113,14 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
-    return NextResponse.json({ error: 'Registration failed' }, { status: 500 })
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
+    return NextResponse.json({ 
+      error: 'Registration failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
