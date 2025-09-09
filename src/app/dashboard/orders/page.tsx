@@ -220,6 +220,46 @@ export default function OrdersPage() {
     return logos[siteName.toLowerCase()]
   }
 
+  // Generate preview image URL from stockItemUrl
+  const getPreviewImageUrl = (order: Order) => {
+    // If imageUrl exists, use it
+    if (order.imageUrl) {
+      return order.imageUrl
+    }
+
+    // If no imageUrl, try to generate from stockItemUrl
+    if (order.stockItemUrl) {
+      const siteName = order.stockSite.name.toLowerCase()
+      
+      // Shutterstock: extract ID from URL and create preview URL
+      if (siteName === 'shutterstock' && order.stockItemId) {
+        return `https://image.shutterstock.com/image-photo/${order.stockItemId}-260nw-${order.stockItemId}.jpg`
+      }
+      
+      // Adobe Stock: extract ID and create preview URL
+      if (siteName === 'adobestock' && order.stockItemId) {
+        return `https://as1.ftcdn.net/v2/jpg/${order.stockItemId.slice(0, 2)}/${order.stockItemId.slice(2, 4)}/${order.stockItemId}_1.jpg`
+      }
+      
+      // iStock: extract ID and create preview URL
+      if (siteName === 'istockphoto' && order.stockItemId) {
+        return `https://media.istockphoto.com/id/${order.stockItemId}/photo/stock-photo.jpg`
+      }
+      
+      // Depositphotos: extract ID and create preview URL
+      if (siteName === 'depositphotos' && order.stockItemId) {
+        return `https://st2.depositphotos.com/${order.stockItemId}/photo.jpg`
+      }
+      
+      // Freepik: extract ID and create preview URL
+      if (siteName === 'freepik' && order.stockItemId) {
+        return `https://img.freepik.com/free-photo/${order.stockItemId}.jpg`
+      }
+    }
+
+    return null
+  }
+
   // Get status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -709,9 +749,9 @@ export default function OrdersPage() {
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        {(order.imageUrl || order.stockItemUrl) && (
+                        {getPreviewImageUrl(order) && (
                           <img
-                            src={order.imageUrl || order.stockItemUrl || ''}
+                            src={getPreviewImageUrl(order) || ''}
                             alt="Preview"
                             style={{
                               width: '100%',
@@ -723,7 +763,7 @@ export default function OrdersPage() {
                             }}
                           />
                         )}
-                        {!order.imageUrl && !order.stockItemUrl && (
+                        {!getPreviewImageUrl(order) && (
                           <div style={{
                             color: '#94a3b8',
                             fontSize: '14px',
@@ -925,9 +965,9 @@ export default function OrdersPage() {
                           justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          {(order.imageUrl || order.stockItemUrl) && (
+                          {getPreviewImageUrl(order) && (
                             <img
-                              src={order.imageUrl || order.stockItemUrl || ''}
+                              src={getPreviewImageUrl(order) || ''}
                               alt="Preview"
                               style={{
                                 width: '100%',
@@ -939,7 +979,7 @@ export default function OrdersPage() {
                               }}
                             />
                           )}
-                          {!order.imageUrl && !order.stockItemUrl && (
+                          {!getPreviewImageUrl(order) && (
                             <div style={{
                               color: '#94a3b8',
                               fontSize: '12px',
