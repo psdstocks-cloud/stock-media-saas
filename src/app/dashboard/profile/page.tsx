@@ -80,39 +80,24 @@ export default function ProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
-    console.log('🔍 Profile Page: useEffect triggered')
-    console.log('🔍 Profile Page: status:', status)
-    console.log('🔍 Profile Page: session:', session)
-    console.log('🔍 Profile Page: user ID:', session?.user?.id)
-    
-    if (status === 'loading') {
-      console.log('🔍 Profile Page: Still loading, waiting...')
-      return
-    }
+    if (status === 'loading') return
     
     if (!session?.user?.id) {
-      console.log('🔍 Profile Page: No session, redirecting to login')
       router.push('/login')
       return
     }
 
-    console.log('🔍 Profile Page: Session found, fetching profile...')
     fetchProfile()
   }, [session, status, router])
 
   const fetchProfile = async () => {
     try {
       setLoading(true)
-      console.log('Fetching profile for user:', session?.user?.id)
       
       const response = await fetch('/api/profile')
-      console.log('Profile API response status:', response.status)
-      
       const data = await response.json()
-      console.log('Profile API response data:', data)
       
       if (data.profile) {
-        console.log('Setting profile data:', data.profile)
         setProfile(data.profile)
         setFormData({
           name: data.profile.name || '',
@@ -122,11 +107,9 @@ export default function ProfilePage() {
           confirmPassword: ''
         })
       } else {
-        console.error('No profile data received:', data)
         setErrors({ general: data.error || 'Failed to load profile data' })
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
       setErrors({ general: 'Failed to load profile data' })
     } finally {
       setLoading(false)
@@ -257,32 +240,69 @@ export default function ProfilePage() {
         justifyContent: 'center',
         fontFamily: 'system-ui, -apple-system, sans-serif'
       }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ 
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          padding: '48px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
           <div style={{
-            width: '64px',
-            height: '64px',
+            width: '80px',
+            height: '80px',
             border: '4px solid #e2e8f0',
             borderTop: '4px solid #2563eb',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
-            margin: '0 auto'
+            margin: '0 auto 24px auto'
           }}></div>
-          <p style={{ marginTop: '16px', color: '#64748b' }}>Loading profile...</p>
-          <div style={{ 
-            fontSize: '14px', 
-            color: '#64748b',
-            background: '#f1f5f9',
-            padding: '12px',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0',
-            marginTop: '16px',
-            textAlign: 'left'
+          <h2 style={{ 
+            fontSize: '24px', 
+            fontWeight: '600', 
+            color: '#1e40af', 
+            margin: '0 0 8px 0' 
           }}>
-            <div><strong>Debug Info:</strong></div>
-            <div>Status: {status}</div>
-            <div>Session: {session ? 'Found' : 'Not found'}</div>
-            <div>User ID: {session?.user?.id || 'None'}</div>
-            <div>Loading: {loading ? 'Yes' : 'No'}</div>
+            Loading Profile
+          </h2>
+          <p style={{ 
+            fontSize: '16px', 
+            color: '#64748b', 
+            margin: '0 0 16px 0',
+            lineHeight: '1.5'
+          }}>
+            Preparing your account information...
+          </p>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '4px',
+            marginTop: '24px'
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#2563eb',
+              animation: 'pulse 1.4s ease-in-out infinite both'
+            }}></div>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#2563eb',
+              animation: 'pulse 1.4s ease-in-out infinite both',
+              animationDelay: '0.2s'
+            }}></div>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#2563eb',
+              animation: 'pulse 1.4s ease-in-out infinite both',
+              animationDelay: '0.4s'
+            }}></div>
           </div>
         </div>
       </div>
@@ -338,6 +358,16 @@ export default function ProfilePage() {
           @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+          }
+          @keyframes pulse {
+            0%, 80%, 100% { 
+              transform: scale(0);
+              opacity: 0.5;
+            }
+            40% { 
+              transform: scale(1);
+              opacity: 1;
+            }
           }
         `
       }} />

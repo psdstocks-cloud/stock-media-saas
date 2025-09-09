@@ -6,16 +6,12 @@ import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Profile API: Starting request')
     const session = await getServerSession(authOptions)
-    console.log('Profile API: Session:', session?.user?.id ? 'Found' : 'Not found')
     
     if (!session?.user?.id) {
-      console.log('Profile API: Unauthorized - no session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Profile API: Fetching profile for user:', session.user.id)
     const profile = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -51,26 +47,13 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    console.log('Profile API: Profile found:', profile ? 'Yes' : 'No')
-    if (profile) {
-      console.log('Profile API: Profile data:', {
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        role: profile.role,
-        pointsBalance: profile.pointsBalance,
-        subscriptions: profile.subscriptions
-      })
-    }
-
     if (!profile) {
-      console.log('Profile API: Profile not found in database')
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     return NextResponse.json({ profile })
   } catch (error) {
-    console.error('Profile API: Error fetching profile:', error)
+    console.error('Error fetching profile:', error)
     return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 })
   }
 }
