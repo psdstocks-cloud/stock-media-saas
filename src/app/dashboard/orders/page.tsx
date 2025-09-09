@@ -28,6 +28,7 @@ interface Order {
   fileName: string | null
   stockItemUrl: string | null
   title: string | null
+  stockItemId: string | null
   createdAt: string
   updatedAt: string
   stockSite: {
@@ -100,12 +101,16 @@ export default function OrdersPage() {
     try {
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
-      console.log('🔄 Regenerating download link for order:', {
+      console.log('🔄 Starting download link regeneration for order:', {
         orderId: order.id,
         status: order.status,
         taskId: order.taskId,
-        hasDownloadUrl: !!order.downloadUrl
+        stockItemId: order.stockItemId,
+        currentDownloadUrl: order.downloadUrl
       })
+      
+      // Show user feedback
+      alert('Regenerating fresh download link... Please wait.')
       
       const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
         method: 'POST',
@@ -114,18 +119,30 @@ export default function OrdersPage() {
         },
       })
 
-      console.log('📡 API response status:', response.status)
+      console.log('📡 Regenerate API response status:', response.status)
+      console.log('📡 Regenerate API response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP ${response.status}`)
+        const errorText = await response.text()
+        console.error('❌ API Error Response:', errorText)
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { error: errorText }
+        }
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
       }
 
       const data = await response.json()
-      console.log('📡 API response data:', data)
+      console.log('📡 Regenerate API response data:', data)
 
       if (data.success && data.order) {
-        console.log('✅ Download link regenerated successfully')
+        console.log('✅ Download link regenerated successfully:', {
+          newDownloadUrl: data.order.downloadUrl,
+          newStatus: data.order.status,
+          newTaskId: data.order.taskId
+        })
         
         // Update the order in local state
         setOrders(prevOrders => 
@@ -136,18 +153,21 @@ export default function OrdersPage() {
         
         // Open the download link
         if (data.order.downloadUrl) {
-          console.log('🔗 Opening download URL:', data.order.downloadUrl)
+          console.log('🔗 Opening fresh download URL:', data.order.downloadUrl)
           window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
+          alert('Fresh download link opened in new tab!')
         } else {
-          console.warn('⚠️ No download URL in response')
-          alert('Download link not available yet. Please try again later.')
+          console.warn('⚠️ No download URL in response after regeneration')
+          alert('Download link not available yet. The file might still be processing. Please try again later.')
         }
       } else {
-        throw new Error(data.error || 'Failed to regenerate download link')
+        console.error('❌ Regenerate failed - no success or order data:', data)
+        throw new Error(data.error || 'Failed to regenerate download link - no data returned')
       }
     } catch (error) {
       console.error('💥 Error handling download:', error)
-      alert(`Failed to prepare download: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      alert(`Failed to regenerate download link: ${errorMessage}`)
     } finally {
       setRegeneratingLinks(prev => {
         const newSet = new Set(prev)
@@ -654,15 +674,31 @@ export default function OrdersPage() {
                           fontWeight: '600',
                           color: '#1f2937'
                         }}>
-                          {order.stockSite.displayName}
+                          {order.stockSite.displayName} {order.stockItemId ? `#${order.stockItemId}` : ''}
                         </h3>
-                        <p style={{
-                          margin: '0',
-                          fontSize: '14px',
-                          color: '#6b7280'
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px'
                         }}>
-                          ID: {order.id.slice(-8)}
-                        </p>
+                          {order.taskId && (
+                            <p style={{
+                              margin: '0',
+                              fontSize: '12px',
+                              color: '#9ca3af',
+                              fontFamily: 'monospace'
+                            }}>
+                              Debug ID: {order.taskId}
+                            </p>
+                          )}
+                          <p style={{
+                            margin: '0',
+                            fontSize: '12px',
+                            color: '#6b7280'
+                          }}>
+                            Order: {order.id.slice(-8)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     
@@ -683,24 +719,10 @@ export default function OrdersPage() {
                     </div>
                   </div>
 
-                  {/* Order Details */}
-                  <div style={{
-                    marginBottom: '16px'
-                  }}>
+                    {/* Order Details */}
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '8px'
+                      marginBottom: '16px'
                     }}>
-                      {getFileTypeIcon(order.fileName)}
-                      <span style={{
-                        fontSize: '14px',
-                        color: '#6b7280'
-                      }}>
-                        {order.fileName || 'Unknown file type'}
-                      </span>
-                    </div>
                     
                     <div style={{
                       fontSize: '12px',
