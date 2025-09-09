@@ -154,30 +154,54 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          {/* User Menu */}
+          {/* User Menu - Privacy Protected */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '16px'
           }}>
+            {/* User Info - Privacy First */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 12px',
+              gap: '12px',
+              padding: '8px 16px',
               background: 'rgba(102, 126, 234, 0.1)',
               borderRadius: '20px',
               fontSize: '14px',
               color: '#667eea',
               fontWeight: '600'
             }}>
+              {/* User Avatar */}
               <div style={{
-                width: '8px',
-                height: '8px',
+                width: '28px',
+                height: '28px',
+                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                textTransform: 'uppercase'
+              }}>
+                {(session.user.name || 'U').charAt(0)}
+              </div>
+              
+              {/* User Name - First Name Only */}
+              <span style={{ fontWeight: '600' }}>
+                {session.user.name?.split(' ')[0] || 'User'}
+              </span>
+              
+              {/* Online Status */}
+              <div style={{
+                width: '6px',
+                height: '6px',
                 background: '#10b981',
-                borderRadius: '50%'
+                borderRadius: '50%',
+                animation: 'pulse 2s infinite'
               }}></div>
-              {session.user.email}
             </div>
             
             <button
@@ -506,6 +530,11 @@ export default function DashboardLayout({
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
         
         @media (max-width: 768px) {
