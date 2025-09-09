@@ -178,7 +178,7 @@ export default function OrdersPage() {
       // Open download link only once
       if (downloadUrl) {
         console.log('🔗 Opening download:', downloadUrl)
-        // Method 1: Create temporary link (bypasses popup blockers)
+        // Create temporary link (bypasses popup blockers)
         const link = document.createElement('a')
         link.href = downloadUrl
         link.target = '_blank'
@@ -186,20 +186,6 @@ export default function OrdersPage() {
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-        
-        // Method 2: Fallback - try window.open if link method fails
-        setTimeout(() => {
-          try {
-            const newWindow = window.open(downloadUrl, '_blank', 'noopener,noreferrer')
-            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-              console.log('🔗 Fallback: Opening in same tab')
-              window.location.href = downloadUrl
-            }
-          } catch (e) {
-            console.log('🔗 Fallback: Opening in same tab')
-            window.location.href = downloadUrl
-          }
-        }, 100)
       } else {
         console.error('❌ Download failed:', data)
         // Silent fail - no popup, just log the error
