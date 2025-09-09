@@ -351,11 +351,20 @@ export default function BrowsePage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px'
-    }}>
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `
+      }} />
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '20px'
+      }}>
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto'
@@ -427,61 +436,133 @@ export default function BrowsePage() {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
+            gap: '12px',
             flexWrap: 'wrap'
           }}>
+            {/* User Info - Clean & Professional */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '8px 16px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: '20px',
+              color: 'white',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              minWidth: 'fit-content'
+            }}>
+              {/* User Avatar */}
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                textTransform: 'uppercase'
+              }}>
+                {(session?.user?.name || 'U').charAt(0)}
+              </div>
+              
+              {/* User Name - First Name Only */}
+              <span style={{ 
+                fontWeight: '600',
+                fontSize: '14px'
+              }}>
+                {session?.user?.name?.split(' ')[0] || 'User'}
+              </span>
+            </div>
+
+            {/* Points Balance - Prominent Display */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '8px 16px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '25px',
+              padding: '10px 18px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              borderRadius: '20px',
               color: 'white',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
+              fontWeight: 'bold',
+              fontSize: '15px',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              minWidth: 'fit-content'
             }}>
               <div style={{
-                width: '8px',
-                height: '8px',
-                background: '#10b981',
-                borderRadius: '50%'
+                width: '6px',
+                height: '6px',
+                background: 'white',
+                borderRadius: '50%',
+                animation: 'pulse 2s infinite'
               }} />
-              <span style={{ fontWeight: '500' }}>{session?.user?.name || 'User'}</span>
-              <span style={{ opacity: 0.8 }}>•</span>
-              <span style={{ fontWeight: 'bold' }}>{userBalance} pts</span>
+              <span>{userBalance}</span>
+              <span style={{ 
+                opacity: 0.9,
+                fontSize: '13px',
+                fontWeight: '500'
+              }}>
+                points
+              </span>
+              
+              {/* Refresh Button */}
               <button
                 onClick={refreshUserBalance}
                 style={{
-                  background: 'none',
+                  background: 'rgba(255, 255, 255, 0.2)',
                   border: 'none',
                   color: 'white',
                   cursor: 'pointer',
-                  padding: '4px',
-                  borderRadius: '4px',
-                  transition: 'background 0.2s ease'
+                  padding: '6px',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+                  e.currentTarget.style.transform = 'rotate(180deg)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.transform = 'rotate(0deg)'
+                }}
+                title="Refresh Balance"
               >
                 <RotateCcw size={14} />
               </button>
             </div>
 
+            {/* My Orders Button */}
             <button
               onClick={() => router.push('/dashboard/orders')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '8px 16px',
+                padding: '10px 18px',
                 background: 'white',
                 border: 'none',
-                borderRadius: '25px',
+                borderRadius: '20px',
                 color: '#374151',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                fontWeight: '500'
+                fontWeight: '600',
+                fontSize: '14px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                minWidth: 'fit-content'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
             >
               <Download size={16} />
@@ -1829,6 +1910,7 @@ export default function BrowsePage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
