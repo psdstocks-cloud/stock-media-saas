@@ -370,14 +370,14 @@ export default function OrdersPage() {
                 color: '#1e293b',
                 margin: 0
               }}>
-                My Orders
+                My Orders - Updated UI
               </h1>
               <p style={{
                 fontSize: '16px',
                 color: '#64748b',
                 margin: '4px 0 0 0'
               }}>
-                Manage and download your requested files
+                Manage and download your requested files - Enhanced with new UI features
               </p>
             </div>
           </div>
