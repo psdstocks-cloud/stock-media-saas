@@ -142,10 +142,31 @@ export default function OrdersPage() {
           )
         )
         
-        // Open the download link silently
+        // Open the download link directly (bypass popup blockers)
         if (data.order.downloadUrl) {
           console.log('🔗 Opening download:', data.order.downloadUrl)
-          window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
+          // Method 1: Create temporary link (bypasses popup blockers)
+          const link = document.createElement('a')
+          link.href = data.order.downloadUrl
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          
+          // Method 2: Fallback - try window.open if link method fails
+          setTimeout(() => {
+            try {
+              const newWindow = window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
+              if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                console.log('🔗 Fallback: Opening in same tab')
+                window.location.href = data.order.downloadUrl
+              }
+            } catch (e) {
+              console.log('🔗 Fallback: Opening in same tab')
+              window.location.href = data.order.downloadUrl
+            }
+          }, 100)
         }
       } else if (data.success && data.downloadLink) {
         // Handle direct download link response (from Nehtw API)
@@ -164,9 +185,30 @@ export default function OrdersPage() {
           )
         )
         
-        // Open the download link silently
+        // Open the download link directly (bypass popup blockers)
         console.log('🔗 Opening download:', data.downloadLink)
-        window.open(data.downloadLink, '_blank', 'noopener,noreferrer')
+        // Method 1: Create temporary link (bypasses popup blockers)
+        const link = document.createElement('a')
+        link.href = data.downloadLink
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // Method 2: Fallback - try window.open if link method fails
+        setTimeout(() => {
+          try {
+            const newWindow = window.open(data.downloadLink, '_blank', 'noopener,noreferrer')
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+              console.log('🔗 Fallback: Opening in same tab')
+              window.location.href = data.downloadLink
+            }
+          } catch (e) {
+            console.log('🔗 Fallback: Opening in same tab')
+            window.location.href = data.downloadLink
+          }
+        }, 100)
       } else {
         console.error('❌ Download failed:', data)
         // Silent fail - no popup, just log the error
