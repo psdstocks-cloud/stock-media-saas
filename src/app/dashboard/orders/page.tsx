@@ -51,6 +51,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isAnyDownloadActive, setIsAnyDownloadActive] = useState(false)
+  const [downloadingOrders, setDownloadingOrders] = useState<Set<string>>(new Set())
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function OrdersPage() {
     }
     
     // Prevent multiple simultaneous downloads of the same order
-    if (regeneratingLinks.has(order.id)) {
+    if (regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) {
       console.log('⏳ Download already in progress for order:', order.id)
       return
     }
@@ -118,6 +119,7 @@ export default function OrdersPage() {
       console.log('🚀 Starting download process for order:', order.id)
       setIsAnyDownloadActive(true)
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
+      setDownloadingOrders(prev => new Set(prev).add(order.id))
       
       console.log('🔄 Starting seamless download for order:', {
         orderId: order.id,
@@ -191,6 +193,10 @@ export default function OrdersPage() {
       // Open download link only once
       if (downloadUrl) {
         console.log('🔗 Opening download:', downloadUrl)
+        
+        // Add a small delay to ensure state is properly set
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         // Create temporary link (bypasses popup blockers)
         const link = document.createElement('a')
         link.href = downloadUrl
@@ -201,7 +207,7 @@ export default function OrdersPage() {
         document.body.removeChild(link)
         
         // Prevent any further download attempts for this order
-        console.log('✅ Download initiated successfully')
+        console.log('✅ Download initiated successfully for order:', order.id)
       } else {
         console.error('❌ Download failed:', data)
         // Silent fail - no popup, just log the error
@@ -212,8 +218,14 @@ export default function OrdersPage() {
       // Silent fail - no popup, just log the error
       console.warn('Download failed silently')
     } finally {
+      console.log('🧹 Cleaning up download state for order:', order.id)
       setIsAnyDownloadActive(false)
       setRegeneratingLinks(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(order.id)
+        return newSet
+      })
+      setDownloadingOrders(prev => {
         const newSet = new Set(prev)
         newSet.delete(order.id)
         return newSet
@@ -838,34 +850,39 @@ export default function OrdersPage() {
                     }}>
                       {order.status === 'READY' && (
                         <button
-                          onClick={() => !isAnyDownloadActive && !regeneratingLinks.has(order.id) && handleSmartDownload(order)}
-                          disabled={isAnyDownloadActive || regeneratingLinks.has(order.id)}
+                          onClick={() => !isAnyDownloadActive && !regeneratingLinks.has(order.id) && !downloadingOrders.has(order.id) && handleSmartDownload(order)}
+                          disabled={isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '8px',
                             padding: '12px 20px',
-                            background: (isAnyDownloadActive || regeneratingLinks.has(order.id))
+                            background: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id))
                               ? '#f3f4f6' 
                               : 'linear-gradient(135deg, #059669, #047857)',
-                            color: (isAnyDownloadActive || regeneratingLinks.has(order.id)) ? '#9ca3af' : 'white',
+                            color: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) ? '#9ca3af' : 'white',
                             border: 'none',
                             borderRadius: '10px',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: (isAnyDownloadActive || regeneratingLinks.has(order.id)) ? 'not-allowed' : 'pointer',
+                            cursor: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s ease',
-                            boxShadow: (isAnyDownloadActive || regeneratingLinks.has(order.id))
+                            boxShadow: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id))
                               ? 'none' 
                               : '0 4px 12px rgba(5, 150, 105, 0.3)',
-                            opacity: (isAnyDownloadActive || regeneratingLinks.has(order.id)) ? 0.7 : 1
+                            opacity: (isAnyDownloadActive || regeneratingLinks.has(order.id) || downloadingOrders.has(order.id)) ? 0.7 : 1
                           }}
                         >
                         {regeneratingLinks.has(order.id) ? (
                           <>
                             <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
                             Preparing...
+                          </>
+                        ) : downloadingOrders.has(order.id) ? (
+                          <>
+                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                            Downloading...
                           </>
                         ) : isAnyDownloadActive ? (
                           <>
