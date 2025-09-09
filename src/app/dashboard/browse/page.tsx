@@ -87,6 +87,8 @@ export default function BrowsePage() {
   const [processingTime, setProcessingTime] = useState<number>(0)
   const [existingOrder, setExistingOrder] = useState<any>(null)
   const [copied, setCopied] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filteredSites, setFilteredSites] = useState<SupportedSite[]>([])
 
   // Function to refresh user balance from database
   const refreshUserBalance = async () => {
@@ -132,6 +134,7 @@ export default function BrowsePage() {
 
         setUserBalance(balanceData.balance?.currentPoints || 0)
         setSupportedSites(sitesData.stockSites || [])
+        setFilteredSites(sitesData.stockSites || [])
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -139,6 +142,20 @@ export default function BrowsePage() {
 
     fetchData()
   }, [session, status, router])
+
+  // Handle search functionality
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredSites(supportedSites)
+    } else {
+      const filtered = supportedSites.filter(site =>
+        site.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        site.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredSites(filtered)
+    }
+  }, [searchQuery, supportedSites])
 
   const handleGetLink = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -596,21 +613,20 @@ export default function BrowsePage() {
                   </p>
                 </div>
 
-                {/* Search and Filter */}
+                {/* Search */}
                 <div style={{
-                  display: 'flex',
-                  gap: '12px',
-                  marginBottom: '24px',
-                  flexWrap: 'wrap'
+                  marginBottom: '24px'
                 }}>
                   <div style={{
-                    flex: 1,
-                    minWidth: '200px',
-                    position: 'relative'
+                    position: 'relative',
+                    maxWidth: '400px',
+                    margin: '0 auto'
                   }}>
                     <input
                       type="text"
                       placeholder="Search stock sites..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
@@ -640,26 +656,29 @@ export default function BrowsePage() {
                     }}>
                       🔍
                     </div>
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: '#9ca3af',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          borderRadius: '4px',
+                          transition: 'color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#6b7280'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
-                  
-                  <select style={{
-                    padding: '12px 16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    background: 'white',
-                    cursor: 'pointer',
-                    minWidth: '150px'
-                  }}>
-                    <option value="">All Categories</option>
-                    <option value="photos">Photos</option>
-                    <option value="videos">Videos</option>
-                    <option value="music">Music</option>
-                    <option value="vectors">Vectors</option>
-                    <option value="icons">Icons</option>
-                    <option value="design">Design</option>
-                  </select>
                 </div>
 
                 {/* All Stock Sites Grid */}
@@ -668,7 +687,7 @@ export default function BrowsePage() {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                   gap: '20px'
                 }}>
-                  {supportedSites.map((site) => {
+                  {filteredSites.length > 0 ? filteredSites.map((site) => {
                     // Generate website URL based on site name
                     const getWebsiteUrl = (siteName: string) => {
                       const urlMap: { [key: string]: string } = {
@@ -884,7 +903,62 @@ export default function BrowsePage() {
                         </div>
                       </div>
                     )
-                  })}
+                  }) : (
+                    <div style={{
+                      gridColumn: '1 / -1',
+                      textAlign: 'center',
+                      padding: '40px 20px',
+                      background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+                      borderRadius: '16px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div style={{
+                        fontSize: '48px',
+                        marginBottom: '16px'
+                      }}>
+                        🔍
+                      </div>
+                      <h4 style={{
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        color: '#1f2937',
+                        marginBottom: '8px'
+                      }}>
+                        No sites found
+                      </h4>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#6b7280',
+                        margin: '0 0 16px 0'
+                      }}>
+                        Try searching with different keywords or clear your search
+                      </p>
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        style={{
+                          padding: '8px 16px',
+                          background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-1px)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                      >
+                        Clear Search
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Footer CTA */}
