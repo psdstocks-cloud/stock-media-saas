@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NehtwAPI } from '@/lib/nehtw-api'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,22 +23,18 @@ export async function POST(request: NextRequest) {
 
     console.log('Extracted site and ID:', { site, id })
 
-    // Get stock information from nehtw.com API
-    const apiKey = process.env.NEHTW_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-    }
+    // Get stock site information from database
+    const stockSite = await prisma.stockSite.findUnique({
+      where: { name: site }
+    })
 
-    const nehtwAPI = new NehtwAPI(apiKey)
-    const stockInfo = await nehtwAPI.getStockInfo(site, id, url)
-    
-    if (!stockInfo) {
+    if (!stockSite) {
       return NextResponse.json({ 
-        error: 'Failed to get stock information. Please check if the URL is from a supported site.' 
+        error: 'Unsupported stock site. Please use a supported site.' 
       }, { status: 400 })
     }
 
-    // Generate fallback preview image if API doesn't provide one
+    // Generate preview image based on site and ID
     const generatePreviewImage = (site: string, id: string): string => {
       const siteName = site.toLowerCase()
       
@@ -177,14 +174,7 @@ export async function POST(request: NextRequest) {
       return ''
     }
 
-    const apiImageUrl = stockInfo.data?.image || ''
-    const fallbackImageUrl = generatePreviewImage(site, id)
-    const finalImageUrl = apiImageUrl || fallbackImageUrl
-
-    // Get cost from API or use default cost mapping
-    const apiCost = stockInfo.data?.cost || 0
-    const defaultCost = getDefaultCostForSite(site)
-    const finalCost = apiCost > 0 ? apiCost : defaultCost
+    const previewImageUrl = generatePreviewImage(site, id)
 
     return NextResponse.json({
       success: true,
@@ -192,10 +182,10 @@ export async function POST(request: NextRequest) {
         site,
         id,
         url,
-        title: stockInfo.data?.title || 'Untitled',
-        cost: finalCost,
-        imageUrl: finalImageUrl,
-        description: stockInfo.data?.name || ''
+        title: 'Untitled', // We'll get the real title from the API when placing the order
+        cost: stockSite.cost, // Use database cost (10 points)
+        imageUrl: previewImageUrl,
+        description: ''
       }
     })
   } catch (error) {
@@ -204,58 +194,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getDefaultCostForSite(site: string): number {
-  const siteName = site.toLowerCase()
-  
-  // All stock sites cost 10 points as per business requirements
-  const costMap: { [key: string]: number } = {
-    'shutterstock': 10,
-    'vshutter': 10, // SS video HD
-    'mshutter': 10, // SS music
-    'adobestock': 10,
-    'adobe': 10,
-    'depositphotos': 10,
-    'depositphotos_video': 10,
-    'istockphoto': 10,
-    'istock': 10,
-    'gettyimages': 10,
-    'freepik': 10,
-    'vfreepik': 10, // Freepik video
-    'flaticon': 10,
-    'flaticonpack': 10,
-    '123rf': 10,
-    'dreamstime': 10,
-    'vectorstock': 10,
-    'alamy': 10,
-    'storyblocks': 10,
-    'vecteezy': 10,
-    'creativefabrica': 10,
-    'rawpixel': 10,
-    'motionarray': 10,
-    'envato': 10,
-    'pixelsquid': 10,
-    'ui8': 10,
-    'iconscout': 10,
-    'lovepik': 10,
-    'pngtree': 10,
-    'deeezy': 10,
-    'footagecrate': 10,
-    'artgrid_hd': 10,
-    'yellowimages': 10,
-    'epidemicsound': 10,
-    'pixeden': 10,
-    'pixelbuddha': 10,
-    'mockupcloud': 10,
-    'designi': 10,
-    'craftwork': 10,
-    'soundstripe': 10,
-    'artlist_footage': 10, // artlist video/template
-    'artlist_sound': 10, // artlist music/sfx
-    'motionelements': 10
-  }
-  
-  return costMap[siteName] || 10 // Default cost of 10 points for all sites
-}
 
 function extractSiteAndId(url: string): { site: string | null; id: string | null } {
   try {
