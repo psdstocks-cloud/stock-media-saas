@@ -62,10 +62,11 @@ export default function OrdersPage() {
 
   // Fetch orders
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session?.user?.id && status === 'authenticated') {
+      console.log('🔄 useEffect: Fetching orders for user:', session.user.id)
       fetchOrders()
     }
-  }, [session])
+  }, [session?.user?.id, status])
 
   const fetchOrders = async () => {
     try {
@@ -98,6 +99,12 @@ export default function OrdersPage() {
 
   // Smart download functionality - seamless background process
   const handleSmartDownload = async (order: Order) => {
+    // Prevent multiple simultaneous downloads of the same order
+    if (regeneratingLinks.has(order.id)) {
+      console.log('⏳ Download already in progress for order:', order.id)
+      return
+    }
+    
     try {
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
@@ -132,8 +139,14 @@ export default function OrdersPage() {
       const data = await response.json()
       console.log('📡 API response data:', data)
 
+      // Determine the download URL and update order
+      let downloadUrl = null
+      let updatedOrder = order
+      
       if (data.success && data.order) {
         console.log('✅ Download ready (order response)')
+        downloadUrl = data.order.downloadUrl
+        updatedOrder = data.order
         
         // Update the order in local state
         setOrders(prevOrders => 
@@ -141,55 +154,33 @@ export default function OrdersPage() {
             o.id === order.id ? data.order : o
           )
         )
-        
-        // Open the download link directly (bypass popup blockers)
-        if (data.order.downloadUrl) {
-          console.log('🔗 Opening download:', data.order.downloadUrl)
-          // Method 1: Create temporary link (bypasses popup blockers)
-          const link = document.createElement('a')
-          link.href = data.order.downloadUrl
-          link.target = '_blank'
-          link.rel = 'noopener noreferrer'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          
-          // Method 2: Fallback - try window.open if link method fails
-          setTimeout(() => {
-            try {
-              const newWindow = window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
-              if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                console.log('🔗 Fallback: Opening in same tab')
-                window.location.href = data.order.downloadUrl
-              }
-            } catch (e) {
-              console.log('🔗 Fallback: Opening in same tab')
-              window.location.href = data.order.downloadUrl
-            }
-          }, 100)
-        }
       } else if (data.success && data.downloadLink) {
-        // Handle direct download link response (from Nehtw API)
         console.log('✅ Download ready (direct response)')
+        downloadUrl = data.downloadLink
         
         // Update the order in local state with the new download link
+        const newOrder = {
+          ...order,
+          downloadUrl: data.downloadLink,
+          fileName: data.fileName || order.fileName,
+          status: 'READY' as const,
+          updatedAt: new Date().toISOString()
+        }
+        updatedOrder = newOrder
+        
         setOrders(prevOrders => 
           prevOrders.map(o => 
-            o.id === order.id ? {
-              ...o,
-              downloadUrl: data.downloadLink,
-              fileName: data.fileName || o.fileName,
-              status: 'READY',
-              updatedAt: new Date().toISOString()
-            } : o
+            o.id === order.id ? newOrder : o
           )
         )
-        
-        // Open the download link directly (bypass popup blockers)
-        console.log('🔗 Opening download:', data.downloadLink)
+      }
+      
+      // Open download link only once
+      if (downloadUrl) {
+        console.log('🔗 Opening download:', downloadUrl)
         // Method 1: Create temporary link (bypasses popup blockers)
         const link = document.createElement('a')
-        link.href = data.downloadLink
+        link.href = downloadUrl
         link.target = '_blank'
         link.rel = 'noopener noreferrer'
         document.body.appendChild(link)
@@ -199,14 +190,14 @@ export default function OrdersPage() {
         // Method 2: Fallback - try window.open if link method fails
         setTimeout(() => {
           try {
-            const newWindow = window.open(data.downloadLink, '_blank', 'noopener,noreferrer')
+            const newWindow = window.open(downloadUrl, '_blank', 'noopener,noreferrer')
             if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
               console.log('🔗 Fallback: Opening in same tab')
-              window.location.href = data.downloadLink
+              window.location.href = downloadUrl
             }
           } catch (e) {
             console.log('🔗 Fallback: Opening in same tab')
-            window.location.href = data.downloadLink
+            window.location.href = downloadUrl
           }
         }, 100)
       } else {
@@ -844,7 +835,7 @@ export default function OrdersPage() {
                     }}>
                       {order.status === 'READY' && (
                         <button
-                          onClick={() => handleSmartDownload(order)}
+                          onClick={() => !regeneratingLinks.has(order.id) && handleSmartDownload(order)}
                           disabled={regeneratingLinks.has(order.id)}
                           style={{
                             display: 'flex',
