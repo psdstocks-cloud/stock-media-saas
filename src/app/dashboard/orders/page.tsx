@@ -16,7 +16,8 @@ import {
   FileText,
   Image as ImageIcon,
   Video,
-  Music
+  Music,
+  Search
 } from 'lucide-react'
 
 interface Order {
@@ -49,6 +50,9 @@ export default function OrdersPage() {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState<'all' | 'pending' | 'processing' | 'ready' | 'completed' | 'failed'>('ready')
   const [processingOrders, setProcessingOrders] = useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<Order[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -70,9 +74,31 @@ export default function OrdersPage() {
       const data = await response.json()
       
       if (data.orders) {
-        setOrders(data.orders)
+        // Deduplicate orders by stockItemId and stockSiteId
+        const uniqueOrders = data.orders.reduce((acc: Order[], current: Order) => {
+          const existingIndex = acc.findIndex(order => 
+            order.stockItemId === current.stockItemId && 
+            order.stockSiteId === current.stockSiteId
+          )
+          
+          if (existingIndex === -1) {
+            // No duplicate found, add the order
+            acc.push(current)
+          } else {
+            // Duplicate found, keep the one with the latest status or most recent
+            const existing = acc[existingIndex]
+            if (current.status === 'COMPLETED' || current.status === 'READY' || 
+                (current.status === 'PROCESSING' && existing.status !== 'COMPLETED' && existing.status !== 'READY') ||
+                new Date(current.updatedAt) > new Date(existing.updatedAt)) {
+              acc[existingIndex] = current
+            }
+          }
+          return acc
+        }, [])
+        
+        setOrders(uniqueOrders)
         // Track processing orders
-        const processing = data.orders.filter((o: Order) => o.status === 'PROCESSING' || o.status === 'PENDING')
+        const processing = uniqueOrders.filter((o: Order) => o.status === 'PROCESSING' || o.status === 'PENDING')
         setProcessingOrders(new Set(processing.map((o: Order) => o.id)))
       } else {
         setError(data.error || 'Failed to fetch orders')
@@ -85,6 +111,31 @@ export default function OrdersPage() {
     }
   }
 
+  // Search functionality
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    
+    // Search in orders by ID or image link
+    const results = orders.filter(order => {
+      const searchLower = query.toLowerCase()
+      return (
+        order.stockItemId.toLowerCase().includes(searchLower) ||
+        (order.stockItemUrl && order.stockItemUrl.toLowerCase().includes(searchLower)) ||
+        (order.title && order.title.toLowerCase().includes(searchLower)) ||
+        order.stockSite.displayName.toLowerCase().includes(searchLower)
+      )
+    })
+    
+    setSearchResults(results)
+    setIsSearching(false)
+  }
+
   const filteredOrders = orders.filter(order => {
     // Only show succeeded orders (READY and COMPLETED)
     if (order.status !== 'READY' && order.status !== 'COMPLETED') return false
@@ -93,6 +144,9 @@ export default function OrdersPage() {
     if (filter === 'ready') return order.status === 'READY' || order.status === 'COMPLETED'
     return order.status.toLowerCase() === filter.toLowerCase()
   })
+
+  // Use search results if searching, otherwise use filtered orders
+  const displayOrders = searchQuery.trim() ? searchResults : filteredOrders
 
   const getWebsiteLogo = (siteName: string): string | undefined => {
     const logos: { [key: string]: string } = {
@@ -233,6 +287,12 @@ export default function OrdersPage() {
       background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
       {/* Header */}
       <header style={{
         background: 'rgba(255, 255, 255, 0.8)',
@@ -317,6 +377,116 @@ export default function OrdersPage() {
           </div>
         )}
 
+        {/* Search Bar */}
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#0f172a',
+              margin: '0 0 16px 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              🔍 Search Orders
+            </h3>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'center'
+            }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Search by ID, image link, title, or website..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    handleSearch(e.target.value)
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    background: '#f8fafc',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#2563eb'
+                    e.target.style.background = 'white'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e5e7eb'
+                    e.target.style.background = '#f8fafc'
+                  }}
+                />
+                {isSearching && (
+                  <div style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #e5e7eb',
+                    borderTop: '2px solid #2563eb',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                )}
+              </div>
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSearchResults([])
+                    setIsSearching(false)
+                  }}
+                  style={{
+                    padding: '12px 16px',
+                    background: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    color: '#6b7280',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <div style={{
+                marginTop: '12px',
+                fontSize: '14px',
+                color: '#6b7280'
+              }}>
+                {searchResults.length > 0 ? (
+                  <span style={{ color: '#059669', fontWeight: '500' }}>
+                    Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                  </span>
+                ) : (
+                  <span style={{ color: '#dc2626' }}>
+                    No results found for "{searchQuery}"
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Filter Tabs */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{
@@ -361,7 +531,7 @@ export default function OrdersPage() {
         </div>
 
         {/* Orders List */}
-        {filteredOrders.length === 0 ? (
+        {displayOrders.length === 0 ? (
           <div style={{
             textAlign: 'center',
             padding: '64px 32px',
@@ -374,7 +544,8 @@ export default function OrdersPage() {
               color: '#6b7280',
               marginBottom: '8px'
             }}>
-              {filter === 'all' ? 'No orders yet' : 
+              {searchQuery ? 'No search results found' :
+               filter === 'all' ? 'No orders yet' : 
                filter === 'ready' ? 'No ready orders yet' : 
                `No ${filter} orders`}
             </div>
@@ -383,14 +554,16 @@ export default function OrdersPage() {
               color: '#9ca3af',
               marginBottom: '24px'
             }}>
-              {filter === 'all' 
+              {searchQuery 
+                ? 'Try a different search term or check your spelling'
+                : filter === 'all' 
                 ? 'Start browsing stock media to place your first order'
                 : filter === 'ready'
                 ? 'Your completed orders will appear here. Place an order to get started!'
                 : 'Try a different filter or check back later'
               }
             </div>
-            {filter === 'all' && (
+            {!searchQuery && filter === 'all' && (
               <Link 
                 href="/dashboard/browse"
                 style={{
@@ -411,7 +584,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredOrders.map((order) => {
+            {displayOrders.map((order) => {
               const statusColors = getStatusColor(order.status)
               const isProcessing = order.status === 'PROCESSING' || order.status === 'PENDING'
               
