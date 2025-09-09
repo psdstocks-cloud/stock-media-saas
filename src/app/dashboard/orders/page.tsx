@@ -378,15 +378,13 @@ export default function OrdersPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       padding: '24px'
     }}>
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
-        {/* Header */}
+        {/* Page Header */}
         <div style={{
           textAlign: 'center',
           marginBottom: '32px'
@@ -398,14 +396,14 @@ export default function OrdersPage() {
             margin: '0 0 8px 0',
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            My Orders - Reconstructed
+            My Orders
           </h1>
           <p style={{
             color: 'rgba(255,255,255,0.9)',
             fontSize: '18px',
             margin: '0 0 24px 0'
           }}>
-            Manage and download your requested files - Completely rebuilt for reliability
+            Manage and download your requested files
           </p>
           
           {/* View Toggle and Search Bar */}
@@ -859,6 +857,5 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
-    </div>
   )
 }
