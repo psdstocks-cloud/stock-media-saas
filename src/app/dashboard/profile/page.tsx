@@ -28,6 +28,7 @@ import {
   Globe,
   Key,
   LogOut,
+  RotateCcw,
   Camera,
   Upload,
   X
