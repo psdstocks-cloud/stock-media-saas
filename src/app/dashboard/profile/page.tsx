@@ -80,13 +80,23 @@ export default function ProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
-    if (status === 'loading') return
+    console.log('🔍 Profile Page: useEffect triggered')
+    console.log('🔍 Profile Page: status:', status)
+    console.log('🔍 Profile Page: session:', session)
+    console.log('🔍 Profile Page: user ID:', session?.user?.id)
+    
+    if (status === 'loading') {
+      console.log('🔍 Profile Page: Still loading, waiting...')
+      return
+    }
     
     if (!session?.user?.id) {
+      console.log('🔍 Profile Page: No session, redirecting to login')
       router.push('/login')
       return
     }
 
+    console.log('🔍 Profile Page: Session found, fetching profile...')
     fetchProfile()
   }, [session, status, router])
 
@@ -258,6 +268,22 @@ export default function ProfilePage() {
             margin: '0 auto'
           }}></div>
           <p style={{ marginTop: '16px', color: '#64748b' }}>Loading profile...</p>
+          <div style={{ 
+            fontSize: '14px', 
+            color: '#64748b',
+            background: '#f1f5f9',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0',
+            marginTop: '16px',
+            textAlign: 'left'
+          }}>
+            <div><strong>Debug Info:</strong></div>
+            <div>Status: {status}</div>
+            <div>Session: {session ? 'Found' : 'Not found'}</div>
+            <div>User ID: {session?.user?.id || 'None'}</div>
+            <div>Loading: {loading ? 'Yes' : 'No'}</div>
+          </div>
         </div>
       </div>
     )
