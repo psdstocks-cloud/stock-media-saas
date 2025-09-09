@@ -896,17 +896,6 @@ export default function OrdersPage() {
                           {order.stockSite.displayName} #{order.stockItemId || 'N/A'}
                         </h3>
                         
-                        {/* Debug Info - Remove in production */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <div style={{
-                            fontSize: '12px',
-                            color: '#6b7280',
-                            marginTop: '4px',
-                            fontFamily: 'monospace'
-                          }}>
-                            Debug: stockItemId={order.stockItemId}, orderId={order.id}
-                          </div>
-                        )}
                         
                         <div style={{
                           display: 'flex',
@@ -1130,17 +1119,6 @@ export default function OrdersPage() {
                               {order.stockSite.displayName} #{order.stockItemId || 'N/A'}
                             </h3>
                             
-                            {/* Debug Info - Remove in production */}
-                            {process.env.NODE_ENV === 'development' && (
-                              <div style={{
-                                fontSize: '12px',
-                                color: '#6b7280',
-                                marginTop: '4px',
-                                fontFamily: 'monospace'
-                              }}>
-                                Debug: stockItemId={order.stockItemId}, orderId={order.id}
-                              </div>
-                            )}
                             
                             <div style={{
                               display: 'flex',
