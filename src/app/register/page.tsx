@@ -30,7 +30,7 @@ interface PasswordStrength {
 
 export default function RegisterPage() {
   const [plans, setPlans] = useState<Plan[]>([])
-  const [selectedPlan, setSelectedPlan] = useState<string>('')
+  const [selectedPlan, setSelectedPlan] = useState<string>('starter')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -104,7 +104,7 @@ export default function RegisterPage() {
         const data = await response.json()
         setPlans(data.plans || [])
         if (data.plans && data.plans.length > 0) {
-          setSelectedPlan(data.plans[0].id)
+          setSelectedPlan(data.plans[0].name)
         }
       } catch (error) {
         console.error('Error fetching plans:', error)
@@ -148,7 +148,7 @@ export default function RegisterPage() {
           }
         ]
         setPlans(fallbackPlans)
-        setSelectedPlan(fallbackPlans[0].id)
+        setSelectedPlan(fallbackPlans[0].name)
       }
     }
 
@@ -682,13 +682,13 @@ export default function RegisterPage() {
                               key={plan.id}
                               style={{
                                 padding: '16px',
-                                border: selectedPlan === plan.id ? '2px solid #3b82f6' : '2px solid #e5e7eb',
+                                border: selectedPlan === plan.name ? '2px solid #3b82f6' : '2px solid #e5e7eb',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s ease',
-                                background: selectedPlan === plan.id ? '#eff6ff' : 'white'
+                                background: selectedPlan === plan.name ? '#eff6ff' : 'white'
                               }}
-                              onClick={() => setSelectedPlan(plan.id)}
+                              onClick={() => setSelectedPlan(plan.name)}
                             >
                               <div style={{
                                 display: 'flex',

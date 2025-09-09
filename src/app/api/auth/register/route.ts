@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    console.log('Registration attempt:', { name, email, planId })
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -21,32 +23,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 })
     }
 
-    // Get the selected plan
+    // Get or create the selected plan
     let plan = await prisma.subscriptionPlan.findUnique({
       where: { id: planId }
     })
 
-    // If plan not found and it's a fallback plan, create it
-    if (!plan && planId.includes('-fallback')) {
+    // If plan not found, try to find by name (for fallback plans)
+    if (!plan) {
       const planName = planId.replace('-fallback', '')
-      const fallbackPlans = {
-        'starter-fallback': { name: 'starter', description: 'Perfect for individuals and small projects', price: 9.99, points: 50, rolloverLimit: 25 },
-        'professional-fallback': { name: 'professional', description: 'Ideal for freelancers and small agencies', price: 29.99, points: 200, rolloverLimit: 100 },
-        'business-fallback': { name: 'business', description: 'Perfect for agencies and design teams', price: 79.99, points: 600, rolloverLimit: 300 },
-        'enterprise-fallback': { name: 'enterprise', description: 'For large agencies and enterprises', price: 199.99, points: 1500, rolloverLimit: 750 }
+      plan = await prisma.subscriptionPlan.findUnique({
+        where: { name: planName }
+      })
+    }
+
+    // If still not found, create the plan
+    if (!plan) {
+      const planData = {
+        'starter': { name: 'starter', description: 'Perfect for individuals and small projects', price: 9.99, points: 50, rolloverLimit: 25 },
+        'professional': { name: 'professional', description: 'Ideal for freelancers and small agencies', price: 29.99, points: 200, rolloverLimit: 100 },
+        'business': { name: 'business', description: 'Perfect for agencies and design teams', price: 79.99, points: 600, rolloverLimit: 300 },
+        'enterprise': { name: 'enterprise', description: 'For large agencies and enterprises', price: 199.99, points: 1500, rolloverLimit: 750 }
       }
       
-      const fallbackPlan = fallbackPlans[planId as keyof typeof fallbackPlans]
-      if (fallbackPlan) {
+      const planName = planId.replace('-fallback', '')
+      const planInfo = planData[planName as keyof typeof planData]
+      
+      if (planInfo) {
         plan = await prisma.subscriptionPlan.upsert({
-          where: { name: fallbackPlan.name },
+          where: { name: planInfo.name },
           update: {},
           create: {
-            name: fallbackPlan.name,
-            description: fallbackPlan.description,
-            price: fallbackPlan.price,
-            points: fallbackPlan.points,
-            rolloverLimit: fallbackPlan.rolloverLimit,
+            name: planInfo.name,
+            description: planInfo.description,
+            price: planInfo.price,
+            points: planInfo.points,
+            rolloverLimit: planInfo.rolloverLimit,
             isActive: true
           }
         })
