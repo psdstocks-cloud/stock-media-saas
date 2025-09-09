@@ -318,17 +318,22 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '24px',
           marginBottom: '32px'
         }}>
+          {/* Your Balance Card */}
           <div style={{
             background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
             border: '1px solid #93c5fd',
-            borderRadius: '16px',
+            borderRadius: '20px',
             padding: '32px',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            minHeight: '160px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }}>
             <div style={{
               position: 'absolute',
@@ -341,54 +346,64 @@ export default function DashboardPage() {
             }}></div>
             <div style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'space-between',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              marginBottom: '16px'
             }}>
-            <div>
+              <div style={{ flex: 1 }}>
                 <p style={{
                   fontSize: '16px',
                   fontWeight: '600',
                   color: '#1e40af',
-                  marginBottom: '8px'
+                  marginBottom: '8px',
+                  lineHeight: '1.2'
                 }}>Your Balance</p>
                 <p style={{
-                  fontSize: '40px',
+                  fontSize: '36px',
                   fontWeight: '800',
                   color: '#1e3a8a',
-                  marginBottom: '4px'
+                  marginBottom: '4px',
+                  lineHeight: '1'
                 }}>
-                {balance?.currentPoints || 0}
+                  {balance?.currentPoints || 0}
                 </p>
                 <p style={{
                   fontSize: '14px',
                   color: '#1e40af',
-                  opacity: 0.8
+                  opacity: 0.8,
+                  lineHeight: '1.2'
                 }}>Points Available</p>
               </div>
               <div style={{
-                width: '64px',
-                height: '64px',
+                width: '56px',
+                height: '56px',
                 background: 'rgba(59, 130, 246, 0.2)',
                 borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '28px'
+                fontSize: '24px',
+                flexShrink: 0
               }}>
-                ⚡
+                💰
               </div>
             </div>
           </div>
-          
+
+          {/* Successful Downloads Card */}
           <div style={{
             background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
             border: '1px solid #86efac',
-            borderRadius: '16px',
+            borderRadius: '20px',
             padding: '32px',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            minHeight: '160px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }}>
             <div style={{
               position: 'absolute',
@@ -401,54 +416,64 @@ export default function DashboardPage() {
             }}></div>
             <div style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'space-between',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              marginBottom: '16px'
             }}>
-              <div>
+              <div style={{ flex: 1 }}>
                 <p style={{
                   fontSize: '16px',
                   fontWeight: '600',
                   color: '#166534',
-                  marginBottom: '8px'
+                  marginBottom: '8px',
+                  lineHeight: '1.2'
                 }}>Successful Downloads</p>
                 <p style={{
-                  fontSize: '40px',
+                  fontSize: '36px',
                   fontWeight: '800',
                   color: '#14532d',
-                  marginBottom: '4px'
+                  marginBottom: '4px',
+                  lineHeight: '1'
                 }}>
                   {orders?.filter((order: any) => order.status === 'COMPLETED' || order.status === 'READY').length || 0}
                 </p>
                 <p style={{
                   fontSize: '14px',
                   color: '#166534',
-                  opacity: 0.8
+                  opacity: 0.8,
+                  lineHeight: '1.2'
                 }}>Files Downloaded</p>
-                </div>
+              </div>
               <div style={{
-                width: '64px',
-                height: '64px',
+                width: '56px',
+                height: '56px',
                 background: 'rgba(34, 197, 94, 0.2)',
                 borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '28px'
+                fontSize: '24px',
+                flexShrink: 0
               }}>
-                ⬇️
+                📁
               </div>
-                </div>
-              </div>
+            </div>
+          </div>
           
+          {/* Total Requests Card */}
           <div style={{
             background: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)',
             border: '1px solid #c4b5fd',
-            borderRadius: '16px',
+            borderRadius: '20px',
             padding: '32px',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            minHeight: '160px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }}>
             <div style={{
               position: 'absolute',
@@ -461,84 +486,118 @@ export default function DashboardPage() {
             }}></div>
             <div style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'space-between',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              marginBottom: '16px'
             }}>
-              <div>
+              <div style={{ flex: 1 }}>
                 <p style={{
                   fontSize: '16px',
                   fontWeight: '600',
                   color: '#7c3aed',
-                  marginBottom: '8px'
+                  marginBottom: '8px',
+                  lineHeight: '1.2'
                 }}>Total Requests</p>
                 <p style={{
-                  fontSize: '40px',
+                  fontSize: '36px',
                   fontWeight: '800',
                   color: '#6b21a8',
-                  marginBottom: '4px'
+                  marginBottom: '4px',
+                  lineHeight: '1'
                 }}>
                   {orders?.length || 0}
                 </p>
                 <p style={{
                   fontSize: '14px',
                   color: '#7c3aed',
-                  opacity: 0.8
+                  opacity: 0.8,
+                  lineHeight: '1.2'
                 }}>All Time Orders</p>
-                </div>
+              </div>
               <div style={{
-                width: '64px',
-                height: '64px',
+                width: '56px',
+                height: '56px',
                 background: 'rgba(124, 58, 237, 0.2)',
                 borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '28px'
+                fontSize: '24px',
+                flexShrink: 0
               }}>
-                📈
+                📋
               </div>
             </div>
-        </div>
+          </div>
 
+          {/* Active Sites Card */}
           <div style={{
             background: 'linear-gradient(135deg, #fed7aa, #fdba74)',
             border: '1px solid #fb923c',
-            borderRadius: '12px',
-            padding: '24px'
+            borderRadius: '20px',
+            padding: '32px',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: '160px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
           }}>
             <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(251, 146, 60, 0.1)',
+              borderRadius: '50%'
+            }}></div>
+            <div style={{
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              position: 'relative',
+              zIndex: 1,
+              marginBottom: '16px'
             }}>
-              <div>
+              <div style={{ flex: 1 }}>
                 <p style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
+                  fontSize: '16px',
+                  fontWeight: '600',
                   color: '#c2410c',
-                  marginBottom: '4px'
-                }}>Active Sites</p>
+                  marginBottom: '8px',
+                  lineHeight: '1.2'
+                }}>Available Sites</p>
                 <p style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  color: '#9a3412'
+                  fontSize: '36px',
+                  fontWeight: '800',
+                  color: '#9a3412',
+                  marginBottom: '4px',
+                  lineHeight: '1'
                 }}>
                   {stockSites?.filter((site: any) => site.isActive).length || 0}
                 </p>
-            </div>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#c2410c',
+                  opacity: 0.8,
+                  lineHeight: '1.2'
+                }}>Stock Media Sources</p>
+              </div>
               <div style={{
-                width: '48px',
-                height: '48px',
-                background: '#fed7aa',
-                borderRadius: '8px',
+                width: '56px',
+                height: '56px',
+                background: 'rgba(251, 146, 60, 0.2)',
+                borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '24px',
+                flexShrink: 0
               }}>
-                👥
+                🌐
               </div>
             </div>
           </div>
