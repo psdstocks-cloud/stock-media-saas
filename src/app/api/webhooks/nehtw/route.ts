@@ -110,7 +110,7 @@ async function handleDownloadStatusChanged(
         break
       
       case 'cancelled':
-        newStatus = 'CANCELLED'
+        newStatus = 'CANCELED'
         updateData = { status: newStatus }
         // Refund points to user
         await refundOrderPoints(order.userId, order.cost)
