@@ -93,10 +93,16 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       setLoading(true)
+      console.log('Fetching profile for user:', session?.user?.id)
+      
       const response = await fetch('/api/profile')
+      console.log('Profile API response status:', response.status)
+      
       const data = await response.json()
+      console.log('Profile API response data:', data)
       
       if (data.profile) {
+        console.log('Setting profile data:', data.profile)
         setProfile(data.profile)
         setFormData({
           name: data.profile.name || '',
@@ -105,9 +111,13 @@ export default function ProfilePage() {
           newPassword: '',
           confirmPassword: ''
         })
+      } else {
+        console.error('No profile data received:', data)
+        setErrors({ general: data.error || 'Failed to load profile data' })
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      setErrors({ general: 'Failed to load profile data' })
     } finally {
       setLoading(false)
     }
@@ -253,8 +263,46 @@ export default function ProfilePage() {
     )
   }
 
-  if (!session?.user?.id || !profile) {
+  if (!session?.user?.id) {
     return null
+  }
+
+  if (!profile && !loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <AlertCircle size={64} color="#ef4444" style={{ margin: '0 auto 16px auto' }} />
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626', margin: '0 0 8px 0' }}>
+            Profile Not Found
+          </h2>
+          <p style={{ color: '#64748b', margin: '0 0 16px 0' }}>
+            Unable to load your profile data. Please try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
