@@ -151,25 +151,31 @@ export default function OrdersPage() {
 
       const data = await response.json()
       console.log('📡 API response data:', data)
+      console.log('📡 API response success:', data.success)
+      console.log('📡 API response order:', data.order)
+      console.log('📡 API response downloadLink:', data.downloadLink)
 
       // Determine the download URL and update order
       let downloadUrl = null
       let updatedOrder = order
       
       if (data.success) {
+        console.log('✅ API response indicates success')
         if (data.order && data.order.downloadUrl) {
-          console.log('✅ Download ready (order response)')
+          console.log('✅ Download ready (order response) - downloadUrl:', data.order.downloadUrl)
           downloadUrl = data.order.downloadUrl
           updatedOrder = data.order
           
           // Update the order in local state
+          console.log('🔄 Updating order in local state...')
           setOrders(prevOrders => 
             prevOrders.map(o => 
               o.id === order.id ? data.order : o
             )
           )
+          console.log('✅ Order updated in local state')
         } else if (data.downloadLink) {
-          console.log('✅ Download ready (direct response)')
+          console.log('✅ Download ready (direct response) - downloadLink:', data.downloadLink)
           downloadUrl = data.downloadLink
           
           // Update the order in local state with the new download link
@@ -182,34 +188,60 @@ export default function OrdersPage() {
           }
           updatedOrder = newOrder
           
+          console.log('🔄 Updating order in local state with new download link...')
           setOrders(prevOrders => 
             prevOrders.map(o => 
               o.id === order.id ? newOrder : o
             )
           )
+          console.log('✅ Order updated in local state with new download link')
+        } else {
+          console.warn('⚠️ API success but no download URL found')
         }
+      } else {
+        console.error('❌ API response indicates failure')
       }
+      
+      console.log('🎯 Final downloadUrl determined:', downloadUrl)
       
       // Open download link only once
       if (downloadUrl) {
         console.log('🔗 Opening download:', downloadUrl)
         
-        // Add a small delay to ensure state is properly set
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // Create temporary link (bypasses popup blockers)
-        const link = document.createElement('a')
-        link.href = downloadUrl
-        link.target = '_blank'
-        link.rel = 'noopener noreferrer'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        
-        // Prevent any further download attempts for this order
-        console.log('✅ Download initiated successfully for order:', order.id)
+        try {
+          // Add a small delay to ensure state is properly set
+          console.log('⏳ Adding delay before download...')
+          await new Promise(resolve => setTimeout(resolve, 100))
+          console.log('✅ Delay completed')
+          
+          // Create temporary link (bypasses popup blockers)
+          console.log('🔧 Creating temporary link element...')
+          const link = document.createElement('a')
+          link.href = downloadUrl
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          console.log('✅ Link element created with href:', link.href)
+          
+          console.log('📎 Adding link to DOM...')
+          document.body.appendChild(link)
+          console.log('✅ Link added to DOM')
+          
+          console.log('🖱️ Clicking link...')
+          link.click()
+          console.log('✅ Link clicked')
+          
+          console.log('🗑️ Removing link from DOM...')
+          document.body.removeChild(link)
+          console.log('✅ Link removed from DOM')
+          
+          // Prevent any further download attempts for this order
+          console.log('✅ Download initiated successfully for order:', order.id)
+        } catch (downloadError) {
+          console.error('💥 Error during download execution:', downloadError)
+          throw downloadError
+        }
       } else {
-        console.error('❌ Download failed:', data)
+        console.error('❌ Download failed - no download URL:', data)
         // Silent fail - no popup, just log the error
         console.warn('Download not available for this order')
       }
