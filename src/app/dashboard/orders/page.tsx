@@ -162,7 +162,7 @@ export default function OrdersPage() {
     
     if (filter === 'all') return true
     if (filter === 'ready') return order.status === 'READY'
-    return order.status.toLowerCase() === filter.toLowerCase()
+    return false
   })
 
   // Use search results if searching, otherwise use filtered orders
