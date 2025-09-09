@@ -214,25 +214,37 @@ export default function OrdersPage() {
           await new Promise(resolve => setTimeout(resolve, 100))
           console.log('✅ Delay completed')
           
-          // Create temporary link (bypasses popup blockers)
-          console.log('🔧 Creating temporary link element...')
-          const link = document.createElement('a')
-          link.href = downloadUrl
-          link.target = '_blank'
-          link.rel = 'noopener noreferrer'
-          console.log('✅ Link element created with href:', link.href)
+          // Method 1: Direct window.open (bypasses popup blockers when triggered by user action)
+          console.log('🔧 Opening download in new tab...')
+          const newWindow = window.open(downloadUrl, '_blank', 'noopener,noreferrer')
           
-          console.log('📎 Adding link to DOM...')
-          document.body.appendChild(link)
-          console.log('✅ Link added to DOM')
-          
-          console.log('🖱️ Clicking link...')
-          link.click()
-          console.log('✅ Link clicked')
-          
-          console.log('🗑️ Removing link from DOM...')
-          document.body.removeChild(link)
-          console.log('✅ Link removed from DOM')
+          if (newWindow) {
+            console.log('✅ Download opened in new tab successfully')
+            // Focus the new window
+            newWindow.focus()
+          } else {
+            console.warn('⚠️ Popup blocked, trying fallback method...')
+            
+            // Method 2: Fallback - create temporary link
+            console.log('🔧 Creating temporary link element as fallback...')
+            const link = document.createElement('a')
+            link.href = downloadUrl
+            link.target = '_blank'
+            link.rel = 'noopener noreferrer'
+            link.style.display = 'none'
+            
+            console.log('📎 Adding link to DOM...')
+            document.body.appendChild(link)
+            console.log('✅ Link added to DOM')
+            
+            console.log('🖱️ Clicking link...')
+            link.click()
+            console.log('✅ Link clicked')
+            
+            console.log('🗑️ Removing link from DOM...')
+            document.body.removeChild(link)
+            console.log('✅ Link removed from DOM')
+          }
           
           // Prevent any further download attempts for this order
           console.log('✅ Download initiated successfully for order:', order.id)
