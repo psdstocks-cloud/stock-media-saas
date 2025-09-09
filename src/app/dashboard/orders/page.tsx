@@ -160,8 +160,33 @@ export default function OrdersPage() {
           console.warn('⚠️ No download URL in response after regeneration')
           alert('Download link not available yet. The file might still be processing. Please try again later.')
         }
+      } else if (data.success && data.downloadLink) {
+        // Handle direct download link response (from Nehtw API)
+        console.log('✅ Download link regenerated successfully (direct response):', {
+          newDownloadUrl: data.downloadLink,
+          fileName: data.fileName,
+          status: data.status
+        })
+        
+        // Update the order in local state with the new download link
+        setOrders(prevOrders => 
+          prevOrders.map(o => 
+            o.id === order.id ? {
+              ...o,
+              downloadUrl: data.downloadLink,
+              fileName: data.fileName || o.fileName,
+              status: 'READY',
+              updatedAt: new Date().toISOString()
+            } : o
+          )
+        )
+        
+        // Open the download link
+        console.log('🔗 Opening fresh download URL:', data.downloadLink)
+        window.open(data.downloadLink, '_blank', 'noopener,noreferrer')
+        alert('Fresh download link opened in new tab!')
       } else {
-        console.error('❌ Regenerate failed - no success or order data:', data)
+        console.error('❌ Regenerate failed - no success or download data:', data)
         throw new Error(data.error || 'Failed to regenerate download link - no data returned')
       }
     } catch (error) {
