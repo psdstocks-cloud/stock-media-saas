@@ -15,7 +15,9 @@ import {
   Video,
   Music,
   FileText,
-  ExternalLink
+  ExternalLink,
+  Grid3X3,
+  List
 } from 'lucide-react'
 
 interface Order {
@@ -46,6 +48,7 @@ export default function OrdersPage() {
   const [isSearching, setIsSearching] = useState(false)
   const [regeneratingLinks, setRegeneratingLinks] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -384,6 +387,66 @@ export default function OrdersPage() {
             Manage and download your requested files - Completely rebuilt for reliability
           </p>
           
+          {/* View Toggle and Search Bar */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+            marginBottom: '24px',
+            flexWrap: 'wrap'
+          }}>
+            {/* View Toggle */}
+            <div style={{
+              display: 'flex',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              padding: '4px',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <button
+                onClick={() => setViewMode('grid')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: viewMode === 'grid' ? 'rgba(255,255,255,0.9)' : 'transparent',
+                  color: viewMode === 'grid' ? '#1f2937' : 'rgba(255,255,255,0.8)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}
+              >
+                <Grid3X3 style={{ width: '16px', height: '16px' }} />
+                Grid
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: viewMode === 'list' ? 'rgba(255,255,255,0.9)' : 'transparent',
+                  color: viewMode === 'list' ? '#1f2937' : 'rgba(255,255,255,0.8)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}
+              >
+                <List style={{ width: '16px', height: '16px' }} />
+                List
+              </button>
+            </div>
+          </div>
+          
           {/* Search Bar */}
           <div style={{
             position: 'relative',
@@ -470,9 +533,10 @@ export default function OrdersPage() {
 
         {/* Orders List */}
         <div style={{
-          display: 'grid',
+          display: viewMode === 'grid' ? 'grid' : 'flex',
           gap: '24px',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))'
+          gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(400px, 1fr))' : 'none',
+          flexDirection: viewMode === 'list' ? 'column' : 'row'
         }}>
           {displayOrders.length === 0 ? (
             <div style={{
@@ -516,20 +580,55 @@ export default function OrdersPage() {
                   style={{
                     background: 'rgba(255,255,255,0.95)',
                     borderRadius: '16px',
-                    padding: '24px',
+                    padding: viewMode === 'list' ? '20px' : '24px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255,255,255,0.2)',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    display: viewMode === 'list' ? 'flex' : 'block',
+                    gap: viewMode === 'list' ? '20px' : '0'
                   }}
                 >
-                  {/* Order Header */}
+                  {/* File Preview for List View */}
+                  {viewMode === 'list' && order.stockItemUrl && (
+                    <div style={{
+                      flexShrink: 0,
+                      width: '120px',
+                      height: '120px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      background: '#f9fafb',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <img
+                        src={order.stockItemUrl}
+                        alt="File preview"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          background: '#f9fafb'
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Main Content */}
                   <div style={{
+                    flex: 1,
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '16px'
+                    flexDirection: 'column'
                   }}>
+                    {/* Order Header */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '16px'
+                    }}>
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -639,75 +738,77 @@ export default function OrdersPage() {
                     )}
                   </div>
 
-                  {/* File Preview */}
-                  {order.stockItemUrl && (
-                    <div style={{
-                      marginBottom: '16px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      background: '#f9fafb',
-                      border: '1px solid #e5e7eb'
-                    }}>
-                      <img
-                        src={order.stockItemUrl}
-                        alt="File preview"
-                        style={{
-                          width: '100%',
-                          height: '120px',
-                          objectFit: 'contain',
-                          background: '#f9fafb'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px'
-                  }}>
-                    {order.status === 'READY' && (
-                      <button
-                        onClick={() => handleSmartDownload(order)}
-                        disabled={regeneratingLinks.has(order.id)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          padding: '12px 20px',
-                          background: regeneratingLinks.has(order.id) 
-                            ? '#f3f4f6' 
-                            : 'linear-gradient(135deg, #059669, #047857)',
-                          color: regeneratingLinks.has(order.id) ? '#9ca3af' : 'white',
-                          border: 'none',
-                          borderRadius: '10px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          cursor: regeneratingLinks.has(order.id) ? 'not-allowed' : 'pointer',
-                          transition: 'all 0.2s ease',
-                          boxShadow: regeneratingLinks.has(order.id) 
-                            ? 'none' 
-                            : '0 4px 12px rgba(5, 150, 105, 0.3)'
-                        }}
-                      >
-                        {regeneratingLinks.has(order.id) ? (
-                          <>
-                            <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-                            Preparing Download...
-                          </>
-                        ) : (
-                          <>
-                            <Download style={{ width: '16px', height: '16px' }} />
-                            Get Fresh Download Link
-                          </>
-                        )}
-                      </button>
+                    {/* File Preview for Grid View */}
+                    {viewMode === 'grid' && order.stockItemUrl && (
+                      <div style={{
+                        marginBottom: '16px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        background: '#f9fafb',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <img
+                          src={order.stockItemUrl}
+                          alt="File preview"
+                          style={{
+                            width: '100%',
+                            height: '120px',
+                            objectFit: 'contain',
+                            background: '#f9fafb'
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      </div>
                     )}
+
+                    {/* Actions */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      marginTop: 'auto'
+                    }}>
+                      {order.status === 'READY' && (
+                        <button
+                          onClick={() => handleSmartDownload(order)}
+                          disabled={regeneratingLinks.has(order.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '12px 20px',
+                            background: regeneratingLinks.has(order.id) 
+                              ? '#f3f4f6' 
+                              : 'linear-gradient(135deg, #059669, #047857)',
+                            color: regeneratingLinks.has(order.id) ? '#9ca3af' : 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: regeneratingLinks.has(order.id) ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: regeneratingLinks.has(order.id) 
+                              ? 'none' 
+                              : '0 4px 12px rgba(5, 150, 105, 0.3)'
+                          }}
+                        >
+                          {regeneratingLinks.has(order.id) ? (
+                            <>
+                              <RefreshCw style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                              Preparing Download...
+                            </>
+                          ) : (
+                            <>
+                              <Download style={{ width: '16px', height: '16px' }} />
+                              Get Fresh Download Link
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               )
