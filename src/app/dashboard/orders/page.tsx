@@ -100,6 +100,8 @@ export default function OrdersPage() {
 
   // Smart download functionality - seamless background process
   const handleSmartDownload = async (order: Order) => {
+    console.log('🔄 handleSmartDownload called for order:', order.id)
+    
     // Prevent multiple simultaneous downloads globally
     if (isAnyDownloadActive) {
       console.log('⏳ Another download is already in progress. Please wait...')
@@ -113,6 +115,7 @@ export default function OrdersPage() {
     }
     
     try {
+      console.log('🚀 Starting download process for order:', order.id)
       setIsAnyDownloadActive(true)
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
@@ -151,36 +154,38 @@ export default function OrdersPage() {
       let downloadUrl = null
       let updatedOrder = order
       
-      if (data.success && data.order) {
-        console.log('✅ Download ready (order response)')
-        downloadUrl = data.order.downloadUrl
-        updatedOrder = data.order
-        
-        // Update the order in local state
-        setOrders(prevOrders => 
-          prevOrders.map(o => 
-            o.id === order.id ? data.order : o
+      if (data.success) {
+        if (data.order && data.order.downloadUrl) {
+          console.log('✅ Download ready (order response)')
+          downloadUrl = data.order.downloadUrl
+          updatedOrder = data.order
+          
+          // Update the order in local state
+          setOrders(prevOrders => 
+            prevOrders.map(o => 
+              o.id === order.id ? data.order : o
+            )
           )
-        )
-      } else if (data.success && data.downloadLink) {
-        console.log('✅ Download ready (direct response)')
-        downloadUrl = data.downloadLink
-        
-        // Update the order in local state with the new download link
-        const newOrder = {
-          ...order,
-          downloadUrl: data.downloadLink,
-          fileName: data.fileName || order.fileName,
-          status: 'READY' as const,
-          updatedAt: new Date().toISOString()
+        } else if (data.downloadLink) {
+          console.log('✅ Download ready (direct response)')
+          downloadUrl = data.downloadLink
+          
+          // Update the order in local state with the new download link
+          const newOrder = {
+            ...order,
+            downloadUrl: data.downloadLink,
+            fileName: data.fileName || order.fileName,
+            status: 'READY' as const,
+            updatedAt: new Date().toISOString()
+          }
+          updatedOrder = newOrder
+          
+          setOrders(prevOrders => 
+            prevOrders.map(o => 
+              o.id === order.id ? newOrder : o
+            )
+          )
         }
-        updatedOrder = newOrder
-        
-        setOrders(prevOrders => 
-          prevOrders.map(o => 
-            o.id === order.id ? newOrder : o
-          )
-        )
       }
       
       // Open download link only once
@@ -194,6 +199,9 @@ export default function OrdersPage() {
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
+        
+        // Prevent any further download attempts for this order
+        console.log('✅ Download initiated successfully')
       } else {
         console.error('❌ Download failed:', data)
         // Silent fail - no popup, just log the error
