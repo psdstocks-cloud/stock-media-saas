@@ -7,7 +7,7 @@ export class PointsManager {
   static async addPoints(
     userId: string,
     amount: number,
-    type: string,
+    type: 'SUBSCRIPTION' | 'PURCHASE' | 'ROLLOVER' | 'DOWNLOAD' | 'REFUND' | 'BONUS' | 'ADMIN_ADJUSTMENT',
     description?: string,
     orderId?: string
   ) {
