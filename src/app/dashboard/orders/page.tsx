@@ -72,42 +72,37 @@ export default function OrdersPage() {
     }
   }
 
-  // Smart download functionality that handles expired links automatically
+  // Smart download functionality that always regenerates fresh download links
   const handleSmartDownload = async (order: Order) => {
     try {
       setRegeneratingLinks(prev => new Set(prev).add(order.id))
       
-      // If link is expired or doesn't exist, regenerate it first
-      if (isDownloadLinkExpired(order) || !order.downloadUrl) {
-        console.log('Link expired or missing, regenerating for order:', order.id)
-        
-        const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+      console.log('Regenerating fresh download link for order:', order.id)
+      
+      // Always regenerate the download link to get a fresh URL
+      const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
-        const data = await response.json()
+      const data = await response.json()
 
-        if (data.success && data.order) {
-          // Update the order in the local state
-          setOrders(prevOrders => 
-            prevOrders.map(o => 
-              o.id === order.id ? data.order : o
-            )
+      if (data.success && data.order) {
+        // Update the order in the local state
+        setOrders(prevOrders => 
+          prevOrders.map(o => 
+            o.id === order.id ? data.order : o
           )
-          
-          // Open the new download link
-          if (data.order.downloadUrl) {
-            window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
-          }
-        } else {
-          throw new Error(data.error || 'Failed to regenerate download link')
+        )
+        
+        // Open the new download link
+        if (data.order.downloadUrl) {
+          window.open(data.order.downloadUrl, '_blank', 'noopener,noreferrer')
         }
       } else {
-        // Link is fresh, download directly
-        window.open(order.downloadUrl, '_blank', 'noopener,noreferrer')
+        throw new Error(data.error || 'Failed to regenerate download link')
       }
     } catch (error) {
       console.error('Error handling download:', error)
@@ -950,7 +945,7 @@ export default function OrdersPage() {
                         ) : (
                           <>
                             <Download style={{ width: '16px', height: '16px' }} />
-                            Download for Free
+                            Get Fresh Download Link
                           </>
                         )}
                       </button>
