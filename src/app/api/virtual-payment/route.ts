@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { planId, points, price, paymentMethod } = await request.json()
+    const { planId, points, price, paymentMethod, simulateFailure } = await request.json()
 
     if (!planId || !points || !price || !paymentMethod) {
       return NextResponse.json({ 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Simulate payment validation
-    const paymentValidation = await validateVirtualPayment(paymentMethod, price)
+    const paymentValidation = await validateVirtualPayment(paymentMethod, price, simulateFailure)
     
     if (!paymentValidation.success) {
       return NextResponse.json({ 
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Simulate payment validation based on payment method
-async function validateVirtualPayment(paymentMethod: string, amount: number) {
+async function validateVirtualPayment(paymentMethod: string, amount: number, simulateFailure: boolean = false) {
   // Simulate different validation rules for different payment methods
   switch (paymentMethod) {
     case 'credit-card':
@@ -138,8 +138,10 @@ async function validateVirtualPayment(paymentMethod: string, amount: number) {
       return { success: false, error: 'Invalid payment method' }
   }
 
-  // Simulate random payment failures (5% chance)
-  if (Math.random() < 0.05) {
+  // Simulate payment failures based on user setting or random chance
+  const shouldFail = simulateFailure || Math.random() < 0.1
+  
+  if (shouldFail) {
     return { 
       success: false, 
       error: 'Payment was declined by the payment processor' 

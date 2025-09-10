@@ -159,16 +159,7 @@ export default function PricingPage() {
       // Simulate payment processing delay
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      // Simulate random failure for testing (10% chance)
-      const shouldFail = simulateFailure || Math.random() < 0.1
-
-      if (shouldFail) {
-        setPaymentStep('error')
-        setPaymentError('Payment was declined. Please try a different payment method.')
-        return
-      }
-
-      // Process successful payment
+      // Process payment through API
       const plan = pricingPlans.find(p => p.id === selectedPlan)!
       
       const response = await fetch('/api/virtual-payment', {
@@ -180,18 +171,24 @@ export default function PricingPage() {
           planId: plan.id,
           points: plan.points,
           price: plan.price,
-          paymentMethod: selectedPaymentMethod
+          paymentMethod: selectedPaymentMethod,
+          simulateFailure: simulateFailure
         }),
       })
 
-      if (response.ok) {
+      const data = await response.json()
+
+      if (response.ok && data.success) {
         setPaymentStep('success')
         // Update user balance
         await fetchUserBalance()
       } else {
-        throw new Error('Failed to process payment')
+        // Handle API error response
+        setPaymentStep('error')
+        setPaymentError(data.error || 'Payment processing failed. Please try again.')
       }
     } catch (error) {
+      console.error('Payment error:', error)
       setPaymentStep('error')
       setPaymentError('Payment processing failed. Please try again.')
     }
@@ -296,7 +293,7 @@ export default function PricingPage() {
           <h3 style={{ color: 'white', marginBottom: '12px', fontSize: '16px' }}>
             🧪 Testing Controls
           </h3>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
             <label style={{ color: 'white', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <input
                 type="checkbox"
@@ -306,6 +303,9 @@ export default function PricingPage() {
               />
               Simulate Payment Failure (10% chance)
             </label>
+            <div style={{ color: 'white', fontSize: '12px', opacity: 0.8 }}>
+              💡 Credit Card: Up to $100 | PayPal: Min $5 | Apple Pay: Up to $50 | Google Pay: Up to $75
+            </div>
           </div>
         </div>
 
