@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { PointsManager } from '@/lib/points'
 
 // Virtual payment plans (matching frontend)
@@ -29,9 +30,17 @@ const VIRTUAL_PLANS = {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
+    
+    console.log('Virtual Payment - Session:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userEmail: session?.user?.email
+    })
     
     if (!session?.user?.id) {
+      console.log('Virtual Payment - Unauthorized: No session or user ID')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
