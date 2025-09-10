@@ -450,7 +450,47 @@ export async function POST(request: NextRequest) {
             
             console.log('Envato: Testing', patterns.length, 'patterns on HTML length:', html.length)
             
-            // First, try to find elements-resized URLs directly (handle HTML entities)
+            // First, try to find i3.pngimg.me URLs (the correct pattern used by the API website)
+            const i3PngimgMatches = html.match(/https:\/\/i3\.pngimg\.me\/envato\/[A-Z0-9]+-\d+\.jpg/gi)
+            if (i3PngimgMatches) {
+              console.log('Found', i3PngimgMatches.length, 'i3.pngimg.me URLs')
+              for (const match of i3PngimgMatches) {
+                let imageUrl = match
+                
+                // Decode HTML entities
+                imageUrl = imageUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                
+                console.log('Testing i3.pngimg.me URL:', imageUrl)
+                
+                try {
+                  const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                  if (testResponse.ok) {
+                    console.log('Envato i3.pngimg.me URL verified:', imageUrl)
+                    return imageUrl
+                  }
+                } catch (testError) {
+                  console.log('Envato i3.pngimg.me URL test failed:', imageUrl)
+                }
+              }
+            }
+            
+            // Fallback: try to construct i3.pngimg.me URL directly based on the ID
+            if (id) {
+              const directImageUrl = `https://i3.pngimg.me/envato/${id}-300.jpg`
+              console.log('Testing direct i3.pngimg.me URL:', directImageUrl)
+              
+              try {
+                const testResponse = await fetch(directImageUrl, { method: 'HEAD' })
+                if (testResponse.ok) {
+                  console.log('Envato direct i3.pngimg.me URL verified:', directImageUrl)
+                  return directImageUrl
+                }
+              } catch (testError) {
+                console.log('Envato direct i3.pngimg.me URL test failed:', directImageUrl)
+              }
+            }
+            
+            // Fallback: try to find elements-resized URLs directly (handle HTML entities)
             const elementsResizedMatches = html.match(/https:\/\/elements-resized\.envatousercontent\.com\/elements-cover-images\/[^"'\s]+/gi)
             if (elementsResizedMatches) {
               console.log('Found', elementsResizedMatches.length, 'elements-resized URLs')
