@@ -416,7 +416,7 @@ export async function POST(request: NextRequest) {
                 console.log('i3.pngimg.me URL failed with status:', testResponse.status)
               }
             } catch (testError) {
-              console.log('i3.pngimg.me URL test failed:', testError.message)
+              console.log('i3.pngimg.me URL test failed:', testError instanceof Error ? testError.message : String(testError))
             }
           }
           
