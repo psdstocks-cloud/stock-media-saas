@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -40,22 +39,66 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="max-w-md w-full">
-            <Alert variant="destructive">
-              <AlertDescription>
-                <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
-                <p className="text-sm mb-4">
-                  {this.state.error?.message || 'An unexpected error occurred'}
-                </p>
-                <button
-                  onClick={() => this.setState({ hasError: false, error: undefined })}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm"
-                >
-                  Try again
-                </button>
-              </AlertDescription>
-            </Alert>
+        <div style={{
+          minHeight: '100vh',
+          background: '#f9fafb',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            maxWidth: '400px',
+            width: '100%',
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #fecaca'
+          }}>
+            <div style={{
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              padding: '16px'
+            }}>
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '8px',
+                color: '#dc2626'
+              }}>
+                Something went wrong
+              </h2>
+              <p style={{
+                fontSize: '14px',
+                marginBottom: '16px',
+                color: '#374151'
+              }}>
+                {this.state.error?.message || 'An unexpected error occurred'}
+              </p>
+              <button
+                onClick={() => this.setState({ hasError: false, error: undefined })}
+                style={{
+                  padding: '8px 16px',
+                  background: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#b91c1c'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#dc2626'
+                }}
+              >
+                Try again
+              </button>
+            </div>
           </div>
         </div>
       )
