@@ -169,15 +169,30 @@ export async function POST(request: NextRequest) {
                   if (imageUrl.startsWith('http') && imageUrl.includes('istockphoto')) {
                     console.log('Found potential iStockphoto preview URL:', imageUrl)
                     
-                    // Test if this URL works
+                    // Add iStockphoto parameters for better access
+                    const baseUrl = imageUrl.split('?')[0] // Remove existing params
+                    const enhancedUrl = `${baseUrl}?a=1&b=1&s=612x612&w=0&k=20&c=DgneR7p3NwDMO-4RQ8AMbyaBCG66qEoWMsReZtASThI=`
+                    
+                    // Test if this enhanced URL works
                     try {
-                      const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                      const testResponse = await fetch(enhancedUrl, { method: 'HEAD' })
                       if (testResponse.ok) {
-                        console.log('iStockphoto preview URL verified:', imageUrl)
-                        return imageUrl
+                        console.log('iStockphoto preview URL verified:', enhancedUrl)
+                        return enhancedUrl
                       }
                     } catch (testError) {
-                      console.log('iStockphoto preview URL test failed:', imageUrl)
+                      console.log('iStockphoto enhanced URL test failed:', enhancedUrl)
+                      
+                      // Try the original URL as fallback
+                      try {
+                        const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                        if (testResponse.ok) {
+                          console.log('iStockphoto original URL verified:', imageUrl)
+                          return imageUrl
+                        }
+                      } catch (testError2) {
+                        console.log('iStockphoto original URL test failed:', imageUrl)
+                      }
                     }
                   }
                 }
@@ -206,16 +221,28 @@ export async function POST(request: NextRequest) {
             `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}-1.jpg`
           ]
           
-          // Test each alternative URL
+          // Test each alternative URL with iStockphoto parameters
           for (const altUrl of alternatives) {
             try {
-              const testResponse = await fetch(altUrl, { method: 'HEAD' })
+              // Add iStockphoto parameters
+              const enhancedUrl = `${altUrl}?a=1&b=1&s=612x612&w=0&k=20&c=DgneR7p3NwDMO-4RQ8AMbyaBCG66qEoWMsReZtASThI=`
+              
+              const testResponse = await fetch(enhancedUrl, { method: 'HEAD' })
               if (testResponse.ok) {
-                console.log('iStockphoto fallback URL verified:', altUrl)
-                return altUrl
+                console.log('iStockphoto fallback URL verified:', enhancedUrl)
+                return enhancedUrl
               }
             } catch (error) {
-              // Continue to next URL
+              // Try original URL without parameters
+              try {
+                const testResponse = await fetch(altUrl, { method: 'HEAD' })
+                if (testResponse.ok) {
+                  console.log('iStockphoto fallback URL verified (original):', altUrl)
+                  return altUrl
+                }
+              } catch (error2) {
+                // Continue to next URL
+              }
             }
           }
           
