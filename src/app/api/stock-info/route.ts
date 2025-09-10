@@ -146,9 +146,114 @@ export async function POST(request: NextRequest) {
           return `https://cdn-icons-png.flaticon.com/512/${id}/${id}.png`
         }
         
-        // 123RF: Standard preview format
+        // 123RF: Fetch actual preview from page
         if (siteName === '123rf') {
-          return `https://us.123rf.com/450wm/${id}/${id}.jpg`
+          try {
+            console.log('Fetching 123RF page for preview:', originalUrl)
+            
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            })
+            
+            if (!response.ok) {
+              console.log('Failed to fetch 123RF page:', response.status)
+              throw new Error(`HTTP ${response.status}`)
+            }
+            
+            const html = await response.text()
+            console.log('123RF page fetched, length:', html.length)
+            
+            // Try to extract preview image from various sources
+            const patterns = [
+              // Look for og:image meta tag
+              /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i,
+              // Look for twitter:image meta tag
+              /<meta[^>]*name="twitter:image"[^>]*content="([^"]+)"/i,
+              // Look for JSON-LD structured data
+              /"image":\s*"([^"]+)"/i,
+              // Look for img tags with src containing 123rf
+              /<img[^>]*src="([^"]*123rf[^"]*)"[^>]*>/i,
+              // Look for data attributes
+              /data-src="([^"]*123rf[^"]*)"/i,
+              // Look for background-image in style attributes
+              /background-image:\s*url\(['"]?([^'"]*123rf[^'"]*)['"]?\)/i,
+              // Look for any URL containing 123rf images
+              /https:\/\/[^"'\s]*123rf[^"'\s]*\.(jpg|jpeg|png|webp)/gi
+            ]
+            
+            for (const pattern of patterns) {
+              const matches = html.match(pattern)
+              if (matches) {
+                for (const match of matches) {
+                  let imageUrl = match
+                  
+                  // Clean up the URL
+                  if (imageUrl.includes('"')) {
+                    imageUrl = imageUrl.split('"')[1] || imageUrl.split('"')[0]
+                  }
+                  
+                  // Ensure it's a valid URL
+                  if (imageUrl.startsWith('http') && imageUrl.includes('123rf')) {
+                    console.log('Found potential 123RF preview URL:', imageUrl)
+                    
+                    // Test if this URL works
+                    try {
+                      const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                      if (testResponse.ok) {
+                        console.log('123RF preview URL verified:', imageUrl)
+                        return imageUrl
+                      }
+                    } catch (testError) {
+                      console.log('123RF preview URL test failed:', imageUrl)
+                    }
+                  }
+                }
+              }
+            }
+            
+            console.log('No valid 123RF preview URL found in page')
+            
+          } catch (error) {
+            console.error('Error fetching 123RF preview:', error)
+          }
+          
+          // Fallback: Try alternative URL patterns
+          const alternatives = [
+            `https://us.123rf.com/450wm/${id}/${id}.jpg`,
+            `https://us.123rf.com/450wm/${id}/${id}.jpeg`,
+            `https://us.123rf.com/450wm/${id}/${id}.png`,
+            `https://us.123rf.com/450wm/${id}/${id}.webp`,
+            `https://us.123rf.com/450wm/${id}/${id}.jpg?ver=6`,
+            `https://us.123rf.com/450wm/${id}/${id}.jpg?ver=7`,
+            `https://us.123rf.com/450wm/${id}/${id}.jpg?ver=8`,
+            `https://us.123rf.com/450wm/${id}/${id}.jpg?ver=9`,
+            `https://us.123rf.com/450wm/${id}/${id}.jpg?ver=10`
+          ]
+          
+          // Test each alternative URL
+          for (const altUrl of alternatives) {
+            try {
+              const testResponse = await fetch(altUrl, { method: 'HEAD' })
+              if (testResponse.ok) {
+                console.log('123RF fallback URL verified:', altUrl)
+                return altUrl
+              }
+            } catch (error) {
+              // Continue to next URL
+            }
+          }
+          
+          // Final fallback: Use a branded placeholder
+          const productTitle = originalUrl.split('/').pop()?.replace(/-/g, ' ') || 'Product'
+          const encodedTitle = encodeURIComponent(productTitle)
+          return `https://via.placeholder.com/400x300/ff6b35/ffffff?text=${encodedTitle}&font=inter&font-size=16`
         }
         
         // Vectorstock: Vector preview format
