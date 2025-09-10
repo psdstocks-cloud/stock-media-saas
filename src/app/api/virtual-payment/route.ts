@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { planId, points, price, paymentMethod, simulateFailure } = await request.json()
+    const { planId, points, price, paymentMethod, simulateFailure, testMode } = await request.json()
 
     if (!planId || !points || !price || !paymentMethod) {
       return NextResponse.json({ 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Simulate payment validation
-    const paymentValidation = await validateVirtualPayment(paymentMethod, price, simulateFailure)
+    const paymentValidation = await validateVirtualPayment(paymentMethod, price, simulateFailure, testMode)
     
     if (!paymentValidation.success) {
       return NextResponse.json({ 
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Simulate payment validation based on payment method
-async function validateVirtualPayment(paymentMethod: string, amount: number, simulateFailure: boolean = false) {
+async function validateVirtualPayment(paymentMethod: string, amount: number, simulateFailure: boolean = false, testMode: boolean = false) {
   // Simulate different validation rules for different payment methods
   switch (paymentMethod) {
     case 'credit-card':
@@ -163,9 +163,19 @@ async function validateVirtualPayment(paymentMethod: string, amount: number, sim
   }
 
   // Simulate payment failures based on user setting or random chance
-  const shouldFail = simulateFailure || Math.random() < 0.1
+  const randomChance = Math.random()
+  const shouldFail = testMode ? false : (simulateFailure || randomChance < 0.05) // No random failures in test mode
+  
+  console.log('Payment validation:', {
+    paymentMethod,
+    amount,
+    simulateFailure,
+    randomChance,
+    shouldFail
+  })
   
   if (shouldFail) {
+    console.log('Payment declined by processor (simulated)')
     return { 
       success: false, 
       error: 'Payment was declined by the payment processor' 

@@ -172,7 +172,8 @@ export default function PricingPage() {
           points: plan.points,
           price: plan.price,
           paymentMethod: selectedPaymentMethod,
-          simulateFailure: simulateFailure
+          simulateFailure: simulateFailure,
+          testMode: true // Enable test mode to avoid random failures
         }),
       })
 
