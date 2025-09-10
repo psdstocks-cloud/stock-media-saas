@@ -512,6 +512,47 @@ export async function POST(request: NextRequest) {
             if (response.ok) {
               const html = await response.text()
               
+              // Look for meta itemprop="image" content (most reliable)
+              const metaImageMatch = html.match(/<meta[^>]*itemprop="image"[^>]*content="([^"]+)"/i)
+              if (metaImageMatch) {
+                let imagePath = metaImageMatch[1]
+                // Convert relative path to absolute URL
+                if (imagePath.startsWith('/')) {
+                  imagePath = `https://www.mockupcloud.com${imagePath}`
+                }
+                console.log('Found meta image path:', imagePath)
+                
+                try {
+                  const testResponse = await fetch(imagePath, { method: 'HEAD' })
+                  if (testResponse.ok) {
+                    console.log('Mockupcloud meta image verified:', imagePath)
+                    return imagePath
+                  }
+                } catch (testError) {
+                  console.log('Mockupcloud meta image test failed:', imagePath)
+                }
+              }
+              
+              // Look for any image paths in the page content
+              const imagePathMatches = html.match(/\/uploads\/thumbs\/images\/[^"'\s]+\.jpg/gi)
+              if (imagePathMatches) {
+                console.log('Found', imagePathMatches.length, 'image paths in page')
+                for (const match of imagePathMatches) {
+                  const imageUrl = `https://www.mockupcloud.com${match}`
+                  console.log('Testing image path:', imageUrl)
+                  
+                  try {
+                    const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                    if (testResponse.ok) {
+                      console.log('Mockupcloud image path verified:', imageUrl)
+                      return imageUrl
+                    }
+                  } catch (testError) {
+                    console.log('Mockupcloud image path test failed:', imageUrl)
+                  }
+                }
+              }
+              
               // Look for thumbnail images in the page
               const thumbnailMatches = html.match(/https:\/\/www\.mockupcloud\.com\/uploads\/thumbs\/images\/[^"'\s]+\.jpg/gi)
               if (thumbnailMatches) {
