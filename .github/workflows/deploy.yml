@@ -28,6 +28,8 @@ jobs:
       
     - name: 🏗️ Build Application
       run: npm run build
+      env:
+        DATABASE_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
       
     - name: 🚀 Deploy to Vercel
       uses: amondnet/vercel-action@v25
