@@ -1,10 +1,12 @@
 name: 🚀 Auto Deploy to Vercel
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # Disabled automatic deployment - using manual Vercel deployment instead
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   build-and-deploy:
