@@ -430,6 +430,10 @@ export async function POST(request: NextRequest) {
               /<meta[^>]*name="twitter:image"[^>]*content="([^"]+)"/i,
               // Look for JSON-LD structured data
               /"image":\s*"([^"]+)"/i,
+              // Look for elements-resized.envatousercontent.com URLs in the data
+              /https:\/\/elements-resized\.envatousercontent\.com\/elements-cover-images\/[^"'\s]+/gi,
+              // Look for elements-cover-images URLs
+              /https:\/\/[^"'\s]*elements-cover-images[^"'\s]*(?!.*logo)/gi,
               // Look for product images specifically (not logos)
               /<img[^>]*src="([^"]*elements[^"]*)"[^>]*(?:class="[^"]*product[^"]*"|alt="[^"]*product[^"]*")[^>]*>/i,
               // Look for cover images
@@ -441,14 +445,44 @@ export async function POST(request: NextRequest) {
               // Look for data attributes with product images
               /data-src="([^"]*elements[^"]*)"[^>]*(?:class="[^"]*product[^"]*"|alt="[^"]*product[^"]*")/i,
               // Look for background-image in style attributes
-              /background-image:\s*url\(['"]?([^'"]*elements[^'"]*)['"]?\)/i,
-              // Look for any URL containing elements-cover-images (but not logos)
-              /https:\/\/[^"'\s]*elements-cover-images[^"'\s]*(?!.*logo)/gi
+              /background-image:\s*url\(['"]?([^'"]*elements[^'"]*)['"]?\)/i
             ]
+            
+            console.log('Envato: Testing', patterns.length, 'patterns on HTML length:', html.length)
+            
+            // First, try to find elements-resized URLs directly (handle HTML entities)
+            const elementsResizedMatches = html.match(/https:\/\/elements-resized\.envatousercontent\.com\/elements-cover-images\/[^"'\s]+/gi)
+            if (elementsResizedMatches) {
+              console.log('Found', elementsResizedMatches.length, 'elements-resized URLs')
+              for (const match of elementsResizedMatches) {
+                let imageUrl = match
+                
+                // Decode HTML entities
+                imageUrl = imageUrl.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                
+                // Ensure elements-resized URLs have proper parameters
+                if (!imageUrl.includes('w=')) {
+                  imageUrl += '&w=400&h=300&fit=crop&q=85&format=jpeg'
+                }
+                
+                console.log('Testing elements-resized URL:', imageUrl)
+                
+                try {
+                  const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                  if (testResponse.ok) {
+                    console.log('Envato elements-resized URL verified:', imageUrl)
+                    return imageUrl
+                  }
+                } catch (testError) {
+                  console.log('Envato elements-resized URL test failed:', imageUrl)
+                }
+              }
+            }
             
             for (const pattern of patterns) {
               const matches = html.match(pattern)
               if (matches) {
+                console.log('Pattern matched:', pattern.toString(), 'Found', matches.length, 'matches')
                 for (const match of matches) {
                   let imageUrl = match
                   
@@ -458,13 +492,19 @@ export async function POST(request: NextRequest) {
                   }
                   
                   // Ensure it's a valid URL and not a logo
-                  if (imageUrl.startsWith('http') && imageUrl.includes('elements') && 
+                  if (imageUrl.startsWith('http') && 
+                      (imageUrl.includes('elements') || imageUrl.includes('envato')) && 
                       !imageUrl.includes('logo') && !imageUrl.includes('Logo') &&
                       !imageUrl.includes('envato-logo') && !imageUrl.includes('EnvatoLogo')) {
                     
                     // Add proper parameters if it's an imgix URL
                     if (imageUrl.includes('imgix.net') && !imageUrl.includes('?')) {
                       imageUrl += '?w=400&h=300&fit=crop&q=85&format=jpeg'
+                    }
+                    
+                    // Ensure elements-resized URLs have proper parameters
+                    if (imageUrl.includes('elements-resized.envatousercontent.com') && !imageUrl.includes('w=')) {
+                      imageUrl += '&w=400&h=300&fit=crop&q=85&format=jpeg'
                     }
                     
                     console.log('Found potential Envato preview URL:', imageUrl)
