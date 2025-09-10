@@ -1423,6 +1423,53 @@ export default function BrowsePage() {
                       <img
                         src={stockInfo.imageUrl}
                         alt={stockInfo.title}
+                        onError={(e) => {
+                          console.log('Image failed to load:', stockInfo.imageUrl)
+                          // Try alternative preview URL formats
+                          const target = e.target as HTMLImageElement
+                          const site = stockInfo.site.toLowerCase()
+                          const id = stockInfo.id
+                          
+                          if (site === 'dreamstime') {
+                            // Try alternative Dreamstime formats
+                            const alternatives = [
+                              `https://thumbs.dreamstime.com/b/${id}-${id}.jpg`,
+                              `https://thumbs.dreamstime.com/z/${id}.jpg`,
+                              `https://thumbs.dreamstime.com/t/${id}.jpg`
+                            ]
+                            
+                            let currentIndex = 0
+                            const tryNext = () => {
+                              if (currentIndex < alternatives.length) {
+                                target.src = alternatives[currentIndex]
+                                currentIndex++
+                              } else {
+                                // If all alternatives fail, show placeholder
+                                target.src = `data:image/svg+xml;base64,${btoa(`
+                                  <svg width="200" height="150" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="150" fill="#f3f4f6"/>
+                                    <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280" font-family="Arial, sans-serif" font-size="14">
+                                      Preview not available
+                                    </text>
+                                  </svg>
+                                `)}`
+                              }
+                            }
+                            
+                            target.onerror = tryNext
+                            tryNext()
+                          } else {
+                            // For other sites, show placeholder
+                            target.src = `data:image/svg+xml;base64,${btoa(`
+                              <svg width="200" height="150" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="200" height="150" fill="#f3f4f6"/>
+                                <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280" font-family="Arial, sans-serif" font-size="14">
+                                  Preview not available
+                                </text>
+                              </svg>
+                            `)}`
+                          }
+                        }}
                         style={{
                           width: '100%',
                           height: '100%',
