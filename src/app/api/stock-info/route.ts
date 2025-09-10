@@ -495,6 +495,75 @@ export async function POST(request: NextRequest) {
           return `https://via.placeholder.com/400x300/667eea/ffffff?text=${encodedTitle}&font=inter&font-size=16`
         }
         
+        // Mockupcloud: Use www.mockupcloud.com/uploads/thumbs/images/ pattern (from API website)
+        if (siteName === 'mockupcloud') {
+          console.log('Generating Mockupcloud preview for ID:', id)
+          
+          // Primary approach: Try to fetch the page and extract thumbnail URLs
+          try {
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9'
+              }
+            })
+            
+            if (response.ok) {
+              const html = await response.text()
+              
+              // Look for thumbnail images in the page
+              const thumbnailMatches = html.match(/https:\/\/www\.mockupcloud\.com\/uploads\/thumbs\/images\/[^"'\s]+\.jpg/gi)
+              if (thumbnailMatches) {
+                console.log('Found', thumbnailMatches.length, 'Mockupcloud thumbnail URLs')
+                for (const match of thumbnailMatches) {
+                  const imageUrl = match
+                  console.log('Testing Mockupcloud thumbnail URL:', imageUrl)
+                  
+                  try {
+                    const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                    if (testResponse.ok) {
+                      console.log('Mockupcloud thumbnail URL verified:', imageUrl)
+                      return imageUrl
+                    }
+                  } catch (testError) {
+                    console.log('Mockupcloud thumbnail URL test failed:', imageUrl)
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.log('Failed to fetch Mockupcloud page:', error instanceof Error ? error.message : String(error))
+          }
+          
+          // Fallback: Try different URL patterns based on the working API website pattern
+          const patterns = [
+            `https://www.mockupcloud.com/uploads/thumbs/images/2024/04/21/${id}-360x240.jpg`,
+            `https://www.mockupcloud.com/uploads/thumbs/images/2024/03/05/${id}-360x240.jpg`,
+            `https://www.mockupcloud.com/uploads/thumbs/images/2024/04/21/cover_copy_2-360x240.jpg`,
+            `https://www.mockupcloud.com/uploads/thumbs/images/2024/03/05/Clarity_Thumbnail_Text-360x240.jpg`
+          ]
+          
+          for (const pattern of patterns) {
+            console.log('Testing Mockupcloud pattern:', pattern)
+            
+            try {
+              const testResponse = await fetch(pattern, { method: 'HEAD' })
+              if (testResponse.ok) {
+                console.log('Mockupcloud pattern verified:', pattern)
+                return pattern
+              }
+            } catch (testError) {
+              console.log('Mockupcloud pattern test failed:', pattern)
+            }
+          }
+          
+          // Final fallback: branded placeholder
+          const productTitle = originalUrl.split('/').pop()?.replace(/-/g, ' ') || 'Mockupcloud Product'
+          const encodedTitle = encodeURIComponent(productTitle)
+          return `https://via.placeholder.com/400x300/ff6b6b/ffffff?text=${encodedTitle}&font=inter&font-size=16`
+        }
+        
         // Default fallback
         return `https://via.placeholder.com/300x200?text=Preview+Not+Available`
       }
