@@ -85,29 +85,75 @@ export async function POST(request: NextRequest) {
           return alternatives[0] // Return first option as fallback
         }
         
-        // Adobe Stock: Multiple preview formats
+        // Adobe Stock: Use correct as1.ftcdn.net pattern (from API website)
         if (siteName === 'adobestock' || siteName === 'adobe') {
-          const alternatives = []
+          console.log('Generating Adobe Stock preview for ID:', id)
           
-          if (id.length >= 4) {
-            alternatives.push(`https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_1.jpg`)
-            alternatives.push(`https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_2.jpg`)
-            alternatives.push(`https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_3.jpg`)
-          }
-          
-          alternatives.push(`https://as1.ftcdn.net/v2/jpg/00/00/${id}_1.jpg`)
-          alternatives.push(`https://as1.ftcdn.net/v2/jpg/00/00/${id}_2.jpg`)
-          alternatives.push(`https://as1.ftcdn.net/v2/jpg/00/00/${id}_3.jpg`)
-          
-          // Test the first URL
+          // Primary approach: Try to fetch the page and extract preview URLs
           try {
-            const testResponse = await fetch(alternatives[0], { method: 'HEAD' })
-            if (testResponse.ok) return alternatives[0]
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9'
+              }
+            })
+            
+            if (response.ok) {
+              const html = await response.text()
+              
+              // Look for as1.ftcdn.net URLs in the page
+              const ftcdnMatches = html.match(/https:\/\/as1\.ftcdn\.net\/v2\/jpg\/[^"'\s]+\.jpg/gi)
+              if (ftcdnMatches) {
+                console.log('Found', ftcdnMatches.length, 'Adobe Stock ftcdn URLs')
+                for (const match of ftcdnMatches) {
+                  const imageUrl = match
+                  console.log('Testing Adobe Stock ftcdn URL:', imageUrl)
+                  
+                  try {
+                    const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                    if (testResponse.ok) {
+                      console.log('Adobe Stock ftcdn URL verified:', imageUrl)
+                      return imageUrl
+                    }
+                  } catch (testError) {
+                    console.log('Adobe Stock ftcdn URL test failed:', imageUrl)
+                  }
+                }
+              }
+            }
           } catch (error) {
-            console.log('Adobe Stock primary preview failed, using fallback')
+            console.log('Failed to fetch Adobe Stock page:', error instanceof Error ? error.message : String(error))
           }
           
-          return alternatives[0] // Return first option as fallback
+          // Fallback: Try different URL patterns based on the working API website pattern
+          const patterns = [
+            `https://as1.ftcdn.net/v2/jpg/15/92/87/42/500_F_${id}_qfTs3Z3Rv4RLU0r6jVRLoInkEGCw4w12.jpg`,
+            `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id.slice(4, 6)}/${id.slice(6, 8)}/500_F_${id}_qfTs3Z3Rv4RLU0r6jVRLoInkEGCw4w12.jpg`,
+            `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id.slice(4, 6)}/${id.slice(6, 8)}/500_F_${id}_qfTs3Z3Rv4RLU0r6jVRLoInkEGCw4w12.jpg`,
+            `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_1.jpg`,
+            `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_2.jpg`,
+            `https://as1.ftcdn.net/v2/jpg/${id.slice(0, 2)}/${id.slice(2, 4)}/${id}_3.jpg`
+          ]
+          
+          for (const pattern of patterns) {
+            console.log('Testing Adobe Stock pattern:', pattern)
+            
+            try {
+              const testResponse = await fetch(pattern, { method: 'HEAD' })
+              if (testResponse.ok) {
+                console.log('Adobe Stock pattern verified:', pattern)
+                return pattern
+              }
+            } catch (testError) {
+              console.log('Adobe Stock pattern test failed:', pattern)
+            }
+          }
+          
+          // Final fallback: branded placeholder
+          const productTitle = originalUrl.split('/').pop()?.replace(/-/g, ' ') || 'Adobe Stock Product'
+          const encodedTitle = encodeURIComponent(productTitle)
+          return `https://via.placeholder.com/400x300/ff6b6b/ffffff?text=${encodedTitle}&font=inter&font-size=16`
         }
         
         // iStock/Getty Images: Fetch actual preview from page
