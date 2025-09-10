@@ -110,25 +110,120 @@ export async function POST(request: NextRequest) {
           return alternatives[0] // Return first option as fallback
         }
         
-        // iStock/Getty Images: Multiple preview formats
+        // iStock/Getty Images: Fetch actual preview from page
         if (siteName === 'istockphoto' || siteName === 'istock' || siteName === 'gettyimages') {
-          const alternatives = [
-            `https://media.istockphoto.com/id/${id}/photo/stock-photo.jpg`,
-            `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}.jpg`,
-            `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}-1.jpg`,
-            `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}-2.jpg`,
-            `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}-3.jpg`
-          ]
-          
-          // Test the first URL
           try {
-            const testResponse = await fetch(alternatives[0], { method: 'HEAD' })
-            if (testResponse.ok) return alternatives[0]
+            console.log('Fetching iStockphoto page for preview:', originalUrl)
+            
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            })
+            
+            if (!response.ok) {
+              console.log('Failed to fetch iStockphoto page:', response.status)
+              throw new Error(`HTTP ${response.status}`)
+            }
+            
+            const html = await response.text()
+            console.log('iStockphoto page fetched, length:', html.length)
+            
+            // Try to extract preview image from various sources
+            const patterns = [
+              // Look for og:image meta tag
+              /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i,
+              // Look for twitter:image meta tag
+              /<meta[^>]*name="twitter:image"[^>]*content="([^"]+)"/i,
+              // Look for JSON-LD structured data
+              /"image":\s*"([^"]+)"/i,
+              // Look for img tags with src containing istockphoto
+              /<img[^>]*src="([^"]*istockphoto[^"]*)"[^>]*>/i,
+              // Look for data attributes
+              /data-src="([^"]*istockphoto[^"]*)"/i,
+              // Look for background-image in style attributes
+              /background-image:\s*url\(['"]?([^'"]*istockphoto[^'"]*)['"]?\)/i,
+              // Look for any URL containing istockphoto images
+              /https:\/\/[^"'\s]*istockphoto[^"'\s]*\.(jpg|jpeg|png|webp)/gi,
+              // Look for media.istockphoto.com URLs specifically
+              /https:\/\/media\.istockphoto\.com\/[^"'\s]*\.(jpg|jpeg|png|webp)/gi
+            ]
+            
+            for (const pattern of patterns) {
+              const matches = html.match(pattern)
+              if (matches) {
+                for (const match of matches) {
+                  let imageUrl = match
+                  
+                  // Clean up the URL
+                  if (imageUrl.includes('"')) {
+                    imageUrl = imageUrl.split('"')[1] || imageUrl.split('"')[0]
+                  }
+                  
+                  // Ensure it's a valid URL
+                  if (imageUrl.startsWith('http') && imageUrl.includes('istockphoto')) {
+                    console.log('Found potential iStockphoto preview URL:', imageUrl)
+                    
+                    // Test if this URL works
+                    try {
+                      const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                      if (testResponse.ok) {
+                        console.log('iStockphoto preview URL verified:', imageUrl)
+                        return imageUrl
+                      }
+                    } catch (testError) {
+                      console.log('iStockphoto preview URL test failed:', imageUrl)
+                    }
+                  }
+                }
+              }
+            }
+            
+            console.log('No valid iStockphoto preview URL found in page')
+            
           } catch (error) {
-            console.log('iStock primary preview failed, using fallback')
+            console.error('Error fetching iStockphoto preview:', error)
           }
           
-          return alternatives[0] // Return first option as fallback
+          // Fallback: Try alternative URL patterns based on the URL structure
+          const urlParts = originalUrl.split('/')
+          const lastPart = urlParts[urlParts.length - 1]
+          const productName = lastPart.replace(/^gm\d+-/, '').replace(/-\d+$/, '')
+          
+          const alternatives = [
+            `https://media.istockphoto.com/id/${id}/vector/${productName}.jpg`,
+            `https://media.istockphoto.com/id/${id}/photo/${productName}.jpg`,
+            `https://media.istockphoto.com/id/${id}/vector/stock-vector.jpg`,
+            `https://media.istockphoto.com/id/${id}/photo/stock-photo.jpg`,
+            `https://media.istockphoto.com/id/${id}/vector/stock-vector-${id}.jpg`,
+            `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}.jpg`,
+            `https://media.istockphoto.com/id/${id}/vector/stock-vector-${id}-1.jpg`,
+            `https://media.istockphoto.com/id/${id}/photo/stock-photo-${id}-1.jpg`
+          ]
+          
+          // Test each alternative URL
+          for (const altUrl of alternatives) {
+            try {
+              const testResponse = await fetch(altUrl, { method: 'HEAD' })
+              if (testResponse.ok) {
+                console.log('iStockphoto fallback URL verified:', altUrl)
+                return altUrl
+              }
+            } catch (error) {
+              // Continue to next URL
+            }
+          }
+          
+          // Final fallback: Use a branded placeholder with better formatting
+          const productTitle = originalUrl.split('/').pop()?.replace(/-/g, ' ') || 'Product'
+          const shortTitle = productTitle.length > 30 ? productTitle.substring(0, 30) + '...' : productTitle
+          const encodedTitle = encodeURIComponent(shortTitle)
+          return `https://via.placeholder.com/400x300/00a651/ffffff?text=iStock+Photo%0A${encodedTitle}&font=inter&font-size=14`
         }
         
         // Depositphotos: Multiple preview formats
