@@ -52,6 +52,11 @@ interface OrderResponse {
     cost: number
     createdAt: string
     downloadUrl?: string
+    taskId?: string
+    stockItemId?: string
+    stockSite?: {
+      name: string
+    }
   }
   error?: string
   currentPoints?: number
@@ -1435,7 +1440,7 @@ export default function BrowsePage() {
                         marginBottom: '8px',
                         lineHeight: '1.3'
                       }}>
-                        {stockInfo.title}
+                        {stockInfo.site.charAt(0).toUpperCase() + stockInfo.site.slice(1)}-{stockInfo.id}
                       </h4>
                       
                       <div style={{
@@ -1460,7 +1465,7 @@ export default function BrowsePage() {
                         </div>
                         
                         <button
-                          onClick={() => copyToClipboard(stockInfo.url)}
+                          onClick={() => window.open(stockInfo.url, '_blank')}
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1476,8 +1481,8 @@ export default function BrowsePage() {
                             transition: 'all 0.2s ease'
                           }}
                         >
-                          {copied ? <Check size={14} /> : <Copy size={14} />}
-                          {copied ? 'Copied!' : 'Copy URL'}
+                          <ExternalLink size={14} />
+                          Visit
                         </button>
                       </div>
 
@@ -1637,11 +1642,18 @@ export default function BrowsePage() {
                             Order Placed Successfully!
                           </h3>
                           <p style={{
-                            margin: '0',
+                            margin: '0 0 4px 0',
                             fontSize: '14px',
                             color: '#0369a1'
                           }}>
                             File ID: {stockInfo?.id || 'N/A'}
+                          </p>
+                          <p style={{
+                            margin: '0',
+                            fontSize: '12px',
+                            color: '#64748b'
+                          }}>
+                            Debug ID: {currentOrder?.taskId || 'N/A'}
                           </p>
                         </div>
                       </div>
