@@ -16,7 +16,7 @@ import {
   Music,
   FileText,
   ExternalLink,
-  Grid3x3,
+  Grid,
   List
 } from 'lucide-react'
 
@@ -589,7 +589,7 @@ export default function OrdersPage() {
                   fontSize: '14px'
                 }}
               >
-                <Grid3x3 style={{ width: '16px', height: '16px' }} />
+                <Grid style={{ width: '16px', height: '16px' }} />
                 Grid
               </button>
               <button
