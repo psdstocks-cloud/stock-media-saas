@@ -90,8 +90,32 @@ export class OrderProcessor {
         
         const statusResponse = await api.checkOrderStatus(taskId)
         
-        if (statusResponse.success && statusResponse.status === 'ready' && statusResponse.downloadLink) {
+        console.log('Order status check response:', {
+          orderId,
+          taskId,
+          success: statusResponse.success,
+          status: statusResponse.status,
+          error: statusResponse.error,
+          hasDownloadLink: !!statusResponse.downloadLink,
+          message: statusResponse.message,
+          fullResponse: statusResponse
+        })
+        
+        // Check if order is ready with multiple possible status values
+        const isReady = statusResponse.success && (
+          statusResponse.status === 'ready' || 
+          statusResponse.status === 'completed' ||
+          statusResponse.status === 'finished' ||
+          !!statusResponse.downloadLink
+        )
+        
+        if (isReady && statusResponse.downloadLink) {
           // Order completed successfully
+          console.log('Order completed successfully:', {
+            orderId,
+            downloadLink: statusResponse.downloadLink,
+            fileName: statusResponse.fileName
+          })
           await this.updateOrderStatus(
             orderId,
             'COMPLETED',
@@ -103,6 +127,11 @@ export class OrderProcessor {
         }
         
         if (statusResponse.error) {
+          console.log('Order failed with error:', {
+            orderId,
+            error: statusResponse.error,
+            message: statusResponse.message
+          })
           throw new Error(statusResponse.message || 'Order processing failed')
         }
         
@@ -110,6 +139,66 @@ export class OrderProcessor {
         const baseProgress = Math.min(80, (attempts / maxAttempts) * 100)
         const timeProgress = Math.min(15, (elapsed / 120) * 15) // Additional 15% based on time
         const progress = Math.min(95, baseProgress + timeProgress)
+        
+        // If we're at max attempts or 95% progress, check if order is actually complete
+        if (attempts >= maxAttempts || progress >= 95) {
+          // Final check - if order is ready, complete it
+          const isReady = statusResponse.success && (
+            statusResponse.status === 'ready' || 
+            statusResponse.status === 'completed' ||
+            statusResponse.status === 'finished' ||
+            !!statusResponse.downloadLink
+          )
+          
+          if (isReady) {
+            // Try to get download link if not provided
+            let downloadLink = statusResponse.downloadLink
+            let fileName = statusResponse.fileName
+            
+            if (!downloadLink) {
+              console.log('Status shows ready but no download link, trying to generate one...')
+              try {
+                const downloadResponse = await api.generateDownloadLink(taskId)
+                console.log('Download link generation response:', downloadResponse)
+                
+                if (downloadResponse.success && downloadResponse.downloadLink) {
+                  downloadLink = downloadResponse.downloadLink
+                  fileName = downloadResponse.fileName || fileName
+                }
+              } catch (error) {
+                console.log('Failed to generate download link:', error)
+              }
+            }
+            
+            if (downloadLink) {
+              console.log('Order completed at final check:', {
+                orderId,
+                downloadLink,
+                fileName
+              })
+              await this.updateOrderStatus(
+                orderId,
+                'COMPLETED',
+                'Download ready!',
+                downloadLink,
+                fileName
+              )
+              return
+            }
+          }
+          
+          // If not ready and we've reached max attempts, fail the order
+          if (attempts >= maxAttempts) {
+            console.log('Order processing timeout:', {
+              orderId,
+              attempts,
+              maxAttempts,
+              progress,
+              statusResponse
+            })
+            throw new Error('Order processing timeout - file not ready after maximum attempts')
+          }
+        }
         
         await this.updateOrderStatus(
           orderId,

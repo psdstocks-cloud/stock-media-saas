@@ -26,7 +26,7 @@ export interface NehtwOrderResponse {
 
 export interface NehtwOrderStatus {
   success: boolean
-  status?: 'processing' | 'ready'
+  status?: 'processing' | 'ready' | 'completed' | 'finished'
   downloadLink?: string
   fileName?: string
   linkType?: string
