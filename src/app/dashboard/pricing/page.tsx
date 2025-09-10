@@ -185,7 +185,10 @@ export default function PricingPage() {
       } else {
         // Handle API error response
         setPaymentStep('error')
-        setPaymentError(data.error || 'Payment processing failed. Please try again.')
+        const errorMessage = data.error || 'Payment processing failed. Please try again.'
+        const errorDetails = data.details ? ` (${data.details})` : ''
+        setPaymentError(`${errorMessage}${errorDetails}`)
+        console.error('Payment API error:', data)
       }
     } catch (error) {
       console.error('Payment error:', error)

@@ -78,6 +78,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Add points to user account
+    console.log('Adding points to user account:', {
+      userId: session.user.id,
+      points,
+      planName: plan.name,
+      paymentMethod
+    })
+    
     await PointsManager.addPoints(
       session.user.id,
       points,
@@ -85,6 +92,8 @@ export async function POST(request: NextRequest) {
       `Virtual payment: ${plan.name} - ${points} points via ${paymentMethod}`,
       `virtual-${Date.now()}`
     )
+    
+    console.log('Points added successfully')
 
     // Log the virtual payment for testing purposes
     console.log(`Virtual Payment Processed:`, {
@@ -105,8 +114,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Virtual payment error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
     return NextResponse.json({ 
-      error: 'Payment processing failed' 
+      error: 'Payment processing failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }
