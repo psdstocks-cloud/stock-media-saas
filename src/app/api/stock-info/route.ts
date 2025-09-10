@@ -383,9 +383,59 @@ export async function POST(request: NextRequest) {
           return `https://cdn3.vectorstock.com/i/1000x1000/${id}/vector-stock.jpg`
         }
         
-        // Alamy: Standard preview format
+        // Alamy: Use the correct h7.alamy.com pattern (from API website)
         if (siteName === 'alamy') {
-          return `https://c8.alamy.com/comp/${id}/stock-photo.jpg`
+          console.log('Generating Alamy preview for ID:', id)
+          
+          // Try to fetch the Alamy page to get the actual image ID
+          try {
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9'
+              }
+            })
+            
+            if (response.ok) {
+              const html = await response.text()
+              
+              // Look for the image ID in the JSON data (e.g., "ref":"2K58N49")
+              const imageIdMatch = html.match(/"ref":"([A-Z0-9]+)"/i)
+              if (imageIdMatch) {
+                const imageId = imageIdMatch[1]
+                console.log('Found Alamy image ID:', imageId)
+                
+                // Try different h7.alamy.com patterns
+                const patterns = [
+                  `https://h7.alamy.com/thumbs/${imageId}/the-fourth-edition-of-rand-mcnallys-first-atlas-dated-1878-${imageId}.jpg`,
+                  `https://h7.alamy.com/thumbs/${imageId}/stock-photo-${imageId}.jpg`,
+                  `https://h7.alamy.com/thumbs/${imageId}/the-image-${imageId}.jpg`,
+                  `https://h7.alamy.com/thumbs/${imageId}/image-${imageId}.jpg`,
+                  `https://h7.alamy.com/thumbs/${imageId}/${imageId}.jpg`
+                ]
+                
+                for (const pattern of patterns) {
+                  try {
+                    const testResponse = await fetch(pattern, { method: 'HEAD' })
+                    if (testResponse.ok) {
+                      console.log('Alamy h7.alamy.com URL verified:', pattern)
+                      return pattern
+                    }
+                  } catch (testError) {
+                    // Continue to next pattern
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.log('Failed to fetch Alamy page:', error)
+          }
+          
+          // Fallback: Try the old c8.alamy.com pattern
+          const fallbackUrl = `https://c8.alamy.com/comp/${id}/stock-photo.jpg`
+          console.log('Using Alamy fallback URL:', fallbackUrl)
+          return fallbackUrl
         }
         
         // Storyblocks: Video/Image preview format
