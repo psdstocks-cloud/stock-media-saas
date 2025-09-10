@@ -87,12 +87,15 @@ export default function BrowsePage() {
   const [downloadUrl, setDownloadUrl] = useState<string>('')
   const [processingTime, setProcessingTime] = useState<number>(0)
   const [estimatedTime, setEstimatedTime] = useState<number>(0)
+  const [currentProgress, setCurrentProgress] = useState<number>(0)
+  const [remainingTime, setRemainingTime] = useState<number>(0)
   const [existingOrder, setExistingOrder] = useState<any>(null)
   const [copied, setCopied] = useState(false)
   const [orderProgress, setOrderProgress] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredSites, setFilteredSites] = useState<SupportedSite[]>([])
   const [eventSource, setEventSource] = useState<EventSource | null>(null)
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestData, setRequestData] = useState({
     siteName: '',
@@ -294,12 +297,14 @@ export default function BrowsePage() {
           setEventSource(null)
         } else if (update.status === 'PROCESSING') {
           // Update progress and calculate remaining time
-          const currentProgress = update.progress || 0
-          const currentProcessingTime = Math.round((currentProgress / 100) * estimatedTime)
-          const remainingTime = Math.max(0, estimatedTime - currentProcessingTime)
+          const progress = update.progress || 0
+          const currentProcessingTime = Math.round((progress / 100) * estimatedTime)
+          const remaining = Math.max(0, estimatedTime - currentProcessingTime)
           
+          setCurrentProgress(progress)
           setProcessingTime(currentProcessingTime)
-          setOrderProgress(`Processing... ${currentProgress}% complete`)
+          setRemainingTime(remaining)
+          setOrderProgress(`Processing... ${progress}% complete`)
         } else {
           // Default processing message
           setOrderProgress(update.message || 'Processing your order...')
@@ -326,6 +331,31 @@ export default function BrowsePage() {
       }
     }
   }, [eventSource])
+
+  // Timer effect for real-time countdown
+  useEffect(() => {
+    if (orderStatus === 'PROCESSING' && remainingTime > 0) {
+      const interval = setInterval(() => {
+        setRemainingTime(prev => {
+          if (prev <= 1) {
+            clearInterval(interval)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      
+      setTimerInterval(interval)
+      
+      return () => {
+        clearInterval(interval)
+        setTimerInterval(null)
+      }
+    } else if (timerInterval) {
+      clearInterval(timerInterval)
+      setTimerInterval(null)
+    }
+  }, [orderStatus, remainingTime])
 
   const handlePlaceOrder = async () => {
     if (!stockInfo || !session?.user?.id) return
@@ -368,6 +398,8 @@ export default function BrowsePage() {
         setOrderStatus('PENDING')
         setProcessingTime(0)
         setEstimatedTime(90) // 1.5 minutes estimated time (optimized)
+        setCurrentProgress(0)
+        setRemainingTime(90)
         setOrderProgress('Processing your order...')
         
         // Start real-time order monitoring
@@ -1635,13 +1667,6 @@ export default function BrowsePage() {
                             Status: {orderStatus || 'PENDING'}
                           </span>
                         </div>
-                        <p style={{
-                          margin: '0 0 8px 0',
-                          fontSize: '13px',
-                          color: '#0369a1'
-                        }}>
-                          {orderProgress || 'Processing your order...'}
-                        </p>
                         {orderStatus === 'READY' && downloadUrl ? (
                           <div style={{
                             display: 'flex',
@@ -1774,7 +1799,7 @@ export default function BrowsePage() {
                                 height: '100%',
                                 backgroundColor: '#0ea5e9',
                                 borderRadius: '2px',
-                                width: `${Math.min(100, Math.max(0, (processingTime / estimatedTime) * 100))}%`,
+                                width: `${Math.min(100, Math.max(0, currentProgress))}%`,
                                 transition: 'width 0.3s ease'
                               }} />
                             </div>
@@ -1785,8 +1810,8 @@ export default function BrowsePage() {
                               justifyContent: 'space-between',
                               width: '100%'
                             }}>
-                              <span>{Math.round((processingTime / estimatedTime) * 100)}% complete</span>
-                              <span>{Math.max(0, estimatedTime - processingTime)}s remaining</span>
+                              <span>{currentProgress}% complete</span>
+                              <span>{remainingTime}s remaining</span>
                             </div>
                           </div>
                         )}
