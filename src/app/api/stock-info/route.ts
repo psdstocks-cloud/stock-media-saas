@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate preview image based on site and ID with fallbacks
-    const generatePreviewImage = (site: string, id: string): string => {
+    const generatePreviewImage = async (site: string, id: string, originalUrl: string): Promise<string> => {
       const siteName = site.toLowerCase()
       
       // Helper function to get the best preview URL for a site
-      const getPreviewUrl = (site: string, id: string): string => {
+      const getPreviewUrl = async (site: string, id: string, originalUrl: string): Promise<string> => {
         const siteName = site.toLowerCase()
         
         // Dreamstime: Try multiple formats
@@ -105,14 +105,38 @@ export async function POST(request: NextRequest) {
           return `https://static.vecteezy.com/system/resources/thumbnails/${id}/vector-stock.jpg`
         }
         
+        // Envato Elements: Fetch actual image ID from page
+        if (siteName === 'envato') {
+          try {
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+              }
+            })
+            const html = await response.text()
+            
+            // Extract the actual image ID from the page content
+            const imageIdMatch = html.match(/elements-cover-images\/([a-f0-9-]{36})/)
+            if (imageIdMatch) {
+              const actualImageId = imageIdMatch[1]
+              return `https://elements-resized.envatousercontent.com/elements-cover-images/${actualImageId}?w=400&h=300&cf_fit=crop&q=85&format=jpeg`
+            }
+          } catch (error) {
+            console.error('Error fetching Envato Elements page:', error)
+          }
+          
+          // Fallback to placeholder if we can't fetch the real ID
+          return `https://elements-resized.envatousercontent.com/elements-cover-images/placeholder?w=400&h=300&cf_fit=crop&q=85&format=jpeg`
+        }
+        
         // Default fallback
         return `https://via.placeholder.com/300x200?text=Preview+Not+Available`
       }
       
-      return getPreviewUrl(site, id)
+      return await getPreviewUrl(site, id, originalUrl)
     }
 
-    const previewImageUrl = generatePreviewImage(site, id)
+    const previewImageUrl = await generatePreviewImage(site, id, url)
 
     return NextResponse.json({
       success: true,

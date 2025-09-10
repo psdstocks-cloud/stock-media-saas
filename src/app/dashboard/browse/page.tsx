@@ -1458,6 +1458,61 @@ export default function BrowsePage() {
                             
                             target.onerror = tryNext
                             tryNext()
+                          } else if (site === 'envato') {
+                            // Try alternative Envato Elements formats
+                            const alternatives = [
+                              `https://elements-cover-images-0.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-1.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-2.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-3.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-4.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-5.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-6.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-7.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-8.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-9.imgix.net/${id}/preview.jpg`,
+                              `https://elements-cover-images-0.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-1.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-2.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-3.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-4.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-5.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-6.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-7.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-8.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-9.imgix.net/${id}/cover.jpg`,
+                              `https://elements-cover-images-0.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-1.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-2.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-3.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-4.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-5.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-6.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-7.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-8.imgix.net/${id}/thumbnail.jpg`,
+                              `https://elements-cover-images-9.imgix.net/${id}/thumbnail.jpg`
+                            ]
+                            
+                            let currentIndex = 0
+                            const tryNext = () => {
+                              if (currentIndex < alternatives.length) {
+                                target.src = alternatives[currentIndex]
+                                currentIndex++
+                              } else {
+                                // If all alternatives fail, show placeholder
+                                target.src = `data:image/svg+xml;base64,${btoa(`
+                                  <svg width="200" height="150" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="150" fill="#f3f4f6"/>
+                                    <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#6b7280" font-family="Arial, sans-serif" font-size="14">
+                                      Preview not available
+                                    </text>
+                                  </svg>
+                                `)}`
+                              }
+                            }
+                            
+                            target.onerror = tryNext
+                            tryNext()
                           } else {
                             // For other sites, show placeholder
                             target.src = `data:image/svg+xml;base64,${btoa(`
