@@ -171,11 +171,172 @@ export async function POST(request: NextRequest) {
           return `https://static.vecteezy.com/system/resources/thumbnails/${id}/vector-stock.jpg`
         }
         
-        // Envato Elements: Use a more reliable approach
+        // Envato Elements: Extract actual preview from page
         if (siteName === 'envato') {
-          // For now, use a branded placeholder that looks professional
-          // In production, you might want to implement a more sophisticated preview system
-          return `https://via.placeholder.com/400x300/667eea/ffffff?text=Envato+Elements&font=inter`
+          try {
+            console.log('Fetching Envato Elements page for preview:', originalUrl)
+            
+            const response = await fetch(originalUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            })
+            
+            if (!response.ok) {
+              console.log('Failed to fetch Envato page:', response.status)
+              throw new Error(`HTTP ${response.status}`)
+            }
+            
+            const html = await response.text()
+            console.log('Envato page fetched, length:', html.length)
+            
+            // Try to extract preview image from various sources
+            const patterns = [
+              // Look for og:image meta tag (most reliable)
+              /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i,
+              // Look for twitter:image meta tag
+              /<meta[^>]*name="twitter:image"[^>]*content="([^"]+)"/i,
+              // Look for JSON-LD structured data
+              /"image":\s*"([^"]+)"/i,
+              // Look for product images specifically (not logos)
+              /<img[^>]*src="([^"]*elements[^"]*)"[^>]*(?:class="[^"]*product[^"]*"|alt="[^"]*product[^"]*")[^>]*>/i,
+              // Look for cover images
+              /<img[^>]*src="([^"]*cover[^"]*)"[^>]*>/i,
+              // Look for preview images
+              /<img[^>]*src="([^"]*preview[^"]*)"[^>]*>/i,
+              // Look for thumbnail images
+              /<img[^>]*src="([^"]*thumbnail[^"]*)"[^>]*>/i,
+              // Look for data attributes with product images
+              /data-src="([^"]*elements[^"]*)"[^>]*(?:class="[^"]*product[^"]*"|alt="[^"]*product[^"]*")/i,
+              // Look for background-image in style attributes
+              /background-image:\s*url\(['"]?([^'"]*elements[^'"]*)['"]?\)/i,
+              // Look for any URL containing elements-cover-images (but not logos)
+              /https:\/\/[^"'\s]*elements-cover-images[^"'\s]*(?!.*logo)/gi
+            ]
+            
+            for (const pattern of patterns) {
+              const matches = html.match(pattern)
+              if (matches) {
+                for (const match of matches) {
+                  let imageUrl = match
+                  
+                  // Clean up the URL
+                  if (imageUrl.includes('"')) {
+                    imageUrl = imageUrl.split('"')[1] || imageUrl.split('"')[0]
+                  }
+                  
+                  // Ensure it's a valid URL and not a logo
+                  if (imageUrl.startsWith('http') && imageUrl.includes('elements') && 
+                      !imageUrl.includes('logo') && !imageUrl.includes('Logo') &&
+                      !imageUrl.includes('envato-logo') && !imageUrl.includes('EnvatoLogo')) {
+                    
+                    // Add proper parameters if it's an imgix URL
+                    if (imageUrl.includes('imgix.net') && !imageUrl.includes('?')) {
+                      imageUrl += '?w=400&h=300&fit=crop&q=85&format=jpeg'
+                    }
+                    
+                    console.log('Found potential Envato preview URL:', imageUrl)
+                    
+                    // Test if this URL works
+                    try {
+                      const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                      if (testResponse.ok) {
+                        console.log('Envato preview URL verified:', imageUrl)
+                        return imageUrl
+                      }
+                    } catch (testError) {
+                      console.log('Envato preview URL test failed:', imageUrl)
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Try to find any image in the page content
+            const imgMatches = html.match(/<img[^>]*src="([^"]+)"[^>]*>/gi)
+            if (imgMatches) {
+              console.log('Found', imgMatches.length, 'images in page')
+              
+              for (const imgMatch of imgMatches) {
+                const srcMatch = imgMatch.match(/src="([^"]+)"/)
+                if (srcMatch) {
+                  let imageUrl = srcMatch[1]
+                  
+                  // Look for product images specifically (not logos, icons, or UI elements)
+                  if ((imageUrl.includes('elements') || imageUrl.includes('envato')) &&
+                      !imageUrl.includes('logo') && !imageUrl.includes('Logo') &&
+                      !imageUrl.includes('envato-logo') && !imageUrl.includes('EnvatoLogo') &&
+                      !imageUrl.includes('icon') && !imageUrl.includes('Icon') &&
+                      !imageUrl.includes('ui') && !imageUrl.includes('UI') &&
+                      !imageUrl.includes('button') && !imageUrl.includes('Button') &&
+                      !imageUrl.includes('audio') && !imageUrl.includes('Audio') &&
+                      !imageUrl.includes('storefront') && !imageUrl.includes('Storefront') &&
+                      (imageUrl.includes('cover') || imageUrl.includes('preview') || 
+                       imageUrl.includes('thumbnail') || imageUrl.includes('product') ||
+                       imageUrl.includes('imgix') || imageUrl.includes('jpg') || 
+                       imageUrl.includes('jpeg') || imageUrl.includes('png') ||
+                       imageUrl.includes('webp'))) {
+                    
+                    console.log('Found potential Envato product image:', imageUrl)
+                    
+                    // Test if this URL works
+                    try {
+                      const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+                      if (testResponse.ok) {
+                        console.log('Envato product image URL verified:', imageUrl)
+                        return imageUrl
+                      }
+                    } catch (testError) {
+                      console.log('Envato product image URL test failed:', imageUrl)
+                    }
+                  }
+                }
+              }
+            }
+            
+            console.log('No valid Envato preview URL found in page')
+            
+          } catch (error) {
+            console.error('Error fetching Envato Elements preview:', error)
+          }
+          
+          // Fallback: Try to construct a preview URL based on the product ID
+          // Envato Elements often uses predictable URL patterns
+          const fallbackUrls = [
+            `https://elements-cover-images-0.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-1.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-2.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-3.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-4.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-5.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-6.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-7.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-8.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`,
+            `https://elements-cover-images-9.imgix.net/${id}/preview.jpg?w=400&h=300&fit=crop&q=85&format=jpeg`
+          ]
+          
+          // Test each fallback URL
+          for (const fallbackUrl of fallbackUrls) {
+            try {
+              const testResponse = await fetch(fallbackUrl, { method: 'HEAD' })
+              if (testResponse.ok) {
+                console.log('Envato fallback URL verified:', fallbackUrl)
+                return fallbackUrl
+              }
+            } catch (testError) {
+              // Continue to next URL
+            }
+          }
+          
+          // Final fallback: Use a more sophisticated branded placeholder
+          const productTitle = originalUrl.split('/').pop()?.replace(/-/g, ' ') || 'Product'
+          const encodedTitle = encodeURIComponent(productTitle)
+          return `https://via.placeholder.com/400x300/667eea/ffffff?text=${encodedTitle}&font=inter&font-size=16`
         }
         
         // Default fallback
