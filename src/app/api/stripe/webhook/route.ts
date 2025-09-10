@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
         
         if (session.mode === 'subscription') {
           await handleSubscriptionCreated(session)
+        } else if (session.mode === 'payment') {
+          await handleOneTimePayment(session)
         }
         break
       }
@@ -67,6 +69,25 @@ export async function POST(request: NextRequest) {
     console.error('Webhook error:', error)
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
+}
+
+async function handleOneTimePayment(session: Stripe.Checkout.Session) {
+  const { userId, planId, points } = session.metadata!
+  
+  if (!userId || !points) {
+    console.error('Missing metadata in one-time payment:', session.metadata)
+    return
+  }
+
+  // Add points to user account
+  await PointsManager.addPoints(
+    userId,
+    parseInt(points),
+    'PURCHASE',
+    `One-time purchase: ${planId} plan - ${points} points`
+  )
+
+  console.log(`Added ${points} points to user ${userId} for ${planId} plan`)
 }
 
 async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {

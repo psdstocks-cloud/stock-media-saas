@@ -3,6 +3,31 @@ import { getServerSession } from 'next-auth'
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 
+// Hardcoded pricing plans to match the frontend
+const PRICING_PLANS = {
+  starter: {
+    id: 'starter',
+    name: 'Starter Pack',
+    points: 50,
+    price: 9.99,
+    description: '50 download points for premium stock media'
+  },
+  professional: {
+    id: 'professional',
+    name: 'Professional',
+    points: 150,
+    price: 24.99,
+    description: '150 download points with priority support'
+  },
+  business: {
+    id: 'business',
+    name: 'Business',
+    points: 500,
+    price: 69.99,
+    description: '500 download points with team collaboration'
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession()
@@ -11,16 +36,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { planId } = await request.json()
+    const { planId, points, price } = await request.json()
 
     if (!planId) {
       return NextResponse.json({ error: 'Plan ID required' }, { status: 400 })
     }
 
-    // Get the subscription plan
-    const plan = await prisma.subscriptionPlan.findUnique({
-      where: { id: planId },
-    })
+    // Get the plan from hardcoded plans
+    const plan = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]
 
     if (!plan) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
@@ -66,23 +89,21 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: STRIPE_CONFIG.currency,
             product_data: {
-              name: `${plan.name} Plan`,
-              description: plan.description || undefined,
+              name: `${plan.name} - ${plan.points} Points`,
+              description: plan.description,
             },
             unit_amount: Math.round(plan.price * 100), // Convert to cents
-            recurring: {
-              interval: 'month',
-            },
           },
           quantity: 1,
         },
       ],
-      mode: 'subscription',
-      success_url: `${process.env.NEXTAUTH_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/register?canceled=true`,
+      mode: 'payment', // Changed from 'subscription' to 'payment' for one-time purchases
+      success_url: `${process.env.NEXTAUTH_URL}/dashboard?success=true&points=${plan.points}`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/pricing?canceled=true`,
       metadata: {
         userId: session.user.id,
         planId: plan.id,
+        points: plan.points.toString(),
       },
     })
 
