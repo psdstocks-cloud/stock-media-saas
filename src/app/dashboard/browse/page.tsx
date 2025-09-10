@@ -277,12 +277,6 @@ export default function BrowsePage() {
         
         // Update order status
         setOrderStatus(update.status)
-        setOrderProgress(update.message || 'Processing...')
-        
-        if (update.progress !== undefined) {
-          const newProcessingTime = Math.round((update.progress / 100) * estimatedTime)
-          setProcessingTime(newProcessingTime)
-        }
         
         if (update.status === 'COMPLETED' && update.downloadUrl) {
           setDownloadUrl(update.downloadUrl)
@@ -299,11 +293,16 @@ export default function BrowsePage() {
           newEventSource.close()
           setEventSource(null)
         } else if (update.status === 'PROCESSING') {
-          // Calculate remaining time based on progress
+          // Update progress and calculate remaining time
           const currentProgress = update.progress || 0
           const currentProcessingTime = Math.round((currentProgress / 100) * estimatedTime)
           const remainingTime = Math.max(0, estimatedTime - currentProcessingTime)
-          setOrderProgress(update.message || `Processing... ${remainingTime}s remaining`)
+          
+          setProcessingTime(currentProcessingTime)
+          setOrderProgress(`Processing... ${currentProgress}% complete`)
+        } else {
+          // Default processing message
+          setOrderProgress(update.message || 'Processing your order...')
         }
       } catch (error) {
         console.error('Error parsing order update:', error)
@@ -368,7 +367,7 @@ export default function BrowsePage() {
         setCurrentOrder(data.order)
         setOrderStatus('PENDING')
         setProcessingTime(0)
-        setEstimatedTime(120) // 2 minutes estimated time
+        setEstimatedTime(90) // 1.5 minutes estimated time (optimized)
         setOrderProgress('Processing your order...')
         
         // Start real-time order monitoring
@@ -1762,7 +1761,7 @@ export default function BrowsePage() {
                                 borderTop: '2px solid transparent',
                                 borderRadius: '50%'
                               }} className="animate-spin" />
-                              {orderProgress || 'Processing...'}
+                              {orderProgress}
                             </div>
                             <div style={{
                               width: '100%',

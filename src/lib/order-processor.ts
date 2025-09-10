@@ -71,7 +71,7 @@ export class OrderProcessor {
   }
 
   /**
-   * Monitor order status with periodic checks
+   * Monitor order status with optimized periodic checks
    */
   private static async monitorOrderStatus(
     orderId: string,
@@ -79,12 +79,14 @@ export class OrderProcessor {
     taskId: string
   ): Promise<void> {
     let attempts = 0
-    const maxAttempts = 30 // 5 minutes max (30 * 10 seconds)
+    const maxAttempts = 20 // 3 minutes max (20 * 9 seconds average)
+    let startTime = Date.now()
     
     const checkStatus = async (): Promise<void> => {
       try {
         attempts++
-        console.log(`Checking order status, attempt ${attempts}/${maxAttempts}`)
+        const elapsed = Math.round((Date.now() - startTime) / 1000)
+        console.log(`Checking order status, attempt ${attempts}/${maxAttempts}, elapsed: ${elapsed}s`)
         
         const statusResponse = await api.checkOrderStatus(taskId)
         
@@ -104,8 +106,11 @@ export class OrderProcessor {
           throw new Error(statusResponse.message || 'Order processing failed')
         }
         
-        // Still processing
-        const progress = Math.min((attempts / maxAttempts) * 100, 95)
+        // Still processing - more realistic progress calculation
+        const baseProgress = Math.min(80, (attempts / maxAttempts) * 100)
+        const timeProgress = Math.min(15, (elapsed / 120) * 15) // Additional 15% based on time
+        const progress = Math.min(95, baseProgress + timeProgress)
+        
         await this.updateOrderStatus(
           orderId,
           'PROCESSING',
@@ -115,9 +120,11 @@ export class OrderProcessor {
           Math.round(progress)
         )
         
-        // Schedule next check
+        // Schedule next check with faster intervals
         if (attempts < maxAttempts) {
-          const timeout = setTimeout(checkStatus, 10000) // Check every 10 seconds
+          // Faster checking: 3s, 5s, 7s, 9s, then 9s intervals
+          const delay = Math.min(9000, 3000 + (attempts - 1) * 2000)
+          const timeout = setTimeout(checkStatus, delay)
           this.processingOrders.set(orderId, timeout)
         } else {
           throw new Error('Order processing timeout')
@@ -133,7 +140,7 @@ export class OrderProcessor {
       }
     }
     
-    // Start monitoring
+    // Start monitoring immediately
     checkStatus()
   }
 
