@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 export default async function HomePage() {
   const plans = await prisma.subscriptionPlan.findMany({
@@ -14,71 +16,7 @@ export default async function HomePage() {
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
       {/* Header */}
-      <header style={{
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid #e2e8f0',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            height: '64px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
-              </div>
-              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>
-                StockMedia Pro
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-              <a href="#features" style={{ color: '#64748b', textDecoration: 'none' }}>Features</a>
-              <a href="#pricing" style={{ color: '#64748b', textDecoration: 'none' }}>Pricing</a>
-              <a href="#testimonials" style={{ color: '#64748b', textDecoration: 'none' }}>Reviews</a>
-              <Link href="/login" style={{ color: '#64748b', textDecoration: 'none' }}>Sign In</Link>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <Link href="/login">
-                <button style={{
-                  padding: '8px 16px',
-                  color: '#64748b',
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}>Sign In</button>
-              </Link>
-              <Link href="/register">
-                <button style={{
-                  padding: '8px 24px',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: 'white',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}>Get Started</button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header variant="home" />
 
       {/* Hero Section */}
       <section style={{
@@ -489,92 +427,7 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer style={{
-        background: '#0f172a',
-        color: 'white',
-        padding: '64px 0'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '32px'
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>SM</span>
-                </div>
-                <span style={{ fontSize: '20px', fontWeight: 'bold' }}>StockMedia Pro</span>
-              </div>
-              <p style={{
-                color: '#94a3b8',
-                lineHeight: '1.6'
-              }}>
-                The ultimate platform for accessing premium stock media from around the world.
-              </p>
-            </div>
-            <div>
-              <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Product</h3>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {['Features', 'Pricing', 'API', 'Documentation'].map((item, index) => (
-                  <li key={index} style={{ marginBottom: '8px' }}>
-                    <a href={item === 'Features' ? '#features' : item === 'Pricing' ? '#pricing' : `/${item.toLowerCase()}`} 
-                       style={{ color: '#94a3b8', textDecoration: 'none' }}>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Company</h3>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {['About', 'Blog', 'Careers', 'Contact'].map((item, index) => (
-                  <li key={index} style={{ marginBottom: '8px' }}>
-                    <a href={`/${item.toLowerCase()}`} style={{ color: '#94a3b8', textDecoration: 'none' }}>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Support</h3>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {['Help Center', 'Status', 'Privacy', 'Terms'].map((item, index) => (
-                  <li key={index} style={{ marginBottom: '8px' }}>
-                    <a href={`/${item.toLowerCase().replace(' ', '-')}`} style={{ color: '#94a3b8', textDecoration: 'none' }}>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div style={{
-            borderTop: '1px solid #334155',
-            marginTop: '48px',
-            paddingTop: '32px',
-            textAlign: 'center',
-            color: '#94a3b8'
-          }}>
-            <p>© 2024 StockMedia Pro. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="home" />
     </div>
   )
 }

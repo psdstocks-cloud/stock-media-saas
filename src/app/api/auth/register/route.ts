@@ -1,25 +1,101 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { checkRegistrationRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
     const { name, email, password, planId } = await request.json()
+    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
 
-    console.log('Registration attempt:', { name, email, planId })
+    console.log('Registration attempt:', { name, email, planId, clientIP })
+
+    // Apply rate limiting
+    const rateLimitResult = checkRegistrationRateLimit(clientIP)
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json({
+        error: 'Too many registration attempts. Please try again later.',
+        type: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: rateLimitResult.retryAfter,
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime
+      }, { status: 429 })
+    }
 
     // Validate required fields
     if (!name || !email || !password || !planId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
     }
 
-    // Check if user already exists
+    // Validate field formats
+    if (name.trim().length < 2) {
+      return NextResponse.json({ error: 'Name must be at least 2 characters' }, { status: 400 })
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    }
+
+    // Validate password strength
+    const hasUppercase = /[A-Z]/.test(password)
+    const hasLowercase = /[a-z]/.test(password)
+    const hasNumber = /\d/.test(password)
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+
+    if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+      return NextResponse.json({ 
+        error: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' 
+      }, { status: 400 })
+    }
+
+    // Check if user already exists with enhanced security
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: email.toLowerCase().trim() },
+      include: {
+        accounts: true,
+        sessions: true
+      }
     })
 
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 })
+      // Log suspicious activity
+      console.warn('Duplicate registration attempt:', {
+        email: email.toLowerCase(),
+        existingUserId: existingUser.id,
+        hasPassword: !!existingUser.password,
+        hasOAuthAccounts: existingUser.accounts.length > 0,
+        clientIP,
+        timestamp: new Date().toISOString()
+      })
+
+      // Check if user has OAuth accounts
+      if (existingUser.accounts.length > 0) {
+        const providers = existingUser.accounts.map(acc => acc.provider).join(', ')
+        return NextResponse.json({ 
+          error: `An account with this email already exists. Please sign in using ${providers} or reset your password if you forgot it.`,
+          type: 'ACCOUNT_EXISTS_OAUTH',
+          providers: existingUser.accounts.map(acc => acc.provider)
+        }, { status: 400 })
+      }
+
+      // Check if user has password
+      if (existingUser.password) {
+        return NextResponse.json({ 
+          error: 'An account with this email already exists. Please sign in or reset your password if you forgot it.',
+          type: 'ACCOUNT_EXISTS_PASSWORD'
+        }, { status: 400 })
+      }
+
+      // User exists but has no password or OAuth accounts (edge case)
+      return NextResponse.json({ 
+        error: 'An account with this email already exists. Please contact support.',
+        type: 'ACCOUNT_EXISTS_NO_AUTH'
+      }, { status: 400 })
     }
 
     // Define plan data
@@ -55,11 +131,11 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Create user
+      // Create user with email normalization
       const user = await tx.user.create({
         data: {
-          name,
-          email,
+          name: name.trim(),
+          email: email.toLowerCase().trim(),
           password: hashedPassword,
         }
       })

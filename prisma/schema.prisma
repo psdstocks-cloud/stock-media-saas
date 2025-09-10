@@ -24,14 +24,60 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // OAuth fields
+  accounts  Account[]
+  sessions  Session[]
+
   // Relations
   subscriptions Subscription[]
   orders        Order[]
   pointsHistory PointsHistory[]
   apiKeys       ApiKey[]
   pointsBalance PointsBalance?
+  passwordResetTokens PasswordResetToken[]
+  reviews       Review[]
 
   @@map("users")
+}
+
+// NextAuth.js OAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 // Subscription plans
@@ -177,5 +223,58 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+// Password reset tokens for secure password recovery
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+// Email resend timers for rate limiting
+model EmailResendTimer {
+  id        String   @id @default(cuid())
+  email     String
+  lastSentAt DateTime
+  nextAllowedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email])
+  @@map("email_resend_timers")
+}
+
+// Customer reviews for social proof
+model Review {
+  id           String   @id @default(cuid())
+  userId       String
+  displayName  String
+  role         String
+  industry     String
+  title        String
+  content      String
+  rating       Int
+  metrics      Json?
+  isVerified   Boolean  @default(false)
+  isApproved   Boolean  @default(false)
+  isPublished  Boolean  @default(false)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
 }
 

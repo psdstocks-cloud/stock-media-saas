@@ -21,9 +21,12 @@ export default function DashboardPage() {
   const [showDemo, setShowDemo] = useState(false)
 
   useEffect(() => {
+    console.log('Dashboard useEffect - status:', status, 'session:', session)
+    
     if (status === 'loading') return
     
-    if (!session?.user?.id) {
+    if (!session?.user) {
+      console.log('No session user, redirecting to login')
       router.push('/login')
       return
     }

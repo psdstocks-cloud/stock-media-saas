@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { NehtwAPI, OrderManager } from '@/lib/nehtw-api'
+import { OrderProcessor } from '@/lib/order-processor'
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
 
@@ -182,31 +183,19 @@ export async function POST(request: NextRequest) {
     )
     console.log('Points deducted successfully using PointsManager')
 
-    // Process order with nehtw.com API
+    // Start real-time order processing
     const apiKey = process.env.NEHTW_API_KEY
     if (!apiKey) {
       console.log('NEHTW_API_KEY not configured')
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    console.log('Starting order processing for order:', order.id, 'with site:', site, 'id:', id)
+    console.log('Starting real-time order processing for order:', order.id, 'with site:', site, 'id:', id)
 
-    try {
-      console.log('Calling OrderManager.processOrder...')
-      await OrderManager.processOrder(order.id, apiKey, site, id, url)
-      console.log('OrderManager.processOrder completed successfully')
-    } catch (error) {
-      console.error('Order processing error:', error)
-      console.error('Order processing error details:', {
-        orderId: order.id,
-        site,
-        id,
-        url,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined
-      })
-      // Order was created but processing failed - this is handled by the order status
-    }
+    // Start processing in background (don't await)
+    OrderProcessor.startProcessing(order.id, apiKey, site, id, url).catch(error => {
+      console.error('Background order processing failed:', error)
+    })
 
     return NextResponse.json({
       success: true,

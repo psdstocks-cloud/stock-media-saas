@@ -28,7 +28,8 @@ import {
   Sparkles,
   ArrowRight,
   Copy,
-  Check
+  Check,
+  CreditCard
 } from 'lucide-react'
 
 interface StockInfo {
@@ -85,10 +86,13 @@ export default function BrowsePage() {
   const [orderStatus, setOrderStatus] = useState<string>('')
   const [downloadUrl, setDownloadUrl] = useState<string>('')
   const [processingTime, setProcessingTime] = useState<number>(0)
+  const [estimatedTime, setEstimatedTime] = useState<number>(0)
   const [existingOrder, setExistingOrder] = useState<any>(null)
   const [copied, setCopied] = useState(false)
+  const [orderProgress, setOrderProgress] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredSites, setFilteredSites] = useState<SupportedSite[]>([])
+  const [eventSource, setEventSource] = useState<EventSource | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestData, setRequestData] = useState({
     siteName: '',
@@ -97,6 +101,7 @@ export default function BrowsePage() {
     userEmail: ''
   })
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false)
+  const [sessionTimeout, setSessionTimeout] = useState(false)
   const [requestSubmitted, setRequestSubmitted] = useState(false)
 
   // Function to refresh user balance from database
@@ -124,12 +129,27 @@ export default function BrowsePage() {
   }
 
   useEffect(() => {
-    if (status === 'loading') return
+    console.log('Browse page useEffect - status:', status, 'session:', session)
+    
+    if (status === 'loading') {
+      console.log('Session still loading...')
+      // Set a timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        console.log('Session loading timeout - forcing redirect to login')
+        setSessionTimeout(true)
+        router.push('/login')
+      }, 10000) // 10 second timeout
+      
+      return () => clearTimeout(timeout)
+    }
     
     if (!session?.user?.id) {
+      console.log('No session user ID, redirecting to login')
       router.push('/login')
       return
     }
+    
+    console.log('Session valid, proceeding with data fetch')
 
     const fetchData = async () => {
       try {
@@ -224,8 +244,90 @@ export default function BrowsePage() {
     }
   }
 
+  // Real-time order monitoring with Server-Sent Events
+  const startOrderMonitoring = (orderId: string) => {
+    console.log('Starting real-time order monitoring for:', orderId)
+    
+    // Close existing EventSource if any
+    if (eventSource) {
+      eventSource.close()
+    }
+    
+    // Create EventSource for real-time updates
+    const newEventSource = new EventSource(`/api/orders/${orderId}/stream`)
+    setEventSource(newEventSource)
+    
+    newEventSource.onopen = () => {
+      console.log('EventSource connection opened')
+      setOrderProgress('Connected to processing service...')
+    }
+    
+    newEventSource.onmessage = (event) => {
+      try {
+        const update = JSON.parse(event.data)
+        console.log('Received order update:', update)
+        
+        // Update order status
+        setOrderStatus(update.status)
+        setOrderProgress(update.message || 'Processing...')
+        
+        if (update.progress !== undefined) {
+          const newProcessingTime = Math.round((update.progress / 100) * estimatedTime)
+          setProcessingTime(newProcessingTime)
+        }
+        
+        if (update.status === 'COMPLETED' && update.downloadUrl) {
+          setDownloadUrl(update.downloadUrl)
+          setOrderProgress('File is ready!')
+          setOrderStatus('READY')
+          setProcessingTime(estimatedTime) // Set to 100% complete
+          console.log('Order completed, download URL:', update.downloadUrl)
+          newEventSource.close()
+          setEventSource(null)
+        } else if (update.status === 'FAILED') {
+          setOrderProgress(update.message || 'Order failed. Please try again.')
+          setOrderStatus('FAILED')
+          console.log('Order failed:', update.message)
+          newEventSource.close()
+          setEventSource(null)
+        } else if (update.status === 'PROCESSING') {
+          // Calculate remaining time based on progress
+          const currentProgress = update.progress || 0
+          const currentProcessingTime = Math.round((currentProgress / 100) * estimatedTime)
+          const remainingTime = Math.max(0, estimatedTime - currentProcessingTime)
+          setOrderProgress(update.message || `Processing... ${remainingTime}s remaining`)
+        }
+      } catch (error) {
+        console.error('Error parsing order update:', error)
+        setOrderProgress('Error processing update. Please refresh the page.')
+      }
+    }
+    
+    newEventSource.onerror = (error) => {
+      console.error('EventSource error:', error)
+      setOrderProgress('Connection lost. Please refresh to check your order status.')
+      newEventSource.close()
+      setEventSource(null)
+    }
+  }
+
+  // Cleanup EventSource on component unmount
+  useEffect(() => {
+    return () => {
+      if (eventSource) {
+        eventSource.close()
+      }
+    }
+  }, [eventSource])
+
   const handlePlaceOrder = async () => {
     if (!stockInfo || !session?.user?.id) return
+
+    // First, validate points BEFORE placing order
+    if (userBalance < stockInfo.cost) {
+      setError(`Insufficient points. You have ${userBalance} points but need ${stockInfo.cost} points to download this file.`)
+      return
+    }
 
     setIsOrdering(true)
     setError('')
@@ -240,7 +342,7 @@ export default function BrowsePage() {
           url: stockInfo.url,
           site: stockInfo.site,
           id: stockInfo.id,
-          title: stockInfo.title,
+          title: `${stockInfo.site}-${stockInfo.id}`,
           cost: stockInfo.cost,
           imageUrl: stockInfo.imageUrl
         }),
@@ -258,6 +360,11 @@ export default function BrowsePage() {
         setCurrentOrder(data.order)
         setOrderStatus('PENDING')
         setProcessingTime(0)
+        setEstimatedTime(120) // 2 minutes estimated time
+        setOrderProgress('Processing your order...')
+        
+        // Start real-time order monitoring
+        startOrderMonitoring(data.order.id)
         
         // Refetch balance from database to ensure accuracy
         await refreshUserBalance()
@@ -327,7 +434,7 @@ export default function BrowsePage() {
   }
 
 
-  if (status === 'loading') {
+  if (status === 'loading' || sessionTimeout) {
     return (
       <div style={{
         display: 'flex',
@@ -341,10 +448,17 @@ export default function BrowsePage() {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '16px',
-          color: 'white'
+          color: 'white',
+          textAlign: 'center',
+          padding: '20px'
         }}>
           <Loader2 size={32} className="animate-spin" />
-          <p>Loading...</p>
+          <p>Loading your dashboard...</p>
+          {sessionTimeout && (
+            <p style={{ fontSize: '14px', opacity: 0.8 }}>
+              Taking longer than expected. Redirecting to login...
+            </p>
+          )}
         </div>
       </div>
     )
@@ -357,6 +471,15 @@ export default function BrowsePage() {
           @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+          }
+          
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          
+          .animate-spin {
+            animation: spin 1s linear infinite;
           }
         `
       }} />
@@ -1121,13 +1244,77 @@ export default function BrowsePage() {
                 borderRadius: '16px',
                 padding: '20px',
                 marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
                 backdropFilter: 'blur(10px)'
               }}>
-                <XCircle size={20} style={{ color: '#dc2626' }} />
-                <p style={{ color: '#dc2626', margin: 0, fontWeight: '500' }}>{error}</p>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  marginBottom: error.includes('Insufficient points') ? '16px' : '0'
+                }}>
+                  <XCircle size={20} style={{ color: '#dc2626', marginTop: '2px' }} />
+                  <p style={{ color: '#dc2626', margin: 0, fontWeight: '500', flex: 1 }}>{error}</p>
+                </div>
+                {error.includes('Insufficient points') && (
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    marginTop: '12px'
+                  }}>
+                    <button
+                      onClick={() => router.push('/dashboard/pricing')}
+                      style={{
+                        padding: '10px 20px',
+                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
+                      <CreditCard size={16} />
+                      Get More Points
+                    </button>
+                    <button
+                      onClick={() => setError('')}
+                      style={{
+                        padding: '10px 16px',
+                        background: 'transparent',
+                        color: '#dc2626',
+                        border: '1px solid #fca5a5',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(220, 38, 38, 0.1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1365,6 +1552,311 @@ export default function BrowsePage() {
                           </>
                         )}
                       </button>
+                    </div>
+                  )}
+
+                  {/* Order Status Display */}
+                  {currentOrder && (
+                    <div style={{
+                      padding: '20px',
+                      background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+                      borderRadius: '16px',
+                      border: '1px solid #0ea5e9',
+                      marginTop: '16px'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        marginBottom: '12px'
+                      }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          <CheckCircle size={20} />
+                        </div>
+                        <div>
+                          <h3 style={{
+                            margin: '0 0 4px 0',
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            color: '#0c4a6e'
+                          }}>
+                            Order Placed Successfully!
+                          </h3>
+                          <p style={{
+                            margin: '0',
+                            fontSize: '14px',
+                            color: '#0369a1'
+                          }}>
+                            File ID: {stockInfo?.id || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        padding: '12px',
+                        background: 'rgba(14, 165, 233, 0.1)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(14, 165, 233, 0.2)'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '8px'
+                        }}>
+                          <Clock size={16} color="#0369a1" />
+                          <span style={{
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            color: '#0c4a6e'
+                          }}>
+                            Status: {orderStatus || 'PENDING'}
+                          </span>
+                        </div>
+                        <p style={{
+                          margin: '0 0 8px 0',
+                          fontSize: '13px',
+                          color: '#0369a1'
+                        }}>
+                          {orderProgress || 'Processing your order...'}
+                        </p>
+                        {orderStatus === 'READY' && downloadUrl ? (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            alignItems: 'flex-start'
+                          }}>
+                            <a
+                              href={downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 24px',
+                                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                                color: 'white',
+                                textDecoration: 'none',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.boxShadow = '0 8px 20px rgba(34, 197, 94, 0.4)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)'
+                              }}
+                            >
+                              <Download size={16} />
+                              Download File
+                            </a>
+                            <div style={{
+                              fontSize: '12px',
+                              color: '#16a34a',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              <div style={{
+                                width: '8px',
+                                height: '8px',
+                                backgroundColor: '#22c55e',
+                                borderRadius: '50%'
+                              }} />
+                              Ready for download
+                            </div>
+                          </div>
+                        ) : orderStatus === 'FAILED' ? (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            alignItems: 'flex-start'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              fontSize: '12px',
+                              color: '#dc2626'
+                            }}>
+                              <div style={{
+                                width: '8px',
+                                height: '8px',
+                                backgroundColor: '#dc2626',
+                                borderRadius: '50%'
+                              }} />
+                              Processing failed
+                            </div>
+                            <button
+                              onClick={() => {
+                                setCurrentOrder(null)
+                                setOrderStatus('')
+                                setOrderProgress('')
+                                setDownloadUrl('')
+                                setProcessingTime(0)
+                              }}
+                              style={{
+                                padding: '8px 16px',
+                                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              Try Again
+                            </button>
+                          </div>
+                        ) : (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            alignItems: 'flex-start'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              fontSize: '12px',
+                              color: '#0369a1'
+                            }}>
+                              <div style={{
+                                width: '12px',
+                                height: '12px',
+                                border: '2px solid #0ea5e9',
+                                borderTop: '2px solid transparent',
+                                borderRadius: '50%'
+                              }} className="animate-spin" />
+                              {orderProgress || 'Processing...'}
+                            </div>
+                            <div style={{
+                              width: '100%',
+                              height: '4px',
+                              backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                              borderRadius: '2px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                height: '100%',
+                                backgroundColor: '#0ea5e9',
+                                borderRadius: '2px',
+                                width: `${Math.min(100, Math.max(0, (processingTime / estimatedTime) * 100))}%`,
+                                transition: 'width 0.3s ease'
+                              }} />
+                            </div>
+                            <div style={{
+                              fontSize: '11px',
+                              color: '#64748b',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%'
+                            }}>
+                              <span>{Math.round((processingTime / estimatedTime) * 100)}% complete</span>
+                              <span>{Math.max(0, estimatedTime - processingTime)}s remaining</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Existing Order Display */}
+                  {existingOrder && (
+                    <div style={{
+                      padding: '20px',
+                      background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                      borderRadius: '16px',
+                      border: '1px solid #22c55e',
+                      marginTop: '16px'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        marginBottom: '12px'
+                      }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          <Download size={20} />
+                        </div>
+                        <div>
+                          <h3 style={{
+                            margin: '0 0 4px 0',
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            color: '#14532d'
+                          }}>
+                            Free Download Available!
+                          </h3>
+                          <p style={{
+                            margin: '0',
+                            fontSize: '14px',
+                            color: '#166534'
+                          }}>
+                            You've already ordered this item before.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {existingOrder.downloadUrl && (
+                        <a
+                          href={existingOrder.downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '12px 24px',
+                            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                            color: 'white',
+                            textDecoration: 'none',
+                            borderRadius: '12px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)'
+                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.3)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)'
+                            e.currentTarget.style.boxShadow = 'none'
+                          }}
+                        >
+                          <Download size={16} />
+                          Download Now
+                        </a>
+                      )}
                     </div>
                   )}
 
