@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       points,
       'PURCHASE',
       `Virtual payment: ${plan.name} - ${points} points via ${paymentMethod}`,
-      `virtual-${Date.now()}`
+      undefined // No orderId for virtual payments
     )
     
     console.log('Points added successfully')
