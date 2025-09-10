@@ -71,7 +71,7 @@ export class OrderProcessor {
   }
 
   /**
-   * Monitor order status with optimized periodic checks
+   * Monitor order status with ULTRA-FAST polling for maximum speed
    */
   private static async monitorOrderStatus(
     orderId: string,
@@ -79,14 +79,16 @@ export class OrderProcessor {
     taskId: string
   ): Promise<void> {
     let attempts = 0
-    const maxAttempts = 20 // 3 minutes max (20 * 9 seconds average)
+    const maxAttempts = 40 // 2 minutes max with ultra-fast polling
     let startTime = Date.now()
+    let lastStatus = 'processing'
+    let consecutiveProcessingCount = 0
     
     const checkStatus = async (): Promise<void> => {
       try {
         attempts++
         const elapsed = Math.round((Date.now() - startTime) / 1000)
-        console.log(`Checking order status, attempt ${attempts}/${maxAttempts}, elapsed: ${elapsed}s`)
+        console.log(`🚀 ULTRA-FAST check ${attempts}/${maxAttempts}, elapsed: ${elapsed}s`)
         
         const statusResponse = await api.checkOrderStatus(taskId)
         
@@ -111,10 +113,11 @@ export class OrderProcessor {
         
         if (isReady && statusResponse.downloadLink) {
           // Order completed successfully
-          console.log('Order completed successfully:', {
+          console.log('🎉 Order completed successfully:', {
             orderId,
             downloadLink: statusResponse.downloadLink,
-            fileName: statusResponse.fileName
+            fileName: statusResponse.fileName,
+            totalTime: elapsed
           })
           await this.updateOrderStatus(
             orderId,
@@ -135,14 +138,21 @@ export class OrderProcessor {
           throw new Error(statusResponse.message || 'Order processing failed')
         }
         
-        // Still processing - more realistic progress calculation
-        const baseProgress = Math.min(80, (attempts / maxAttempts) * 100)
-        const timeProgress = Math.min(15, (elapsed / 120) * 15) // Additional 15% based on time
-        const progress = Math.min(95, baseProgress + timeProgress)
+        // Track status changes for smart polling
+        if (statusResponse.status === lastStatus) {
+          consecutiveProcessingCount++
+        } else {
+          consecutiveProcessingCount = 0
+          lastStatus = statusResponse.status || 'processing'
+        }
         
-        // If we're at max attempts or 95% progress, check if order is actually complete
-        if (attempts >= maxAttempts || progress >= 95) {
-          // Final check - if order is ready, complete it
+        // Smart progress calculation based on elapsed time and attempts
+        const timeBasedProgress = Math.min(90, (elapsed / 60) * 90) // 90% in 60 seconds
+        const attemptBasedProgress = Math.min(80, (attempts / maxAttempts) * 80) // 80% based on attempts
+        const progress = Math.min(95, Math.max(timeBasedProgress, attemptBasedProgress))
+        
+        // ULTRA-FAST completion check - check every time after 5 seconds
+        if (elapsed >= 5) {
           const isReady = statusResponse.success && (
             statusResponse.status === 'ready' || 
             statusResponse.status === 'completed' ||
@@ -171,10 +181,11 @@ export class OrderProcessor {
             }
             
             if (downloadLink) {
-              console.log('Order completed at final check:', {
+              console.log('🎉 Order completed at ultra-fast check:', {
                 orderId,
                 downloadLink,
-                fileName
+                fileName,
+                totalTime: elapsed
               })
               await this.updateOrderStatus(
                 orderId,
@@ -186,17 +197,28 @@ export class OrderProcessor {
               return
             }
           }
+        }
+        
+        // PARALLEL OPTIMIZATION: Try multiple API endpoints for faster detection
+        if (elapsed >= 15 && attempts % 3 === 0) {
+          console.log('🔄 Parallel optimization: Trying alternative detection methods...')
           
-          // If not ready and we've reached max attempts, fail the order
-          if (attempts >= maxAttempts) {
-            console.log('Order processing timeout:', {
-              orderId,
-              attempts,
-              maxAttempts,
-              progress,
-              statusResponse
-            })
-            throw new Error('Order processing timeout - file not ready after maximum attempts')
+          // Try different response types for faster detection
+          try {
+            const altResponse = await api.checkOrderStatus(taskId, 'gdrive')
+            if (altResponse.success && altResponse.downloadLink) {
+              console.log('🎉 Found download link via alternative method!')
+              await this.updateOrderStatus(
+                orderId,
+                'COMPLETED',
+                'Download ready!',
+                altResponse.downloadLink,
+                altResponse.fileName
+              )
+              return
+            }
+          } catch (error) {
+            console.log('Alternative detection failed:', error)
           }
         }
         
@@ -209,14 +231,41 @@ export class OrderProcessor {
           Math.round(progress)
         )
         
-        // Schedule next check with faster intervals
+        // ULTRA-FAST polling strategy
         if (attempts < maxAttempts) {
-          // Faster checking: 3s, 5s, 7s, 9s, then 9s intervals
-          const delay = Math.min(9000, 3000 + (attempts - 1) * 2000)
+          let delay: number
+          
+          if (elapsed < 10) {
+            // First 10 seconds: Check every 1 second for ultra-fast detection
+            delay = 1000
+          } else if (elapsed < 30) {
+            // 10-30 seconds: Check every 2 seconds
+            delay = 2000
+          } else if (elapsed < 60) {
+            // 30-60 seconds: Check every 3 seconds
+            delay = 3000
+          } else {
+            // After 60 seconds: Check every 5 seconds
+            delay = 5000
+          }
+          
+          // If status hasn't changed for 3 consecutive checks, slow down slightly
+          if (consecutiveProcessingCount >= 3 && delay < 3000) {
+            delay = Math.min(delay * 1.5, 5000)
+          }
+          
+          console.log(`⏱️ Next check in ${delay}ms (attempt ${attempts + 1})`)
           const timeout = setTimeout(checkStatus, delay)
           this.processingOrders.set(orderId, timeout)
         } else {
-          throw new Error('Order processing timeout')
+          console.log('Order processing timeout:', {
+            orderId,
+            attempts,
+            maxAttempts,
+            elapsed,
+            statusResponse
+          })
+          throw new Error('Order processing timeout - file not ready after maximum attempts')
         }
         
       } catch (error) {

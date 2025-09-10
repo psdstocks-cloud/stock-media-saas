@@ -397,9 +397,9 @@ export default function BrowsePage() {
         setCurrentOrder(data.order)
         setOrderStatus('PENDING')
         setProcessingTime(0)
-        setEstimatedTime(90) // 1.5 minutes estimated time (optimized)
+        setEstimatedTime(60) // 1 minute estimated time (ultra-optimized)
         setCurrentProgress(0)
-        setRemainingTime(90)
+        setRemainingTime(60)
         setOrderProgress('Processing your order...')
         
         // Start real-time order monitoring
