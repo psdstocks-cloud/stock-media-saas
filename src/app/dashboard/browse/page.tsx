@@ -211,6 +211,14 @@ export default function BrowsePage() {
         console.log('Cost from API:', data.data.cost)
         console.log('User balance:', userBalance)
         setStockInfo(data.data)
+        
+        // Check points balance immediately after getting stock info
+        if (userBalance < data.data.cost) {
+          setError(`Insufficient points. You have ${userBalance} points but need ${data.data.cost} points to download this file.`)
+        } else {
+          setError('') // Clear any previous errors if user has enough points
+        }
+        
         // Check if this item was already ordered
         await checkExistingOrder(data.data.site, data.data.id)
       } else {
@@ -1501,10 +1509,16 @@ export default function BrowsePage() {
                         </div>
                         <div style={{
                           fontSize: '12px',
-                          color: '#6b7280',
-                          marginTop: '2px'
+                          color: userBalance < stockInfo.cost ? '#dc2626' : '#6b7280',
+                          marginTop: '2px',
+                          fontWeight: userBalance < stockInfo.cost ? '600' : 'normal'
                         }}>
                           Your balance: {userBalance} points
+                          {userBalance < stockInfo.cost && (
+                            <span style={{ display: 'block', marginTop: '4px', fontSize: '11px' }}>
+                              ⚠️ Insufficient points
+                            </span>
+                          )}
                         </div>
                       </div>
 
