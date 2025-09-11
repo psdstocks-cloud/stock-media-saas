@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 // Search request validation schema
 const SearchRequestSchema = z.object({
@@ -19,11 +20,25 @@ const SearchRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRateLimit(identifier, 'search')
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: rateLimitResult.headers
+        }
+      )
+    }
+
     const body = await request.json()
     const { query, filters = {}, page, limit } = SearchRequestSchema.parse(body)
-
-    // Rate limiting check (basic implementation)
-    const ip = request.headers.get('x-forwarded-for') || 'unknown'
     
     // Mock search results for now
     const mockResults = generateMockSearchResults(query, filters, page, limit)

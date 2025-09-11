@@ -1,186 +1,92 @@
-import { LRUCache } from 'lru-cache'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
-// Rate limiting for registration attempts
-const registrationRateLimit = new LRUCache<string, { count: number; resetTime: number }>({
-  max: 1000,
-  ttl: 15 * 60 * 1000, // 15 minutes
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
 
-// Rate limiting for email verification attempts
-const emailVerificationRateLimit = new LRUCache<string, { count: number; resetTime: number }>({
-  max: 1000,
-  ttl: 5 * 60 * 1000, // 5 minutes
-})
+// Rate limiters for different endpoints
+export const rateLimiters = {
+  // General API rate limiting
+  general: new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(100, '1 m'), // 100 requests per minute
+    analytics: true,
+    prefix: 'ratelimit:general',
+  }),
 
-// Rate limiting for password reset attempts
-const passwordResetRateLimit = new LRUCache<string, { count: number; resetTime: number }>({
-  max: 1000,
-  ttl: 15 * 60 * 1000, // 15 minutes
-})
+  // Search rate limiting (more restrictive)
+  search: new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(50, '1 m'), // 50 searches per minute
+    analytics: true,
+    prefix: 'ratelimit:search',
+  }),
 
-export const checkRegistrationRateLimit = (ip: string) => {
-  const now = Date.now()
-  const windowMs = 15 * 60 * 1000 // 15 minutes
-  const maxAttempts = 5 // Maximum 5 registration attempts per IP per 15 minutes
+  // Stock info rate limiting
+  stockInfo: new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(30, '1 m'), // 30 requests per minute
+    analytics: true,
+    prefix: 'ratelimit:stock-info',
+  }),
 
-  const key = `reg_${ip}`
-  const current = registrationRateLimit.get(key)
+  // Download rate limiting (very restrictive)
+  download: new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(10, '1 h'), // 10 downloads per hour
+    analytics: true,
+    prefix: 'ratelimit:download',
+  }),
 
-  if (!current) {
-    registrationRateLimit.set(key, { count: 1, resetTime: now + windowMs })
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs }
-  }
-
-  if (now > current.resetTime) {
-    registrationRateLimit.set(key, { count: 1, resetTime: now + windowMs })
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs }
-  }
-
-  if (current.count >= maxAttempts) {
-    return { 
-      allowed: false, 
-      remaining: 0, 
-      resetTime: current.resetTime,
-      retryAfter: Math.ceil((current.resetTime - now) / 1000)
-    }
-  }
-
-  current.count++
-  return { 
-    allowed: true, 
-    remaining: maxAttempts - current.count, 
-    resetTime: current.resetTime 
-  }
+  // Authentication rate limiting
+  auth: new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(5, '1 m'), // 5 auth attempts per minute
+    analytics: true,
+    prefix: 'ratelimit:auth',
+  }),
 }
 
-export const checkEmailVerificationRateLimit = (email: string) => {
-  const now = Date.now()
-  const windowMs = 5 * 60 * 1000 // 5 minutes
-  const maxAttempts = 3 // Maximum 3 email verification attempts per email per 5 minutes
-
-  const key = `email_${email.toLowerCase()}`
-  const current = emailVerificationRateLimit.get(key)
-
-  if (!current) {
-    emailVerificationRateLimit.set(key, { count: 1, resetTime: now + windowMs })
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs }
-  }
-
-  if (now > current.resetTime) {
-    emailVerificationRateLimit.set(key, { count: 1, resetTime: now + windowMs })
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs }
-  }
-
-  if (current.count >= maxAttempts) {
-    return { 
-      allowed: false, 
-      remaining: 0, 
-      resetTime: current.resetTime,
-      retryAfter: Math.ceil((current.resetTime - now) / 1000)
-    }
-  }
-
-  current.count++
-  return { 
-    allowed: true, 
-    remaining: maxAttempts - current.count, 
-    resetTime: current.resetTime 
-  }
-}
-
-export const checkPasswordResetRateLimit = (ip: string) => {
-  const now = Date.now()
-  const windowMs = 15 * 60 * 1000 // 15 minutes
-  const maxAttempts = 3 // Maximum 3 password reset attempts per IP per 15 minutes
-
-  const key = `reset_${ip}`
-  const current = passwordResetRateLimit.get(key)
-
-  if (!current) {
-    passwordResetRateLimit.set(key, { count: 1, resetTime: now + windowMs })
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs }
-  }
-
-  if (now > current.resetTime) {
-    passwordResetRateLimit.set(key, { count: 1, resetTime: now + windowMs })
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs }
-  }
-
-  if (current.count >= maxAttempts) {
-    return { 
-      allowed: false, 
-      remaining: 0, 
-      resetTime: current.resetTime,
-      retryAfter: Math.ceil((current.resetTime - now) / 1000)
-    }
-  }
-
-  current.count++
-  return { 
-    allowed: true, 
-    remaining: maxAttempts - current.count, 
-    resetTime: current.resetTime 
-  }
-}
-
-// Generic rate limiting function
-export const checkRateLimit = (config: { interval: number; uniqueTokenPerInterval: number }) => {
-  const rateLimit = new LRUCache<string, { count: number; resetTime: number }>({
-    max: 1000,
-    ttl: config.interval,
-  })
-
+// Rate limiting middleware
+export async function checkRateLimit(
+  identifier: string,
+  type: keyof typeof rateLimiters
+) {
+  const { success, limit, reset, remaining } = await rateLimiters[type].limit(identifier)
+  
   return {
-    checkLimit: (ip: string) => {
-      const now = Date.now()
-      const key = `generic_${ip}`
-      const current = rateLimit.get(key)
-
-      if (!current) {
-        rateLimit.set(key, { count: 1, resetTime: now + config.interval })
-        return { success: true, remaining: config.uniqueTokenPerInterval - 1, resetTime: now + config.interval }
-      }
-
-      if (now > current.resetTime) {
-        rateLimit.set(key, { count: 1, resetTime: now + config.interval })
-        return { success: true, remaining: config.uniqueTokenPerInterval - 1, resetTime: now + config.interval }
-      }
-
-      if (current.count >= config.uniqueTokenPerInterval) {
-        return { 
-          success: false, 
-          remaining: 0, 
-          resetTime: current.resetTime,
-          retryAfter: Math.ceil((current.resetTime - now) / 1000)
-        }
-      }
-
-      current.count++
-      return { 
-        success: true, 
-        remaining: config.uniqueTokenPerInterval - current.count, 
-        resetTime: current.resetTime 
-      }
+    success,
+    limit,
+    reset,
+    remaining,
+    headers: {
+      'X-RateLimit-Limit': limit.toString(),
+      'X-RateLimit-Remaining': remaining.toString(),
+      'X-RateLimit-Reset': new Date(reset).toISOString(),
     }
   }
 }
 
-// Clean up expired entries periodically
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, value] of registrationRateLimit.entries()) {
-    if (now > value.resetTime) {
-      registrationRateLimit.delete(key)
+// Get client identifier from request
+export function getClientIdentifier(request: Request): string {
+  // Try to get user ID from auth header first
+  const authHeader = request.headers.get('authorization')
+  if (authHeader) {
+    try {
+      const token = authHeader.split(' ')[1]
+      // In a real implementation, you'd decode the JWT to get user ID
+      // For now, we'll use the token as identifier
+      return `user:${token}`
+    } catch {
+      // Fall back to IP if token is invalid
     }
   }
-  for (const [key, value] of emailVerificationRateLimit.entries()) {
-    if (now > value.resetTime) {
-      emailVerificationRateLimit.delete(key)
-    }
-  }
-  for (const [key, value] of passwordResetRateLimit.entries()) {
-    if (now > value.resetTime) {
-      passwordResetRateLimit.delete(key)
-    }
-  }
-}, 5 * 60 * 1000) // Clean up every 5 minutes
+
+  // Fall back to IP address
+  const forwarded = request.headers.get('x-forwarded-for')
+  const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
+  return `ip:${ip}`
+}

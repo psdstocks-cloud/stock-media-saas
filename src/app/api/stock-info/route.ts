@@ -1,19 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NehtwAPI } from '@/lib/nehtw-api'
 import { prisma } from '@/lib/prisma'
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
+import { stockInfoRequestSchema, validateAndSanitizeUrl } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
-    const { url } = await request.json()
-
-    if (!url) {
-      return NextResponse.json({ error: 'URL is required' }, { status: 400 })
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRateLimit(identifier, 'stockInfo')
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: rateLimitResult.headers
+        }
+      )
     }
 
-    console.log('Stock info API called with URL:', url)
+    // Validate and sanitize input
+    const body = await request.json()
+    const { url } = stockInfoRequestSchema.parse(body)
+    
+    // Validate and sanitize URL
+    const sanitizedUrl = validateAndSanitizeUrl(url)
+
+    console.log('Stock info API called with URL:', sanitizedUrl)
 
     // Extract site and ID from URL using comprehensive extractor
-    const { site, id } = extractSiteAndId(url)
+    const { site, id } = extractSiteAndId(sanitizedUrl)
 
     if (!site || !id) {
       return NextResponse.json({ 
@@ -674,6 +694,23 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Stock info error:', error)
+    
+    // Handle validation errors
+    if (error instanceof Error && error.message.includes('Validation error')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      )
+    }
+    
+    // Handle URL validation errors
+    if (error instanceof Error && error.message.includes('Invalid URL')) {
+      return NextResponse.json(
+        { error: 'Invalid URL format or domain not allowed' },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json({ error: 'Failed to process URL' }, { status: 500 })
   }
 }
