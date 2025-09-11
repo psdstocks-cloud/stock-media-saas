@@ -8,6 +8,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "npm run lint",
     "deploy": "vercel --prod",
     "auto-deploy": "./scripts/auto-deploy.sh",
     "commit-and-deploy": "git add . && git commit -m '🔧 Auto-commit: $(date)' && git push origin main && vercel --prod",
