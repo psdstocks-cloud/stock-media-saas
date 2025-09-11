@@ -5,6 +5,10 @@ import Footer from '@/components/Footer'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { Button } from '@/components/ui/Button'
 import { DashboardPreview } from '@/components/ui/DashboardPreview'
+import { SecurityBadges } from '@/components/ui/SecurityBadges'
+import { TeamSection } from '@/components/ui/TeamSection'
+import { PressSection } from '@/components/ui/PressSection'
+import { ContactInfo } from '@/components/ui/ContactInfo'
 
 export default async function HomePage() {
   const plans = await prisma.subscriptionPlan.findMany({
@@ -184,6 +188,11 @@ export default async function HomePage() {
                   <span style={{ color: '#10b981' }}>✓</span>
                   <span>Commercial license included</span>
                 </div>
+              </div>
+
+              {/* Security Badges */}
+              <div style={{ marginTop: '24px' }}>
+                <SecurityBadges variant="compact" />
               </div>
             </div>
 
@@ -744,6 +753,34 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Team & Company Story Section */}
+      <section style={{
+        padding: '80px 0',
+        background: 'white'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <TeamSection variant="full" />
+        </div>
+      </section>
+
+      {/* Press & Media Coverage Section */}
+      <section style={{
+        padding: '80px 0',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <PressSection variant="full" />
         </div>
       </section>
 

@@ -1,15 +1,14 @@
-name: 🚀 Auto Deploy to Vercel
+name: 🏗️ Build and Test
 
 on:
-  # Disabled automatic deployment - using manual Vercel deployment instead
-  # push:
-  #   branches: [ main ]
-  # pull_request:
-  #   branches: [ main ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -28,20 +27,17 @@ jobs:
     - name: 🗄️ Setup Prisma
       run: npx prisma generate
       
+    - name: 🧪 Run Tests
+      run: npm test
+      env:
+        DATABASE_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
+        
     - name: 🏗️ Build Application
       run: npm run build
       env:
         DATABASE_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
-      
-    - name: 🚀 Deploy to Vercel
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
         
-    - name: 📊 Deployment Status
+    - name: 📊 Build Status
       run: |
-        echo "✅ Deployment completed successfully!"
-        echo "🌐 Production URL: https://stock-media-saas-izgzzvfah-psdstocks-projects.vercel.app"
+        echo "✅ Build and test workflow completed successfully!"
+        echo "🚀 Application is ready for deployment"

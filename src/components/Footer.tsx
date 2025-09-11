@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ContactInfo } from '@/components/ui/ContactInfo'
 
 interface FooterProps {
   variant?: 'home' | 'dashboard' | 'auth'
@@ -127,6 +128,11 @@ export default function Footer({ variant = 'home' }: FooterProps) {
               <Link href="/tutorials" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Tutorials</Link>
               <Link href="/community" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Community</Link>
             </div>
+          </div>
+
+          {/* Contact Information */}
+          <div>
+            <ContactInfo variant="footer" />
           </div>
 
           {/* Legal Links */}
