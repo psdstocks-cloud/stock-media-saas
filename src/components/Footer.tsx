@@ -87,10 +87,10 @@ export default function Footer({ variant = 'home' }: FooterProps) {
             
             {/* Social Links */}
             <div style={{ display: 'flex', gap: '16px' }}>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Twitter</a>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>LinkedIn</a>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Instagram</a>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>YouTube</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Twitter</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>LinkedIn</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Instagram</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>YouTube</a>
             </div>
           </div>
 
@@ -98,11 +98,11 @@ export default function Footer({ variant = 'home' }: FooterProps) {
           <div>
             <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Product</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Link href="/dashboard/browse" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Browse Media</Link>
-              <Link href="/dashboard" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Dashboard</Link>
-              <Link href="/api" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>API Access</Link>
-              <Link href="/integrations" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Integrations</Link>
-              <Link href="/mobile" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Mobile App</Link>
+              <Link href="/dashboard/browse" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Browse Media</Link>
+              <Link href="/dashboard" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Dashboard</Link>
+              <Link href="/api" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>API Access</Link>
+              <Link href="/integrations" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Integrations</Link>
+              <Link href="/mobile" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Mobile App</Link>
             </div>
           </div>
 
@@ -110,11 +110,11 @@ export default function Footer({ variant = 'home' }: FooterProps) {
           <div>
             <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Company</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Link href="/about" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>About Us</Link>
-              <Link href="/careers" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Careers</Link>
-              <Link href="/blog" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Blog</Link>
-              <Link href="/press" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Press</Link>
-              <Link href="/partners" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Partners</Link>
+              <Link href="/about" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>About Us</Link>
+              <Link href="/careers" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Careers</Link>
+              <Link href="/blog" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Blog</Link>
+              <Link href="/press" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Press</Link>
+              <Link href="/partners" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Partners</Link>
             </div>
           </div>
 
@@ -122,11 +122,11 @@ export default function Footer({ variant = 'home' }: FooterProps) {
           <div>
             <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Support</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Link href="/help" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Help Center</Link>
-              <Link href="/contact" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Contact Us</Link>
-              <Link href="/status" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>System Status</Link>
-              <Link href="/tutorials" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Tutorials</Link>
-              <Link href="/community" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Community</Link>
+              <Link href="/help" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Help Center</Link>
+              <Link href="/contact" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Contact Us</Link>
+              <Link href="/status" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>System Status</Link>
+              <Link href="/tutorials" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Tutorials</Link>
+              <Link href="/community" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Community</Link>
             </div>
           </div>
 
@@ -139,11 +139,11 @@ export default function Footer({ variant = 'home' }: FooterProps) {
           <div>
             <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Legal</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Link href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Privacy Policy</Link>
-              <Link href="/terms" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Terms of Service</Link>
-              <Link href="/licenses" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Licenses</Link>
-              <Link href="/cookies" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Cookie Policy</Link>
-              <Link href="/gdpr" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>GDPR</Link>
+              <Link href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Privacy Policy</Link>
+              <Link href="/terms" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Terms of Service</Link>
+              <Link href="/licenses" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Licenses</Link>
+              <Link href="/cookies" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Cookie Policy</Link>
+              <Link href="/gdpr" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>GDPR</Link>
             </div>
           </div>
         </div>

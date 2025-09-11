@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { SearchBar } from '@/components/ui/SearchBar'
+import { SearchBarWrapper } from '@/components/SearchBarWrapper'
 import { Button } from '@/components/ui/Button'
-import { DashboardPreview } from '@/components/ui/DashboardPreview'
+import { DashboardPreviewWrapper } from '@/components/DashboardPreviewWrapper'
 import { SecurityBadges } from '@/components/ui/SecurityBadges'
 import { TeamSection } from '@/components/ui/TeamSection'
 import { PressSection } from '@/components/ui/PressSection'
@@ -107,7 +107,7 @@ export default async function HomePage() {
               margin: '0 auto 48px',
               position: 'relative'
             }}>
-              <SearchBar 
+              <SearchBarWrapper 
                 placeholder="Search millions of stock photos, videos, and graphics..."
                 showSuggestions={true}
               />
@@ -139,14 +139,6 @@ export default async function HomePage() {
                       boxShadow: '0 8px 25px 0 rgba(37, 99, 235, 0.4)',
                       transform: 'translateY(0)',
                       transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 12px 35px 0 rgba(37, 99, 235, 0.6)'
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 8px 25px 0 rgba(37, 99, 235, 0.4)'
                     }}
                   >
                     🚀 Start Free Trial - No Credit Card
@@ -288,14 +280,6 @@ export default async function HomePage() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.3s ease',
                 cursor: 'pointer'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
               >
                 <div style={{
@@ -501,14 +485,6 @@ export default async function HomePage() {
                 position: 'relative',
                 overflow: 'hidden'
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
               >
                 {/* Quote Icon */}
                 <div style={{
@@ -671,7 +647,7 @@ export default async function HomePage() {
             </p>
           </div>
           
-          <DashboardPreview />
+          <DashboardPreviewWrapper />
         </div>
       </section>
 
@@ -1085,14 +1061,6 @@ export default async function HomePage() {
                     boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
                     transform: 'translateY(0)',
                     transition: 'all 0.3s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)'
-                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)'
                   }}
                 >
                   🚀 Start Free Trial - No Credit Card Required

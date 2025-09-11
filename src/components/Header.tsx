@@ -146,14 +146,6 @@ export default function Header({ variant = 'home', showUserMenu = true }: Header
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.borderColor = '#2563eb'
-                e.currentTarget.style.color = '#2563eb'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.borderColor = '#e2e8f0'
-                e.currentTarget.style.color = '#64748b'
-              }}
             >
               <Search size={16} />
               Search
