@@ -13,13 +13,12 @@ import { ContactInfo } from '@/components/ui/ContactInfo'
 export default async function HomePage() {
   // Handle database connection gracefully during build time
   let plans = []
-  try {
-    plans = await prisma.subscriptionPlan.findMany({
-      where: { isActive: true },
-      orderBy: { price: 'asc' },
-    })
-  } catch (error) {
-    console.log('Database not available during build, using fallback data')
+  
+  // Check if we're in build mode or if database is available
+  const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL?.includes('postgresql://')
+  
+  if (isBuildTime) {
+    console.log('Build time detected, using fallback data')
     // Fallback data for build time
     plans = [
       {
@@ -56,6 +55,51 @@ export default async function HomePage() {
         updatedAt: new Date()
       }
     ]
+  } else {
+    try {
+      plans = await prisma.subscriptionPlan.findMany({
+        where: { isActive: true },
+        orderBy: { price: 'asc' },
+      })
+    } catch (error) {
+      console.log('Database not available, using fallback data')
+      // Fallback data for runtime errors
+      plans = [
+        {
+          id: '1',
+          name: 'Starter',
+          price: 9.99,
+          points: 100,
+          isActive: true,
+          rolloverLimit: 50,
+          description: 'Perfect for getting started',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: '2', 
+          name: 'Pro',
+          price: 29.99,
+          points: 500,
+          isActive: true,
+          rolloverLimit: 75,
+          description: 'Great for growing businesses',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: '3',
+          name: 'Enterprise',
+          price: 99.99,
+          points: 2000,
+          isActive: true,
+          rolloverLimit: 100,
+          description: 'For large organizations',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ]
+    }
   }
 
   return (
