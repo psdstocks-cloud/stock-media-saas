@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { MediaCard } from '@/components/ui/MediaCard'
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
+import { SearchResultsSkeleton, MediaListSkeleton } from '@/components/ui/LoadingSkeleton'
 import { Button } from '@/components/ui/Button'
 import { useSearchStockMedia } from '@/hooks/useStockMedia'
 import { useAppStore } from '@/lib/store'
@@ -82,9 +82,9 @@ export default function BrowsePage() {
         {/* Results */}
         {isLoading ? (
           viewMode === 'grid' ? (
-            <LoadingSkeleton.SearchResultsSkeleton />
+            <SearchResultsSkeleton />
           ) : (
-            <LoadingSkeleton.MediaListSkeleton />
+            <MediaListSkeleton />
           )
         ) : error ? (
           <div className="text-center py-12">
@@ -107,7 +107,7 @@ export default function BrowsePage() {
               ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
               : 'space-y-4'
           }>
-            {searchData.data.results.map((media) => (
+            {searchData.data.results.map((media: any) => (
               <MediaCard
                 key={media.id}
                 media={media}

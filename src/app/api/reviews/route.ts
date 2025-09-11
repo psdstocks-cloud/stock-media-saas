@@ -163,16 +163,16 @@ export async function POST(request: NextRequest) {
     
     // Sanitize all inputs
     const sanitizedData = {
-      displayName: sanitizeString(validatedData.displayName),
-      role: sanitizeString(validatedData.role),
-      industry: sanitizeString(validatedData.industry),
+      displayName: validatedData.displayName ? sanitizeString(validatedData.displayName) : 'Anonymous',
+      role: validatedData.role ? sanitizeString(validatedData.role) : 'User',
+      industry: validatedData.industry ? sanitizeString(validatedData.industry) : 'General',
       title: sanitizeString(validatedData.title),
-      content: sanitizeString(validatedData.content),
+      content: validatedData.content ? sanitizeString(validatedData.content) : sanitizeString(validatedData.comment),
       rating: validatedData.rating,
       metrics: validatedData.metrics ? {
         downloadsSaved: validatedData.metrics.downloadsSaved || 0,
-        timeSaved: sanitizeString(validatedData.metrics.timeSaved || ''),
-        moneySaved: validatedData.metrics.moneySaved || 0
+        timeSaved: validatedData.metrics.timeSaved ? sanitizeString(validatedData.metrics.timeSaved) : undefined,
+        costSavings: validatedData.metrics.costSavings || 0
       } : null
     }
 

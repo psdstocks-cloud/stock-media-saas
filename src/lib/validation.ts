@@ -85,6 +85,59 @@ export function sanitizeInput(input: string): string {
     .slice(0, 1000) // Limit length
 }
 
+// Alias for sanitizeInput (for backward compatibility)
+export const sanitizeString = sanitizeInput
+
+// Contact form validation
+export const contactSchema = z.object({
+  name: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
+  email: emailSchema,
+  subject: z.string()
+    .min(5, 'Subject must be at least 5 characters')
+    .max(200, 'Subject must be less than 200 characters'),
+  message: z.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(2000, 'Message must be less than 2000 characters')
+})
+
+// Review validation
+export const reviewSchema = z.object({
+  rating: z.number()
+    .min(1, 'Rating must be at least 1')
+    .max(5, 'Rating must be at most 5'),
+  title: z.string()
+    .min(5, 'Title must be at least 5 characters')
+    .max(100, 'Title must be less than 100 characters'),
+  comment: z.string()
+    .min(10, 'Comment must be at least 10 characters')
+    .max(1000, 'Comment must be less than 1000 characters'),
+  orderId: z.string().uuid().optional(),
+  displayName: z.string()
+    .min(2, 'Display name must be at least 2 characters')
+    .max(50, 'Display name must be less than 50 characters')
+    .optional(),
+  role: z.string()
+    .min(2, 'Role must be at least 2 characters')
+    .max(100, 'Role must be less than 100 characters')
+    .optional(),
+  industry: z.string()
+    .min(2, 'Industry must be at least 2 characters')
+    .max(100, 'Industry must be less than 100 characters')
+    .optional(),
+  content: z.string()
+    .min(10, 'Content must be at least 10 characters')
+    .max(2000, 'Content must be less than 2000 characters')
+    .optional(),
+  metrics: z.object({
+    downloadsSaved: z.number().min(0).optional(),
+    timeSaved: z.string().optional(),
+    costSavings: z.number().min(0).optional()
+  }).optional()
+})
+
 // URL validation and sanitization
 export function validateAndSanitizeUrl(url: string): string {
   try {

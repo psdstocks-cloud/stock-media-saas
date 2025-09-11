@@ -67,6 +67,7 @@ export const useInfiniteSearchStockMedia = (query: string, filters: SearchFilter
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.hasMore ? allPages.length : undefined
     },
+    initialPageParam: 0,
     enabled: !!query && query.length > 2,
     staleTime: 2 * 60 * 1000,
   })

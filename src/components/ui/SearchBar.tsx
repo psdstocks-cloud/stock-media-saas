@@ -137,7 +137,7 @@ export function SearchBar({
               Loading suggestions...
             </div>
           ) : (
-            suggestions.map((suggestion, index) => (
+            suggestions.map((suggestion: any, index: number) => (
               <button
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}

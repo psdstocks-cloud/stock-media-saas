@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { checkRateLimit } from '@/lib/rate-limit'
-
-// Rate limiting for order status checks
-const orderStatusRateLimit = checkRateLimit({
-  interval: 60000, // 1 minute
-  uniqueTokenPerInterval: 100, // Allow 100 requests per minute per IP
-})
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 export async function GET(
   request: NextRequest,
@@ -18,13 +12,15 @@ export async function GET(
     console.log('Order status API called for order:', params.id)
     
     // Rate limiting
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
-    const rateLimitResult = orderStatusRateLimit.checkLimit(clientIP)
+    const clientIdentifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRateLimit(clientIdentifier, 'general')
     
     if (!rateLimitResult.success) {
-      console.log('Rate limit exceeded for order status check:', clientIP)
+      console.log('Rate limit exceeded for order status check:', clientIdentifier)
       return NextResponse.json({ 
-        error: 'Too many requests. Please wait before checking again.' 
+        error: 'Too many requests. Please wait before checking again.',
+        remaining: rateLimitResult.remaining,
+        resetTime: new Date(rateLimitResult.reset).toISOString()
       }, { status: 429 })
     }
     

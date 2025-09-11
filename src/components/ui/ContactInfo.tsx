@@ -3,7 +3,7 @@
 import { Mail, Phone, MapPin, Clock, MessageCircle, Headphones, FileText, Users } from 'lucide-react'
 
 interface ContactMethod {
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: any
   title: string
   description: string
   value: string

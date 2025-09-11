@@ -11,14 +11,13 @@ export async function POST(request: NextRequest) {
     console.log('Registration attempt:', { name, email, planId, clientIP })
 
     // Apply rate limiting
-    const rateLimitResult = checkRegistrationRateLimit(clientIP)
-    if (!rateLimitResult.allowed) {
+    const rateLimitResult = await checkRegistrationRateLimit(clientIP)
+    if (!rateLimitResult.success) {
       return NextResponse.json({
         error: 'Too many registration attempts. Please try again later.',
         type: 'RATE_LIMIT_EXCEEDED',
-        retryAfter: rateLimitResult.retryAfter,
         remaining: rateLimitResult.remaining,
-        resetTime: rateLimitResult.resetTime
+        resetTime: new Date(rateLimitResult.reset).toISOString()
       }, { status: 429 })
     }
 

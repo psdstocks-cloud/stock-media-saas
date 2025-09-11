@@ -90,3 +90,16 @@ export function getClientIdentifier(request: Request): string {
   const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
   return `ip:${ip}`
 }
+
+// Specific rate limit functions for different endpoints
+export async function checkRegistrationRateLimit(identifier: string) {
+  return checkRateLimit(identifier, 'auth')
+}
+
+export async function checkEmailVerificationRateLimit(identifier: string) {
+  return checkRateLimit(identifier, 'auth')
+}
+
+export async function checkPasswordResetRateLimit(identifier: string) {
+  return checkRateLimit(identifier, 'auth')
+}

@@ -3,7 +3,7 @@
 import { Shield, Lock, CheckCircle, Award, Globe, Zap } from 'lucide-react'
 
 interface SecurityBadge {
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: any
   title: string
   description: string
   verified?: boolean
