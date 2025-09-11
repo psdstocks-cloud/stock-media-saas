@@ -103,236 +103,139 @@ export default async function HomePage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
+    <div className="min-h-screen" style={{
       background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%)',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
+      fontFamily: 'var(--font-sans)'
     }}>
       {/* Header */}
       <Header variant="home" />
 
-      {/* Hero Section */}
-      <section style={{
-        padding: '80px 0',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Background Video/Image */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          opacity: 0.1,
-          zIndex: 0
+      {/* Hero Section - Modern 2024 Design */}
+      <section className="section-padding-lg relative overflow-hidden">
+        {/* Modern Background with Glassmorphism */}
+        <div className="absolute inset-0 opacity-10" style={{
+          background: 'var(--brand-gradient)'
+        }} />
+        
+        {/* Floating Glass Elements */}
+        <div className="absolute top-20 left-10 w-32 h-32 glass-card animate-pulse" style={{
+          borderRadius: '50%',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-backdrop)'
+        }} />
+        <div className="absolute top-40 right-20 w-24 h-24 glass-card animate-pulse" style={{
+          borderRadius: '30%',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-backdrop)',
+          animationDelay: '1s'
+        }} />
+        <div className="absolute bottom-20 left-1/4 w-20 h-20 glass-card animate-pulse" style={{
+          borderRadius: '40%',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-backdrop)',
+          animationDelay: '2s'
         }} />
         
         {/* Hero Content */}
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <div style={{
-            maxWidth: '896px',
-            margin: '0 auto'
-          }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              borderRadius: '9999px',
-              background: 'linear-gradient(135deg, #667eea, #764ba2)',
-              color: 'white',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '600',
-              marginBottom: '24px',
-              boxShadow: '0 4px 14px 0 rgba(102, 126, 234, 0.4)'
-            }}>
-              🚀 New: AI-Powered Search & 10M+ Premium Assets
+        <div className="container-modern relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Modern Badge */}
+            <div className="inline-flex items-center glass-button animate-fade-in-down mb-6">
+              <span className="text-sm font-semibold text-white">
+                🚀 New: AI-Powered Search & 10M+ Premium Assets
+              </span>
             </div>
-            <h1 style={{
-              fontSize: 'clamp(48px, 8vw, 80px)',
-              fontWeight: '800',
-              color: '#0f172a',
-              marginBottom: '24px',
-              lineHeight: '1.1'
-            }}>
+            
+            {/* Modern Typography */}
+            <h1 className="text-display-2xl mb-6 animate-fade-in-up">
               The Ultimate{' '}
-              <span style={{
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
+              <span className="text-gradient">
                 Stock Media
               </span>
               <br />
               Platform
-          </h1>
-            <p style={{
-              fontSize: 'clamp(20px, 3vw, 24px)',
-              color: '#64748b',
-              marginBottom: '32px',
-              lineHeight: '1.6',
-              maxWidth: '768px',
-              margin: '0 auto 32px'
-            }}>
+            </h1>
+            
+            <p className="text-body-lg text-secondary-600 mb-8 max-w-3xl mx-auto animate-fade-in-up animate-stagger-1">
               Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide. 
               Download instantly with our point-based system and commercial licensing.
             </p>
             
-            {/* Search Bar */}
-            <div style={{
-              maxWidth: '600px',
-              margin: '0 auto 48px',
-              position: 'relative'
-            }}>
+            {/* Modern Search Bar */}
+            <div className="max-w-2xl mx-auto mb-12 animate-fade-in-up animate-stagger-2">
               <SearchBarWrapper 
                 placeholder="Search millions of stock photos, videos, and graphics..."
                 showSuggestions={true}
               />
             </div>
 
-            {/* Enhanced CTAs */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: '48px'
-            }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: '16px',
-                flexWrap: 'wrap',
-                justifyContent: 'center'
-            }}>
-              <Link href="/register">
-                  <Button 
-                    variant="gradient" 
-                    size="lg"
-                    style={{
-                      fontSize: '18px',
-                  padding: '16px 32px',
-                      boxShadow: '0 8px 25px 0 rgba(37, 99, 235, 0.4)',
-                      transform: 'translateY(0)',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
+            {/* Modern CTAs with 2024 Design */}
+            <div className="flex-modern-col items-center justify-center space-y-4 mb-12 animate-fade-in-up animate-stagger-3">
+              <div className="flex-modern-wrap items-center justify-center">
+                <Link href="/register">
+                  <button className="btn-modern btn-modern-lg btn-modern-primary btn-shine btn-glow hover-lift">
                     🚀 Start Free Trial - No Credit Card
-                  </Button>
+                  </button>
                 </Link>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  style={{
-                  fontSize: '18px',
-                padding: '16px 32px',
-                    border: '2px solid #2563eb',
-                    color: '#2563eb',
-                    fontWeight: '600'
-                  }}
-                >
+                
+                <button className="btn-modern btn-modern-lg btn-modern-outline hover-lift">
                   ▶️ Watch 2-Min Demo
-                </Button>
+                </button>
               </div>
               
-              {/* Trust Indicators */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                marginTop: '16px',
-                fontSize: '14px',
-                color: '#64748b'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#10b981' }}>✓</span>
+              {/* Modern Trust Indicators */}
+              <div className="flex-modern-wrap items-center justify-center space-x-6 mt-4">
+                <div className="flex items-center space-x-2 text-success-600 text-sm font-medium">
+                  <span>✓</span>
                   <span>Free 7-day trial</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#10b981' }}>✓</span>
+                <div className="flex items-center space-x-2 text-success-600 text-sm font-medium">
+                  <span>✓</span>
                   <span>Cancel anytime</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#10b981' }}>✓</span>
+                <div className="flex items-center space-x-2 text-success-600 text-sm font-medium">
+                  <span>✓</span>
                   <span>Commercial license included</span>
                 </div>
               </div>
 
               {/* Security Badges */}
-              <div style={{ marginTop: '24px' }}>
+              <div className="mt-6">
                 <SecurityBadges variant="compact" />
               </div>
             </div>
 
-            {/* Stats Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '32px',
-              maxWidth: '600px',
-              margin: '0 auto'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>10M+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Premium Assets</div>
+            {/* Modern Stats Grid */}
+            <div className="grid-modern max-w-2xl mx-auto animate-fade-in-up animate-stagger-4">
+              <div className="text-center card-modern p-6 hover-lift">
+                <div className="text-4xl font-bold text-secondary-900 mb-2">10M+</div>
+                <div className="text-secondary-600 font-medium">Premium Assets</div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>500+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Stock Sites</div>
+              <div className="text-center card-modern p-6 hover-lift">
+                <div className="text-4xl font-bold text-secondary-900 mb-2">500+</div>
+                <div className="text-secondary-600 font-medium">Stock Sites</div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>50K+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Happy Users</div>
+              <div className="text-center card-modern p-6 hover-lift">
+                <div className="text-4xl font-bold text-secondary-900 mb-2">50K+</div>
+                <div className="text-secondary-600 font-medium">Happy Users</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Content Preview Section */}
-        <div style={{
-          marginTop: '80px',
-          background: 'white',
-          borderRadius: '16px',
-          padding: '40px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          maxWidth: '1000px',
-          margin: '80px auto 0',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h3 style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#0f172a',
-              marginBottom: '8px'
-            }}>
+        {/* Modern Content Preview Section */}
+        <div className="card-modern-elevated max-w-5xl mx-auto mt-20 p-10 relative z-10 animate-fade-in-up">
+          <div className="text-center mb-8">
+            <h3 className="text-display-lg mb-3">
               See What You Get
             </h3>
-            <p style={{
-              color: '#64748b',
-              fontSize: '16px'
-            }}>
+            <p className="text-body-lg text-secondary-600">
               Preview of premium content available on our platform
             </p>
           </div>
           
-          {/* Content Grid Preview */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '20px'
-          }}>
+          {/* Modern Content Grid Preview */}
+          <div className="grid-masonry">
             {[
               {
                 image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
@@ -359,54 +262,21 @@ export default async function HomePage() {
                 cost: '5 pts'
               }
             ].map((item, index) => (
-              <div key={index} style={{
-                background: 'white',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer'
-              }}
-              >
-                <div style={{
-                  width: '100%',
-                  height: '150px',
-                  background: `url(${item.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  position: 'relative'
+              <div key={index} className="card-modern-interactive hover-lift animate-fade-in-up" style={{
+                animationDelay: `${index * 0.1}s`
+              }}>
+                <div className="relative h-40 bg-cover bg-center" style={{
+                  backgroundImage: `url(${item.image})`
                 }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: '600'
-                  }}>
+                  <div className="absolute top-2 right-2 glass-button text-xs">
                     {item.cost}
                   </div>
                 </div>
-                <div style={{ padding: '12px' }}>
-                  <h4 style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#0f172a',
-                    marginBottom: '4px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}>
+                <div className="p-4">
+                  <h4 className="text-sm font-semibold text-secondary-900 mb-1 truncate">
                     {item.title}
                   </h4>
-                  <p style={{
-                    fontSize: '12px',
-                    color: '#64748b',
-                    textTransform: 'capitalize'
-                  }}>
+                  <p className="text-xs text-secondary-600 capitalize">
                     {item.site}
                   </p>
                 </div>
@@ -414,18 +284,11 @@ export default async function HomePage() {
             ))}
           </div>
           
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <div className="text-center mt-6">
             <Link href="/dashboard/browse">
-              <Button 
-                variant="gradient" 
-                size="lg"
-                style={{
-                  fontSize: '16px',
-                  padding: '12px 24px'
-                }}
-              >
+              <button className="btn-modern btn-modern-md btn-modern-primary btn-shine hover-lift">
                 Browse All Content →
-              </Button>
+              </button>
             </Link>
           </div>
         </div>
