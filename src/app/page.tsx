@@ -581,7 +581,7 @@ export default async function HomePage() {
                   color: '#e2e8f0',
                   opacity: '0.5'
                 }}>
-                  "
+                  &ldquo;
                 </div>
                 
                 <div style={{
@@ -601,7 +601,7 @@ export default async function HomePage() {
                   fontSize: '16px',
                   fontStyle: 'italic'
                 }}>
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </p>
                 
                 <div style={{
@@ -762,7 +762,7 @@ export default async function HomePage() {
               maxWidth: '768px',
               margin: '0 auto'
             }}>
-              We've built the most comprehensive stock media platform with features designed for modern creators and businesses.
+              We&apos;ve built the most comprehensive stock media platform with features designed for modern creators and businesses.
             </p>
           </div>
           <div style={{
