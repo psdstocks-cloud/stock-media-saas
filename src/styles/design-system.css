@@ -245,19 +245,24 @@ body {
   letter-spacing: 0.05em;
 }
 
-/* Button Styles */
+/* Button Styles - Enhanced with Modern Effects */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-lg);
   font-weight: var(--font-medium);
-  transition: all var(--transition-fast);
+  transition: var(--transition-all);
   cursor: pointer;
   border: none;
   text-decoration: none;
   position: relative;
   overflow: hidden;
+  transform: translateY(0);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
 }
 
 .btn:focus {
@@ -297,15 +302,15 @@ body {
 
 /* Button Variants */
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  background: var(--gradient-primary);
   color: white;
   box-shadow: var(--shadow-md);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-3px);
 }
 
 .btn-secondary {
@@ -318,7 +323,8 @@ body {
 .btn-secondary:hover:not(:disabled) {
   background: var(--secondary-50);
   border-color: var(--secondary-400);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .btn-ghost {
@@ -343,18 +349,20 @@ body {
   transform: translateY(-1px);
 }
 
-/* Card Styles */
+/* Card Styles - Enhanced with Modern Effects */
 .card {
   background: white;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--secondary-200);
-  transition: all var(--transition-normal);
+  transition: var(--transition-all);
+  transform: translateY(0);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+  border-color: var(--primary-200);
 }
 
 .card-elevated {
@@ -362,8 +370,9 @@ body {
 }
 
 .card-elevated:hover {
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-6px);
+  border-color: var(--primary-300);
 }
 
 /* Input Styles */
@@ -495,9 +504,9 @@ body {
   }
 }
 
-/* Utility Classes */
+/* Utility Classes - Enhanced with Modern Effects */
 .gradient-primary {
-  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  background: var(--gradient-primary);
 }
 
 .gradient-secondary {
@@ -505,7 +514,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -516,37 +525,82 @@ body {
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Animation Classes */
+/* Modern Visual Effects */
+.hover-lift {
+  transition: var(--transition-all);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-glow {
+  transition: var(--transition-all);
+}
+
+.hover-glow:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.hover-scale {
+  transition: var(--transition-all);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Modern Animation Classes */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s ease-out;
+  animation: slideUp 0.6s ease-out;
 }
 
-.animate-slide-down {
-  animation: slideDown 0.5s ease-out;
+.animate-bounce-in {
+  animation: bounceIn 0.6s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
   }
+}
+
+@keyframes bounceIn {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.3); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05); 
+  }
+  70% { 
+    transform: scale(0.9); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+/* Additional Animation Classes */
+.animate-slide-down {
+  animation: slideDown 0.6s ease-out;
 }
 
 @keyframes slideDown {
