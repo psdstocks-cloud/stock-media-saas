@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateCSRFToken, checkCSRFRateLimit } from '@/lib/csrf'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'

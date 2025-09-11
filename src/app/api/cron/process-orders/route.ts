@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OrderProcessor } from '@/lib/order-processor'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // Verify this is a legitimate cron request
