@@ -4,6 +4,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { Button } from '@/components/ui/Button'
+import { DashboardPreview } from '@/components/ui/DashboardPreview'
 
 export default async function HomePage() {
   const plans = await prisma.subscriptionPlan.findMany({
@@ -629,6 +630,39 @@ export default async function HomePage() {
               <span style={{ fontWeight: '600', color: '#0f172a' }}>Commercial License</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Platform Preview Section */}
+      <section style={{
+        padding: '80px 0',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{
+              fontSize: 'clamp(32px, 6vw, 40px)',
+              fontWeight: '700',
+              color: '#0f172a',
+              marginBottom: '16px'
+            }}>
+              See the Platform in Action
+            </h2>
+            <p style={{
+              fontSize: '18px',
+              color: '#64748b',
+              maxWidth: '600px',
+              margin: '0 auto'
+            }}>
+              Get a preview of your dashboard and see how easy it is to manage your stock media library
+            </p>
+          </div>
+          
+          <DashboardPreview />
         </div>
       </section>
 

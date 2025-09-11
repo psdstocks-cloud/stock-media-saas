@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { User, LogOut, Settings, CreditCard, Download, Menu, X } from 'lucide-react'
+import { User, LogOut, Settings, CreditCard, Download, Menu, X, Search } from 'lucide-react'
+import { SearchBar } from '@/components/ui/SearchBar'
 
 interface HeaderProps {
   variant?: 'home' | 'dashboard' | 'auth'
@@ -16,6 +17,7 @@ export default function Header({ variant = 'home', showUserMenu = true }: Header
   const [isLoading, setIsLoading] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
 
   // Fetch user balance
   useEffect(() => {
@@ -99,6 +101,22 @@ export default function Header({ variant = 'home', showUserMenu = true }: Header
             </span>
           </Link>
 
+          {/* Search Bar - Show on all pages */}
+          <div style={{ 
+            flex: 1, 
+            maxWidth: '400px', 
+            margin: '0 32px',
+            display: variant === 'home' ? 'block' : 'none'
+          }}>
+            <SearchBar 
+              placeholder="Search stock media..."
+              showSuggestions={true}
+              onSearch={(query) => {
+                window.location.href = `/dashboard/browse?q=${encodeURIComponent(query)}`
+              }}
+            />
+          </div>
+
           {/* Navigation - Only show on home page */}
           {variant === 'home' && (
             <div className="desktop-nav" style={{ 
@@ -110,6 +128,36 @@ export default function Header({ variant = 'home', showUserMenu = true }: Header
               <a href="#pricing" style={{ color: '#64748b', textDecoration: 'none' }}>Pricing</a>
               <Link href="/reviews" style={{ color: '#64748b', textDecoration: 'none' }}>Reviews</Link>
             </div>
+          )}
+
+          {/* Search Button for Dashboard */}
+          {variant === 'dashboard' && (
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                background: 'transparent',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                color: '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.borderColor = '#2563eb'
+                e.currentTarget.style.color = '#2563eb'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.borderColor = '#e2e8f0'
+                e.currentTarget.style.color = '#64748b'
+              }}
+            >
+              <Search size={16} />
+              Search
+            </button>
           )}
 
           {/* Mobile Menu Button */}

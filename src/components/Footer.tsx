@@ -21,10 +21,11 @@ export default function Footer({ variant = 'home' }: FooterProps) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '32px'
+          gap: '40px',
+          marginBottom: '48px'
         }}>
           {/* Brand Section */}
-          <div>
+          <div style={{ gridColumn: 'span 2' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <div style={{
                 width: '32px',
@@ -42,122 +43,145 @@ export default function Footer({ variant = 'home' }: FooterProps) {
             <p style={{
               color: '#94a3b8',
               lineHeight: '1.6',
-              marginBottom: '24px'
+              marginBottom: '24px',
+              maxWidth: '400px'
             }}>
-              The ultimate platform for accessing premium stock media from around the world.
+              The ultimate platform for accessing premium stock media from 500+ top sites worldwide. 
+              Download instantly with commercial licensing and our innovative point-based system.
             </p>
+            
+            {/* Newsletter Signup */}
+            <div style={{ marginBottom: '24px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+                Stay Updated
+              </h4>
+              <div style={{ display: 'flex', gap: '8px', maxWidth: '300px' }}>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #374151',
+                    background: '#1f2937',
+                    color: 'white',
+                    fontSize: '14px'
+                  }}
+                />
+                <button style={{
+                  padding: '8px 16px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}>
+                  Subscribe
+                </button>
+              </div>
+            </div>
             
             {/* Social Links */}
             <div style={{ display: 'flex', gap: '16px' }}>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Twitter</a>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>LinkedIn</a>
-              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none' }}>Instagram</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Twitter</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>LinkedIn</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Instagram</a>
+              <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>YouTube</a>
             </div>
           </div>
 
           {/* Product Links */}
           <div>
-            <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Product</h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              <li style={{ marginBottom: '8px' }}>
-                <a href="#features" style={{ color: '#94a3b8', textDecoration: 'none' }}>Features</a>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <a href="#pricing" style={{ color: '#94a3b8', textDecoration: 'none' }}>Pricing</a>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <a href="/api" style={{ color: '#94a3b8', textDecoration: 'none' }}>API</a>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <a href="/documentation" style={{ color: '#94a3b8', textDecoration: 'none' }}>Documentation</a>
-              </li>
-            </ul>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Product</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link href="/dashboard/browse" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Browse Media</Link>
+              <Link href="/dashboard" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Dashboard</Link>
+              <Link href="/api" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>API Access</Link>
+              <Link href="/integrations" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Integrations</Link>
+              <Link href="/mobile" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Mobile App</Link>
+            </div>
           </div>
 
           {/* Company Links */}
           <div>
-            <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Company</h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/about" style={{ color: '#94a3b8', textDecoration: 'none' }}>About</Link>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/blog" style={{ color: '#94a3b8', textDecoration: 'none' }}>Blog</Link>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/careers" style={{ color: '#94a3b8', textDecoration: 'none' }}>Careers</Link>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/contact" style={{ color: '#94a3b8', textDecoration: 'none' }}>Contact</Link>
-              </li>
-            </ul>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Company</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link href="/about" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>About Us</Link>
+              <Link href="/careers" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Careers</Link>
+              <Link href="/blog" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Blog</Link>
+              <Link href="/press" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Press</Link>
+              <Link href="/partners" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Partners</Link>
+            </div>
           </div>
 
           {/* Support Links */}
           <div>
-            <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Support</h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/dashboard/support" style={{ color: '#94a3b8', textDecoration: 'none' }}>Help Center</Link>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <a href="/status" style={{ color: '#94a3b8', textDecoration: 'none' }}>Status</a>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>Privacy</Link>
-              </li>
-              <li style={{ marginBottom: '8px' }}>
-                <Link href="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>Terms</Link>
-              </li>
-            </ul>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Support</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link href="/help" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Help Center</Link>
+              <Link href="/contact" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Contact Us</Link>
+              <Link href="/status" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>System Status</Link>
+              <Link href="/tutorials" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Tutorials</Link>
+              <Link href="/community" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Community</Link>
+            </div>
+          </div>
+
+          {/* Legal Links */}
+          <div>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Legal</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Privacy Policy</Link>
+              <Link href="/terms" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Terms of Service</Link>
+              <Link href="/licenses" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Licenses</Link>
+              <Link href="/cookies" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>Cookie Policy</Link>
+              <Link href="/gdpr" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = 'white'}>GDPR</Link>
+            </div>
           </div>
         </div>
 
         {/* Bottom Section */}
         <div style={{
-          borderTop: '1px solid #334155',
-          marginTop: '48px',
+          borderTop: '1px solid #374151',
           paddingTop: '32px',
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
+          gap: '24px',
           alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px'
+          textAlign: 'center'
         }}>
-          <p style={{ color: '#94a3b8', margin: 0 }}>
-            © 2024 StockMedia Pro. All rights reserved.
-          </p>
-          
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-            <span style={{ color: '#94a3b8', fontSize: '14px' }}>
-              Made with ❤️ for creators
-            </span>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              color: '#10b981',
-              fontSize: '14px'
-            }}>
-              <div style={{
-                width: '8px',
-                height: '8px',
-                background: '#10b981',
-                borderRadius: '50%',
-                animation: 'pulse 2s infinite'
-              }} />
-              <span>All systems operational</span>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '24px',
+            fontSize: '14px',
+            color: '#94a3b8'
+          }}>
+            <span>© 2024 StockMedia Pro. All rights reserved.</span>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <Link href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>Privacy</Link>
+              <Link href="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>Terms</Link>
+              <Link href="/cookies" style={{ color: '#94a3b8', textDecoration: 'none' }}>Cookies</Link>
             </div>
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '12px',
+            color: '#6b7280'
+          }}>
+            <span>Made with ❤️ for creators worldwide</span>
+            <span>•</span>
+            <span>Powered by Next.js & Vercel</span>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </footer>
   )
 }
