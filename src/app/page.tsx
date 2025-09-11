@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { SearchBar } from '@/components/ui/SearchBar'
+import { Button } from '@/components/ui/Button'
 
 export default async function HomePage() {
   const plans = await prisma.subscriptionPlan.findMany({
@@ -21,12 +23,29 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section style={{
         padding: '80px 0',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
+        {/* Background Video/Image */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          opacity: 0.1,
+          zIndex: 0
+        }} />
+        
+        {/* Hero Content */}
         <div style={{
           maxWidth: '1280px',
           margin: '0 auto',
-          padding: '0 1rem'
+          padding: '0 1rem',
+          position: 'relative',
+          zIndex: 1
         }}>
           <div style={{
             maxWidth: '896px',
@@ -36,14 +55,15 @@ export default async function HomePage() {
               display: 'inline-flex',
               alignItems: 'center',
               borderRadius: '9999px',
-              background: '#dbeafe',
-              color: '#1d4ed8',
-              padding: '4px 12px',
+              background: 'linear-gradient(135deg, #667eea, #764ba2)',
+              color: 'white',
+              padding: '8px 16px',
               fontSize: '14px',
-              fontWeight: '500',
-              marginBottom: '24px'
+              fontWeight: '600',
+              marginBottom: '24px',
+              boxShadow: '0 4px 14px 0 rgba(102, 126, 234, 0.4)'
             }}>
-              🚀 New: AI-Powered Search
+              🚀 New: AI-Powered Search & 10M+ Premium Assets
             </div>
             <h1 style={{
               fontSize: 'clamp(48px, 8vw, 80px)',
@@ -75,83 +95,20 @@ export default async function HomePage() {
               Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide. 
               Download instantly with our point-based system and commercial licensing.
             </p>
+            
             {/* Search Bar */}
             <div style={{
               maxWidth: '600px',
               margin: '0 auto 48px',
               position: 'relative'
             }}>
-              <div style={{
-                display: 'flex',
-                background: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-                overflow: 'hidden',
-                border: '2px solid transparent',
-                transition: 'all 0.3s ease'
-              }}>
-                <input
-                  type="text"
-                  placeholder="Search millions of stock photos, videos, and graphics..."
-                  style={{
-                    flex: 1,
-                    padding: '16px 20px',
-                    border: 'none',
-                    outline: 'none',
-                    fontSize: '16px',
-                    background: 'transparent'
-                  }}
-                />
-                <button style={{
-                  padding: '16px 24px',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: 'white',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  🔍 Search
-                </button>
-              </div>
-              {/* Popular Search Terms */}
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
-                marginTop: '16px',
-                justifyContent: 'center'
-              }}>
-                {['nature', 'business', 'technology', 'people', 'abstract'].map((term) => (
-                  <span
-                    key={term}
-                    style={{
-                      padding: '4px 12px',
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      borderRadius: '20px',
-                      fontSize: '14px',
-                      color: '#64748b',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#2563eb'
-                      e.currentTarget.style.color = 'white'
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)'
-                      e.currentTarget.style.color = '#64748b'
-                    }}
-                  >
-                    {term}
-                  </span>
-                ))}
-              </div>
+              <SearchBar 
+                placeholder="Search millions of stock photos, videos, and graphics..."
+                showSuggestions={true}
+              />
             </div>
 
+            {/* Enhanced CTAs */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -160,42 +117,86 @@ export default async function HomePage() {
               alignItems: 'center',
               marginBottom: '48px'
             }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: '16px',
+                flexWrap: 'wrap',
+                justifyContent: 'center'
+            }}>
               <Link href="/register">
-                <button style={{
+                  <Button 
+                    variant="gradient" 
+                    size="lg"
+                    style={{
+                      fontSize: '18px',
                   padding: '16px 32px',
-                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: 'white',
+                      boxShadow: '0 8px 25px 0 rgba(37, 99, 235, 0.4)',
+                      transform: 'translateY(0)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 12px 35px 0 rgba(37, 99, 235, 0.6)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 8px 25px 0 rgba(37, 99, 235, 0.4)'
+                    }}
+                  >
+                    🚀 Start Free Trial - No Credit Card
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  style={{
                   fontSize: '18px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  boxShadow: '0 4px 14px 0 rgba(37, 99, 235, 0.4)',
-                  transition: 'all 0.3s ease'
-                }}>Start Free Trial</button>
-            </Link>
-              <button style={{
                 padding: '16px 32px',
-                border: '1px solid #cbd5e1',
-                color: '#374151',
-                fontSize: '18px',
-                borderRadius: '8px',
-                background: 'transparent',
-                cursor: 'pointer',
-                fontWeight: '500',
-                transition: 'all 0.3s ease'
-              }}>Watch Demo</button>
+                    border: '2px solid #2563eb',
+                    color: '#2563eb',
+                    fontWeight: '600'
+                  }}
+                >
+                  ▶️ Watch 2-Min Demo
+                </Button>
+              </div>
+              
+              {/* Trust Indicators */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                marginTop: '16px',
+                fontSize: '14px',
+                color: '#64748b'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Free 7-day trial</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Cancel anytime</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Commercial license included</span>
+                </div>
+              </div>
             </div>
+
+            {/* Stats Grid */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: '32px',
-              maxWidth: '512px',
+              maxWidth: '600px',
               margin: '0 auto'
             }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>10M+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Media Files</div>
+                <div style={{ color: '#64748b', fontWeight: '500' }}>Premium Assets</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>500+</div>
@@ -205,40 +206,178 @@ export default async function HomePage() {
                 <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>50K+</div>
                 <div style={{ color: '#64748b', fontWeight: '500' }}>Happy Users</div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>99.9%</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Uptime</div>
-              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Content Preview Section */}
+        <div style={{
+          marginTop: '80px',
+          background: 'white',
+          borderRadius: '16px',
+          padding: '40px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+          maxWidth: '1000px',
+          margin: '80px auto 0',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h3 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: '#0f172a',
+              marginBottom: '8px'
+            }}>
+              See What You Get
+            </h3>
+            <p style={{
+              color: '#64748b',
+              fontSize: '16px'
+            }}>
+              Preview of premium content available on our platform
+            </p>
+          </div>
+          
+          {/* Content Grid Preview */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '20px'
+          }}>
+            {[
+              {
+                image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
+                title: 'Nature Landscapes',
+                site: 'Unsplash',
+                cost: 'Free'
+              },
+              {
+                image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=300&h=200&fit=crop',
+                title: 'Business Meeting',
+                site: 'Pexels',
+                cost: '3 pts'
+              },
+              {
+                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',
+                title: 'Technology Abstract',
+                site: 'Pixabay',
+                cost: '2 pts'
+              },
+              {
+                image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=200&fit=crop',
+                title: 'Creative Design',
+                site: 'Freepik',
+                cost: '5 pts'
+              }
+            ].map((item, index) => (
+              <div key={index} style={{
+                background: 'white',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}
+              >
+                <div style={{
+                  width: '100%',
+                  height: '150px',
+                  background: `url(${item.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  position: 'relative'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}>
+                    {item.cost}
+                  </div>
+                </div>
+                <div style={{ padding: '12px' }}>
+                  <h4 style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#0f172a',
+                    marginBottom: '4px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {item.title}
+                  </h4>
+                  <p style={{
+                    fontSize: '12px',
+                    color: '#64748b',
+                    textTransform: 'capitalize'
+                  }}>
+                    {item.site}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <Link href="/dashboard/browse">
+              <Button 
+                variant="gradient" 
+                size="lg"
+                style={{
+                  fontSize: '16px',
+                  padding: '12px 24px'
+                }}
+              >
+                Browse All Content →
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Enhanced Social Proof Section */}
       <section style={{
-        padding: '60px 0',
-        background: 'white',
-        borderTop: '1px solid #e2e8f0'
+        padding: '80px 0',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+        position: 'relative'
       }}>
         <div style={{
           maxWidth: '1280px',
           margin: '0 auto',
           padding: '0 1rem'
         }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
             <h3 style={{
-              fontSize: '24px',
-              fontWeight: '600',
+              fontSize: 'clamp(28px, 5vw, 36px)',
+              fontWeight: '700',
               color: '#0f172a',
               marginBottom: '16px'
             }}>
               Trusted by 50,000+ Creators Worldwide
             </h3>
             <p style={{
-              fontSize: '16px',
-              color: '#64748b'
+              fontSize: '18px',
+              color: '#64748b',
+              maxWidth: '600px',
+              margin: '0 auto'
             }}>
-              Join designers, marketers, and content creators from top companies
+              Join designers, marketers, and content creators from top companies who trust StockMedia Pro
             </p>
           </div>
           
@@ -249,26 +388,41 @@ export default async function HomePage() {
             justifyContent: 'center',
             alignItems: 'center',
             gap: '48px',
-            marginBottom: '48px',
-            opacity: '0.6'
+            marginBottom: '64px',
+            opacity: '0.7'
           }}>
-            {['Adobe', 'Figma', 'Canva', 'Notion', 'Slack', 'Spotify'].map((company) => (
-              <div key={company} style={{
-                fontSize: '20px',
+            {[
+              { name: 'Adobe', logo: '🎨' },
+              { name: 'Figma', logo: '🎯' },
+              { name: 'Canva', logo: '✨' },
+              { name: 'Notion', logo: '📝' },
+              { name: 'Slack', logo: '💬' },
+              { name: 'Spotify', logo: '🎵' }
+            ].map((company) => (
+              <div key={company.name} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '18px',
                 fontWeight: '600',
-                color: '#64748b'
+                color: '#64748b',
+                padding: '8px 16px',
+                background: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>
-                {company}
+                <span style={{ fontSize: '20px' }}>{company.logo}</span>
+                {company.name}
               </div>
             ))}
           </div>
 
-          {/* Testimonials */}
+          {/* Enhanced Testimonials */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
             gap: '32px',
-            maxWidth: '1000px',
+            maxWidth: '1200px',
             margin: '0 auto'
           }}>
             {[
@@ -276,64 +430,204 @@ export default async function HomePage() {
                 name: 'Sarah Johnson',
                 role: 'Creative Director',
                 company: 'Design Studio',
-                content: 'StockMedia Pro has revolutionized our workflow. The AI search finds exactly what we need in seconds.',
-                rating: 5
+                avatar: '👩‍💼',
+                content: 'StockMedia Pro has completely transformed our creative workflow. The AI-powered search finds exactly what we need in seconds, and the quality is consistently outstanding. We\'ve saved 15+ hours per week!',
+                rating: 5,
+                stats: 'Saved 15+ hours/week'
               },
               {
                 name: 'Mike Chen',
                 role: 'Marketing Manager',
                 company: 'Tech Startup',
-                content: 'The quality of content and instant downloads have saved us countless hours. Highly recommended!',
-                rating: 5
+                avatar: '👨‍💻',
+                content: 'The instant downloads and commercial licensing have been game-changers for our marketing campaigns. No more worrying about copyright issues, and the point system is incredibly cost-effective.',
+                rating: 5,
+                stats: '50% cost reduction'
               },
               {
                 name: 'Emily Rodriguez',
                 role: 'Freelance Designer',
                 company: 'Independent',
-                content: 'Best investment I\'ve made for my business. The commercial licensing gives me peace of mind.',
-                rating: 5
+                avatar: '👩‍🎨',
+                content: 'As a freelancer, this platform has been my secret weapon. The variety of content is incredible, and the commercial licensing gives me complete peace of mind for client work.',
+                rating: 5,
+                stats: '100+ projects completed'
+              },
+              {
+                name: 'David Kim',
+                role: 'Content Creator',
+                company: 'Social Media Agency',
+                avatar: '👨‍🎬',
+                content: 'The video content library is phenomenal. High-quality footage that would normally cost hundreds per clip. The search filters make finding the perfect shot incredibly easy.',
+                rating: 5,
+                stats: '500+ videos downloaded'
+              },
+              {
+                name: 'Lisa Thompson',
+                role: 'Brand Manager',
+                company: 'E-commerce',
+                avatar: '👩‍💼',
+                content: 'We use StockMedia Pro for all our product photography and marketing materials. The consistency in quality and the ease of use has made our brand presentation so much more professional.',
+                rating: 5,
+                stats: '200% brand consistency'
+              },
+              {
+                name: 'Alex Martinez',
+                role: 'Web Developer',
+                company: 'Digital Agency',
+                avatar: '👨‍💻',
+                content: 'The API integration is seamless, and the webhook notifications keep our workflow smooth. Our clients love the instant access to premium content without the usual licensing headaches.',
+                rating: 5,
+                stats: '99.9% uptime'
               }
             ].map((testimonial, index) => (
               <div key={index} style={{
-                padding: '24px',
-                background: '#f8fafc',
-                borderRadius: '12px',
-                border: '1px solid #e2e8f0'
-              }}>
+                padding: '32px',
+                background: 'white',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}
+              >
+                {/* Quote Icon */}
+                <div style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  fontSize: '24px',
+                  color: '#e2e8f0',
+                  opacity: '0.5'
+                }}>
+                  "
+                </div>
+                
                 <div style={{
                   display: 'flex',
                   gap: '4px',
-                  marginBottom: '16px'
+                  marginBottom: '20px'
                 }}>
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} style={{ color: '#fbbf24', fontSize: '16px' }}>★</span>
+                    <span key={i} style={{ color: '#fbbf24', fontSize: '18px' }}>★</span>
                   ))}
                 </div>
+                
                 <p style={{
                   color: '#374151',
                   lineHeight: '1.6',
-                  marginBottom: '16px',
+                  marginBottom: '24px',
+                  fontSize: '16px',
                   fontStyle: 'italic'
                 }}>
                   "{testimonial.content}"
                 </p>
-                <div>
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
                   <div style={{
-                    fontWeight: '600',
-                    color: '#0f172a',
-                    marginBottom: '4px'
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px'
                   }}>
-                    {testimonial.name}
+                    {testimonial.avatar}
                   </div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#64748b'
-                  }}>
-                    {testimonial.role} at {testimonial.company}
+                  <div>
+                    <div style={{
+                      fontWeight: '600',
+                      color: '#0f172a',
+                      marginBottom: '2px',
+                      fontSize: '16px'
+                    }}>
+                      {testimonial.name}
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#64748b'
+                    }}>
+                      {testimonial.role} at {testimonial.company}
+                    </div>
                   </div>
+                </div>
+                
+                <div style={{
+                  padding: '8px 12px',
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                  color: 'white',
+                  borderRadius: '20px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  display: 'inline-block'
+                }}>
+                  {testimonial.stats}
                 </div>
               </div>
             ))}
+          </div>
+          
+          {/* Trust Badges */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '32px',
+            marginTop: '48px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              background: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}>
+              <span style={{ color: '#10b981', fontSize: '20px' }}>🔒</span>
+              <span style={{ fontWeight: '600', color: '#0f172a' }}>SSL Secured</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              background: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}>
+              <span style={{ color: '#10b981', fontSize: '20px' }}>⚡</span>
+              <span style={{ fontWeight: '600', color: '#0f172a' }}>99.9% Uptime</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              background: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}>
+              <span style={{ color: '#10b981', fontSize: '20px' }}>🛡️</span>
+              <span style={{ fontWeight: '600', color: '#0f172a' }}>Commercial License</span>
+            </div>
           </div>
         </div>
       </section>
@@ -572,62 +866,232 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Enhanced CTA Section */}
       <section style={{
-        padding: '80px 0',
+        padding: '100px 0',
         background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
+        {/* Background Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+          opacity: 0.3
+        }} />
+        
         <div style={{
           maxWidth: '1280px',
           margin: '0 auto',
-          padding: '0 1rem'
+          padding: '0 1rem',
+          position: 'relative',
+          zIndex: 1
         }}>
+          {/* Urgency Banner */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            background: 'rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            padding: '8px 20px',
+            borderRadius: '25px',
+            fontSize: '14px',
+            fontWeight: '600',
+            marginBottom: '24px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            🔥 Limited Time: 50% Off First Month - Ends Soon!
+          </div>
+          
           <h2 style={{
             fontSize: 'clamp(36px, 6vw, 48px)',
-            fontWeight: 'bold',
+            fontWeight: '800',
             color: 'white',
-            marginBottom: '24px'
+            marginBottom: '24px',
+            lineHeight: '1.2'
           }}>
-            Ready to Transform Your Creative Workflow?
+            Ready to Transform Your{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              Creative Workflow?
+            </span>
           </h2>
+          
           <p style={{
             fontSize: '20px',
             color: '#bfdbfe',
-            marginBottom: '32px',
+            marginBottom: '40px',
             maxWidth: '768px',
-            margin: '0 auto 32px'
+            margin: '0 auto 40px',
+            lineHeight: '1.6'
           }}>
-            Join thousands of creators who have already discovered the power of StockMedia Pro. 
+            Join 50,000+ creators who have already discovered the power of StockMedia Pro. 
             Start your free trial today and experience the difference.
           </p>
+          
+          {/* Value Proposition Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '24px',
+            maxWidth: '800px',
+            margin: '0 auto 48px'
+          }}>
+            {[
+              { icon: '⚡', title: 'Instant Access', desc: 'Download immediately' },
+              { icon: '🛡️', title: 'Commercial License', desc: 'Use anywhere, anytime' },
+              { icon: '💰', title: 'Save 70%', desc: 'vs individual purchases' },
+              { icon: '🎯', title: 'AI-Powered', desc: 'Find perfect content fast' }
+            ].map((benefit, index) => (
+              <div key={index} style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <div style={{
+                  fontSize: '24px',
+                  marginBottom: '8px'
+                }}>
+                  {benefit.icon}
+                </div>
+                <h3 style={{
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  marginBottom: '4px'
+                }}>
+                  {benefit.title}
+                </h3>
+                <p style={{
+                  color: '#bfdbfe',
+                  fontSize: '14px'
+                }}>
+                  {benefit.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+          
+          {/* Enhanced CTAs */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
+            gap: '20px',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            marginBottom: '32px'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '20px',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
           }}>
             <Link href="/register">
-              <button style={{
-                padding: '16px 32px',
+                <Button 
+                  style={{
+                    padding: '20px 40px',
                 background: 'white',
                 color: '#2563eb',
                 fontSize: '18px',
-                borderRadius: '8px',
+                    fontWeight: '700',
+                    borderRadius: '12px',
                 border: 'none',
-                cursor: 'pointer'
-              }}>Start Free Trial</button>
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+                    transform: 'translateY(0)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px)'
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.3)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)'
+                  }}
+                >
+                  🚀 Start Free Trial - No Credit Card Required
+                </Button>
             </Link>
-            <button style={{
-              padding: '16px 32px',
-              border: '1px solid white',
+              <Button 
+                variant="outline"
+                style={{
+                  padding: '20px 40px',
+                  border: '2px solid white',
               color: 'white',
               fontSize: '18px',
-              borderRadius: '8px',
+                  fontWeight: '600',
+                  borderRadius: '12px',
               background: 'transparent',
-              cursor: 'pointer'
-            }}>Contact Sales</button>
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)'
+                }}
+              >
+                📞 Contact Sales Team
+              </Button>
+            </div>
+            
+            {/* Trust Indicators */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '24px',
+              marginTop: '16px',
+              fontSize: '14px',
+              color: '#bfdbfe',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981' }}>✓</span>
+                <span>7-day free trial</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981' }}>✓</span>
+                <span>Cancel anytime</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981' }}>✓</span>
+                <span>24/7 support</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Social Proof Numbers */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '48px',
+            flexWrap: 'wrap',
+            marginTop: '40px'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>50K+</div>
+              <div style={{ color: '#bfdbfe', fontSize: '14px' }}>Happy Users</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>10M+</div>
+              <div style={{ color: '#bfdbfe', fontSize: '14px' }}>Downloads</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>4.9★</div>
+              <div style={{ color: '#bfdbfe', fontSize: '14px' }}>User Rating</div>
+            </div>
           </div>
         </div>
       </section>
