@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { StockMediaCache } from '@/lib/cache'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,13 +10,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ suggestions: [] })
     }
 
+    // Check cache first
+    const cachedSuggestions = await StockMediaCache.getSearchSuggestions(query)
+    if (cachedSuggestions) {
+      return NextResponse.json(cachedSuggestions)
+    }
+
     // Mock suggestions based on query
     const suggestions = generateSuggestions(query)
     
-    return NextResponse.json({
+    const result = {
       success: true,
       suggestions
-    })
+    }
+
+    // Cache the result
+    await StockMediaCache.setSearchSuggestions(query, result)
+    
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Search suggestions error:', error)
     return NextResponse.json(

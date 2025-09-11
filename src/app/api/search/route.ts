@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
+import { StockMediaCache } from '@/lib/cache'
 
 // Search request validation schema
 const SearchRequestSchema = z.object({
@@ -40,10 +41,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { query, filters = {}, page, limit } = SearchRequestSchema.parse(body)
     
+    // Check cache first
+    const cachedResults = await StockMediaCache.getSearchResults(query, filters)
+    if (cachedResults) {
+      console.log('Returning cached search results for:', query)
+      return NextResponse.json(cachedResults)
+    }
+    
     // Mock search results for now
     const mockResults = generateMockSearchResults(query, filters, page, limit)
     
-    return NextResponse.json({
+    const result = {
       success: true,
       data: {
         results: mockResults.results,
@@ -54,7 +62,12 @@ export async function POST(request: NextRequest) {
         query,
         filters
       }
-    })
+    }
+
+    // Cache the result
+    await StockMediaCache.setSearchResults(query, filters, result)
+    
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Search error:', error)
     

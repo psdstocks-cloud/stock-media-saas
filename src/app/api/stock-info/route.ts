@@ -3,6 +3,7 @@ import { NehtwAPI } from '@/lib/nehtw-api'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 import { stockInfoRequestSchema, validateAndSanitizeUrl } from '@/lib/validation'
+import { StockMediaCache } from '@/lib/cache'
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,13 @@ export async function POST(request: NextRequest) {
     const sanitizedUrl = validateAndSanitizeUrl(url)
 
     console.log('Stock info API called with URL:', sanitizedUrl)
+
+    // Check cache first
+    const cachedResult = await StockMediaCache.getStockInfo(sanitizedUrl)
+    if (cachedResult) {
+      console.log('Returning cached stock info for:', sanitizedUrl)
+      return NextResponse.json(cachedResult)
+    }
 
     // Extract site and ID from URL using comprehensive extractor
     const { site, id } = extractSiteAndId(sanitizedUrl)
@@ -680,7 +688,7 @@ export async function POST(request: NextRequest) {
 
     const previewImageUrl = await generatePreviewImage(site, id, url)
 
-    return NextResponse.json({
+    const result = {
       success: true,
       data: {
         site,
@@ -691,7 +699,12 @@ export async function POST(request: NextRequest) {
         imageUrl: previewImageUrl,
         description: ''
       }
-    })
+    }
+
+    // Cache the result
+    await StockMediaCache.setStockInfo(sanitizedUrl, result)
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Stock info error:', error)
     
