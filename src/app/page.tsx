@@ -75,6 +75,83 @@ export default async function HomePage() {
               Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide. 
               Download instantly with our point-based system and commercial licensing.
             </p>
+            {/* Search Bar */}
+            <div style={{
+              maxWidth: '600px',
+              margin: '0 auto 48px',
+              position: 'relative'
+            }}>
+              <div style={{
+                display: 'flex',
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                overflow: 'hidden',
+                border: '2px solid transparent',
+                transition: 'all 0.3s ease'
+              }}>
+                <input
+                  type="text"
+                  placeholder="Search millions of stock photos, videos, and graphics..."
+                  style={{
+                    flex: 1,
+                    padding: '16px 20px',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '16px',
+                    background: 'transparent'
+                  }}
+                />
+                <button style={{
+                  padding: '16px 24px',
+                  background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  🔍 Search
+                </button>
+              </div>
+              {/* Popular Search Terms */}
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginTop: '16px',
+                justifyContent: 'center'
+              }}>
+                {['nature', 'business', 'technology', 'people', 'abstract'].map((term) => (
+                  <span
+                    key={term}
+                    style={{
+                      padding: '4px 12px',
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      borderRadius: '20px',
+                      fontSize: '14px',
+                      color: '#64748b',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = '#2563eb'
+                      e.currentTarget.style.color = 'white'
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)'
+                      e.currentTarget.style.color = '#64748b'
+                    }}
+                  >
+                    {term}
+                  </span>
+                ))}
+              </div>
+            </div>
+
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -91,7 +168,10 @@ export default async function HomePage() {
                   fontSize: '18px',
                   borderRadius: '8px',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  boxShadow: '0 4px 14px 0 rgba(37, 99, 235, 0.4)',
+                  transition: 'all 0.3s ease'
                 }}>Start Free Trial</button>
             </Link>
               <button style={{
@@ -101,7 +181,9 @@ export default async function HomePage() {
                 fontSize: '18px',
                 borderRadius: '8px',
                 background: 'transparent',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontWeight: '500',
+                transition: 'all 0.3s ease'
               }}>Watch Demo</button>
             </div>
             <div style={{
@@ -128,6 +210,130 @@ export default async function HomePage() {
                 <div style={{ color: '#64748b', fontWeight: '500' }}>Uptime</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof Section */}
+      <section style={{
+        padding: '60px 0',
+        background: 'white',
+        borderTop: '1px solid #e2e8f0'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <h3 style={{
+              fontSize: '24px',
+              fontWeight: '600',
+              color: '#0f172a',
+              marginBottom: '16px'
+            }}>
+              Trusted by 50,000+ Creators Worldwide
+            </h3>
+            <p style={{
+              fontSize: '16px',
+              color: '#64748b'
+            }}>
+              Join designers, marketers, and content creators from top companies
+            </p>
+          </div>
+          
+          {/* Company Logos */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '48px',
+            marginBottom: '48px',
+            opacity: '0.6'
+          }}>
+            {['Adobe', 'Figma', 'Canva', 'Notion', 'Slack', 'Spotify'].map((company) => (
+              <div key={company} style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#64748b'
+              }}>
+                {company}
+              </div>
+            ))}
+          </div>
+
+          {/* Testimonials */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '32px',
+            maxWidth: '1000px',
+            margin: '0 auto'
+          }}>
+            {[
+              {
+                name: 'Sarah Johnson',
+                role: 'Creative Director',
+                company: 'Design Studio',
+                content: 'StockMedia Pro has revolutionized our workflow. The AI search finds exactly what we need in seconds.',
+                rating: 5
+              },
+              {
+                name: 'Mike Chen',
+                role: 'Marketing Manager',
+                company: 'Tech Startup',
+                content: 'The quality of content and instant downloads have saved us countless hours. Highly recommended!',
+                rating: 5
+              },
+              {
+                name: 'Emily Rodriguez',
+                role: 'Freelance Designer',
+                company: 'Independent',
+                content: 'Best investment I\'ve made for my business. The commercial licensing gives me peace of mind.',
+                rating: 5
+              }
+            ].map((testimonial, index) => (
+              <div key={index} style={{
+                padding: '24px',
+                background: '#f8fafc',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  gap: '4px',
+                  marginBottom: '16px'
+                }}>
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <span key={i} style={{ color: '#fbbf24', fontSize: '16px' }}>★</span>
+                  ))}
+                </div>
+                <p style={{
+                  color: '#374151',
+                  lineHeight: '1.6',
+                  marginBottom: '16px',
+                  fontStyle: 'italic'
+                }}>
+                  "{testimonial.content}"
+                </p>
+                <div>
+                  <div style={{
+                    fontWeight: '600',
+                    color: '#0f172a',
+                    marginBottom: '4px'
+                  }}>
+                    {testimonial.name}
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#64748b'
+                  }}>
+                    {testimonial.role} at {testimonial.company}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
