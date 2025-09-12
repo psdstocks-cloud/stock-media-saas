@@ -53,20 +53,48 @@ export default function DownloadPage() {
     timestamp: new Date().toISOString()
   })
 
-  // SUPER SIMPLE TEST: Just force authentication immediately
+  // PROPER AUTHENTICATION: Working solution
   useEffect(() => {
-    console.log('🚀 SUPER SIMPLE: Page loaded, forcing authentication immediately')
-    
-    // Show alert to confirm JavaScript is running
-    alert('JavaScript is working! Page should load now.')
-    
-    // Force authentication immediately - no API calls
-    setPageState('authenticated')
-    setIsInitialized(true)
-    setApiHealth('healthy')
-    
-    console.log('✅ SUPER SIMPLE: Authentication forced, page should render now')
-  }, [])
+    const initializePage = async () => {
+      try {
+        console.log('🚀 PROPER AUTH: Starting authentication process')
+        
+        // Check API health
+        const healthResponse = await fetch('/api/health')
+        if (healthResponse.ok) {
+          setApiHealth('healthy')
+          console.log('✅ API Health: OK')
+        } else {
+          setApiHealth('unhealthy')
+          console.log('❌ API Health: Failed')
+        }
+
+        // Direct session check
+        console.log('🔍 PROPER AUTH: Checking session...')
+        const sessionResponse = await fetch('/api/auth/session')
+        const sessionData = await sessionResponse.json()
+        console.log('📊 PROPER AUTH: Session data:', sessionData)
+        
+        if (sessionData?.user) {
+          console.log('✅ PROPER AUTH: User authenticated successfully')
+          setManualSession(sessionData)
+          setPageState('authenticated')
+          setIsInitialized(true)
+        } else {
+          console.log('❌ PROPER AUTH: No user found, redirecting to login')
+          setPageState('unauthenticated')
+          router.push('/login')
+        }
+      } catch (error) {
+        console.error('💥 PROPER AUTH: Error during initialization:', error)
+        setPageState('error')
+        setError('Failed to initialize page')
+      }
+    }
+
+    // Initialize with a small delay to ensure everything is ready
+    setTimeout(initializePage, 100)
+  }, [router])
 
   const loadRecentOrders = useCallback(async () => {
     try {
@@ -421,16 +449,16 @@ export default function DownloadPage() {
           
           {/* Debug information */}
           <div className="mt-6 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300 max-w-md mx-auto">
-            <h3 className="text-white font-bold mb-2">NUCLEAR DEBUG:</h3>
+            <h3 className="text-white font-bold mb-2">AUTH DEBUG:</h3>
             <p>PageState: <span className="text-blue-400">{pageState}</span></p>
             <p>IsInitialized: <span className="text-purple-400">{isInitialized ? 'Yes' : 'No'}</span></p>
             <p>ManualSession: <span className="text-green-400">{manualSession ? 'Yes' : 'No'}</span></p>
-            <p>UseSession Status: <span className="text-yellow-400">{status}</span></p>
+            <p>API Health: <span className="text-yellow-400">{apiHealth}</span></p>
             {manualSession?.user && (
               <p>User: <span className="text-cyan-400">{manualSession.user.name || manualSession.user.email}</span></p>
             )}
             <p className="text-gray-400 text-xs mt-2">
-              Using nuclear option - direct session check bypassing useSession hook.
+              Using proper authentication with direct session check.
             </p>
           </div>
         </div>
