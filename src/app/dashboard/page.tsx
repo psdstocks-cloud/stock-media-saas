@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -189,21 +189,6 @@ export default function DashboardPage() {
                   🔍 Request Files
                 </button>
               </Link>
-              <button 
-                onClick={() => signOut()}
-                style={{
-                  padding: '8px 16px',
-                  background: 'transparent',
-                  color: '#64748b',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                Sign Out
-              </button>
             </div>
           </div>
         </div>

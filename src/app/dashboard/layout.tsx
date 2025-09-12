@@ -205,7 +205,11 @@ export default function DashboardLayout({
             </div>
             
             <button
-              onClick={() => signOut()}
+              onClick={() => {
+                if (confirm('Are you sure you want to logout?')) {
+                  signOut({ callbackUrl: '/' })
+                }
+              }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -219,6 +223,16 @@ export default function DashboardLayout({
                 transition: 'all 0.2s ease',
                 fontSize: '14px',
                 fontWeight: '500'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f9fafb'
+                e.currentTarget.style.borderColor = '#d1d5db'
+                e.currentTarget.style.color = '#374151'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.borderColor = '#e5e7eb'
+                e.currentTarget.style.color = '#6b7280'
               }}
             >
               <LogOut style={{ width: '16px', height: '16px' }} />
