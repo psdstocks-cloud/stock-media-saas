@@ -15,7 +15,7 @@
   --primary-900: #0c4a6e;
   --primary-950: #082f49;
 
-  /* Accent Colors - 2024 Trends */
+  /* Accent Colors - 2024-2025 Vibrant Trends */
   --accent-50: #fdf4ff;
   --accent-100: #fae8ff;
   --accent-200: #f5d0fe;
@@ -27,14 +27,45 @@
   --accent-800: #86198f;
   --accent-900: #701a75;
 
+  /* Secondary Accent - Orange/Pink Gradient */
+  --secondary-accent-50: #fff7ed;
+  --secondary-accent-100: #ffedd5;
+  --secondary-accent-200: #fed7aa;
+  --secondary-accent-300: #fdba74;
+  --secondary-accent-400: #fb923c;
+  --secondary-accent-500: #f97316;
+  --secondary-accent-600: #ea580c;
+  --secondary-accent-700: #c2410c;
+  --secondary-accent-800: #9a3412;
+  --secondary-accent-900: #7c2d12;
+
+  /* Tertiary Accent - Purple/Blue Gradient */
+  --tertiary-accent-50: #faf5ff;
+  --tertiary-accent-100: #f3e8ff;
+  --tertiary-accent-200: #e9d5ff;
+  --tertiary-accent-300: #d8b4fe;
+  --tertiary-accent-400: #c084fc;
+  --tertiary-accent-500: #a855f7;
+  --tertiary-accent-600: #9333ea;
+  --tertiary-accent-700: #7c3aed;
+  --tertiary-accent-800: #6b21a8;
+  --tertiary-accent-900: #581c87;
+
   /* Modern Gradients - 2024-2025 */
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --gradient-primary-hover: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
   --gradient-accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-accent-hover: linear-gradient(135deg, #e879f9 0%, #f43f5e 100%);
+  --gradient-secondary: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  --gradient-secondary-hover: linear-gradient(135deg, #fb7185 0%, #fda4af 100%);
+  --gradient-tertiary: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+  --gradient-tertiary-hover: linear-gradient(135deg, #9333ea 0%, #2563eb 100%);
   --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --gradient-warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-  --gradient-error: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  --gradient-error: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
   --gradient-neutral: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --gradient-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 
   /* Secondary Colors */
   --secondary-50: #f8fafc;
@@ -48,7 +79,7 @@
   --secondary-800: #1e293b;
   --secondary-900: #0f172a;
 
-  /* Success Colors */
+  /* Success Colors - Enhanced 2024-2025 */
   --success-50: #f0fdf4;
   --success-100: #dcfce7;
   --success-200: #bbf7d0;
@@ -60,7 +91,7 @@
   --success-800: #166534;
   --success-900: #14532d;
 
-  /* Warning Colors */
+  /* Warning Colors - Enhanced 2024-2025 */
   --warning-50: #fffbeb;
   --warning-100: #fef3c7;
   --warning-200: #fde68a;
@@ -72,7 +103,7 @@
   --warning-800: #92400e;
   --warning-900: #78350f;
 
-  /* Error Colors */
+  /* Error Colors - Enhanced 2024-2025 */
   --error-50: #fef2f2;
   --error-100: #fee2e2;
   --error-200: #fecaca;
@@ -83,6 +114,18 @@
   --error-700: #b91c1c;
   --error-800: #991b1b;
   --error-900: #7f1d1d;
+
+  /* Info Colors - New 2024-2025 */
+  --info-50: #eff6ff;
+  --info-100: #dbeafe;
+  --info-200: #bfdbfe;
+  --info-300: #93c5fd;
+  --info-400: #60a5fa;
+  --info-500: #3b82f6;
+  --info-600: #2563eb;
+  --info-700: #1d4ed8;
+  --info-800: #1e40af;
+  --info-900: #1e3a8a;
 
   /* Modern Typography System - 2024-2025 */
   --font-family-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -423,6 +466,59 @@ body {
   background-clip: text;
   font-weight: var(--font-semibold);
 }
+
+.text-gradient-accent {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: var(--font-bold);
+}
+
+.text-gradient-secondary {
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: var(--font-bold);
+}
+
+.text-gradient-tertiary {
+  background: var(--gradient-tertiary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: var(--font-bold);
+}
+
+/* Modern Color Utility Classes - 2024-2025 */
+.text-primary { color: var(--primary-600); }
+.text-accent { color: var(--accent-600); }
+.text-secondary-accent { color: var(--secondary-accent-600); }
+.text-tertiary-accent { color: var(--tertiary-accent-600); }
+.text-success { color: var(--success-600); }
+.text-warning { color: var(--warning-600); }
+.text-error { color: var(--error-600); }
+.text-info { color: var(--info-600); }
+
+.bg-primary { background-color: var(--primary-600); }
+.bg-accent { background-color: var(--accent-600); }
+.bg-secondary-accent { background-color: var(--secondary-accent-600); }
+.bg-tertiary-accent { background-color: var(--tertiary-accent-600); }
+.bg-success { background-color: var(--success-600); }
+.bg-warning { background-color: var(--warning-600); }
+.bg-error { background-color: var(--error-600); }
+.bg-info { background-color: var(--info-600); }
+
+.bg-gradient-primary { background: var(--gradient-primary); }
+.bg-gradient-accent { background: var(--gradient-accent); }
+.bg-gradient-secondary { background: var(--gradient-secondary); }
+.bg-gradient-tertiary { background: var(--gradient-tertiary); }
+.bg-gradient-success { background: var(--gradient-success); }
+.bg-gradient-warning { background: var(--gradient-warning); }
+.bg-gradient-error { background: var(--gradient-error); }
+.bg-gradient-glass { background: var(--gradient-glass); }
+.bg-gradient-dark { background: var(--gradient-dark); }
 
 /* Button Styles - Enhanced with Modern Effects */
 .btn {

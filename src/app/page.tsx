@@ -142,17 +142,16 @@ export default async function HomePage() {
             maxWidth: '896px',
             margin: '0 auto'
           }}>
-            <div style={{
+            <div className="bg-gradient-accent" style={{
               display: 'inline-flex',
               alignItems: 'center',
               borderRadius: '9999px',
-              background: 'linear-gradient(135deg, #667eea, #764ba2)',
               color: 'white',
               padding: '8px 16px',
               fontSize: '14px',
               fontWeight: '600',
               marginBottom: '24px',
-              boxShadow: '0 4px 14px 0 rgba(102, 126, 234, 0.4)'
+              boxShadow: '0 4px 14px 0 rgba(240, 171, 252, 0.4)'
             }}>
               🚀 New: AI-Powered Search & 10M+ Premium Assets
             </div>
@@ -160,7 +159,7 @@ export default async function HomePage() {
               marginBottom: '24px'
             }}>
               The Ultimate{' '}
-              <span className="text-gradient">
+              <span className="text-gradient-tertiary">
                 Stock Media
               </span>
               <br />
@@ -724,12 +723,12 @@ export default async function HomePage() {
             gap: '32px'
           }}>
             {[
-              { icon: '🔍', title: 'Smart Search', desc: 'AI-powered search across millions of high-quality stock media files' },
-              { icon: '⬇️', title: 'Instant Downloads', desc: 'Download your media files instantly with our high-speed CDN' },
-              { icon: '⚡', title: 'Lightning Fast', desc: 'Optimized for speed with 99.9% uptime and global edge servers' },
-              { icon: '🛡️', title: 'Commercial License', desc: 'Full commercial rights for all downloads with no attribution required' },
-              { icon: '🌍', title: 'Global Access', desc: 'Access to premium stock sites worldwide in one unified platform' },
-              { icon: '🕐', title: '24/7 Support', desc: 'Round-the-clock customer support from our expert team' }
+              { icon: '🔍', title: 'Smart Search', desc: 'AI-powered search across millions of high-quality stock media files', color: 'bg-gradient-primary' },
+              { icon: '⬇️', title: 'Instant Downloads', desc: 'Download your media files instantly with our high-speed CDN', color: 'bg-gradient-accent' },
+              { icon: '⚡', title: 'Lightning Fast', desc: 'Optimized for speed with 99.9% uptime and global edge servers', color: 'bg-gradient-secondary' },
+              { icon: '🛡️', title: 'Commercial License', desc: 'Full commercial rights for all downloads with no attribution required', color: 'bg-gradient-tertiary' },
+              { icon: '🌍', title: 'Global Access', desc: 'Access to premium stock sites worldwide in one unified platform', color: 'bg-gradient-success' },
+              { icon: '🕐', title: '24/7 Support', desc: 'Round-the-clock customer support from our expert team', color: 'bg-gradient-warning' }
             ].map((feature, index) => (
               <div key={index} style={{
                 padding: '24px',
@@ -738,10 +737,9 @@ export default async function HomePage() {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 transition: 'all 0.3s ease'
               }}>
-                <div style={{
+                <div className={feature.color} style={{
                   width: '48px',
                   height: '48px',
-                  background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
                   borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
@@ -982,7 +980,7 @@ export default async function HomePage() {
             lineHeight: '1.2'
           }}>
             Ready to Transform Your{' '}
-            <span className="text-gradient-subtle">
+            <span className="text-gradient-secondary">
               Creative Workflow?
             </span>
           </h2>
@@ -1006,10 +1004,10 @@ export default async function HomePage() {
             margin: '0 auto 48px'
           }}>
             {[
-              { icon: '⚡', title: 'Instant Access', desc: 'Download immediately' },
-              { icon: '🛡️', title: 'Commercial License', desc: 'Use anywhere, anytime' },
-              { icon: '💰', title: 'Save 70%', desc: 'vs individual purchases' },
-              { icon: '🎯', title: 'AI-Powered', desc: 'Find perfect content fast' }
+              { icon: '⚡', title: 'Instant Access', desc: 'Download immediately', color: 'bg-gradient-secondary' },
+              { icon: '🛡️', title: 'Commercial License', desc: 'Use anywhere, anytime', color: 'bg-gradient-tertiary' },
+              { icon: '💰', title: 'Save 70%', desc: 'vs individual purchases', color: 'bg-gradient-success' },
+              { icon: '🎯', title: 'AI-Powered', desc: 'Find perfect content fast', color: 'bg-gradient-accent' }
             ].map((benefit, index) => (
               <div key={index} style={{
                 background: 'rgba(255, 255, 255, 0.1)',
@@ -1018,9 +1016,15 @@ export default async function HomePage() {
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 backdropFilter: 'blur(10px)'
               }}>
-                <div style={{
+                <div className={benefit.color} style={{
                   fontSize: '24px',
-                  marginBottom: '8px'
+                  marginBottom: '8px',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   {benefit.icon}
                 </div>
