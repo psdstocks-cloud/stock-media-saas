@@ -95,52 +95,45 @@ export default function DownloadPage() {
     return () => clearTimeout(timeoutId)
   }, [isInitialized, loadRecentOrders, isLoadingOrders])
 
-  // Enhanced authentication flow with proper error handling
+  // Simplified and robust authentication flow
   useEffect(() => {
     console.log('🔐 Auth Status Check:', { status, hasSession: !!session, pageState })
     
-    const handleAuth = async () => {
-      try {
-        // Set a reasonable timeout for auth resolution
-        const authTimeout = setTimeout(() => {
-          if (status === 'loading') {
-            console.error('⏰ Authentication timeout after 3 seconds')
-            setPageState('error')
-            setError('Authentication timeout. Please try refreshing the page.')
-          }
-        }, 3000)
-
-        if (status === 'loading') {
-          setPageState('loading')
-          return () => clearTimeout(authTimeout)
-        }
-
-        clearTimeout(authTimeout)
-
-        if (status === 'unauthenticated' || !session) {
-          console.log('❌ User not authenticated, redirecting to login')
-          setPageState('unauthenticated')
-          router.push('/login')
-          return
-        }
-
-        if (status === 'authenticated' && session) {
-          console.log('✅ User authenticated successfully')
-          setPageState('authenticated')
-          setError(null)
-          setIsInitialized(true)
-          
-          // User data will be loaded by the debounced effect
-        }
-      } catch (error) {
-        console.error('💥 Authentication error:', error)
-        setPageState('error')
-        setError('Authentication failed. Please try again.')
-      }
+    // Handle loading state
+    if (status === 'loading') {
+      setPageState('loading')
+      return
     }
 
-    handleAuth()
+    // Handle unauthenticated state
+    if (status === 'unauthenticated' || !session) {
+      console.log('❌ User not authenticated, redirecting to login')
+      setPageState('unauthenticated')
+      router.push('/login')
+      return
+    }
+
+    // Handle authenticated state
+    if (status === 'authenticated' && session) {
+      console.log('✅ User authenticated successfully')
+      setPageState('authenticated')
+      setError(null)
+      setIsInitialized(true)
+    }
   }, [status, session, router])
+
+  // Timeout handler for loading state
+  useEffect(() => {
+    if (pageState === 'loading') {
+      const timeout = setTimeout(() => {
+        console.error('⏰ Authentication timeout after 5 seconds')
+        setPageState('error')
+        setError('Authentication timeout. Please try refreshing the page.')
+      }, 5000)
+
+      return () => clearTimeout(timeout)
+    }
+  }, [pageState])
 
   const handleRetry = useCallback(() => {
     setRetryCount(prev => prev + 1)
@@ -420,8 +413,21 @@ export default function DownloadPage() {
     )
   }
 
+  // Safety check - if we're not properly authenticated, show loading
   if (pageState !== 'authenticated' || !session || !isInitialized) {
-    return null
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative mb-8">
+            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+              <Loader2 className="w-10 h-10 animate-spin text-white" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-2">Initializing...</h2>
+          <p className="text-gray-300 text-lg">Setting up your download center</p>
+        </div>
+      </div>
+    )
   }
 
   return (
