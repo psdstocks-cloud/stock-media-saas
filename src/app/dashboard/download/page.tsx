@@ -61,6 +61,26 @@ export default function DownloadPage() {
     checkApiHealth()
   }, [])
 
+  const loadRecentOrders = useCallback(async () => {
+    try {
+      // Add cache control to prevent excessive calls
+      const response = await fetch('/api/orders', {
+        headers: {
+          'Cache-Control': 'max-age=30' // Cache for 30 seconds
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setRecentOrders(data.orders?.slice(0, 5) || [])
+        console.log('📦 Recent orders loaded:', data.orders?.length || 0)
+      } else {
+        console.warn('⚠️ Failed to load recent orders:', response.status)
+      }
+    } catch (error) {
+      console.error('💥 Error loading recent orders:', error)
+    }
+  }, [])
+
   // Debounced orders loading to prevent excessive calls
   useEffect(() => {
     if (!isInitialized || isLoadingOrders) return
@@ -121,26 +141,6 @@ export default function DownloadPage() {
 
     handleAuth()
   }, [status, session, router])
-
-  const loadRecentOrders = useCallback(async () => {
-    try {
-      // Add cache control to prevent excessive calls
-      const response = await fetch('/api/orders', {
-        headers: {
-          'Cache-Control': 'max-age=30' // Cache for 30 seconds
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setRecentOrders(data.orders?.slice(0, 5) || [])
-        console.log('📦 Recent orders loaded:', data.orders?.length || 0)
-      } else {
-        console.warn('⚠️ Failed to load recent orders:', response.status)
-      }
-    } catch (error) {
-      console.error('💥 Error loading recent orders:', error)
-    }
-  }, [])
 
   const handleRetry = useCallback(() => {
     setRetryCount(prev => prev + 1)
