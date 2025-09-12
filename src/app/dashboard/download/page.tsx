@@ -40,6 +40,7 @@ export default function DownloadPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [apiHealth, setApiHealth] = useState<'checking' | 'healthy' | 'unhealthy'>('checking')
   const [isLoadingOrders, setIsLoadingOrders] = useState(false)
+  const [manualSession, setManualSession] = useState<any>(null)
 
   // Debug session status
   console.log('🔍 Download Page Debug:', {
@@ -48,47 +49,47 @@ export default function DownloadPage() {
     sessionUser: session?.user,
     pageState,
     isInitialized,
+    manualSession,
     timestamp: new Date().toISOString()
   })
 
-  // Check API health and session on component mount
+  // NUCLEAR OPTION: Completely bypass useSession hook
   useEffect(() => {
-    const checkApiHealth = async () => {
+    const initializePage = async () => {
       try {
-        const response = await fetch('/api/health')
-        if (response.ok) {
+        // Check API health
+        const healthResponse = await fetch('/api/health')
+        if (healthResponse.ok) {
           setApiHealth('healthy')
         } else {
           setApiHealth('unhealthy')
-          console.error('API health check failed:', response.status)
         }
-      } catch (error) {
-        setApiHealth('unhealthy')
-        console.error('API health check error:', error)
-      }
-    }
 
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/api/auth/session')
-        const sessionData = await response.json()
-        console.log('🔍 Manual session check:', sessionData)
+        // Direct session check - bypass useSession completely
+        const sessionResponse = await fetch('/api/auth/session')
+        const sessionData = await sessionResponse.json()
+        console.log('🚀 NUCLEAR: Direct session check:', sessionData)
         
         if (sessionData?.user) {
-          console.log('✅ Manual session check successful, forcing authentication')
+          console.log('✅ NUCLEAR: Direct session successful, authenticating immediately')
+          setManualSession(sessionData)
           setPageState('authenticated')
           setIsInitialized(true)
+        } else {
+          console.log('❌ NUCLEAR: No session found, redirecting to login')
+          setPageState('unauthenticated')
+          router.push('/login')
         }
       } catch (error) {
-        console.error('Manual session check error:', error)
+        console.error('💥 NUCLEAR: Initialization error:', error)
+        setPageState('error')
+        setError('Failed to initialize page')
       }
     }
 
-    checkApiHealth()
-    
-    // If useSession is broken, try manual session check after 2 seconds
-    setTimeout(checkSession, 2000)
-  }, [])
+    // Initialize immediately - no delays
+    initializePage()
+  }, [router])
 
   const loadRecentOrders = useCallback(async () => {
     try {
@@ -124,52 +125,7 @@ export default function DownloadPage() {
     return () => clearTimeout(timeoutId)
   }, [isInitialized, loadRecentOrders, isLoadingOrders])
 
-  // CRITICAL FIX: Handle broken useSession hook
-  useEffect(() => {
-    console.log('🔐 Auth Status Check:', { status, hasSession: !!session, pageState })
-    
-    // If status is loading for more than 3 seconds, force authentication
-    if (status === 'loading') {
-      setPageState('loading')
-      
-      // Force authentication after 3 seconds if still loading
-      const forceAuthTimeout = setTimeout(() => {
-        console.log('⚠️ FORCE AUTH: useSession stuck in loading, forcing authentication')
-        setPageState('authenticated')
-        setIsInitialized(true)
-      }, 3000)
-      
-      return () => clearTimeout(forceAuthTimeout)
-    }
-
-    if (status === 'unauthenticated' || !session) {
-      console.log('❌ User not authenticated, redirecting to login')
-      setPageState('unauthenticated')
-      router.push('/login')
-      return
-    }
-
-    // Only set authenticated when we have both status and session
-    if (status === 'authenticated' && session) {
-      console.log('✅ User authenticated successfully')
-      setPageState('authenticated')
-      setError(null)
-      setIsInitialized(true)
-    }
-  }, [status, session, router])
-
-  // Force initialization after 10 seconds if still loading
-  useEffect(() => {
-    const forceInitTimeout = setTimeout(() => {
-      if (pageState === 'loading' && status !== 'loading') {
-        console.log('⚠️ Force initializing after timeout')
-        setPageState('authenticated')
-        setIsInitialized(true)
-      }
-    }, 10000)
-
-    return () => clearTimeout(forceInitTimeout)
-  }, [pageState, status])
+  // OLD AUTHENTICATION LOGIC REMOVED - Using nuclear option instead
 
   // Timeout handler for loading state
   useEffect(() => {
@@ -474,7 +430,7 @@ export default function DownloadPage() {
   }
 
   // Safety check - if we're not properly authenticated, show loading
-  if (pageState !== 'authenticated' || !session || !isInitialized) {
+  if (pageState !== 'authenticated' || !isInitialized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
@@ -488,16 +444,16 @@ export default function DownloadPage() {
           
           {/* Debug information */}
           <div className="mt-6 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300 max-w-md mx-auto">
-            <h3 className="text-white font-bold mb-2">Debug Info:</h3>
-            <p>Status: <span className="text-yellow-400">{status}</span></p>
+            <h3 className="text-white font-bold mb-2">NUCLEAR DEBUG:</h3>
             <p>PageState: <span className="text-blue-400">{pageState}</span></p>
-            <p>HasSession: <span className="text-green-400">{session ? 'Yes' : 'No'}</span></p>
             <p>IsInitialized: <span className="text-purple-400">{isInitialized ? 'Yes' : 'No'}</span></p>
-            {session?.user && (
-              <p>User: <span className="text-cyan-400">{session.user.name || session.user.email}</span></p>
+            <p>ManualSession: <span className="text-green-400">{manualSession ? 'Yes' : 'No'}</span></p>
+            <p>UseSession Status: <span className="text-yellow-400">{status}</span></p>
+            {manualSession?.user && (
+              <p>User: <span className="text-cyan-400">{manualSession.user.name || manualSession.user.email}</span></p>
             )}
             <p className="text-gray-400 text-xs mt-2">
-              If this takes more than 10 seconds, there may be a session issue.
+              Using nuclear option - direct session check bypassing useSession hook.
             </p>
           </div>
         </div>
