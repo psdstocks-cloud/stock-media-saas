@@ -39,6 +39,7 @@ export default function DownloadPage() {
   const [retryCount, setRetryCount] = useState(0)
   const [isInitialized, setIsInitialized] = useState(false)
   const [apiHealth, setApiHealth] = useState<'checking' | 'healthy' | 'unhealthy'>('checking')
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false)
 
   // Check API health on component mount
   useEffect(() => {
@@ -59,6 +60,20 @@ export default function DownloadPage() {
 
     checkApiHealth()
   }, [])
+
+  // Debounced orders loading to prevent excessive calls
+  useEffect(() => {
+    if (!isInitialized || isLoadingOrders) return
+    
+    const timeoutId = setTimeout(() => {
+      setIsLoadingOrders(true)
+      loadRecentOrders().finally(() => {
+        setIsLoadingOrders(false)
+      })
+    }, 1000) // 1 second delay
+
+    return () => clearTimeout(timeoutId)
+  }, [isInitialized, loadRecentOrders, isLoadingOrders])
 
   // Enhanced authentication flow with proper error handling
   useEffect(() => {
@@ -95,8 +110,7 @@ export default function DownloadPage() {
           setError(null)
           setIsInitialized(true)
           
-          // Load user data
-          await loadRecentOrders()
+          // User data will be loaded by the debounced effect
         }
       } catch (error) {
         console.error('💥 Authentication error:', error)
@@ -110,10 +124,16 @@ export default function DownloadPage() {
 
   const loadRecentOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders')
+      // Add cache control to prevent excessive calls
+      const response = await fetch('/api/orders', {
+        headers: {
+          'Cache-Control': 'max-age=30' // Cache for 30 seconds
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setRecentOrders(data.orders?.slice(0, 5) || [])
+        console.log('📦 Recent orders loaded:', data.orders?.length || 0)
       } else {
         console.warn('⚠️ Failed to load recent orders:', response.status)
       }
@@ -187,13 +207,18 @@ export default function DownloadPage() {
     }
   }
 
-  const checkOrderStatus = async (orderId: string) => {
-    const maxAttempts = 20
+  const checkOrderStatus = useCallback(async (orderId: string) => {
+    const maxAttempts = 10 // Reduced from 20
     let attempts = 0
+    let isPolling = true
     
     const checkStatus = async () => {
+      if (!isPolling) return // Prevent multiple concurrent polls
+      
       try {
         attempts++
+        console.log(`🔍 Checking order status (${attempts}/${maxAttempts}):`, orderId)
+        
         const response = await fetch(`/api/orders/${orderId}/status`)
         const data = await response.json()
         
@@ -205,24 +230,43 @@ export default function DownloadPage() {
           })
           
           if (data.order.status === 'COMPLETED' && data.order.downloadUrl) {
-            console.log('Order completed with download link:', data.order.downloadUrl)
+            console.log('✅ Order completed with download link:', data.order.downloadUrl)
+            isPolling = false
+            return
+          }
+          
+          if (data.order.status === 'FAILED') {
+            console.log('❌ Order failed, stopping polling')
+            isPolling = false
             return
           }
         }
         
-        if (attempts < maxAttempts && (!data.order || data.order.status !== 'COMPLETED')) {
-          setTimeout(checkStatus, 6000)
+        // Only continue polling if we haven't exceeded max attempts and order is still processing
+        if (attempts < maxAttempts && isPolling) {
+          setTimeout(checkStatus, 10000) // Increased from 6000ms to 10000ms
+        } else {
+          isPolling = false
+          console.log('⏰ Order status polling stopped after max attempts')
         }
       } catch (error) {
-        console.error('Error checking order status:', error)
-        if (attempts < maxAttempts) {
-          setTimeout(checkStatus, 6000)
+        console.error('💥 Error checking order status:', error)
+        if (attempts < maxAttempts && isPolling) {
+          setTimeout(checkStatus, 10000)
+        } else {
+          isPolling = false
         }
       }
     }
     
-    setTimeout(checkStatus, 3000)
-  }
+    // Start polling after 5 seconds instead of 3
+    setTimeout(checkStatus, 5000)
+    
+    // Return cleanup function
+    return () => {
+      isPolling = false
+    }
+  }, [])
 
   const handleOrder = async () => {
     if (!fileInfo || !fileInfo.isAvailable) return

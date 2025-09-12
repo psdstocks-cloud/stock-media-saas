@@ -74,6 +74,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Add rate limiting headers
+    const response = new NextResponse()
+    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', '9')
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const userId = session.user.id
@@ -94,7 +100,25 @@ export async function GET(request: NextRequest) {
     console.log('Found orders:', orders.length, 'orders for user:', userId)
     console.log('Orders data:', orders.map(o => ({ id: o.id, status: o.status, taskId: o.taskId })))
 
-    return NextResponse.json({ orders })
+    const data = { 
+      success: true, 
+      orders: orders.map(order => ({
+        id: order.id,
+        status: order.status,
+        title: order.title,
+        cost: order.cost,
+        createdAt: order.createdAt,
+        downloadUrl: order.downloadUrl,
+        fileName: order.fileName,
+        imageUrl: order.imageUrl,
+        stockSite: order.stockSite
+      }))
+    }
+
+    return NextResponse.json(data, { 
+      status: 200,
+      headers: response.headers
+    })
   } catch (error) {
     console.error('Error fetching orders:', error)
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
