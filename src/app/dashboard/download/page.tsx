@@ -95,17 +95,16 @@ export default function DownloadPage() {
     return () => clearTimeout(timeoutId)
   }, [isInitialized, loadRecentOrders, isLoadingOrders])
 
-  // Simplified and robust authentication flow
+  // Simplified authentication flow that works with dashboard layout
   useEffect(() => {
     console.log('🔐 Auth Status Check:', { status, hasSession: !!session, pageState })
     
-    // Handle loading state
+    // Let the dashboard layout handle loading and unauthenticated states
     if (status === 'loading') {
       setPageState('loading')
       return
     }
 
-    // Handle unauthenticated state
     if (status === 'unauthenticated' || !session) {
       console.log('❌ User not authenticated, redirecting to login')
       setPageState('unauthenticated')
@@ -113,7 +112,7 @@ export default function DownloadPage() {
       return
     }
 
-    // Handle authenticated state
+    // Only set authenticated when we have both status and session
     if (status === 'authenticated' && session) {
       console.log('✅ User authenticated successfully')
       setPageState('authenticated')
@@ -413,6 +412,17 @@ export default function DownloadPage() {
     )
   }
 
+  // Debug information for development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Debug Info:', {
+      status,
+      hasSession: !!session,
+      pageState,
+      isInitialized,
+      sessionUserId: session?.user?.id
+    })
+  }
+
   // Safety check - if we're not properly authenticated, show loading
   if (pageState !== 'authenticated' || !session || !isInitialized) {
     return (
@@ -425,6 +435,14 @@ export default function DownloadPage() {
           </div>
           <h2 className="text-3xl font-bold text-white mb-2">Initializing...</h2>
           <p className="text-gray-300 text-lg">Setting up your download center</p>
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300">
+              <p>Status: {status}</p>
+              <p>PageState: {pageState}</p>
+              <p>HasSession: {session ? 'Yes' : 'No'}</p>
+              <p>IsInitialized: {isInitialized ? 'Yes' : 'No'}</p>
+            </div>
+          )}
         </div>
       </div>
     )
