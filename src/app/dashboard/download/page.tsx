@@ -41,6 +41,16 @@ export default function DownloadPage() {
   const [apiHealth, setApiHealth] = useState<'checking' | 'healthy' | 'unhealthy'>('checking')
   const [isLoadingOrders, setIsLoadingOrders] = useState(false)
 
+  // Debug session status
+  console.log('🔍 Download Page Debug:', {
+    status,
+    hasSession: !!session,
+    sessionUser: session?.user,
+    pageState,
+    isInitialized,
+    timestamp: new Date().toISOString()
+  })
+
   // Check API health on component mount
   useEffect(() => {
     const checkApiHealth = async () => {
@@ -120,6 +130,19 @@ export default function DownloadPage() {
       setIsInitialized(true)
     }
   }, [status, session, router])
+
+  // Force initialization after 10 seconds if still loading
+  useEffect(() => {
+    const forceInitTimeout = setTimeout(() => {
+      if (pageState === 'loading' && status !== 'loading') {
+        console.log('⚠️ Force initializing after timeout')
+        setPageState('authenticated')
+        setIsInitialized(true)
+      }
+    }, 10000)
+
+    return () => clearTimeout(forceInitTimeout)
+  }, [pageState, status])
 
   // Timeout handler for loading state
   useEffect(() => {
@@ -435,14 +458,21 @@ export default function DownloadPage() {
           </div>
           <h2 className="text-3xl font-bold text-white mb-2">Initializing...</h2>
           <p className="text-gray-300 text-lg">Setting up your download center</p>
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300">
-              <p>Status: {status}</p>
-              <p>PageState: {pageState}</p>
-              <p>HasSession: {session ? 'Yes' : 'No'}</p>
-              <p>IsInitialized: {isInitialized ? 'Yes' : 'No'}</p>
-            </div>
-          )}
+          
+          {/* Debug information */}
+          <div className="mt-6 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300 max-w-md mx-auto">
+            <h3 className="text-white font-bold mb-2">Debug Info:</h3>
+            <p>Status: <span className="text-yellow-400">{status}</span></p>
+            <p>PageState: <span className="text-blue-400">{pageState}</span></p>
+            <p>HasSession: <span className="text-green-400">{session ? 'Yes' : 'No'}</span></p>
+            <p>IsInitialized: <span className="text-purple-400">{isInitialized ? 'Yes' : 'No'}</span></p>
+            {session?.user && (
+              <p>User: <span className="text-cyan-400">{session.user.name || session.user.email}</span></p>
+            )}
+            <p className="text-gray-400 text-xs mt-2">
+              If this takes more than 10 seconds, there may be a session issue.
+            </p>
+          </div>
         </div>
       </div>
     )
