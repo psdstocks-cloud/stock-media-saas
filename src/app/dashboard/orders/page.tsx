@@ -374,6 +374,7 @@ export default function OrdersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'READY':
+      case 'COMPLETED':
         return <CheckCircle style={{ width: '16px', height: '16px', color: '#059669' }} />
       case 'PROCESSING':
         return <RefreshCw style={{ width: '16px', height: '16px', color: '#d97706', animation: 'spin 1s linear infinite' }} />
@@ -392,6 +393,7 @@ export default function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'READY':
+      case 'COMPLETED':
         return { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' }
       case 'PROCESSING':
         return { bg: '#fef3c7', text: '#92400e', border: '#fde68a' }
@@ -451,11 +453,21 @@ export default function OrdersPage() {
     }
   }
 
-  // Filter orders (only show successful ones)
-  const filteredOrders = orders.filter(order => order.status === 'READY')
+  // Filter orders (show all completed/ready orders)
+  const filteredOrders = orders.filter(order => 
+    order.status === 'READY' || 
+    order.status === 'COMPLETED' || 
+    order.status === 'PROCESSING' ||
+    order.status === 'PENDING'
+  )
   
   // Use search results if searching, otherwise use filtered orders
-  const displayOrders = searchQuery.trim() ? searchResults.filter(order => order.status === 'READY') : filteredOrders
+  const displayOrders = searchQuery.trim() ? searchResults.filter(order => 
+    order.status === 'READY' || 
+    order.status === 'COMPLETED' || 
+    order.status === 'PROCESSING' ||
+    order.status === 'PENDING'
+  ) : filteredOrders
 
   if (status === 'loading' || loading) {
     return (
@@ -718,7 +730,7 @@ export default function OrdersPage() {
                   backdropFilter: 'blur(10px)'
                 }}
               >
-                Browse Media
+                Download Media
               </button>
             )}
           </div>
