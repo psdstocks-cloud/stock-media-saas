@@ -1,832 +1,316 @@
-import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import { SearchBarWrapper } from '@/components/SearchBarWrapper'
-import { Button } from '@/components/ui/Button'
-import { DashboardPreviewWrapper } from '@/components/DashboardPreviewWrapper'
-import { SecurityBadges } from '@/components/ui/SecurityBadges'
-import { TeamSection } from '@/components/ui/TeamSection'
-import { PressSection } from '@/components/ui/PressSection'
-import { ContactInfo } from '@/components/ui/ContactInfo'
+import { Suspense } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, Play, Star, Check, Zap, Shield, Users, Globe, Sparkles, TrendingUp, Award, Heart } from 'lucide-react';
 
-export default async function HomePage() {
-  // Handle database connection gracefully during build time
-  let plans = []
-  
-  // Check if we're in build mode or if database is available
-  const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL?.includes('postgresql://')
-  
-  if (isBuildTime) {
-    console.log('Build time detected, using fallback data')
-    // Fallback data for build time
-    plans = [
-      {
-        id: '1',
-        name: 'Starter',
-        price: 9.99,
-        points: 100,
-        isActive: true,
-        rolloverLimit: 50,
-        description: 'Perfect for getting started',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: '2', 
-        name: 'Pro',
-        price: 29.99,
-        points: 500,
-        isActive: true,
-        rolloverLimit: 75,
-        description: 'Great for growing businesses',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: '3',
-        name: 'Enterprise',
-        price: 99.99,
-        points: 2000,
-        isActive: true,
-        rolloverLimit: 100,
-        description: 'For large organizations',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ]
-  } else {
-    try {
-      plans = await prisma.subscriptionPlan.findMany({
-        where: { isActive: true },
-        orderBy: { price: 'asc' },
-      })
-    } catch (error) {
-      console.log('Database not available, using fallback data')
-      // Fallback data for runtime errors
-      plans = [
-        {
-          id: '1',
-          name: 'Starter',
-          price: 9.99,
-          points: 100,
-          isActive: true,
-          rolloverLimit: 50,
-          description: 'Perfect for getting started',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: '2', 
-          name: 'Pro',
-          price: 29.99,
-          points: 500,
-          isActive: true,
-          rolloverLimit: 75,
-          description: 'Great for growing businesses',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: '3',
-          name: 'Enterprise',
-          price: 99.99,
-          points: 2000,
-          isActive: true,
-          rolloverLimit: 100,
-          description: 'For large organizations',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ]
-    }
-  }
-
+export default function HomePage() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%)',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
-      {/* Header */}
-      <Header variant="home" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      {/* TEST: This should show if our changes are working */}
+      <div className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg z-50">
+        NEW HOMEPAGE LOADED - {new Date().toLocaleTimeString()}
+      </div>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50">
+        <div className="container-padding max-w-7xl mx-auto">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-heading-lg font-bold text-gradient-primary">StockMedia Pro</span>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/dashboard" className="text-body-md text-slate-600 hover:text-primary-600 transition-colors">
+                Browse
+              </Link>
+              <Link href="/pricing" className="text-body-md text-slate-600 hover:text-primary-600 transition-colors">
+                Pricing
+              </Link>
+              <Link href="/about" className="text-body-md text-slate-600 hover:text-primary-600 transition-colors">
+                About
+              </Link>
+              <Link href="/contact" className="text-body-md text-slate-600 hover:text-primary-600 transition-colors">
+                Contact
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/login" 
+                className="px-4 py-2 text-body-md text-slate-600 hover:text-primary-600 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link 
+                href="/register" 
+                className="px-6 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
-      <section className="section-padding-lg" style={{
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Background Video/Image */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          opacity: 0.1,
-          zIndex: 0
-        }} />
-        
-        {/* Hero Content */}
-        <div className="container-padding" style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <div style={{
-            maxWidth: '896px',
-            margin: '0 auto'
-          }}>
-            <div className="bg-gradient-accent px-4 py-2" style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              borderRadius: '9999px',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: '600',
-              marginBottom: 'var(--space-6)',
-              boxShadow: '0 4px 14px 0 rgba(240, 171, 252, 0.4)'
-            }}>
-              🚀 New: AI-Powered Search & 10M+ Premium Assets
-            </div>
-            <h1 className="text-display-2xl mb-6">
-              The Ultimate{' '}
-              <span className="text-gradient-tertiary">
-                Stock Media
-              </span>
-              <br />
-              Platform
-          </h1>
-            <p className="text-body-xl mb-8" style={{
-              maxWidth: '768px',
-              margin: '0 auto'
-            }}>
-              Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide. 
-              Download instantly with our point-based system and commercial licensing.
-            </p>
-            
-            {/* Search Bar */}
-            <div className="mb-12" style={{
-              maxWidth: '600px',
-              margin: '0 auto',
-              position: 'relative'
-            }}>
-              <SearchBarWrapper 
-                placeholder="Search millions of stock photos, videos, and graphics..."
-                showSuggestions={true}
-              />
-            </div>
-
-            {/* Enhanced CTAs */}
-            <div className="flex flex-col gap-4 justify-center items-center mb-12">
-              <div className="flex flex-row gap-4 flex-wrap justify-center">
-              <Link href="/register">
-                  <Button 
-                    variant="gradient" 
-                    size="lg"
-                    style={{
-                      fontSize: '18px',
-                  padding: '16px 32px',
-                      boxShadow: '0 8px 25px 0 rgba(37, 99, 235, 0.4)',
-                      transform: 'translateY(0)',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    🚀 Start Free Trial - No Credit Card
-                  </Button>
-                </Link>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  style={{
-                  fontSize: '18px',
-                padding: '16px 32px',
-                    border: '2px solid #2563eb',
-                    color: '#2563eb',
-                    fontWeight: '600'
-                  }}
-                >
-                  ▶️ Watch 2-Min Demo
-                </Button>
+      <section className="section-padding-lg pt-32 pb-20">
+        <div className="container-padding max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center px-4 py-2 bg-gradient-accent/10 rounded-full border border-accent-200/50">
+                <Sparkles className="w-4 h-4 text-accent-600 mr-2" />
+                <span className="text-caption font-medium text-accent-700">AI-Powered Content Discovery</span>
               </div>
               
-              {/* Trust Indicators */}
-              <div className="flex items-center gap-4 mt-4 text-sm" style={{
-                color: '#64748b'
-              }}>
-                <div className="flex items-center gap-1">
-                  <span className="text-success">✓</span>
-                  <span>Free 7-day trial</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-success">✓</span>
-                  <span>Cancel anytime</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-success">✓</span>
-                  <span>Commercial license included</span>
-                </div>
+              <h1 className="text-display-2xl font-bold text-slate-900 leading-tight">
+                The Future of
+                <span className="text-gradient-primary block">Stock Media</span>
+                is Here
+              </h1>
+              
+              <p className="text-body-xl text-slate-600 max-w-lg leading-relaxed">
+                Discover, license, and manage premium stock media with AI-powered search, 
+                real-time collaboration, and enterprise-grade security. Built for modern creative teams.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link 
+                  href="/register" 
+                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-primary text-white rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-200 group"
+                >
+                  Start Free Trial
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <button className="inline-flex items-center justify-center px-8 py-4 border border-slate-300 text-slate-700 rounded-xl font-semibold hover:border-primary-300 hover:text-primary-600 transition-all duration-200 group">
+                  <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                  Watch Demo
+                </button>
               </div>
-
-              {/* Security Badges */}
-              <div className="mt-6">
-                <SecurityBadges variant="compact" />
-              </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-              <div className="text-center">
-                <div className="text-display-sm mb-1">10M+</div>
-                <div className="text-label-md">Premium Assets</div>
-              </div>
-              <div className="text-center">
-                <div className="text-display-sm mb-1">500+</div>
-                <div className="text-label-md">Stock Sites</div>
-              </div>
-              <div className="text-center">
-                <div className="text-display-sm mb-1">50K+</div>
-                <div className="text-label-md">Happy Users</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content Preview Section */}
-        <div className="mt-20 bg-white rounded-2xl p-10 shadow-2xl max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-8">
-            <h3 className="text-display-sm">
-              See What You Get
-            </h3>
-            <p className="text-body-md mt-2">
-              Preview of premium content available on our platform
-            </p>
-          </div>
-          
-          {/* Content Grid Preview */}
-          <div className="grid grid-cols-4 gap-5">
-            {[
-              {
-                image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
-                title: 'Nature Landscapes',
-                site: 'Unsplash',
-                cost: 'Free'
-              },
-              {
-                image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=300&h=200&fit=crop',
-                title: 'Business Meeting',
-                site: 'Pexels',
-                cost: '3 pts'
-              },
-              {
-                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',
-                title: 'Technology Abstract',
-                site: 'Pixabay',
-                cost: '2 pts'
-              },
-              {
-                image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=200&fit=crop',
-                title: 'Creative Design',
-                site: 'Freepik',
-                cost: '5 pts'
-              }
-            ].map((item, index) => (
-              <div key={index} style={{
-                background: 'white',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer'
-              }}
-              >
-                <div style={{
-                  width: '100%',
-                  height: '150px',
-                  background: `url(${item.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  position: 'relative'
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: '600'
-                  }}>
-                    {item.cost}
+              
+              <div className="flex items-center space-x-6 pt-4">
+                <div className="flex items-center space-x-2">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="w-8 h-8 bg-gradient-to-r from-primary-400 to-accent-400 rounded-full border-2 border-white"></div>
+                    ))}
                   </div>
+                  <span className="text-body-sm text-slate-600">10,000+ creators</span>
                 </div>
-                <div className="p-3">
-                  <h4 className="text-heading-sm mb-1 truncate">
-                    {item.title}
-                  </h4>
-                  <p className="text-caption capitalize">
-                    {item.site}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center mt-6">
-            <Link href="/dashboard/browse">
-              <Button 
-                variant="gradient" 
-                size="lg"
-                className="px-6 py-3"
-              >
-                Browse All Content →
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Social Proof Section */}
-      <section className="section-padding-lg bg-gradient-neutral relative">
-        <div className="container-padding max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h3 className="text-display-md">
-              Trusted by 50,000+ Creators Worldwide
-            </h3>
-            <p className="text-body-lg max-w-2xl mx-auto mt-4">
-              Join designers, marketers, and content creators from top companies who trust StockMedia Pro
-            </p>
-          </div>
-          
-          {/* Company Logos */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '48px',
-            marginBottom: '64px',
-            opacity: '0.7'
-          }}>
-            {[
-              { name: 'Adobe', logo: '🎨' },
-              { name: 'Figma', logo: '🎯' },
-              { name: 'Canva', logo: '✨' },
-              { name: 'Notion', logo: '📝' },
-              { name: 'Slack', logo: '💬' },
-              { name: 'Spotify', logo: '🎵' }
-            ].map((company) => (
-              <div key={company.name} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '18px',
-                fontWeight: '600',
-                color: '#64748b',
-                padding: '8px 16px',
-                background: 'white',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-              }}>
-                <span style={{ fontSize: '20px' }}>{company.logo}</span>
-                {company.name}
-              </div>
-            ))}
-          </div>
-
-          {/* Enhanced Testimonials */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: '32px',
-            maxWidth: '1200px',
-            margin: '0 auto'
-          }}>
-            {[
-              {
-                name: 'Sarah Johnson',
-                role: 'Creative Director',
-                company: 'Design Studio',
-                avatar: '👩‍💼',
-                content: 'StockMedia Pro has completely transformed our creative workflow. The AI-powered search finds exactly what we need in seconds, and the quality is consistently outstanding. We\'ve saved 15+ hours per week!',
-                rating: 5,
-                stats: 'Saved 15+ hours/week'
-              },
-              {
-                name: 'Mike Chen',
-                role: 'Marketing Manager',
-                company: 'Tech Startup',
-                avatar: '👨‍💻',
-                content: 'The instant downloads and commercial licensing have been game-changers for our marketing campaigns. No more worrying about copyright issues, and the point system is incredibly cost-effective.',
-                rating: 5,
-                stats: '50% cost reduction'
-              },
-              {
-                name: 'Emily Rodriguez',
-                role: 'Freelance Designer',
-                company: 'Independent',
-                avatar: '👩‍🎨',
-                content: 'As a freelancer, this platform has been my secret weapon. The variety of content is incredible, and the commercial licensing gives me complete peace of mind for client work.',
-                rating: 5,
-                stats: '100+ projects completed'
-              },
-              {
-                name: 'David Kim',
-                role: 'Content Creator',
-                company: 'Social Media Agency',
-                avatar: '👨‍🎬',
-                content: 'The video content library is phenomenal. High-quality footage that would normally cost hundreds per clip. The search filters make finding the perfect shot incredibly easy.',
-                rating: 5,
-                stats: '500+ videos downloaded'
-              },
-              {
-                name: 'Lisa Thompson',
-                role: 'Brand Manager',
-                company: 'E-commerce',
-                avatar: '👩‍💼',
-                content: 'We use StockMedia Pro for all our product photography and marketing materials. The consistency in quality and the ease of use has made our brand presentation so much more professional.',
-                rating: 5,
-                stats: '200% brand consistency'
-              },
-              {
-                name: 'Alex Martinez',
-                role: 'Web Developer',
-                company: 'Digital Agency',
-                avatar: '👨‍💻',
-                content: 'The API integration is seamless, and the webhook notifications keep our workflow smooth. Our clients love the instant access to premium content without the usual licensing headaches.',
-                rating: 5,
-                stats: '99.9% uptime'
-              }
-            ].map((testimonial, index) => (
-              <div key={index} style={{
-                padding: '32px',
-                background: 'white',
-                borderRadius: '16px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              >
-                {/* Quote Icon */}
-                <div style={{
-                  position: 'absolute',
-                  top: '20px',
-                  right: '20px',
-                  fontSize: '24px',
-                  color: '#e2e8f0',
-                  opacity: '0.5'
-                }}>
-                  &ldquo;
-                </div>
-                
-                <div style={{
-                  display: 'flex',
-                  gap: '4px',
-                  marginBottom: '20px'
-                }}>
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} style={{ color: '#fbbf24', fontSize: '18px' }}>★</span>
+                <div className="flex items-center space-x-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                   ))}
-                </div>
-                
-                <p className="text-body-md" style={{
-                  marginBottom: '24px',
-                  fontStyle: 'italic'
-                }}>
-                  &ldquo;{testimonial.content}&rdquo;
-                </p>
-                
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '12px'
-                }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px'
-                  }}>
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <div className="text-heading-sm" style={{
-                      marginBottom: '2px'
-                    }}>
-                      {testimonial.name}
-                    </div>
-                    <div className="text-body-sm">
-                      {testimonial.role} at {testimonial.company}
-                    </div>
-                  </div>
-                </div>
-                
-                <div style={{
-                  padding: '8px 12px',
-                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                  color: 'white',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  display: 'inline-block'
-                }}>
-                  {testimonial.stats}
+                  <span className="text-body-sm text-slate-600 ml-2">4.9/5 rating</span>
                 </div>
               </div>
-            ))}
-          </div>
-          
-          {/* Trust Badges */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '32px',
-            marginTop: '48px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 20px',
-              background: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}>
-              <span style={{ color: '#10b981', fontSize: '20px' }}>🔒</span>
-              <span style={{ fontWeight: '600', color: '#0f172a' }}>SSL Secured</span>
             </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 20px',
-              background: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}>
-              <span style={{ color: '#10b981', fontSize: '20px' }}>⚡</span>
-              <span style={{ fontWeight: '600', color: '#0f172a' }}>99.9% Uptime</span>
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 20px',
-              background: 'white',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}>
-              <span style={{ color: '#10b981', fontSize: '20px' }}>🛡️</span>
-              <span style={{ fontWeight: '600', color: '#0f172a' }}>Commercial License</span>
+            
+            <div className="relative">
+              <div className="relative z-10">
+                <div className="bg-gradient-to-br from-primary-500/10 to-accent-500/10 rounded-3xl p-8 backdrop-blur-sm border border-white/20">
+                  <div className="grid grid-cols-2 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="aspect-square bg-white rounded-2xl shadow-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-primary rounded-lg"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Floating elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-accent rounded-full opacity-20 animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-secondary rounded-full opacity-10 animate-pulse delay-1000"></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Platform Preview Section */}
-      <section style={{
-        padding: '80px 0',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 style={{
-              fontSize: 'clamp(32px, 6vw, 40px)',
-              fontWeight: '700',
-              color: '#0f172a',
-              marginBottom: '16px'
-            }}>
-              See the Platform in Action
-            </h2>
-            <p style={{
-              fontSize: '18px',
-              color: '#64748b',
-              maxWidth: '600px',
-              margin: '0 auto'
-            }}>
-              Get a preview of your dashboard and see how easy it is to manage your stock media library
-            </p>
+      {/* Stats Section */}
+      <section className="section-padding-lg bg-slate-50/50">
+        <div className="container-padding max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { number: '2M+', label: 'High-Quality Assets' },
+              { number: '500+', label: 'Premium Brands' },
+              { number: '99.9%', label: 'Uptime SLA' },
+              { number: '24/7', label: 'Support' }
+            ].map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-display-lg font-bold text-gradient-primary mb-2">{stat.number}</div>
+                <div className="text-body-md text-slate-600">{stat.label}</div>
+              </div>
+            ))}
           </div>
-          
-          <DashboardPreviewWrapper />
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="section-padding-lg bg-white">
+      <section className="section-padding-lg">
         <div className="container-padding max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-display-lg">
-              Why Choose StockMedia Pro?
+            <h2 className="text-display-xl font-bold text-slate-900 mb-4">
+              Everything You Need to
+              <span className="text-gradient-secondary"> Scale Your Creative Work</span>
             </h2>
-            <p className="text-body-xl max-w-3xl mx-auto mt-6">
-              We&apos;ve built the most comprehensive stock media platform with features designed for modern creators and businesses.
+            <p className="text-body-xl text-slate-600 max-w-3xl mx-auto">
+              From AI-powered discovery to enterprise collaboration, we provide the tools 
+              and infrastructure modern creative teams need to succeed.
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-8">
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { icon: '🔍', title: 'Smart Search', desc: 'AI-powered search across millions of high-quality stock media files', color: 'bg-gradient-primary' },
-              { icon: '⬇️', title: 'Instant Downloads', desc: 'Download your media files instantly with our high-speed CDN', color: 'bg-gradient-accent' },
-              { icon: '⚡', title: 'Lightning Fast', desc: 'Optimized for speed with 99.9% uptime and global edge servers', color: 'bg-gradient-secondary' },
-              { icon: '🛡️', title: 'Commercial License', desc: 'Full commercial rights for all downloads with no attribution required', color: 'bg-gradient-tertiary' },
-              { icon: '🌍', title: 'Global Access', desc: 'Access to premium stock sites worldwide in one unified platform', color: 'bg-gradient-success' },
-              { icon: '🕐', title: '24/7 Support', desc: 'Round-the-clock customer support from our expert team', color: 'bg-gradient-warning' }
+              {
+                icon: Zap,
+                title: 'AI-Powered Search',
+                description: 'Find the perfect asset in seconds with our advanced AI that understands context and style.',
+                color: 'from-yellow-400 to-orange-500'
+              },
+              {
+                icon: Shield,
+                title: 'Enterprise Security',
+                description: 'Bank-grade security with SOC 2 compliance, SSO, and advanced access controls.',
+                color: 'from-blue-400 to-cyan-500'
+              },
+              {
+                icon: Users,
+                title: 'Team Collaboration',
+                description: 'Real-time collaboration tools with role-based permissions and approval workflows.',
+                color: 'from-green-400 to-emerald-500'
+              },
+              {
+                icon: Globe,
+                title: 'Global CDN',
+                description: 'Lightning-fast delivery worldwide with our edge-optimized content delivery network.',
+                color: 'from-purple-400 to-pink-500'
+              },
+              {
+                icon: TrendingUp,
+                title: 'Analytics & Insights',
+                description: 'Comprehensive analytics to track usage, performance, and ROI across your team.',
+                color: 'from-indigo-400 to-blue-500'
+              },
+              {
+                icon: Award,
+                title: 'Premium Quality',
+                description: 'Curated collection of high-resolution, professional-grade assets from top creators.',
+                color: 'from-red-400 to-rose-500'
+              }
             ].map((feature, index) => (
-              <div key={index} className="card-padding-lg bg-white rounded-xl shadow-lg transition-all duration-300">
-                <div className={`${feature.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl mb-4`}>
-                  {feature.icon}
+              <div key={index} className="group">
+                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-slate-100">
+                  <div className={`w-12 h-12 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200`}>
+                    <feature.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-heading-lg font-semibold text-slate-900 mb-3">{feature.title}</h3>
+                  <p className="text-body-md text-slate-600 leading-relaxed">{feature.description}</p>
                 </div>
-                <h3 className="text-heading-lg mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-body-md">
-                  {feature.desc}
-                </p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Team & Company Story Section */}
-      <section style={{
-        padding: '80px 0',
-        background: 'white'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <TeamSection variant="full" />
-        </div>
-      </section>
-
-      {/* Press & Media Coverage Section */}
-      <section style={{
-        padding: '80px 0',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <PressSection variant="full" />
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" style={{
-        padding: '80px 0',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <h2 className="text-display-lg">
-              Simple, Transparent Pricing
+      <section className="section-padding-lg bg-gradient-to-br from-slate-50 to-blue-50/30">
+        <div className="container-padding max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-display-xl font-bold text-slate-900 mb-4">
+              Simple, Transparent
+              <span className="text-gradient-tertiary"> Pricing</span>
             </h2>
-            <p className="text-body-xl" style={{
-              maxWidth: '768px',
-              margin: '24px auto 0'
-            }}>
-              Choose the plan that fits your needs. All plans include commercial licensing and instant downloads.
+            <p className="text-body-xl text-slate-600 max-w-2xl mx-auto">
+              Choose the plan that fits your team size and needs. All plans include our core features.
             </p>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '32px',
-            maxWidth: '1200px',
-            margin: '0 auto'
-          }}>
-            {plans.map((plan, index) => (
-              <div key={plan.id} style={{
-                padding: '32px',
-                background: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                position: 'relative',
-                ...(index === 1 && {
-                  border: '2px solid #3b82f6',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-                  transform: 'scale(1.05)'
-                })
-              }}>
-                {index === 1 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '-16px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                    color: 'white',
-                    padding: '4px 16px',
-                    borderRadius: '9999px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                name: 'Starter',
+                price: '$29',
+                period: '/month',
+                description: 'Perfect for individual creators and small teams',
+                features: [
+                  '1,000 downloads/month',
+                  'AI-powered search',
+                  'Basic collaboration',
+                  'Email support',
+                  'Standard quality'
+                ],
+                cta: 'Start Free Trial',
+                popular: false
+              },
+              {
+                name: 'Professional',
+                price: '$99',
+                period: '/month',
+                description: 'Ideal for growing creative agencies',
+                features: [
+                  '10,000 downloads/month',
+                  'Advanced AI features',
+                  'Team collaboration',
+                  'Priority support',
+                  'High-res quality',
+                  'Analytics dashboard'
+                ],
+                cta: 'Start Free Trial',
+                popular: true
+              },
+              {
+                name: 'Enterprise',
+                price: 'Custom',
+                period: '',
+                description: 'For large organizations with specific needs',
+                features: [
+                  'Unlimited downloads',
+                  'Custom AI training',
+                  'Advanced security',
+                  'Dedicated support',
+                  'Custom integrations',
+                  'SLA guarantees'
+                ],
+                cta: 'Contact Sales',
+                popular: false
+              }
+            ].map((plan, index) => (
+              <div key={index} className={`relative ${plan.popular ? 'scale-105' : ''}`}>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-gradient-primary text-white px-4 py-2 rounded-full text-caption font-semibold">
                       Most Popular
+                    </div>
                   </div>
                 )}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 className="text-display-sm" style={{
-                    marginBottom: '8px',
-                    textTransform: 'capitalize'
-                  }}>
-                    {plan.name}
-                  </h3>
-                  <p className="text-body-lg">
-                    {plan.name === 'starter' && 'Perfect for individuals and small projects'}
-                    {plan.name === 'professional' && 'Ideal for freelancers and small agencies'}
-                    {plan.name === 'business' && 'Perfect for agencies and design teams'}
-                    {plan.name === 'enterprise' && 'For large agencies and enterprises'}
-                  </p>
-                  <div style={{ marginTop: '16px' }}>
-                    <span style={{
-                      fontSize: '36px',
-                      fontWeight: 'bold',
-                      color: '#0f172a'
-                    }}>
-                      ${plan.price}
-                    </span>
-                    <span style={{
-                      color: '#64748b',
-                      marginLeft: '8px'
-                    }}>
-                      /month
-                    </span>
-                  </div>
+                <div className={`bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 ${plan.popular ? 'border-2 border-primary-200' : 'border border-slate-100'}`}>
+                  <div className="text-center mb-8">
+                    <h3 className="text-heading-lg font-semibold text-slate-900 mb-2">{plan.name}</h3>
+                    <div className="flex items-baseline justify-center mb-2">
+                      <span className="text-display-2xl font-bold text-slate-900">{plan.price}</span>
+                      <span className="text-body-lg text-slate-600">{plan.period}</span>
                     </div>
-                <div>
-                  <ul style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: '0 0 32px 0'
-                  }}>
-                    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                      <span style={{ width: '20px', height: '20px', color: '#10b981', marginRight: '12px' }}>✓</span>
-                      <span style={{ color: '#374151' }}>{plan.points} points per month</span>
-                    </li>
-                    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                      <span style={{ width: '20px', height: '20px', color: '#10b981', marginRight: '12px' }}>✓</span>
-                      <span style={{ color: '#374151' }}>{plan.rolloverLimit}% rollover limit</span>
-                    </li>
-                    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                      <span style={{ width: '20px', height: '20px', color: '#10b981', marginRight: '12px' }}>✓</span>
-                      <span style={{ color: '#374151' }}>Commercial licensing</span>
-                    </li>
-                    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                      <span style={{ width: '20px', height: '20px', color: '#10b981', marginRight: '12px' }}>✓</span>
-                      <span style={{ color: '#374151' }}>API access</span>
-                    </li>
-                    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                      <span style={{ width: '20px', height: '20px', color: '#10b981', marginRight: '12px' }}>✓</span>
-                      <span style={{ color: '#374151' }}>24/7 support</span>
-                    </li>
+                    <p className="text-body-md text-slate-600">{plan.description}</p>
+                  </div>
+                  
+                  <ul className="space-y-4 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center">
+                        <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                        <span className="text-body-md text-slate-600">{feature}</span>
+                      </li>
+                    ))}
                   </ul>
-                  <Link href="/register" style={{ width: '100%', display: 'block' }}>
-                    <button style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      fontWeight: '500',
-                      border: 'none',
-                      cursor: 'pointer',
-                      ...(index === 1 ? {
-                        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                        color: 'white'
-                      } : {
-                        border: '1px solid #cbd5e1',
-                        color: '#374151',
-                        background: 'transparent'
-                      })
-                    }}>
-                    Get Started
-                    </button>
-                  </Link>
+                  
+                  <button className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                    plan.popular 
+                      ? 'bg-gradient-primary text-white hover:shadow-lg hover:scale-105' 
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}>
+                    {plan.cta}
+                  </button>
                 </div>
               </div>
             ))}
@@ -834,224 +318,94 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Enhanced CTA Section */}
-      <section style={{
-        padding: '100px 0',
-        background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Background Pattern */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.3
-        }} />
-        
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          {/* Urgency Banner */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'rgba(255, 255, 255, 0.2)',
-            color: 'white',
-            padding: '8px 20px',
-            borderRadius: '25px',
-            fontSize: '14px',
-            fontWeight: '600',
-            marginBottom: '24px',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
-          }}>
-            🔥 Limited Time: 50% Off First Month - Ends Soon!
-          </div>
-          
-          <h2 className="text-display-xl" style={{
-            color: 'white',
-            marginBottom: '24px',
-            lineHeight: '1.2'
-          }}>
-            Ready to Transform Your{' '}
-            <span className="text-gradient-secondary">
-              Creative Workflow?
-            </span>
+      {/* CTA Section */}
+      <section className="section-padding-lg bg-gradient-primary">
+        <div className="container-padding max-w-4xl mx-auto text-center">
+          <h2 className="text-display-xl font-bold text-white mb-4">
+            Ready to Transform Your
+            <span className="text-gradient-secondary"> Creative Workflow?</span>
           </h2>
-          
-          <p className="text-body-xl" style={{
-            color: '#bfdbfe',
-            marginBottom: '40px',
-            maxWidth: '768px',
-            margin: '0 auto 40px'
-          }}>
-            Join 50,000+ creators who have already discovered the power of StockMedia Pro. 
+          <p className="text-body-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Join thousands of creators who trust StockMedia Pro for their content needs. 
             Start your free trial today and experience the difference.
           </p>
-          
-          {/* Value Proposition Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '24px',
-            maxWidth: '800px',
-            margin: '0 auto 48px'
-          }}>
-            {[
-              { icon: '⚡', title: 'Instant Access', desc: 'Download immediately', color: 'bg-gradient-secondary' },
-              { icon: '🛡️', title: 'Commercial License', desc: 'Use anywhere, anytime', color: 'bg-gradient-tertiary' },
-              { icon: '💰', title: 'Save 70%', desc: 'vs individual purchases', color: 'bg-gradient-success' },
-              { icon: '🎯', title: 'AI-Powered', desc: 'Find perfect content fast', color: 'bg-gradient-accent' }
-            ].map((benefit, index) => (
-              <div key={index} style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                padding: '20px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <div className={benefit.color} style={{
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {benefit.icon}
-                </div>
-                <h3 className="text-heading-sm" style={{
-                  color: 'white',
-                  marginBottom: '4px'
-                }}>
-                  {benefit.title}
-                </h3>
-                <p className="text-body-sm" style={{
-                  color: '#bfdbfe'
-                }}>
-                  {benefit.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-          
-          {/* Enhanced CTAs */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: '32px'
-          }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: '20px',
-              flexWrap: 'wrap',
-              justifyContent: 'center'
-          }}>
-            <Link href="/register">
-                <Button 
-                  style={{
-                    padding: '20px 40px',
-                background: 'white',
-                color: '#2563eb',
-                fontSize: '18px',
-                    fontWeight: '700',
-                    borderRadius: '12px',
-                border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
-                    transform: 'translateY(0)',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  🚀 Start Free Trial - No Credit Card Required
-                </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/register" 
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:bg-slate-50 hover:scale-105 transition-all duration-200 group"
+            >
+              Start Free Trial
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
-              <Button 
-                variant="outline"
-                style={{
-                  padding: '20px 40px',
-                  border: '2px solid white',
-              color: 'white',
-              fontSize: '18px',
-                  fontWeight: '600',
-                  borderRadius: '12px',
-              background: 'transparent',
-                  cursor: 'pointer',
-                  backdropFilter: 'blur(10px)'
-                }}
-              >
-                📞 Contact Sales Team
-              </Button>
-            </div>
-            
-            {/* Trust Indicators */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '24px',
-              marginTop: '16px',
-              fontSize: '14px',
-              color: '#bfdbfe',
-              flexWrap: 'wrap',
-              justifyContent: 'center'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#10b981' }}>✓</span>
-                <span>7-day free trial</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#10b981' }}>✓</span>
-                <span>Cancel anytime</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: '#10b981' }}>✓</span>
-                <span>24/7 support</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Social Proof Numbers */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '48px',
-            flexWrap: 'wrap',
-            marginTop: '40px'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div className="text-display-sm" style={{ color: 'white', marginBottom: '4px' }}>50K+</div>
-              <div className="text-body-sm" style={{ color: '#bfdbfe' }}>Happy Users</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div className="text-display-sm" style={{ color: 'white', marginBottom: '4px' }}>10M+</div>
-              <div className="text-body-sm" style={{ color: '#bfdbfe' }}>Downloads</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div className="text-display-sm" style={{ color: 'white', marginBottom: '4px' }}>4.9★</div>
-              <div className="text-body-sm" style={{ color: '#bfdbfe' }}>User Rating</div>
-            </div>
+            <Link 
+              href="/contact" 
+              className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white rounded-xl font-semibold hover:border-white/50 hover:bg-white/10 transition-all duration-200"
+            >
+              Talk to Sales
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <Footer variant="home" />
+      <footer className="bg-slate-900 text-white">
+        <div className="container-padding max-w-7xl mx-auto py-16">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-heading-lg font-bold">StockMedia Pro</span>
+              </div>
+              <p className="text-body-md text-slate-400">
+                The future of stock media for modern creative teams.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="text-heading-sm font-semibold mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li><Link href="/dashboard" className="text-body-md text-slate-400 hover:text-white transition-colors">Browse</Link></li>
+                <li><Link href="/pricing" className="text-body-md text-slate-400 hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/features" className="text-body-md text-slate-400 hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="/api" className="text-body-md text-slate-400 hover:text-white transition-colors">API</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-heading-sm font-semibold mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li><Link href="/about" className="text-body-md text-slate-400 hover:text-white transition-colors">About</Link></li>
+                <li><Link href="/careers" className="text-body-md text-slate-400 hover:text-white transition-colors">Careers</Link></li>
+                <li><Link href="/blog" className="text-body-md text-slate-400 hover:text-white transition-colors">Blog</Link></li>
+                <li><Link href="/contact" className="text-body-md text-slate-400 hover:text-white transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-heading-sm font-semibold mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li><Link href="/help" className="text-body-md text-slate-400 hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/docs" className="text-body-md text-slate-400 hover:text-white transition-colors">Documentation</Link></li>
+                <li><Link href="/status" className="text-body-md text-slate-400 hover:text-white transition-colors">Status</Link></li>
+                <li><Link href="/privacy" className="text-body-md text-slate-400 hover:text-white transition-colors">Privacy</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-body-sm text-slate-400">
+              © 2024 StockMedia Pro. All rights reserved.
+            </p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <Link href="/terms" className="text-body-sm text-slate-400 hover:text-white transition-colors">Terms</Link>
+              <Link href="/privacy" className="text-body-sm text-slate-400 hover:text-white transition-colors">Privacy</Link>
+              <Link href="/cookies" className="text-body-sm text-slate-400 hover:text-white transition-colors">Cookies</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
-  )
+  );
 }
