@@ -156,30 +156,17 @@ export default async function HomePage() {
             }}>
               🚀 New: AI-Powered Search & 10M+ Premium Assets
             </div>
-            <h1 style={{
-              fontSize: 'clamp(48px, 8vw, 80px)',
-              fontWeight: '800',
-              color: '#0f172a',
-              marginBottom: '24px',
-              lineHeight: '1.1'
+            <h1 className="text-display-2xl" style={{
+              marginBottom: '24px'
             }}>
               The Ultimate{' '}
-              <span style={{
-                background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
+              <span className="text-gradient">
                 Stock Media
               </span>
               <br />
               Platform
           </h1>
-            <p style={{
-              fontSize: 'clamp(20px, 3vw, 24px)',
-              color: '#64748b',
-              marginBottom: '32px',
-              lineHeight: '1.6',
+            <p className="text-body-xl" style={{
               maxWidth: '768px',
               margin: '0 auto 32px'
             }}>
@@ -283,16 +270,16 @@ export default async function HomePage() {
               margin: '0 auto'
             }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>10M+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Premium Assets</div>
+                <div className="text-display-sm" style={{ marginBottom: '4px' }}>10M+</div>
+                <div className="text-label-md">Premium Assets</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>500+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Stock Sites</div>
+                <div className="text-display-sm" style={{ marginBottom: '4px' }}>500+</div>
+                <div className="text-label-md">Stock Sites</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px' }}>50K+</div>
-                <div style={{ color: '#64748b', fontWeight: '500' }}>Happy Users</div>
+                <div className="text-display-sm" style={{ marginBottom: '4px' }}>50K+</div>
+                <div className="text-label-md">Happy Users</div>
               </div>
             </div>
           </div>
@@ -311,17 +298,11 @@ export default async function HomePage() {
           zIndex: 1
         }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h3 style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#0f172a',
-              marginBottom: '8px'
-            }}>
+            <h3 className="text-display-sm">
               See What You Get
             </h3>
-            <p style={{
-              color: '#64748b',
-              fontSize: '16px'
+            <p className="text-body-md" style={{
+              marginTop: '8px'
             }}>
               Preview of premium content available on our platform
             </p>
@@ -391,20 +372,15 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <div style={{ padding: '12px' }}>
-                  <h4 style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#0f172a',
-                    marginBottom: '4px',
+                  <h4 className="text-heading-sm" style={{
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis'
+                    textOverflow: 'ellipsis',
+                    marginBottom: '4px'
                   }}>
                     {item.title}
                   </h4>
-                  <p style={{
-                    fontSize: '12px',
-                    color: '#64748b',
+                  <p className="text-caption" style={{
                     textTransform: 'capitalize'
                   }}>
                     {item.site}
@@ -443,19 +419,12 @@ export default async function HomePage() {
           padding: '0 1rem'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <h3 style={{
-              fontSize: 'clamp(28px, 5vw, 36px)',
-              fontWeight: '700',
-              color: '#0f172a',
-              marginBottom: '16px'
-            }}>
+            <h3 className="text-display-md">
               Trusted by 50,000+ Creators Worldwide
             </h3>
-            <p style={{
-              fontSize: '18px',
-              color: '#64748b',
+            <p className="text-body-lg" style={{
               maxWidth: '600px',
-              margin: '0 auto'
+              margin: '16px auto 0'
             }}>
               Join designers, marketers, and content creators from top companies who trust StockMedia Pro
             </p>
@@ -594,11 +563,8 @@ export default async function HomePage() {
                   ))}
                 </div>
                 
-                <p style={{
-                  color: '#374151',
-                  lineHeight: '1.6',
+                <p className="text-body-md" style={{
                   marginBottom: '24px',
-                  fontSize: '16px',
                   fontStyle: 'italic'
                 }}>
                   &ldquo;{testimonial.content}&rdquo;
@@ -623,18 +589,12 @@ export default async function HomePage() {
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <div style={{
-                      fontWeight: '600',
-                      color: '#0f172a',
-                      marginBottom: '2px',
-                      fontSize: '16px'
+                    <div className="text-heading-sm" style={{
+                      marginBottom: '2px'
                     }}>
                       {testimonial.name}
                     </div>
-                    <div style={{
-                      fontSize: '14px',
-                      color: '#64748b'
-                    }}>
+                    <div className="text-body-sm">
                       {testimonial.role} at {testimonial.company}
                     </div>
                   </div>
@@ -748,19 +708,12 @@ export default async function HomePage() {
           padding: '0 1rem'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <h2 style={{
-              fontSize: 'clamp(36px, 6vw, 48px)',
-              fontWeight: 'bold',
-              color: '#0f172a',
-              marginBottom: '24px'
-            }}>
+            <h2 className="text-display-lg">
               Why Choose StockMedia Pro?
             </h2>
-            <p style={{
-              fontSize: '20px',
-              color: '#64748b',
+            <p className="text-body-xl" style={{
               maxWidth: '768px',
-              margin: '0 auto'
+              margin: '24px auto 0'
             }}>
               We&apos;ve built the most comprehensive stock media platform with features designed for modern creators and businesses.
             </p>
@@ -798,18 +751,12 @@ export default async function HomePage() {
                 }}>
                   {feature.icon}
               </div>
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  color: '#0f172a',
+                <h3 className="text-heading-lg" style={{
                   marginBottom: '12px'
                 }}>
                   {feature.title}
                 </h3>
-                <p style={{
-                  color: '#64748b',
-                  lineHeight: '1.6'
-                }}>
+                <p className="text-body-md">
                   {feature.desc}
                 </p>
               </div>
@@ -857,19 +804,12 @@ export default async function HomePage() {
           padding: '0 1rem'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <h2 style={{
-              fontSize: 'clamp(36px, 6vw, 48px)',
-              fontWeight: 'bold',
-              color: '#0f172a',
-              marginBottom: '24px'
-            }}>
+            <h2 className="text-display-lg">
               Simple, Transparent Pricing
             </h2>
-            <p style={{
-              fontSize: '20px',
-              color: '#64748b',
+            <p className="text-body-xl" style={{
               maxWidth: '768px',
-              margin: '0 auto'
+              margin: '24px auto 0'
             }}>
               Choose the plan that fits your needs. All plans include commercial licensing and instant downloads.
             </p>
@@ -911,19 +851,13 @@ export default async function HomePage() {
                   </div>
                 )}
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#0f172a',
+                  <h3 className="text-display-sm" style={{
                     marginBottom: '8px',
                     textTransform: 'capitalize'
                   }}>
                     {plan.name}
                   </h3>
-                  <p style={{
-                    color: '#64748b',
-                    fontSize: '18px'
-                  }}>
+                  <p className="text-body-lg">
                     {plan.name === 'starter' && 'Perfect for individuals and small projects'}
                     {plan.name === 'professional' && 'Ideal for freelancers and small agencies'}
                     {plan.name === 'business' && 'Perfect for agencies and design teams'}
@@ -1042,31 +976,22 @@ export default async function HomePage() {
             🔥 Limited Time: 50% Off First Month - Ends Soon!
           </div>
           
-          <h2 style={{
-            fontSize: 'clamp(36px, 6vw, 48px)',
-            fontWeight: '800',
+          <h2 className="text-display-xl" style={{
             color: 'white',
             marginBottom: '24px',
             lineHeight: '1.2'
           }}>
             Ready to Transform Your{' '}
-            <span style={{
-              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <span className="text-gradient-subtle">
               Creative Workflow?
             </span>
           </h2>
           
-          <p style={{
-            fontSize: '20px',
+          <p className="text-body-xl" style={{
             color: '#bfdbfe',
             marginBottom: '40px',
             maxWidth: '768px',
-            margin: '0 auto 40px',
-            lineHeight: '1.6'
+            margin: '0 auto 40px'
           }}>
             Join 50,000+ creators who have already discovered the power of StockMedia Pro. 
             Start your free trial today and experience the difference.
@@ -1099,17 +1024,14 @@ export default async function HomePage() {
                 }}>
                   {benefit.icon}
                 </div>
-                <h3 style={{
+                <h3 className="text-heading-sm" style={{
                   color: 'white',
-                  fontSize: '16px',
-                  fontWeight: '600',
                   marginBottom: '4px'
                 }}>
                   {benefit.title}
                 </h3>
-                <p style={{
-                  color: '#bfdbfe',
-                  fontSize: '14px'
+                <p className="text-body-sm" style={{
+                  color: '#bfdbfe'
                 }}>
                   {benefit.desc}
                 </p>
@@ -1206,16 +1128,16 @@ export default async function HomePage() {
             marginTop: '40px'
           }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>50K+</div>
-              <div style={{ color: '#bfdbfe', fontSize: '14px' }}>Happy Users</div>
+              <div className="text-display-sm" style={{ color: 'white', marginBottom: '4px' }}>50K+</div>
+              <div className="text-body-sm" style={{ color: '#bfdbfe' }}>Happy Users</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>10M+</div>
-              <div style={{ color: '#bfdbfe', fontSize: '14px' }}>Downloads</div>
+              <div className="text-display-sm" style={{ color: 'white', marginBottom: '4px' }}>10M+</div>
+              <div className="text-body-sm" style={{ color: '#bfdbfe' }}>Downloads</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>4.9★</div>
-              <div style={{ color: '#bfdbfe', fontSize: '14px' }}>User Rating</div>
+              <div className="text-display-sm" style={{ color: 'white', marginBottom: '4px' }}>4.9★</div>
+              <div className="text-body-sm" style={{ color: '#bfdbfe' }}>User Rating</div>
             </div>
           </div>
         </div>
