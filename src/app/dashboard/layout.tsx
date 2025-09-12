@@ -27,7 +27,7 @@ export default function DashboardLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Browse Media', href: '/dashboard/browse', icon: Search },
+    { name: 'Download Media', href: '/dashboard/browse', icon: Search },
     { name: 'My Orders', href: '/dashboard/orders', icon: Download },
     { name: 'Profile', href: '/dashboard/profile', icon: User },
     { name: 'Support', href: '/dashboard/support', icon: HelpCircle },

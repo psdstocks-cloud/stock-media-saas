@@ -262,7 +262,7 @@ export default function DashboardPage() {
                   e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)'
                 }}>
-                  🔍 Request Files Now
+                  🚀 Start Downloading
                 </button>
               </Link>
               <button 
