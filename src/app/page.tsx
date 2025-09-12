@@ -10,6 +10,16 @@ export default function HomePage() {
       <div className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg z-50">
         NEW HOMEPAGE LOADED - {new Date().toLocaleTimeString()}
       </div>
+      
+      {/* TEST: Check if our custom classes work */}
+      <div className="fixed top-20 right-4 bg-gradient-primary text-white p-4 rounded-lg z-50">
+        CUSTOM CLASSES TEST
+      </div>
+      
+      {/* TEST: Check if our design system works */}
+      <div className="fixed top-36 right-4 text-gradient-primary p-4 rounded-lg z-50 bg-white">
+        DESIGN SYSTEM TEST
+      </div>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50">
         <div className="container-padding max-w-7xl mx-auto">
