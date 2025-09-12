@@ -1321,7 +1321,7 @@ export default function DashboardPage() {
                       fontWeight: '600',
                       cursor: 'pointer'
                     }}>
-                      Contact Support
+                      Submit Ticket
                     </button>
                   </Link>
           </div>

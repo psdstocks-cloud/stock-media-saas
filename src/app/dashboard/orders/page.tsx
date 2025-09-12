@@ -100,9 +100,31 @@ export default function OrdersPage() {
     }
   }
 
-  // Direct download functionality - no API calls, just open existing URL
+  // Test function to check API endpoint
+  const testAPIEndpoint = async (orderId: string) => {
+    try {
+      console.log('🧪 Testing API endpoint for order:', orderId)
+      const response = await fetch(`/api/orders/${orderId}/regenerate-download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      console.log('🧪 Test response status:', response.status)
+      const data = await response.json()
+      console.log('🧪 Test response data:', data)
+      return { success: response.ok, data }
+    } catch (error) {
+      console.error('🧪 Test error:', error)
+      return { success: false, error }
+    }
+  }
+
+  // Smart download functionality - generates fresh download link on demand
+  // This is a FREE redownload - no points are deducted
   const handleSmartDownload = async (order: Order) => {
     console.log('🔄 handleSmartDownload called for order:', order.id)
+    console.log('🆓 This is a FREE redownload - no points will be deducted')
     
     // Prevent multiple simultaneous downloads globally
     if (isAnyDownloadActive) {
@@ -116,57 +138,100 @@ export default function OrdersPage() {
       return
     }
     
-    // Check if order has a download URL
-    if (!order.downloadUrl) {
-      console.error('❌ No download URL available for order:', order.id)
-      return
-    }
-    
     try {
-      console.log('🚀 Starting direct download for order:', order.id)
+      console.log('🚀 Starting smart download for order:', order.id)
       setIsAnyDownloadActive(true)
       setDownloadingOrders(prev => new Set(prev).add(order.id))
       
-      console.log('🔗 Opening existing download URL:', order.downloadUrl)
+      // Use new API endpoint for regenerating download links
+      console.log('🔄 Regenerating download link using new API...')
+      const response = await fetch('/api/regenerate-download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId: order.id }),
+      })
       
-      // Method 1: Direct window.open (bypasses popup blockers when triggered by user action)
-      console.log('🔧 Opening download in new tab...')
-      const newWindow = window.open(order.downloadUrl, '_blank', 'noopener,noreferrer')
+      console.log('📡 API Response status:', response.status)
       
-      if (newWindow) {
-        console.log('✅ Download opened in new tab successfully')
-        // Focus the new window
-        newWindow.focus()
-      } else {
-        console.warn('⚠️ Popup blocked, trying fallback method...')
-        
-        // Method 2: Fallback - create temporary link
-        console.log('🔧 Creating temporary link element as fallback...')
-        const link = document.createElement('a')
-        link.href = order.downloadUrl
-        link.target = '_blank'
-        link.rel = 'noopener noreferrer'
-        link.style.display = 'none'
-        
-        console.log('📎 Adding link to DOM...')
-        document.body.appendChild(link)
-        console.log('✅ Link added to DOM')
-        
-        console.log('🖱️ Clicking link...')
-        link.click()
-        console.log('✅ Link clicked')
-        
-        console.log('🗑️ Removing link from DOM...')
-        document.body.removeChild(link)
-        console.log('✅ Link removed from DOM')
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ API Error response:', errorText)
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`)
       }
       
-      // Prevent any further download attempts for this order
-      console.log('✅ Download initiated successfully for order:', order.id)
+      const data = await response.json()
+      console.log('📦 Regenerate download response:', data)
+      
+      if (data.success && data.downloadUrl) {
+        console.log('✅ Fresh download link generated:', data.downloadUrl)
+        
+        // Method 1: Direct window.open (bypasses popup blockers when triggered by user action)
+        console.log('🔧 Opening download in new tab...')
+        const newWindow = window.open(data.downloadUrl, '_blank', 'noopener,noreferrer')
+        
+        if (newWindow) {
+          console.log('✅ Download opened in new tab successfully')
+          // Focus the new window
+          newWindow.focus()
+        } else {
+          console.warn('⚠️ Popup blocked, trying fallback method...')
+          
+          // Method 2: Fallback - create temporary link
+          console.log('🔧 Creating temporary link element as fallback...')
+          const link = document.createElement('a')
+          link.href = data.downloadUrl
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          link.style.display = 'none'
+          
+          console.log('📎 Adding link to DOM...')
+          document.body.appendChild(link)
+          console.log('✅ Link added to DOM')
+          
+          console.log('🖱️ Clicking link...')
+          link.click()
+          console.log('✅ Link clicked')
+          
+          console.log('🗑️ Removing link from DOM...')
+          document.body.removeChild(link)
+          console.log('✅ Link removed from DOM')
+        }
+        
+        console.log('✅ Download initiated successfully for order:', order.id)
+      } else {
+        console.error('❌ Failed to generate fresh download link:', data.error)
+        
+        // Show user-friendly error message
+        alert(`Download failed: ${data.error || 'Unable to generate fresh download link. Please try again later.'}`)
+        
+        // Fallback to existing download URL if available
+        if (order.downloadUrl) {
+          console.log('🔄 Falling back to existing download URL...')
+          const newWindow = window.open(order.downloadUrl, '_blank', 'noopener,noreferrer')
+          if (newWindow) {
+            newWindow.focus()
+          } else {
+            alert('Download failed: Unable to open download link. Please check your popup blocker settings.')
+          }
+        } else {
+          throw new Error(data.error || 'Failed to generate download link')
+        }
+      }
+      
     } catch (error) {
       console.error('💥 Download error:', error)
-      // Silent fail - no popup, just log the error
-      console.warn('Download failed silently')
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        orderId: order.id,
+        orderStatus: order.status,
+        hasTaskId: !!order.taskId
+      })
+      
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      alert(`Download failed: ${errorMessage}\n\nPlease try again or contact support if the issue persists.`)
     } finally {
       console.log('🧹 Cleaning up download state for order:', order.id)
       setIsAnyDownloadActive(false)
@@ -209,13 +274,19 @@ export default function OrdersPage() {
   const getSiteLogo = (siteName: string) => {
     const logos: { [key: string]: string } = {
       'shutterstock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Shutterstock_logo.svg/200px-Shutterstock_logo.svg.png',
+      'dreamstime': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Dreamstime_logo.svg/200px-Dreamstime_logo.svg.png',
       'adobe': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Adobe_Systems_logo.svg/200px-Adobe_Systems_logo.svg.png',
+      'adobe stock': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Adobe_Stock_logo.svg/200px-Adobe_Stock_logo.svg.png',
       'istockphoto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Adobe_Stock_logo.svg/200px-Adobe_Stock_logo.svg.png',
+      'getty images': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/200px-Google_2015_logo.svg.png',
       'depositphotos': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Depositphotos_logo.svg/200px-Depositphotos_logo.svg.png',
       'freepik': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Freepik_logo.svg/200px-Freepik_logo.svg.png',
       'unsplash': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Unsplash_logo.svg/200px-Unsplash_logo.svg.png',
       'pixabay': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Pixabay_logo.svg/200px-Pixabay_logo.svg.png',
-      'pexels': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Pexels_logo.svg/200px-Pexels_logo.svg.png'
+      'pexels': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Pexels_logo.svg/200px-Pexels_logo.svg.png',
+      '123rf': 'https://www.123rf.com/images/123rf_logo.png',
+      'bigstock': 'https://www.bigstockphoto.com/images/logos/bigstock-logo.png',
+      'alamy': 'https://www.alamy.com/images/alamy-logo.png'
     }
     return logos[siteName.toLowerCase()]
   }
@@ -567,6 +638,23 @@ export default function OrdersPage() {
           }}>
             Manage and download your requested files
           </p>
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.2)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '12px',
+            padding: '16px',
+            margin: '0 0 24px 0',
+            textAlign: 'center'
+          }}>
+            <p style={{
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: '14px',
+              margin: '0',
+              fontWeight: '500'
+            }}>
+              🆓 <strong>Free Redownloads:</strong> You can download your files anytime for free - no points deducted!
+            </p>
+          </div>
           
           {/* View Toggle and Search Bar */}
           <div style={{
@@ -898,16 +986,6 @@ export default function OrdersPage() {
 
                       {/* Order Info */}
                       <div style={{ marginBottom: '16px' }}>
-                        <h3 style={{
-                          fontSize: '18px',
-                          fontWeight: '700',
-                          color: '#1e293b',
-                          margin: '0 0 8px 0',
-                          lineHeight: '1.4'
-                        }}>
-                          {order.stockSite.displayName} #{order.stockItemId || 'N/A'}
-                        </h3>
-                        
                         
                         <div style={{
                           display: 'flex',
@@ -943,6 +1021,17 @@ export default function OrdersPage() {
                           </span>
                         </div>
 
+                        {/* Order Title */}
+                        <div style={{
+                          fontSize: '16px',
+                          color: '#1e293b',
+                          fontWeight: '600',
+                          marginBottom: '8px',
+                          lineHeight: '1.4'
+                        }}>
+                          {order.stockItemId ? `${order.stockSite.displayName} #${order.stockItemId}` : order.title || 'Stock Media Item'}
+                        </div>
+
                         <div style={{
                           fontSize: '12px',
                           color: '#64748b',
@@ -955,7 +1044,7 @@ export default function OrdersPage() {
                           color: '#64748b',
                           marginBottom: '8px'
                         }}>
-                          Order: {order.taskId || 'N/A'}
+                          Order: {order.stockItemId || 'N/A'}
                         </div>
                       </div>
 
@@ -1006,7 +1095,7 @@ export default function OrdersPage() {
                         
                         <button
                           onClick={() => handleSmartDownload(order)}
-                          disabled={isAnyDownloadActive || isDownloading || !order.downloadUrl}
+                          disabled={isAnyDownloadActive || isDownloading}
                           style={{
                             flex: 1,
                             display: 'flex',
@@ -1014,21 +1103,21 @@ export default function OrdersPage() {
                             justifyContent: 'center',
                             gap: '8px',
                             padding: '12px 16px',
-                            background: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                            background: isAnyDownloadActive || isDownloading
                               ? '#e5e7eb'
                               : '#10b981',
                             border: 'none',
                             borderRadius: '8px',
-                            color: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                            color: isAnyDownloadActive || isDownloading
                               ? '#9ca3af'
                               : 'white',
-                            cursor: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                            cursor: isAnyDownloadActive || isDownloading
                               ? 'not-allowed'
                               : 'pointer',
                             transition: 'all 0.2s ease',
                             fontSize: '14px',
                             fontWeight: '600',
-                            opacity: isAnyDownloadActive || isDownloading || !order.downloadUrl ? 0.6 : 1
+                            opacity: isAnyDownloadActive || isDownloading ? 0.6 : 1
                           }}
                         >
                           <Download style={{ width: '16px', height: '16px' }} />
@@ -1036,7 +1125,7 @@ export default function OrdersPage() {
                             ? 'Download in Progress...'
                             : isDownloading
                             ? 'Preparing...'
-                            : 'Download for Free'
+                            : 'Download for Free (No Points)'
                           }
                         </button>
                       </div>
@@ -1121,16 +1210,6 @@ export default function OrdersPage() {
                             gap: '12px',
                             marginBottom: '8px'
                           }}>
-                            <h3 style={{
-                              fontSize: '18px',
-                              fontWeight: '700',
-                              color: '#1e293b',
-                              margin: 0,
-                              lineHeight: '1.4'
-                            }}>
-                              {order.stockSite.displayName} #{order.stockItemId || 'N/A'}
-                            </h3>
-                            
                             
                             <div style={{
                               display: 'flex',
@@ -1195,6 +1274,17 @@ export default function OrdersPage() {
                             </span>
                           </div>
 
+                          {/* Order Title */}
+                          <div style={{
+                            fontSize: '16px',
+                            color: '#1e293b',
+                            fontWeight: '600',
+                            marginBottom: '8px',
+                            lineHeight: '1.4'
+                          }}>
+                            {order.stockItemId ? `${order.stockSite.displayName} #${order.stockItemId}` : order.title || 'Stock Media Item'}
+                          </div>
+
                           <div style={{
                             display: 'flex',
                             gap: '16px',
@@ -1202,7 +1292,7 @@ export default function OrdersPage() {
                             color: '#64748b'
                           }}>
                             <span>Debug ID: {order.id}</span>
-                            <span>Order: {order.taskId || 'N/A'}</span>
+                            <span>Order: {order.stockItemId || 'N/A'}</span>
                           </div>
                         </div>
 
@@ -1241,27 +1331,27 @@ export default function OrdersPage() {
                           
                           <button
                             onClick={() => handleSmartDownload(order)}
-                            disabled={isAnyDownloadActive || isDownloading || !order.downloadUrl}
+                            disabled={isAnyDownloadActive || isDownloading}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '8px',
                               padding: '12px 20px',
-                              background: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                              background: isAnyDownloadActive || isDownloading
                                 ? '#e5e7eb'
                                 : '#10b981',
                               border: 'none',
                               borderRadius: '8px',
-                              color: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                              color: isAnyDownloadActive || isDownloading
                                 ? '#9ca3af'
                                 : 'white',
-                              cursor: isAnyDownloadActive || isDownloading || !order.downloadUrl
+                              cursor: isAnyDownloadActive || isDownloading
                                 ? 'not-allowed'
                                 : 'pointer',
                               transition: 'all 0.2s ease',
                               fontSize: '14px',
                               fontWeight: '600',
-                              opacity: isAnyDownloadActive || isDownloading || !order.downloadUrl ? 0.6 : 1
+                              opacity: isAnyDownloadActive || isDownloading ? 0.6 : 1
                             }}
                           >
                             <Download style={{ width: '16px', height: '16px' }} />
@@ -1269,7 +1359,7 @@ export default function OrdersPage() {
                               ? 'Download in Progress...'
                               : isDownloading
                               ? 'Preparing...'
-                              : 'Download for Free'
+                              : 'Download for Free (No Points)'
                             }
                           </button>
                         </div>

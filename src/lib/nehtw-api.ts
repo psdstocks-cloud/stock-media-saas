@@ -85,31 +85,48 @@ export class NehtwAPI {
       params: params.toString()
     })
 
-    const response = await fetch(requestUrl, {
-      method: 'GET',
-      headers: {
-        'X-Api-Key': this.apiKey,
-      },
-    })
+    try {
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'X-Api-Key': this.apiKey,
+        },
+      })
 
-    const responseData = await response.json()
-    console.log('Nehtw placeOrder response:', {
-      status: response.status,
-      data: responseData
-    })
+      if (!response.ok) {
+        console.error('Nehtw placeOrder HTTP error:', {
+          status: response.status,
+          statusText: response.statusText,
+          site,
+          id
+        })
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
 
-    // Check if the response indicates an error
-    if (responseData.error) {
-      console.error('Nehtw placeOrder failed:', responseData)
-      throw new Error(`Nehtw API error: ${responseData.message || 'Unknown error'}`)
+      const responseData = await response.json()
+      console.log('Nehtw placeOrder response:', {
+        status: response.status,
+        data: responseData,
+        site,
+        id
+      })
+
+      // Check if the response indicates an error
+      if (responseData.error) {
+        console.error('Nehtw placeOrder failed:', responseData)
+        throw new Error(`Nehtw API error: ${responseData.message || 'Unknown error'}`)
+      }
+
+      if (!responseData.success && !responseData.task_id) {
+        console.error('Nehtw placeOrder failed - no success or task_id:', responseData)
+        throw new Error(`Nehtw API error: ${responseData.message || 'Order placement failed'}`)
+      }
+
+      return responseData
+    } catch (error) {
+      console.error('Nehtw placeOrder network error:', error)
+      throw new Error(`Network error: ${error instanceof Error ? error.message : 'Unknown network error'}`)
     }
-
-    if (!responseData.success && !responseData.task_id) {
-      console.error('Nehtw placeOrder failed - no success or task_id:', responseData)
-      throw new Error(`Nehtw API error: ${responseData.message || 'Order placement failed'}`)
-    }
-
-    return responseData
   }
 
   /**
@@ -123,20 +140,43 @@ export class NehtwAPI {
       apiKey: this.apiKey ? 'present' : 'missing'
     })
 
-    const response = await fetch(requestUrl, {
-      method: 'GET',
-      headers: {
-        'X-Api-Key': this.apiKey,
-      },
-    })
+    try {
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'X-Api-Key': this.apiKey,
+        },
+      })
 
-    const responseData = await response.json()
-    console.log('Nehtw checkOrderStatus response:', {
-      status: response.status,
-      data: responseData
-    })
+      if (!response.ok) {
+        console.error('Nehtw checkOrderStatus HTTP error:', {
+          status: response.status,
+          statusText: response.statusText,
+          taskId
+        })
+        return {
+          success: false,
+          error: true,
+          message: `HTTP ${response.status}: ${response.statusText} - Failed to check order status`
+        }
+      }
 
-    return responseData
+      const responseData = await response.json()
+      console.log('Nehtw checkOrderStatus response:', {
+        status: response.status,
+        data: responseData,
+        taskId
+      })
+
+      return responseData
+    } catch (error) {
+      console.error('Nehtw checkOrderStatus network error:', error)
+      return {
+        success: false,
+        error: true,
+        message: `Network error: ${error instanceof Error ? error.message : 'Unknown network error'}`
+      }
+    }
   }
 
   /**
@@ -207,21 +247,63 @@ export class NehtwAPI {
    */
   async regenerateDownloadLink(taskId: string, responseType: 'any' | 'gdrive' | 'mydrivelink' | 'asia' = 'any'): Promise<NehtwOrderStatus> {
     console.log('Regenerating download link for taskId:', taskId)
+    console.log('API Key present:', !!this.apiKey)
+    console.log('Base URL:', this.baseUrl)
     
-    const response = await fetch(`${this.baseUrl}/v2/order/${taskId}/download?responsetype=${responseType}`, {
+    if (!taskId) {
+      console.error('No taskId provided to regenerateDownloadLink')
+      return {
+        success: false,
+        message: 'No task ID provided',
+        error: true
+      }
+    }
+    
+    const url = `${this.baseUrl}/v2/order/${taskId}/download?responsetype=${responseType}`
+    console.log('Making request to:', url)
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'X-Api-Key': this.apiKey,
       },
     })
 
+    console.log('Response status:', response.status)
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+    
     const responseData = await response.json()
     console.log('Regenerate download link response:', {
       status: response.status,
       data: responseData
     })
 
-    return responseData
+    // Handle different response formats
+    if (response.status === 200) {
+      // Success case - check if we have a download link
+      if (responseData.downloadLink || responseData.download_url || responseData.url) {
+        return {
+          success: true,
+          downloadLink: responseData.downloadLink || responseData.download_url || responseData.url,
+          fileName: responseData.fileName || responseData.filename || responseData.file_name,
+          message: 'Download link regenerated successfully'
+        }
+      } else {
+        console.error('No download link in successful response:', responseData)
+        return {
+          success: false,
+          message: 'No download link found in response'
+        }
+      }
+    } else {
+      // Error case
+      console.error('API error response:', responseData)
+      return {
+        success: false,
+        message: responseData.message || responseData.error || 'Failed to regenerate download link',
+        error: true
+      }
+    }
   }
 }
 
@@ -556,22 +638,37 @@ export class OrderManager {
 
   /**
    * Regenerate download link for an existing order
+   * This is a FREE redownload - no points are deducted from user account
    */
   static async regenerateDownloadLink(orderId: string, apiKey: string) {
     console.log('OrderManager.regenerateDownloadLink called for order:', orderId)
+    console.log('🆓 This is a FREE redownload - no points will be deducted')
     
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: { stockSite: true },
     })
 
-    if (!order || !order.taskId) {
-      throw new Error('Order not found or no task ID')
+    if (!order) {
+      console.error('Order not found:', orderId)
+      throw new Error('Order not found')
     }
 
-    // Allow regeneration for any order that has a taskId (regardless of status)
-    // This allows users to get fresh download links even for processing orders
+    console.log('Order found:', {
+      id: order.id,
+      taskId: order.taskId,
+      status: order.status,
+      stockItemId: order.stockItemId,
+      hasTaskId: !!order.taskId
+    })
+
     if (!order.taskId) {
+      console.error('Order has no taskId:', {
+        orderId: order.id,
+        status: order.status,
+        taskId: order.taskId,
+        stockItemId: order.stockItemId
+      })
       throw new Error('Order must have a task ID to regenerate download link')
     }
 

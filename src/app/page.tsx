@@ -596,10 +596,10 @@ export default function HomePage() {
               <div>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '1rem' }}>Support</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <Link href="/help" style={{ color: '#9ca3af', textDecoration: 'none' }}>Help Center</Link>
-                  <Link href="/docs" style={{ color: '#9ca3af', textDecoration: 'none' }}>Documentation</Link>
-                  <Link href="/status" style={{ color: '#9ca3af', textDecoration: 'none' }}>Status</Link>
-                  <Link href="/privacy" style={{ color: '#9ca3af', textDecoration: 'none' }}>Privacy</Link>
+                  <Link href="/dashboard/support" style={{ color: '#9ca3af', textDecoration: 'none' }}>Support Hub</Link>
+                  <Link href="/dashboard/support?tab=faq" style={{ color: '#9ca3af', textDecoration: 'none' }}>FAQ & Help</Link>
+                  <Link href="/dashboard/support?tab=contact" style={{ color: '#9ca3af', textDecoration: 'none' }}>Submit Ticket</Link>
+                  <Link href="/privacy" style={{ color: '#9ca3af', textDecoration: 'none' }}>Privacy Policy</Link>
                 </div>
               </div>
             </div>

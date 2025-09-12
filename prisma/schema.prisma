@@ -36,6 +36,7 @@ model User {
   pointsBalance PointsBalance?
   passwordResetTokens PasswordResetToken[]
   reviews       Review[]
+  supportTickets SupportTicket[]
 
   @@map("users")
 }
@@ -276,5 +277,26 @@ model Review {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
+}
+
+// Support tickets for customer service
+model SupportTicket {
+  id           String   @id @default(cuid())
+  ticketNumber String   @unique
+  subject      String
+  category     String
+  message      String   @db.Text
+  priority     String   // LOW, MEDIUM, HIGH, URGENT
+  status       String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  userId       String
+  userEmail    String
+  assignedTo   String?
+  response     String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("support_tickets")
 }
 

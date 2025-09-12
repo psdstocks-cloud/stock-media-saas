@@ -33,6 +33,13 @@ export default function DashboardLayout({
     { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
   ]
 
+  const quickLinks = [
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Download Media', href: '/dashboard/browse' },
+    { name: 'My Orders', href: '/dashboard/orders' },
+    { name: 'Profile', href: '/dashboard/profile' },
+  ]
+
   const isActive = (href: string) => pathname === href
 
   if (status === 'loading') {
@@ -389,7 +396,7 @@ export default function DashboardLayout({
               flexDirection: 'column',
               gap: '8px'
             }}>
-              {navigation.map((item) => (
+              {quickLinks.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -431,10 +438,10 @@ export default function DashboardLayout({
                   transition: 'color 0.2s ease'
                 }}
               >
-                Help Center
+                Support Hub
               </Link>
               <Link
-                href="/dashboard/support"
+                href="/dashboard/support?tab=faq"
                 style={{
                   color: 'rgba(255,255,255,0.8)',
                   textDecoration: 'none',
@@ -442,10 +449,10 @@ export default function DashboardLayout({
                   transition: 'color 0.2s ease'
                 }}
               >
-                Contact Us
+                FAQ & Help
               </Link>
               <Link
-                href="/dashboard/support"
+                href="/dashboard/support?tab=contact"
                 style={{
                   color: 'rgba(255,255,255,0.8)',
                   textDecoration: 'none',
@@ -453,7 +460,7 @@ export default function DashboardLayout({
                   transition: 'color 0.2s ease'
                 }}
               >
-                Report Issue
+                Submit Ticket
               </Link>
             </div>
           </div>

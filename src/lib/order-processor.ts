@@ -8,6 +8,7 @@ export interface OrderStatusUpdate {
   fileName?: string
   progress?: number
   message?: string
+  taskId?: string
 }
 
 export class OrderProcessor {
@@ -56,8 +57,8 @@ export class OrderProcessor {
         throw new Error(orderResponse.message || 'Failed to place order')
       }
 
-      // Step 2: Monitor order status
-      await this.updateOrderStatus(orderId, 'PROCESSING', 'Order placed, monitoring progress...')
+      // Step 2: Save taskId and monitor order status
+      await this.updateOrderStatus(orderId, 'PROCESSING', 'Order placed, monitoring progress...', undefined, undefined, undefined, orderResponse.task_id)
       await this.monitorOrderStatus(orderId, api, orderResponse.task_id)
       
     } catch (error) {
@@ -135,7 +136,12 @@ export class OrderProcessor {
             error: statusResponse.error,
             message: statusResponse.message
           })
-          throw new Error(statusResponse.message || 'Order processing failed')
+          await this.updateOrderStatus(
+            orderId,
+            'FAILED',
+            `Order failed: ${statusResponse.message || 'Unknown error'}`
+          )
+          return
         }
         
         // Track status changes for smart polling
@@ -265,7 +271,12 @@ export class OrderProcessor {
             elapsed,
             statusResponse
           })
-          throw new Error('Order processing timeout - file not ready after maximum attempts')
+          await this.updateOrderStatus(
+            orderId,
+            'FAILED',
+            'Order processing timeout - file not ready after maximum attempts'
+          )
+          return
         }
         
       } catch (error) {
@@ -285,19 +296,21 @@ export class OrderProcessor {
   /**
    * Update order status in database and notify callbacks
    */
-  private static async updateOrderStatus(
+  static async updateOrderStatus(
     orderId: string,
     status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED',
     message?: string,
     downloadUrl?: string,
     fileName?: string,
-    progress?: number
+    progress?: number,
+    taskId?: string
   ): Promise<void> {
     try {
       // Update database
       const updateData: any = { status }
       if (downloadUrl) updateData.downloadUrl = downloadUrl
       if (fileName) updateData.fileName = fileName
+      if (taskId) updateData.taskId = taskId
       
       await prisma.order.update({
         where: { id: orderId },
@@ -313,7 +326,8 @@ export class OrderProcessor {
           downloadUrl,
           fileName,
           progress,
-          message
+          message,
+          taskId
         })
       }
       
