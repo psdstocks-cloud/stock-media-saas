@@ -171,24 +171,7 @@ export default function DashboardPage() {
               alignItems: 'center',
               gap: '16px'
             }}>
-              <Link href="/dashboard/browse">
-                <button style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  background: 'white',
-                  color: '#374151',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}>
-                  🔍 Request Files
-                </button>
-              </Link>
+              {/* Removed duplicate Request Files button - keeping only the hero section button */}
             </div>
           </div>
         </div>
@@ -250,23 +233,34 @@ export default function DashboardPage() {
               Pay once, download forever - no recurring fees.
             </p>
             
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <Link href="/dashboard/browse">
                 <button style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '16px 32px',
-                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '20px 40px',
+                  background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  color: 'white',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '12px',
-                  fontSize: '18px',
-                  fontWeight: '600',
+                  color: '#667eea',
+                  border: '2px solid rgba(255, 255, 255, 0.8)',
+                  borderRadius: '16px',
+                  fontSize: '20px',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+                  transform: 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 16px 50px rgba(0, 0, 0, 0.2)'
+                  e.currentTarget.style.background = 'white'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)'
                 }}>
                   🔍 Request Files Now
                 </button>
@@ -277,15 +271,25 @@ export default function DashboardPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '16px 32px',
+                  padding: '20px 40px',
                   background: 'transparent',
                   color: 'white',
-                  border: '2px solid rgba(255, 255, 255, 0.5)',
-                  borderRadius: '12px',
-                  fontSize: '18px',
+                  border: '2px solid rgba(255, 255, 255, 0.6)',
+                  borderRadius: '16px',
+                  fontSize: '20px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.8)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.6)'
+                  e.currentTarget.style.transform = 'translateY(0)'
                 }}>
                 📺 Watch Demo
               </button>
@@ -651,7 +655,7 @@ export default function DashboardPage() {
           </p>
           
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/dashboard/browse">
+            <Link href="/dashboard/orders">
               <button style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -667,10 +671,10 @@ export default function DashboardPage() {
                 transition: 'all 0.3s ease',
                 boxShadow: '0 8px 25px rgba(37, 99, 235, 0.3)'
               }}>
-                🔍 Request Files
+                📋 View My Orders
               </button>
             </Link>
-            <Link href="/dashboard/orders">
+            <Link href="/dashboard/profile">
               <button style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -685,7 +689,7 @@ export default function DashboardPage() {
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}>
-                📋 View My Orders
+                👤 My Profile
               </button>
             </Link>
           </div>
