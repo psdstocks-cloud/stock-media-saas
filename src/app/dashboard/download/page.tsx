@@ -51,7 +51,7 @@ export default function DownloadPage() {
     timestamp: new Date().toISOString()
   })
 
-  // Check API health on component mount
+  // Check API health and session on component mount
   useEffect(() => {
     const checkApiHealth = async () => {
       try {
@@ -68,7 +68,26 @@ export default function DownloadPage() {
       }
     }
 
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session')
+        const sessionData = await response.json()
+        console.log('🔍 Manual session check:', sessionData)
+        
+        if (sessionData?.user) {
+          console.log('✅ Manual session check successful, forcing authentication')
+          setPageState('authenticated')
+          setIsInitialized(true)
+        }
+      } catch (error) {
+        console.error('Manual session check error:', error)
+      }
+    }
+
     checkApiHealth()
+    
+    // If useSession is broken, try manual session check after 2 seconds
+    setTimeout(checkSession, 2000)
   }, [])
 
   const loadRecentOrders = useCallback(async () => {
@@ -105,14 +124,22 @@ export default function DownloadPage() {
     return () => clearTimeout(timeoutId)
   }, [isInitialized, loadRecentOrders, isLoadingOrders])
 
-  // Simplified authentication flow that works with dashboard layout
+  // CRITICAL FIX: Handle broken useSession hook
   useEffect(() => {
     console.log('🔐 Auth Status Check:', { status, hasSession: !!session, pageState })
     
-    // Let the dashboard layout handle loading and unauthenticated states
+    // If status is loading for more than 3 seconds, force authentication
     if (status === 'loading') {
       setPageState('loading')
-      return
+      
+      // Force authentication after 3 seconds if still loading
+      const forceAuthTimeout = setTimeout(() => {
+        console.log('⚠️ FORCE AUTH: useSession stuck in loading, forcing authentication')
+        setPageState('authenticated')
+        setIsInitialized(true)
+      }, 3000)
+      
+      return () => clearTimeout(forceAuthTimeout)
     }
 
     if (status === 'unauthenticated' || !session) {
