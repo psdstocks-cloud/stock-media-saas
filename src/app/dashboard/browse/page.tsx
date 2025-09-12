@@ -703,37 +703,6 @@ export default function BrowsePage() {
                 My Orders
               </button>
 
-              {/* Browse All Sites Button */}
-              <button
-                onClick={() => setShowSupportedSites(!showSupportedSites)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 20px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '25px',
-                  color: 'white',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  backdropFilter: 'blur(10px)',
-                  minWidth: 'fit-content'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                <ExternalLink size={16} />
-                {showSupportedSites ? 'Hide Sites' : 'Browse Sites'}
-              </button>
             </div>
           </div>
         </div>
@@ -857,21 +826,43 @@ export default function BrowsePage() {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    background: 'rgba(102, 126, 234, 0.1)',
-                    border: '1px solid rgba(102, 126, 234, 0.2)',
-                    borderRadius: '12px',
-                    color: '#667eea',
+                    gap: '10px',
+                    padding: '12px 24px',
+                    background: showSupportedSites 
+                      ? 'linear-gradient(135deg, #667eea, #764ba2)' 
+                      : 'rgba(102, 126, 234, 0.1)',
+                    border: showSupportedSites 
+                      ? 'none' 
+                      : '1px solid rgba(102, 126, 234, 0.2)',
+                    borderRadius: '16px',
+                    color: showSupportedSites ? 'white' : '#667eea',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    fontSize: '14px',
-                    fontWeight: '500'
+                    transition: 'all 0.3s ease',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    boxShadow: showSupportedSites 
+                      ? '0 8px 25px rgba(102, 126, 234, 0.3)' 
+                      : '0 2px 8px rgba(102, 126, 234, 0.1)',
+                    transform: 'translateY(0)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!showSupportedSites) {
+                      e.currentTarget.style.background = 'rgba(102, 126, 234, 0.15)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.2)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showSupportedSites) {
+                      e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.1)'
+                    }
                   }}
                 >
-                  <Shield size={16} />
-                  Supported Sites
-                  {showSupportedSites ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  <Shield size={18} />
+                  {showSupportedSites ? 'Hide Supported Sites' : 'View Supported Sites'}
+                  {showSupportedSites ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
               </div>
             </div>
