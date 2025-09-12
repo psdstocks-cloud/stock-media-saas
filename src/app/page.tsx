@@ -112,8 +112,7 @@ export default async function HomePage() {
       <Header variant="home" />
 
       {/* Hero Section */}
-      <section style={{
-        padding: '80px 0',
+      <section className="section-padding-lg" style={{
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden'
@@ -131,10 +130,9 @@ export default async function HomePage() {
         }} />
         
         {/* Hero Content */}
-        <div style={{
+        <div className="container-padding" style={{
           maxWidth: '1280px',
           margin: '0 auto',
-          padding: '0 1rem',
           position: 'relative',
           zIndex: 1
         }}>
@@ -142,22 +140,19 @@ export default async function HomePage() {
             maxWidth: '896px',
             margin: '0 auto'
           }}>
-            <div className="bg-gradient-accent" style={{
+            <div className="bg-gradient-accent px-4 py-2" style={{
               display: 'inline-flex',
               alignItems: 'center',
               borderRadius: '9999px',
               color: 'white',
-              padding: '8px 16px',
               fontSize: '14px',
               fontWeight: '600',
-              marginBottom: '24px',
+              marginBottom: 'var(--space-6)',
               boxShadow: '0 4px 14px 0 rgba(240, 171, 252, 0.4)'
             }}>
               🚀 New: AI-Powered Search & 10M+ Premium Assets
             </div>
-            <h1 className="text-display-2xl" style={{
-              marginBottom: '24px'
-            }}>
+            <h1 className="text-display-2xl mb-6">
               The Ultimate{' '}
               <span className="text-gradient-tertiary">
                 Stock Media
@@ -165,18 +160,18 @@ export default async function HomePage() {
               <br />
               Platform
           </h1>
-            <p className="text-body-xl" style={{
+            <p className="text-body-xl mb-8" style={{
               maxWidth: '768px',
-              margin: '0 auto 32px'
+              margin: '0 auto'
             }}>
               Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide. 
               Download instantly with our point-based system and commercial licensing.
             </p>
             
             {/* Search Bar */}
-            <div style={{
+            <div className="mb-12" style={{
               maxWidth: '600px',
-              margin: '0 auto 48px',
+              margin: '0 auto',
               position: 'relative'
             }}>
               <SearchBarWrapper 
@@ -186,21 +181,8 @@ export default async function HomePage() {
             </div>
 
             {/* Enhanced CTAs */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: '48px'
-            }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: '16px',
-                flexWrap: 'wrap',
-                justifyContent: 'center'
-            }}>
+            <div className="flex flex-col gap-4 justify-center items-center mb-12">
+              <div className="flex flex-row gap-4 flex-wrap justify-center">
               <Link href="/register">
                   <Button 
                     variant="gradient" 
@@ -232,52 +214,41 @@ export default async function HomePage() {
               </div>
               
               {/* Trust Indicators */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                marginTop: '16px',
-                fontSize: '14px',
+              <div className="flex items-center gap-4 mt-4 text-sm" style={{
                 color: '#64748b'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#10b981' }}>✓</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-success">✓</span>
                   <span>Free 7-day trial</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#10b981' }}>✓</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-success">✓</span>
                   <span>Cancel anytime</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#10b981' }}>✓</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-success">✓</span>
                   <span>Commercial license included</span>
                 </div>
               </div>
 
               {/* Security Badges */}
-              <div style={{ marginTop: '24px' }}>
+              <div className="mt-6">
                 <SecurityBadges variant="compact" />
               </div>
             </div>
 
             {/* Stats Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '32px',
-              maxWidth: '600px',
-              margin: '0 auto'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div className="text-display-sm" style={{ marginBottom: '4px' }}>10M+</div>
+            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-display-sm mb-1">10M+</div>
                 <div className="text-label-md">Premium Assets</div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div className="text-display-sm" style={{ marginBottom: '4px' }}>500+</div>
+              <div className="text-center">
+                <div className="text-display-sm mb-1">500+</div>
                 <div className="text-label-md">Stock Sites</div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div className="text-display-sm" style={{ marginBottom: '4px' }}>50K+</div>
+              <div className="text-center">
+                <div className="text-display-sm mb-1">50K+</div>
                 <div className="text-label-md">Happy Users</div>
               </div>
             </div>
@@ -285,34 +256,18 @@ export default async function HomePage() {
         </div>
 
         {/* Content Preview Section */}
-        <div style={{
-          marginTop: '80px',
-          background: 'white',
-          borderRadius: '16px',
-          padding: '40px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          maxWidth: '1000px',
-          margin: '80px auto 0',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div className="mt-20 bg-white rounded-2xl p-10 shadow-2xl max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-8">
             <h3 className="text-display-sm">
               See What You Get
             </h3>
-            <p className="text-body-md" style={{
-              marginTop: '8px'
-            }}>
+            <p className="text-body-md mt-2">
               Preview of premium content available on our platform
             </p>
           </div>
           
           {/* Content Grid Preview */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '20px'
-          }}>
+          <div className="grid grid-cols-4 gap-5">
             {[
               {
                 image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
@@ -370,18 +325,11 @@ export default async function HomePage() {
                     {item.cost}
                   </div>
                 </div>
-                <div style={{ padding: '12px' }}>
-                  <h4 className="text-heading-sm" style={{
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    marginBottom: '4px'
-                  }}>
+                <div className="p-3">
+                  <h4 className="text-heading-sm mb-1 truncate">
                     {item.title}
                   </h4>
-                  <p className="text-caption" style={{
-                    textTransform: 'capitalize'
-                  }}>
+                  <p className="text-caption capitalize">
                     {item.site}
                   </p>
                 </div>
@@ -389,15 +337,12 @@ export default async function HomePage() {
             ))}
           </div>
           
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <div className="text-center mt-6">
             <Link href="/dashboard/browse">
               <Button 
                 variant="gradient" 
                 size="lg"
-                style={{
-                  fontSize: '16px',
-                  padding: '12px 24px'
-                }}
+                className="px-6 py-3"
               >
                 Browse All Content →
               </Button>
@@ -407,24 +352,13 @@ export default async function HomePage() {
       </section>
 
       {/* Enhanced Social Proof Section */}
-      <section style={{
-        padding: '80px 0',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
-        position: 'relative'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+      <section className="section-padding-lg bg-gradient-neutral relative">
+        <div className="container-padding max-w-7xl mx-auto">
+          <div className="text-center mb-16">
             <h3 className="text-display-md">
               Trusted by 50,000+ Creators Worldwide
             </h3>
-            <p className="text-body-lg" style={{
-              maxWidth: '600px',
-              margin: '16px auto 0'
-            }}>
+            <p className="text-body-lg max-w-2xl mx-auto mt-4">
               Join designers, marketers, and content creators from top companies who trust StockMedia Pro
             </p>
           </div>
@@ -697,31 +631,17 @@ export default async function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" style={{
-        padding: '80px 0',
-        background: 'white'
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+      <section id="features" className="section-padding-lg bg-white">
+        <div className="container-padding max-w-7xl mx-auto">
+          <div className="text-center mb-16">
             <h2 className="text-display-lg">
               Why Choose StockMedia Pro?
             </h2>
-            <p className="text-body-xl" style={{
-              maxWidth: '768px',
-              margin: '24px auto 0'
-            }}>
+            <p className="text-body-xl max-w-3xl mx-auto mt-6">
               We&apos;ve built the most comprehensive stock media platform with features designed for modern creators and businesses.
             </p>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '32px'
-          }}>
+          <div className="grid grid-cols-3 gap-8">
             {[
               { icon: '🔍', title: 'Smart Search', desc: 'AI-powered search across millions of high-quality stock media files', color: 'bg-gradient-primary' },
               { icon: '⬇️', title: 'Instant Downloads', desc: 'Download your media files instantly with our high-speed CDN', color: 'bg-gradient-accent' },
@@ -730,28 +650,11 @@ export default async function HomePage() {
               { icon: '🌍', title: 'Global Access', desc: 'Access to premium stock sites worldwide in one unified platform', color: 'bg-gradient-success' },
               { icon: '🕐', title: '24/7 Support', desc: 'Round-the-clock customer support from our expert team', color: 'bg-gradient-warning' }
             ].map((feature, index) => (
-              <div key={index} style={{
-                padding: '24px',
-                background: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease'
-              }}>
-                <div className={feature.color} style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '16px'
-                }}>
+              <div key={index} className="card-padding-lg bg-white rounded-xl shadow-lg transition-all duration-300">
+                <div className={`${feature.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl mb-4`}>
                   {feature.icon}
-              </div>
-                <h3 className="text-heading-lg" style={{
-                  marginBottom: '12px'
-                }}>
+                </div>
+                <h3 className="text-heading-lg mb-3">
                   {feature.title}
                 </h3>
                 <p className="text-body-md">
