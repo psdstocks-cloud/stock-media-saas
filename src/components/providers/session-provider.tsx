@@ -8,5 +8,14 @@ interface Props {
 }
 
 export default function AuthSessionProvider({ children }: Props) {
-  return <SessionProvider>{children}</SessionProvider>
+  return (
+    <SessionProvider
+      // Add refetch interval to keep session fresh
+      refetchInterval={5 * 60} // 5 minutes
+      refetchOnWindowFocus={true}
+      refetchWhenOffline={false}
+    >
+      {children}
+    </SessionProvider>
+  )
 }

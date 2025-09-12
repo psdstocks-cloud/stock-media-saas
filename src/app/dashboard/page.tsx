@@ -234,7 +234,7 @@ export default function DashboardPage() {
             </p>
             
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Link href="/dashboard/browse">
+              <Link href="/dashboard/download">
                 <button style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -734,7 +734,7 @@ export default function DashboardPage() {
                 Quick Actions
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-                <Link href="/dashboard/browse" style={{ display: 'block' }}>
+                <Link href="/dashboard/download" style={{ display: 'block' }}>
                   <div style={{
                     padding: '20px',
                     background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
@@ -1140,7 +1140,7 @@ export default function DashboardPage() {
                 <div style={{ textAlign: 'center', padding: '32px 0' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>⬇️</div>
                   <p style={{ color: '#64748b', marginBottom: '16px' }}>No orders yet</p>
-                  <Link href="/dashboard/browse">
+                  <Link href="/dashboard/download">
                     <button style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1644,7 +1644,7 @@ export default function DashboardPage() {
             </div>
 
             <div style={{ textAlign: 'center' }}>
-              <Link href="/dashboard/browse">
+              <Link href="/dashboard/download">
                 <button style={{
                   padding: '16px 32px',
                   background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',

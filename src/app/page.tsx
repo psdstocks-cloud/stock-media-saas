@@ -133,7 +133,7 @@ export default function HomePage() {
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
               <div style={{ display: 'flex', gap: '2rem' }}>
-                <Link href="/dashboard" style={{ color: '#6b7280', textDecoration: 'none' }}>Browse</Link>
+                <Link href="/dashboard/download" style={{ color: '#6b7280', textDecoration: 'none' }}>Download</Link>
                 <Link href="/pricing" style={{ color: '#6b7280', textDecoration: 'none' }}>Pricing</Link>
                 <Link href="/about" style={{ color: '#6b7280', textDecoration: 'none' }}>About</Link>
                 <Link href="/contact" style={{ color: '#6b7280', textDecoration: 'none' }}>Contact</Link>
@@ -576,7 +576,7 @@ export default function HomePage() {
               <div>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '1rem' }}>Product</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <Link href="/dashboard" style={{ color: '#9ca3af', textDecoration: 'none' }}>Browse</Link>
+                  <Link href="/dashboard/download" style={{ color: '#9ca3af', textDecoration: 'none' }}>Download</Link>
                   <Link href="/pricing" style={{ color: '#9ca3af', textDecoration: 'none' }}>Pricing</Link>
                   <Link href="/features" style={{ color: '#9ca3af', textDecoration: 'none' }}>Features</Link>
                   <Link href="/api" style={{ color: '#9ca3af', textDecoration: 'none' }}>API</Link>

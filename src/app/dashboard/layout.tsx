@@ -11,7 +11,8 @@ import {
   LogOut, 
   Menu,
   X,
-  Search
+  Search,
+  CreditCard
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -27,16 +28,18 @@ export default function DashboardLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Download Media', href: '/dashboard/browse', icon: Search },
+    { name: 'Download Media', href: '/dashboard/download', icon: Search },
     { name: 'My Orders', href: '/dashboard/orders', icon: Download },
+    { name: 'Pricing', href: '/dashboard/pricing', icon: CreditCard },
     { name: 'Profile', href: '/dashboard/profile', icon: User },
     { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
   ]
 
   const quickLinks = [
     { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Download Media', href: '/dashboard/browse' },
+    { name: 'Download Media', href: '/dashboard/download' },
     { name: 'My Orders', href: '/dashboard/orders' },
+    { name: 'Pricing', href: '/dashboard/pricing' },
     { name: 'Profile', href: '/dashboard/profile' },
   ]
 
