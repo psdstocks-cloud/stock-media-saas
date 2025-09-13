@@ -8,6 +8,12 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
     url: process.env.UPSTASH_REDIS_REST_URL,
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
   })
+} else if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  // Fallback to Upstash's default variable names
+  redis = new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  })
 }
 
 // Rate limiters for different endpoints (only if Redis is available)
