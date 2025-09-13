@@ -66,6 +66,9 @@ export default function DownloadPage() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingStatus, setLoadingStatus] = useState<'analyzing' | 'processing' | 'downloading' | 'completed'>('analyzing')
   
+  // Debounce timer for URL changes
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null)
+  
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -269,9 +272,6 @@ export default function DownloadPage() {
       setIsLoading(false)
     }
   }, [])
-
-  // Debounce timer for URL changes
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null)
 
   // Handle paste event
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
