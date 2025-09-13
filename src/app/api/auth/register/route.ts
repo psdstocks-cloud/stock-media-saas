@@ -9,9 +9,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password, planId } = await request.json()
     const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
 
-    console.log('Registration attempt:', { name, email, planId, clientIP })
-    console.log('Database URL exists:', !!process.env.DATABASE_URL)
-    console.log('Database URL starts with:', process.env.DATABASE_URL?.substring(0, 20))
+    console.log('Registration attempt:', { name, email, planId })
 
     // Apply rate limiting
     const rateLimitResult = await checkRegistrationRateLimit(clientIP)
@@ -109,23 +107,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Get plan info
-    console.log('Plan ID received:', planId)
-    console.log('Available plans:', Object.keys(planData))
     const planInfo = planData[planId as keyof typeof planData]
     if (!planInfo) {
-      console.log('Invalid plan selected:', planId)
       return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 })
     }
-    console.log('Plan info found:', planInfo)
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user and subscription sequentially (without transaction due to Prisma issues)
-    console.log('Starting user creation...')
-    
+    // Create user and subscription sequentially
     // Create or get subscription plan
-    console.log('Creating/finding subscription plan...')
     const plan = await prisma.subscriptionPlan.upsert({
       where: { name: planInfo.name },
       update: {},
@@ -138,10 +129,8 @@ export async function POST(request: NextRequest) {
         isActive: true
       }
     })
-    console.log('Plan created/found:', plan.id)
 
     // Create user with email normalization
-    console.log('Creating user...')
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -149,10 +138,8 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
       }
     })
-    console.log('User created:', user.id)
 
     // Create subscription
-    console.log('Creating subscription for user:', user.id, 'plan:', plan.id)
     const subscription = await prisma.subscription.create({
       data: {
         userId: user.id,
@@ -162,7 +149,6 @@ export async function POST(request: NextRequest) {
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       }
     })
-    console.log('Subscription created:', subscription.id)
 
     // Initialize points balance with subscription points
     const pointsBalance = await prisma.pointsBalance.create({
@@ -172,7 +158,6 @@ export async function POST(request: NextRequest) {
         totalPurchased: plan.points,
       }
     })
-    console.log('Points balance created:', pointsBalance.id)
 
     // Create points history entry
     await prisma.pointsHistory.create({
@@ -183,11 +168,8 @@ export async function POST(request: NextRequest) {
         description: `Initial subscription points for ${plan.name} plan`,
       }
     })
-    console.log('Points history created')
 
     const result = { user, subscription, plan }
-
-    console.log('Registration successful:', result.user.email)
 
     return NextResponse.json({ 
       success: true, 
@@ -199,11 +181,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined
-    })
     return NextResponse.json({ 
       error: 'Registration failed',
       details: error instanceof Error ? error.message : 'Unknown error'
