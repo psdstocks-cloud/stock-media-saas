@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
     console.log('Starting user creation...')
     
     // Create or get subscription plan
+    console.log('Creating/finding subscription plan...')
     const plan = await prisma.subscriptionPlan.upsert({
       where: { name: planInfo.name },
       update: {},
@@ -140,6 +141,7 @@ export async function POST(request: NextRequest) {
     console.log('Plan created/found:', plan.id)
 
     // Create user with email normalization
+    console.log('Creating user...')
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -150,10 +152,12 @@ export async function POST(request: NextRequest) {
     console.log('User created:', user.id)
 
     // Create subscription
+    console.log('Creating subscription for user:', user.id, 'plan:', plan.id)
     const subscription = await prisma.subscription.create({
       data: {
         userId: user.id,
         planId: plan.id,
+        status: 'ACTIVE',
         currentPeriodStart: new Date(),
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       }
