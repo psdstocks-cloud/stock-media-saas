@@ -92,8 +92,8 @@ export default function DownloadPage() {
           setTimeout(() => {
             router.push('/login')
           }, 1000)
-        }
-      } catch (error) {
+      }
+    } catch (error) {
         console.error('Auth check failed:', error)
         // Add a small delay to show the loading state
         setTimeout(() => {
@@ -188,8 +188,8 @@ export default function DownloadPage() {
         setLoadingProgress(40)
         setLoadingStatus('processing')
         
-        const response = await fetch('/api/file-preview', {
-          method: 'POST',
+      const response = await fetch('/api/file-preview', {
+        method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             url: inputUrl, 
@@ -203,7 +203,8 @@ export default function DownloadPage() {
           setLoadingStatus('downloading')
           
           const data = await response.json()
-          setFileInfo(data.fileInfo)
+          console.log('File preview response:', data)
+        setFileInfo(data.fileInfo)
           
           // Step 4: Complete (100%)
           setLoadingProgress(100)
@@ -213,8 +214,10 @@ export default function DownloadPage() {
           setTimeout(() => {
             setShowLoadingBar(false)
           }, 1000)
-        } else {
-          throw new Error('Failed to get file preview')
+      } else {
+          const errorData = await response.json()
+          console.error('File preview error:', errorData)
+          throw new Error(errorData.error || 'Failed to get file preview')
         }
       } else {
         // Fallback to original API
@@ -231,7 +234,8 @@ export default function DownloadPage() {
           setLoadingProgress(70)
           setLoadingStatus('downloading')
           
-          const data = await response.json()
+        const data = await response.json()
+          console.log('File preview response (fallback):', data)
           setFileInfo(data.fileInfo)
           
           setLoadingProgress(100)
@@ -241,10 +245,12 @@ export default function DownloadPage() {
             setShowLoadingBar(false)
           }, 1000)
         } else {
-          throw new Error('Failed to get file preview')
+          const errorData = await response.json()
+          console.error('File preview error (fallback):', errorData)
+          throw new Error(errorData.error || 'Failed to get file preview')
         }
       }
-    } catch (error) {
+      } catch (error) {
       console.error('Error getting file preview:', error)
       setError('Failed to analyze URL. Please check the URL and try again.')
       setShowLoadingBar(false)
