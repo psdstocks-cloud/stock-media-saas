@@ -36,6 +36,9 @@ interface PointsHistoryEntry {
     stockItemId: string
     stockItemUrl: string | null
     status: string
+    taskId: string | null
+    downloadUrl: string | null
+    fileName: string | null
     stockSite: {
       displayName: string
       name: string
@@ -630,40 +633,97 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
                           border: '1px solid #bfdbfe',
                           borderRadius: '8px',
                           padding: '12px',
-                          marginBottom: '8px'
-                        }}>
+                          marginBottom: '8px',
+                          cursor: entry.order.downloadUrl ? 'pointer' : 'default',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onClick={() => {
+                          if (entry.order?.downloadUrl) {
+                            window.open(entry.order.downloadUrl, '_blank', 'noopener,noreferrer')
+                          }
+                        }}
+                        onMouseOver={(e) => {
+                          if (entry.order?.downloadUrl) {
+                            e.currentTarget.style.background = '#dbeafe'
+                            e.currentTarget.style.transform = 'translateY(-1px)'
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.15)'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (entry.order?.downloadUrl) {
+                            e.currentTarget.style.background = '#eff6ff'
+                            e.currentTarget.style.transform = 'translateY(0)'
+                            e.currentTarget.style.boxShadow = 'none'
+                          }
+                        }}
+                        >
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between'
                           }}>
-                            <div>
+                            <div style={{ flex: 1 }}>
                               <p style={{
                                 fontWeight: '600',
                                 color: '#1e40af',
                                 margin: '0 0 4px 0',
                                 fontSize: '14px'
                               }}>
-                                {entry.order.title || `Order #${entry.order.id.slice(-8)}`}
+                                {entry.order.stockSite.displayName} - {entry.order.stockItemId}
                               </p>
-                              <p style={{
-                                fontSize: '12px',
-                                color: '#1d4ed8',
-                                margin: 0
-                              }}>
-                                {entry.order.stockSite.displayName} • {entry.order.stockItemId}
-                              </p>
+                              {entry.order.taskId && (
+                                <p style={{
+                                  fontSize: '12px',
+                                  color: '#6b7280',
+                                  margin: '0 0 4px 0',
+                                  fontFamily: 'monospace'
+                                }}>
+                                  debugID: {entry.order.taskId}
+                                </p>
+                              )}
+                              {entry.order.fileName && (
+                                <p style={{
+                                  fontSize: '12px',
+                                  color: '#1d4ed8',
+                                  margin: 0
+                                }}>
+                                  📁 {entry.order.fileName}
+                                </p>
+                              )}
                             </div>
-                            {entry.order.stockItemUrl && (
-                              <a
-                                href={entry.order.stockItemUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: '#2563eb' }}
-                              >
-                                <ExternalLink size={16} />
-                              </a>
-                            )}
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}>
+                              {entry.order.downloadUrl && (
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  color: '#2563eb',
+                                  fontSize: '12px',
+                                  fontWeight: '500'
+                                }}>
+                                  <Download size={14} />
+                                  Download
+                                </div>
+                              )}
+                              {entry.order.stockItemUrl && (
+                                <a
+                                  href={entry.order.stockItemUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ 
+                                    color: '#2563eb',
+                                    textDecoration: 'none'
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink size={16} />
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}

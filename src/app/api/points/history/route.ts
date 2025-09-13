@@ -70,21 +70,24 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         include: {
-          order: {
-            select: {
-              id: true,
-              title: true,
-              stockItemId: true,
-              stockItemUrl: true,
-              status: true,
-              stockSite: {
-                select: {
-                  displayName: true,
-                  name: true
-                }
+        order: {
+          select: {
+            id: true,
+            title: true,
+            stockItemId: true,
+            stockItemUrl: true,
+            status: true,
+            taskId: true,
+            downloadUrl: true,
+            fileName: true,
+            stockSite: {
+              select: {
+                displayName: true,
+                name: true
               }
             }
           }
+        }
         }
       }),
       prisma.pointsHistory.count({ where: whereClause })
@@ -116,6 +119,9 @@ export async function GET(request: NextRequest) {
           stockItemId: entry.order.stockItemId,
           stockItemUrl: entry.order.stockItemUrl,
           status: entry.order.status,
+          taskId: entry.order.taskId,
+          downloadUrl: entry.order.downloadUrl,
+          fileName: entry.order.fileName,
           stockSite: entry.order.stockSite
         } : null
       }
