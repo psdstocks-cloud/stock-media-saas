@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { 
   TrendingUp, 
   TrendingDown, 
-  Download, 
   CreditCard, 
   Gift, 
   RotateCcw, 
@@ -629,34 +628,12 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
 
                       {entry.order && (
                         <div style={{
-                          background: '#eff6ff',
-                          border: '1px solid #bfdbfe',
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
                           borderRadius: '8px',
                           padding: '12px',
-                          marginBottom: '8px',
-                          cursor: entry.order.downloadUrl ? 'pointer' : 'default',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => {
-                          if (entry.order?.downloadUrl) {
-                            window.open(entry.order.downloadUrl, '_blank', 'noopener,noreferrer')
-                          }
-                        }}
-                        onMouseOver={(e) => {
-                          if (entry.order?.downloadUrl) {
-                            e.currentTarget.style.background = '#dbeafe'
-                            e.currentTarget.style.transform = 'translateY(-1px)'
-                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.15)'
-                          }
-                        }}
-                        onMouseOut={(e) => {
-                          if (entry.order?.downloadUrl) {
-                            e.currentTarget.style.background = '#eff6ff'
-                            e.currentTarget.style.transform = 'translateY(0)'
-                            e.currentTarget.style.boxShadow = 'none'
-                          }
-                        }}
-                        >
+                          marginBottom: '8px'
+                        }}>
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -665,7 +642,7 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
                             <div style={{ flex: 1 }}>
                               <p style={{
                                 fontWeight: '600',
-                                color: '#1e40af',
+                                color: '#0f172a',
                                 margin: '0 0 4px 0',
                                 fontSize: '14px'
                               }}>
@@ -684,7 +661,7 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
                               {entry.order.fileName && (
                                 <p style={{
                                   fontSize: '12px',
-                                  color: '#1d4ed8',
+                                  color: '#64748b',
                                   margin: 0
                                 }}>
                                   📁 {entry.order.fileName}
@@ -696,19 +673,6 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
                               alignItems: 'center',
                               gap: '8px'
                             }}>
-                              {entry.order.downloadUrl && (
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  color: '#2563eb',
-                                  fontSize: '12px',
-                                  fontWeight: '500'
-                                }}>
-                                  <Download size={14} />
-                                  Download
-                                </div>
-                              )}
                               {entry.order.stockItemUrl && (
                                 <a
                                   href={entry.order.stockItemUrl}
@@ -716,11 +680,26 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
                                   rel="noopener noreferrer"
                                   style={{ 
                                     color: '#2563eb',
-                                    textDecoration: 'none'
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    fontSize: '12px',
+                                    fontWeight: '500',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    background: '#eff6ff',
+                                    transition: 'all 0.2s ease'
                                   }}
-                                  onClick={(e) => e.stopPropagation()}
+                                  onMouseOver={(e) => {
+                                    e.currentTarget.style.background = '#dbeafe'
+                                  }}
+                                  onMouseOut={(e) => {
+                                    e.currentTarget.style.background = '#eff6ff'
+                                  }}
                                 >
-                                  <ExternalLink size={16} />
+                                  <ExternalLink size={14} />
+                                  View Original
                                 </a>
                               )}
                             </div>
