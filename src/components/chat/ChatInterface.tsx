@@ -19,6 +19,8 @@ import {
   FileText,
   Download
 } from 'lucide-react'
+import { notificationService } from '@/lib/notification-service'
+import NotificationSettings from '@/components/notifications/NotificationSettings'
 
 interface User {
   id: string
@@ -106,6 +108,11 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
       socket.on('new-message', (data: any) => {
         setMessages(prev => [...prev, data.message])
         scrollToBottom()
+        
+        // Show notification if message is from another user
+        if (data.message.user.id !== session.user.id) {
+          handleNewMessageNotification(data.message)
+        }
       })
 
       socket.on('user-typing', (data: any) => {
@@ -195,6 +202,33 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const handleNewMessageNotification = async (message: Message) => {
+    // Check if notifications are enabled and user is not focused on chat
+    const settings = JSON.parse(localStorage.getItem('notification-settings') || '{}')
+    const isPageVisible = !document.hidden
+    const isInChatPage = window.location.pathname.includes('/dashboard/chat') || 
+                        window.location.pathname.includes('/admin/chat')
+    
+    // Don't show notification if user is actively in chat
+    if (isPageVisible && isInChatPage) {
+      return
+    }
+
+    // Don't show notification if do not disturb is enabled
+    if (settings.doNotDisturb) {
+      return
+    }
+
+    // Show notification
+    await notificationService.showChatNotification({
+      id: message.id,
+      content: message.content,
+      senderName: message.user.name,
+      roomName: selectedRoom?.name,
+      type: message.type
+    })
   }
 
   const handleSendMessage = async () => {
@@ -469,7 +503,8 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
                   </p>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <NotificationSettings />
                 <button style={{
                   padding: '8px',
                   border: 'none',

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import ChatInterface from '@/components/chat/ChatInterface'
+import NotificationPermission from '@/components/notifications/NotificationPermission'
+import { useServiceWorker } from '@/hooks/useServiceWorker'
 import { 
   ArrowLeft, 
   MessageCircle, 
@@ -17,6 +19,7 @@ export default function ChatPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const { isSupported, isRegistered } = useServiceWorker()
 
   useEffect(() => {
     if (status === 'loading') return
@@ -61,6 +64,9 @@ export default function ChatPage() {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Notification Permission Banner */}
+      <NotificationPermission />
+      
       {/* Header */}
       <header style={{
         background: 'white',
