@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { PointsManager } from '@/lib/points'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    
+    // Get user ID from session if not provided in query params
+    let finalUserId = userId
+    if (!finalUserId) {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      finalUserId = session.user.id
     }
 
     const [balance, history] = await Promise.all([
-      PointsManager.getBalance(userId),
-      PointsManager.getHistory(userId, 50),
+      PointsManager.getBalance(finalUserId),
+      PointsManager.getHistory(finalUserId, 50),
     ])
 
     return NextResponse.json({ balance, history })

@@ -54,6 +54,7 @@ export default function DownloadPage() {
   const [isOrdering, setIsOrdering] = useState(false)
   const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [userPoints, setUserPoints] = useState(0)
+  const [isLoadingPoints, setIsLoadingPoints] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -73,12 +74,20 @@ export default function DownloadPage() {
 
   // Load user points and recent orders
   const loadUserData = useCallback(async () => {
+    if (!session?.user?.id) return
+    
+    setIsLoadingPoints(true)
+    
     try {
-      // Load points
+      // Load points (now works with session)
       const pointsResponse = await fetch('/api/points')
       if (pointsResponse.ok) {
         const pointsData = await pointsResponse.json()
-        setUserPoints(pointsData.currentPoints || 0)
+        console.log('Points data received:', pointsData)
+        setUserPoints(pointsData.balance?.currentPoints || 0)
+      } else {
+        console.error('Failed to load points:', pointsResponse.status, await pointsResponse.text())
+        setUserPoints(0) // Set to 0 if failed to load
       }
 
       // Load recent orders
@@ -89,8 +98,11 @@ export default function DownloadPage() {
       }
     } catch (error) {
       console.error('Error loading user data:', error)
+      setUserPoints(0) // Set to 0 if error occurred
+    } finally {
+      setIsLoadingPoints(false)
     }
-  }, [])
+  }, [session?.user?.id])
 
   // Parse URL and get file info
   const handleUrlSubmit = useCallback(async () => {
@@ -258,7 +270,14 @@ export default function DownloadPage() {
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
               <div className="flex items-center gap-2 text-white">
                 <CreditCard className="w-5 h-5" />
-                <span className="font-semibold">{userPoints} Points</span>
+                {isLoadingPoints ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="font-semibold">Loading...</span>
+                  </div>
+                ) : (
+                  <span className="font-semibold">{userPoints} Points</span>
+                )}
               </div>
             </div>
           </div>
@@ -347,13 +366,15 @@ export default function DownloadPage() {
                     <div className="text-right">
                       <button
                         onClick={handlePlaceOrder}
-                        disabled={isOrdering || !fileInfo.isAvailable || userPoints < fileInfo.cost}
+                        disabled={isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost)}
                         className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white font-semibold hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
                       >
                         {isOrdering ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : isLoadingPoints ? (
+                          'Loading Points...'
                         ) : userPoints < fileInfo.cost ? (
-                          'Insufficient Points'
+                          `Need ${fileInfo.cost - userPoints} more points`
                         ) : (
                           'Download Now'
                         )}
