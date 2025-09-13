@@ -146,6 +146,11 @@ export default function DownloadPage() {
     }
   }, [debounceTimer])
 
+  // Debug fileInfo state changes
+  useEffect(() => {
+    console.log('fileInfo state changed:', fileInfo)
+  }, [fileInfo])
+
   // Load user points and recent orders
   const loadUserData = useCallback(async (user?: any) => {
     const userId = user?.id || session?.user?.id
@@ -254,11 +259,7 @@ export default function DownloadPage() {
             console.log('File info details:', JSON.stringify(data.fileInfo, null, 2))
             setFileInfo(data.fileInfo)
             console.log('File info state set successfully')
-            
-            // Check if fileInfo state was actually set
-            setTimeout(() => {
-              console.log('FileInfo state after setting:', fileInfo)
-            }, 100)
+            console.log('Set fileInfo with data:', data.fileInfo)
           } else {
             console.error('API returned error or missing data:')
             console.error('Success:', data.success)
