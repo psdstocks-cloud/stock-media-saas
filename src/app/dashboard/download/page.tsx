@@ -508,7 +508,6 @@ export default function DownloadPage() {
     )
   }
 
-
   // Redirect if not authenticated
   if (isInitialized && !isAuthenticated) {
     router.push('/login')
