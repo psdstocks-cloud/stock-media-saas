@@ -163,7 +163,7 @@ export default function DownloadPage() {
     }
   }, [session?.user?.id])
 
-  // Auto-preview URL when pasted or typed
+  // Auto-preview URL when pasted or typed - contact API
   const handleUrlChange = useCallback(async (url: string) => {
     if (!url.trim()) {
       setFileInfo(null)
@@ -179,6 +179,7 @@ export default function DownloadPage() {
     }
 
     setError(null)
+    setIsLoading(true)
 
     try {
       // Parse URL with comprehensive parser
@@ -186,30 +187,40 @@ export default function DownloadPage() {
       console.log('Parsed data:', parsedData)
 
       if (parsedData) {
-        // Generate file info immediately
-        const fileInfo = {
-          id: parsedData.id,
-          site: parsedData.source,
-          title: `${parsedData.source.charAt(0).toUpperCase() + parsedData.source.slice(1)} - ${parsedData.id}`,
-          image: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-          previewUrl: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-          cost: 10, // Fixed 10 points for all sites
-          size: 'Unknown',
-          format: 'Unknown',
-          author: 'Unknown',
-          isAvailable: true
+        // Contact API to get real file preview
+        const response = await fetch('/api/file-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            url: url, 
+            parsedData: parsedData 
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('API response:', data)
+          
+          if (data.success && data.fileInfo) {
+            setFileInfo(data.fileInfo)
+            console.log('File info from API:', data.fileInfo)
+          } else {
+            throw new Error(data.error || 'Failed to get file preview from API')
+          }
+        } else {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'API request failed')
         }
-        
-        setFileInfo(fileInfo)
-        console.log('File info generated:', fileInfo)
       } else {
         setFileInfo(null)
         setError('Unsupported URL format. Please use a valid stock media URL.')
       }
     } catch (error) {
-      console.error('Error parsing URL:', error)
+      console.error('Error getting file preview:', error)
       setFileInfo(null)
-      setError('Failed to parse URL. Please check the URL format.')
+      setError(error instanceof Error ? error.message : 'Failed to get file preview. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }, [])
 
@@ -231,7 +242,7 @@ export default function DownloadPage() {
     handleUrlChange(url)
   }, [handleUrlChange])
 
-  // Direct download function
+  // Direct download function - deduct points and get download link
   const handleDirectDownload = useCallback(async () => {
     if (!fileInfo || !session?.user?.id) return
 
@@ -240,11 +251,20 @@ export default function DownloadPage() {
     setLoadingProgress(0)
     setLoadingStatus('processing')
     setError(null)
+    setIsOrdering(true)
 
     try {
-      // Step 1: Place order (30%)
+      // Step 1: Place order and deduct points (30%)
       setLoadingProgress(30)
       setLoadingStatus('processing')
+      
+      console.log('Placing order for:', {
+        url: inputUrl,
+        site: fileInfo.site,
+        id: fileInfo.id,
+        title: fileInfo.title,
+        cost: fileInfo.cost
+      })
       
       const response = await fetch('/api/place-stock-order', {
         method: 'POST',
@@ -255,25 +275,37 @@ export default function DownloadPage() {
           id: fileInfo.id,
           title: fileInfo.title,
           cost: fileInfo.cost,
-          imageUrl: fileInfo.previewUrl
+          imageUrl: fileInfo.previewUrl || fileInfo.image
         })
       })
 
       const data = await response.json()
+      console.log('Order response:', data)
 
       if (data.success) {
-        // Step 2: Wait for download link (70%)
+        // Step 2: Get download link (70%)
         setLoadingProgress(70)
         setLoadingStatus('downloading')
         
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // Wait a moment for order processing
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Try to get the download link
+        if (data.orderId) {
+          const downloadResponse = await fetch(`/api/orders/${data.orderId}/status`)
+          const downloadData = await downloadResponse.json()
+          
+          if (downloadData.order?.downloadUrl) {
+            // Open download link
+            window.open(downloadData.order.downloadUrl, '_blank', 'noopener,noreferrer')
+          }
+        }
         
         // Step 3: Complete (100%)
         setLoadingProgress(100)
         setLoadingStatus('completed')
         
-        setSuccess('Download ready! Your file is being prepared.')
+        setSuccess('Download started! Your file is being downloaded.')
         
         // Hide loading bar after completion
         setTimeout(() => {
@@ -281,7 +313,7 @@ export default function DownloadPage() {
           setFileInfo(null)
           setInputUrl('')
           loadUserData() // Reload user data to update points and orders
-        }, 1500)
+        }, 2000)
       } else {
         throw new Error(data.error || 'Failed to place order')
       }
@@ -526,32 +558,53 @@ export default function DownloadPage() {
                 Paste Stock URL
               </h2>
               
-              <div style={{ marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '1rem', position: 'relative' }}>
                 <input
                   type="url"
                   value={inputUrl}
                   onChange={handleInputChange}
                   onPaste={handlePaste}
                   placeholder="Paste your stock media URL - preview will appear automatically"
+                  disabled={isLoading}
                   style={{
                     width: '100%',
                     padding: '1rem',
+                    paddingRight: isLoading ? '3rem' : '1rem',
                     borderRadius: '0.75rem',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: isLoading ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)',
                     color: 'white',
                     fontSize: '1rem',
-                    backdropFilter: 'blur(8px)'
+                    backdropFilter: 'blur(8px)',
+                    opacity: isLoading ? 0.7 : 1
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
-                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                    if (!isLoading) {
+                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                    }
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
                     e.target.style.boxShadow = 'none'
                   }}
                 />
+                {isLoading && (
+                  <div style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.875rem'
+                  }}>
+                    <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
+                    Loading...
+                  </div>
+                )}
               </div>
 
               {/* Supported Sites - 2025 Trendy Design */}
