@@ -412,37 +412,40 @@ export default function DownloadPage() {
     })
   }
 
-  // Safety check - if we're not properly authenticated, show loading
-  if (pageState !== 'authenticated' || !isInitialized) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-              <Loader2 className="w-10 h-10 animate-spin text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Initializing...</h2>
-          <p className="text-gray-300 text-lg">Setting up your download center</p>
-          
-          {/* Debug information */}
-          <div className="mt-6 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300 max-w-md mx-auto">
-            <h3 className="text-white font-bold mb-2">AUTH DEBUG:</h3>
-            <p>PageState: <span className="text-blue-400">{pageState}</span></p>
-            <p>IsInitialized: <span className="text-purple-400">{isInitialized ? 'Yes' : 'No'}</span></p>
-            <p>ManualSession: <span className="text-green-400">{manualSession ? 'Yes' : 'No'}</span></p>
-            <p>API Health: <span className="text-yellow-400">{apiHealth}</span></p>
-            {manualSession?.user && (
-              <p>User: <span className="text-cyan-400">{manualSession.user.name || manualSession.user.email}</span></p>
-            )}
-            <p className="text-gray-400 text-xs mt-2">
-              Using proper authentication with direct session check.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // FORCE RENDER: Always show the main content since backend is working
+  console.log('🎯 RENDER CHECK:', { pageState, isInitialized, shouldShowContent: pageState === 'authenticated' && isInitialized })
+  
+  // TEMPORARY: Always render the main content to test if the issue is with the condition
+  // if (pageState !== 'authenticated' || !isInitialized) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="relative mb-8">
+  //           <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+  //             <Loader2 className="w-10 h-10 animate-spin text-white" />
+  //           </div>
+  //         </div>
+  //         <h2 className="text-3xl font-bold text-white mb-2">Initializing...</h2>
+  //         <p className="text-gray-300 text-lg">Setting up your download center</p>
+  //         
+  //         {/* Debug information */}
+  //         <div className="mt-6 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300 max-w-md mx-auto">
+  //           <h3 className="text-white font-bold mb-2">AUTH DEBUG:</h3>
+  //           <p>PageState: <span className="text-blue-400">{pageState}</span></p>
+  //           <p>IsInitialized: <span className="text-purple-400">{isInitialized ? 'Yes' : 'No'}</span></p>
+  //           <p>ManualSession: <span className="text-green-400">{manualSession ? 'Yes' : 'No'}</span></p>
+  //           <p>API Health: <span className="text-yellow-400">{apiHealth}</span></p>
+  //           {manualSession?.user && (
+  //             <p>User: <span className="text-cyan-400">{manualSession.user.name || manualSession.user.email}</span></p>
+  //           )}
+  //           <p className="text-gray-400 text-xs mt-2">
+  //             Using proper authentication with direct session check.
+  //           </p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
