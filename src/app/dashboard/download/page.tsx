@@ -202,10 +202,11 @@ export default function DownloadPage() {
     setError(null)
     setIsLoading(true)
 
+    // Parse URL with comprehensive parser
+    const parsedData = ComprehensiveUrlParser.parseUrl(url)
+    console.log('Parsed data:', parsedData)
+
     try {
-      // Parse URL with comprehensive parser
-      const parsedData = ComprehensiveUrlParser.parseUrl(url)
-      console.log('Parsed data:', parsedData)
 
       if (parsedData) {
         console.log('Contacting API with parsed data:', parsedData)
