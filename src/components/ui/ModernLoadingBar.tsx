@@ -7,9 +7,10 @@ interface ModernLoadingBarProps {
   progress: number
   status: 'analyzing' | 'processing' | 'downloading' | 'completed'
   onComplete?: () => void
+  onClose?: () => void
 }
 
-export function ModernLoadingBar({ isVisible, progress, status, onComplete }: ModernLoadingBarProps) {
+export function ModernLoadingBar({ isVisible, progress, status, onComplete, onClose }: ModernLoadingBarProps) {
   const [displayProgress, setDisplayProgress] = useState(0)
 
   useEffect(() => {
@@ -42,15 +43,30 @@ export function ModernLoadingBar({ isVisible, progress, status, onComplete }: Mo
   const getStatusText = () => {
     switch (status) {
       case 'analyzing':
-        return 'Analyzing URL...'
+        return 'Analyzing file details...'
       case 'processing':
-        return 'Processing request...'
+        return 'Processing your order...'
       case 'downloading':
-        return 'Preparing download...'
+        return 'Generating download link...'
       case 'completed':
-        return 'Ready to download!'
+        return 'Download ready!'
       default:
-        return 'Loading...'
+        return 'Processing...'
+    }
+  }
+
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'analyzing':
+        return '🔍'
+      case 'processing':
+        return '⚙️'
+      case 'downloading':
+        return '🔗'
+      case 'completed':
+        return '✅'
+      default:
+        return '⏳'
     }
   }
 
@@ -85,6 +101,39 @@ export function ModernLoadingBar({ isVisible, progress, status, onComplete }: Mo
       minHeight: '100vh',
       padding: '2rem'
     }}>
+      {/* Close Button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '2rem',
+            right: '2rem',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: 'white',
+            fontSize: '1.5rem',
+            transition: 'all 0.2s ease',
+            zIndex: 10000
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          ×
+        </button>
+      )}
+
       {/* Main Container */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
@@ -132,8 +181,12 @@ export function ModernLoadingBar({ isVisible, progress, status, onComplete }: Mo
           fontWeight: '700',
           color: 'white',
           margin: '0 0 1rem 0',
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem'
         }}>
+          <span style={{ fontSize: '2rem' }}>{getStatusIcon()}</span>
           {getStatusText()}
         </h3>
 
@@ -189,7 +242,7 @@ export function ModernLoadingBar({ isVisible, progress, status, onComplete }: Mo
         }}>
           {status === 'analyzing' && 'Extracting information from the URL...'}
           {status === 'processing' && 'Validating and preparing your request...'}
-          {status === 'downloading' && 'Generating your download link...'}
+          {status === 'downloading' && 'Waiting for download link generation...'}
           {status === 'completed' && 'Your download is ready!'}
         </p>
       </div>

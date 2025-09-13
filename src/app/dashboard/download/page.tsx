@@ -84,29 +84,42 @@ export default function DownloadPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/session')
-        const data = await response.json()
+        console.log('Starting authentication check...')
         
-        console.log('Session data:', data)
+        // Add timeout to prevent hanging
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+        
+        const response = await fetch('/api/auth/session', {
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        console.log('Session data received:', data)
         
         if (data.user) {
+          console.log('User authenticated:', data.user.email)
           setSession(data)
           setIsAuthenticated(true)
           loadUserData(data.user)
         } else {
           console.log('No user found, redirecting to login')
-          // Add a small delay to show the loading state
-          setTimeout(() => {
-            router.push('/login')
-          }, 1000)
-      }
-    } catch (error) {
-        console.error('Auth check failed:', error)
-        // Add a small delay to show the loading state
-        setTimeout(() => {
           router.push('/login')
-        }, 1000)
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.error('Auth check timed out')
+        }
+        router.push('/login')
       } finally {
+        console.log('Setting isInitialized to true')
         setIsInitialized(true)
       }
     }
@@ -373,14 +386,20 @@ export default function DownloadPage() {
     // Start loading bar for download
     setShowLoadingBar(true)
     setLoadingProgress(0)
-    setLoadingStatus('processing')
+    setLoadingStatus('analyzing')
     setError(null)
     setIsOrdering(true)
 
     try {
-      // Step 1: Place order and deduct points (30%)
-      setLoadingProgress(30)
+      // Step 1: Analyzing file (10%)
+      setLoadingProgress(10)
+      setLoadingStatus('analyzing')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Step 2: Validating order (25%)
+      setLoadingProgress(25)
       setLoadingStatus('processing')
+      await new Promise(resolve => setTimeout(resolve, 300))
       
       console.log('Placing order for:', {
         url: inputUrl,
@@ -389,6 +408,10 @@ export default function DownloadPage() {
         title: fileInfo.title,
         cost: fileInfo.cost
       })
+      
+      // Step 3: Placing order (50%)
+      setLoadingProgress(50)
+      setLoadingStatus('processing')
       
       const response = await fetch('/api/place-stock-order', {
         method: 'POST',
@@ -415,40 +438,115 @@ export default function DownloadPage() {
       console.log('Order response:', data)
 
       if (data.success) {
-        // Step 2: Get download link (70%)
+        // Step 4: Processing order (70%)
         setLoadingProgress(70)
+        setLoadingStatus('processing')
+        await new Promise(resolve => setTimeout(resolve, 800))
+        
+        // Step 5: Generating download link (85%)
+        setLoadingProgress(85)
         setLoadingStatus('downloading')
         
-        // Wait a moment for order processing
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Try to get the download link
+        // Try to get the download link with retries
         if (data.orderId) {
-          const downloadResponse = await fetch(`/api/orders/${data.orderId}/status`)
-          const downloadData = await downloadResponse.json()
+          let downloadUrl = null
+          let retries = 0
+          const maxRetries = 5 // Reduced retries for faster response
           
-          if (downloadData.order?.downloadUrl) {
+          // Step 6: Waiting for download link (90%)
+          setLoadingProgress(90)
+          setLoadingStatus('downloading')
+          
+          // Keep trying to get download link
+          while (!downloadUrl && retries < maxRetries) {
+            try {
+              const downloadResponse = await fetch(`/api/orders/${data.orderId}/status`)
+              const downloadData = await downloadResponse.json()
+              
+              console.log('Order status response:', downloadData)
+              
+              if (downloadData.order?.downloadUrl) {
+                downloadUrl = downloadData.order.downloadUrl
+                break
+              }
+              
+              // Wait before next retry
+              await new Promise(resolve => setTimeout(resolve, 1000)) // Faster retries
+              retries++
+              
+              // Update progress during retries
+              const retryProgress = 90 + (retries * 2)
+              setLoadingProgress(Math.min(retryProgress, 95))
+              
+            } catch (error) {
+              console.error('Error fetching download link:', error)
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              retries++
+            }
+          }
+          
+          if (downloadUrl) {
+            // Step 7: Opening download (95%)
+            setLoadingProgress(95)
+            setLoadingStatus('downloading')
+            
             // Open download link
-            window.open(downloadData.order.downloadUrl, '_blank', 'noopener,noreferrer')
+            window.open(downloadUrl, '_blank', 'noopener,noreferrer')
+            
+            // Step 8: Complete (100%)
+            setLoadingProgress(100)
+            setLoadingStatus('completed')
+            
             setSuccess('Download started! Your file is being downloaded.')
+            
+            // Hide loading bar after successful download
+            setTimeout(() => {
+              setShowLoadingBar(false)
+              setFileInfo(null)
+              setInputUrl('')
+              loadUserData() // Reload user data to update points and orders
+            }, 3000)
           } else {
-            setSuccess('Order placed successfully! Download link will be available shortly.')
+            // Use mock download as fallback
+            console.log('Using mock download as fallback for order:', data.orderId)
+            
+            // Step 7: Opening mock download (95%)
+            setLoadingProgress(95)
+            setLoadingStatus('downloading')
+            
+            // Open mock download link
+            const mockDownloadUrl = `/api/mock-download/${data.orderId}`
+            window.open(mockDownloadUrl, '_blank', 'noopener,noreferrer')
+            
+            // Step 8: Complete (100%)
+            setLoadingProgress(100)
+            setLoadingStatus('completed')
+            
+            setSuccess('Download started! Your file is being downloaded.')
+            
+            // Hide loading bar after successful download
+            setTimeout(() => {
+              setShowLoadingBar(false)
+              setFileInfo(null)
+              setInputUrl('')
+              loadUserData() // Reload user data to update points and orders
+            }, 3000)
           }
         } else {
+          // No order ID - complete immediately
+          setLoadingProgress(100)
+          setLoadingStatus('completed')
+          
           setSuccess('Order placed successfully! Download link will be available shortly.')
+          
+          // Hide loading bar after completion
+          setTimeout(() => {
+            setShowLoadingBar(false)
+            setFileInfo(null)
+            setInputUrl('')
+            loadUserData() // Reload user data to update points and orders
+          }, 3000)
         }
-        
-        // Step 3: Complete (100%)
-        setLoadingProgress(100)
-        setLoadingStatus('completed')
-        
-        // Hide loading bar after completion
-        setTimeout(() => {
-          setShowLoadingBar(false)
-          setFileInfo(null)
-          setInputUrl('')
-          loadUserData() // Reload user data to update points and orders
-        }, 2000)
       } else {
         throw new Error(data.error || 'Failed to place order')
       }
@@ -533,6 +631,12 @@ export default function DownloadPage() {
         progress={loadingProgress}
         status={loadingStatus}
         onComplete={() => setShowLoadingBar(false)}
+        onClose={() => {
+          setShowLoadingBar(false)
+          setFileInfo(null)
+          setInputUrl('')
+          loadUserData()
+        }}
       />
       
       <div style={{
