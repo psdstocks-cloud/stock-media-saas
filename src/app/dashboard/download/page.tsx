@@ -1152,6 +1152,20 @@ export default function DownloadPage() {
                 console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)
                 return null
               })()}
+              
+              {/* TEST: Always show this to verify rendering */}
+              <div style={{
+                background: 'red',
+                color: 'white',
+                padding: '1rem',
+                margin: '1rem 0',
+                border: '3px solid yellow',
+                fontSize: '1.5rem',
+                textAlign: 'center'
+              }}>
+                🔥 TEST: This should always be visible! 🔥
+              </div>
+              
               {fileInfo && (
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.1)',
