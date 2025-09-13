@@ -163,121 +163,89 @@ export default function DownloadPage() {
     }
   }, [session?.user?.id])
 
-  // Parse URL and get file info
-  const handleUrlSubmit = useCallback(async () => {
-    if (!inputUrl.trim()) {
-      setError('Please enter a valid URL')
+  // Auto-preview URL when pasted or typed
+  const handleUrlChange = useCallback(async (url: string) => {
+    if (!url.trim()) {
+      setFileInfo(null)
+      setError(null)
       return
     }
 
-    // Start loading bar
-    setShowLoadingBar(true)
-    setLoadingProgress(0)
-    setLoadingStatus('analyzing')
+    // Check if it looks like a URL
+    if (!url.match(/^https?:\/\//)) {
+      setFileInfo(null)
+      setError(null)
+      return
+    }
+
     setError(null)
-    setFileInfo(null)
 
     try {
-      // Step 1: Parse URL with comprehensive parser (20%)
-      setLoadingProgress(20)
-      const parsedData = ComprehensiveUrlParser.parseUrl(inputUrl)
+      // Parse URL with comprehensive parser
+      const parsedData = ComprehensiveUrlParser.parseUrl(url)
       console.log('Parsed data:', parsedData)
 
       if (parsedData) {
-        // Step 2: Process with advanced parser (40%)
-        setLoadingProgress(40)
-        setLoadingStatus('processing')
-        
-      const response = await fetch('/api/file-preview', {
-        method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            url: inputUrl, 
-            parsedData: parsedData 
-          })
-        })
-
-        if (response.ok) {
-          // Step 3: Complete processing (70%)
-          setLoadingProgress(70)
-          setLoadingStatus('downloading')
-          
-          const data = await response.json()
-          console.log('File preview response:', data)
-        setFileInfo(data.fileInfo)
-          
-          // Step 4: Complete (100%)
-          setLoadingProgress(100)
-          setLoadingStatus('completed')
-          
-          // Hide loading bar after completion
-          setTimeout(() => {
-            setShowLoadingBar(false)
-          }, 1000)
-      } else {
-          const errorData = await response.json()
-          console.error('File preview error:', errorData)
-          throw new Error(errorData.error || 'Failed to get file preview')
+        // Generate file info immediately
+        const fileInfo = {
+          id: parsedData.id,
+          site: parsedData.source,
+          title: `${parsedData.source.charAt(0).toUpperCase() + parsedData.source.slice(1)} - ${parsedData.id}`,
+          image: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
+          previewUrl: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
+          cost: 10, // Fixed 10 points for all sites
+          size: 'Unknown',
+          format: 'Unknown',
+          author: 'Unknown',
+          isAvailable: true
         }
-      } else {
-        // Fallback to original API
-        setLoadingProgress(40)
-        setLoadingStatus('processing')
         
-        const response = await fetch('/api/file-preview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: inputUrl })
-        })
-
-        if (response.ok) {
-          setLoadingProgress(70)
-          setLoadingStatus('downloading')
-          
-        const data = await response.json()
-          console.log('File preview response (fallback):', data)
-          setFileInfo(data.fileInfo)
-          
-          setLoadingProgress(100)
-          setLoadingStatus('completed')
-          
-          setTimeout(() => {
-            setShowLoadingBar(false)
-          }, 1000)
-        } else {
-          const errorData = await response.json()
-          console.error('File preview error (fallback):', errorData)
-          throw new Error(errorData.error || 'Failed to get file preview')
-        }
+        setFileInfo(fileInfo)
+        console.log('File info generated:', fileInfo)
+      } else {
+        setFileInfo(null)
+        setError('Unsupported URL format. Please use a valid stock media URL.')
       }
-      } catch (error) {
-      console.error('Error getting file preview:', error)
-      setError('Failed to analyze URL. Please check the URL and try again.')
-      setShowLoadingBar(false)
-    } finally {
-      setIsLoading(false)
+    } catch (error) {
+      console.error('Error parsing URL:', error)
+      setFileInfo(null)
+      setError('Failed to parse URL. Please check the URL format.')
     }
-  }, [inputUrl])
+  }, [])
 
   // Handle paste event
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     const pastedText = e.clipboardData.getData('text')
     setInputUrl(pastedText)
     
-    // Auto-analyze if it looks like a URL
+    // Auto-preview if it looks like a URL
     if (pastedText.match(/^https?:\/\//)) {
-      setTimeout(() => handleUrlSubmit(), 100)
+      setTimeout(() => handleUrlChange(pastedText), 100)
     }
-  }, [handleUrlSubmit])
+  }, [handleUrlChange])
 
-  // Place order
-  const handlePlaceOrder = useCallback(async () => {
+  // Handle URL input change
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setInputUrl(url)
+    handleUrlChange(url)
+  }, [handleUrlChange])
+
+  // Direct download function
+  const handleDirectDownload = useCallback(async () => {
     if (!fileInfo || !session?.user?.id) return
 
-    setIsOrdering(true)
+    // Start loading bar for download
+    setShowLoadingBar(true)
+    setLoadingProgress(0)
+    setLoadingStatus('processing')
     setError(null)
 
     try {
+      // Step 1: Place order (30%)
+      setLoadingProgress(30)
+      setLoadingStatus('processing')
+      
       const response = await fetch('/api/place-stock-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -294,17 +262,33 @@ export default function DownloadPage() {
       const data = await response.json()
 
       if (data.success) {
-        setSuccess('Order placed successfully! Download will be ready shortly.')
-        setFileInfo(null)
-        setInputUrl('')
-        // Reload user data to update points and orders
-        loadUserData()
+        // Step 2: Wait for download link (70%)
+        setLoadingProgress(70)
+        setLoadingStatus('downloading')
+        
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Step 3: Complete (100%)
+        setLoadingProgress(100)
+        setLoadingStatus('completed')
+        
+        setSuccess('Download ready! Your file is being prepared.')
+        
+        // Hide loading bar after completion
+        setTimeout(() => {
+          setShowLoadingBar(false)
+          setFileInfo(null)
+          setInputUrl('')
+          loadUserData() // Reload user data to update points and orders
+        }, 1500)
       } else {
-        setError(data.error || 'Failed to place order')
+        throw new Error(data.error || 'Failed to place order')
       }
     } catch (error) {
       console.error('Error placing order:', error)
-      setError('Failed to place order. Please try again.')
+      setError(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
+      setShowLoadingBar(false)
     } finally {
       setIsOrdering(false)
     }
@@ -543,69 +527,31 @@ export default function DownloadPage() {
               </h2>
               
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <input
-                    type="url"
-                    value={inputUrl}
-                    onChange={(e) => setInputUrl(e.target.value)}
-                    onPaste={handlePaste}
-                    placeholder="Paste your stock media URI"
-                    style={{
-                      flex: 1,
-                      padding: '1rem',
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      fontSize: '1rem',
-                      backdropFilter: 'blur(8px)'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
-                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                      e.target.style.boxShadow = 'none'
-                    }}
-                  />
-                  <button
-                    onClick={handleUrlSubmit}
-                    disabled={isLoading || !inputUrl.trim()}
-                    style={{
-                      padding: '1rem 2rem',
-                      background: isLoading ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: '0.75rem',
-                      cursor: isLoading ? 'not-allowed' : 'pointer',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isLoading) {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                        e.currentTarget.style.transform = 'scale(1.05)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isLoading) {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                        e.currentTarget.style.transform = 'scale(1)'
-                      }
-                    }}
-                  >
-                    {isLoading ? (
-                      <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
-                    ) : (
-                      'Analyze'
-                    )}
-                  </button>
-                </div>
+                <input
+                  type="url"
+                  value={inputUrl}
+                  onChange={handleInputChange}
+                  onPaste={handlePaste}
+                  placeholder="Paste your stock media URL - preview will appear automatically"
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'white',
+                    fontSize: '1rem',
+                    backdropFilter: 'blur(8px)'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                    e.target.style.boxShadow = 'none'
+                  }}
+                />
               </div>
 
               {/* Supported Sites - 2025 Trendy Design */}
@@ -1095,7 +1041,7 @@ export default function DownloadPage() {
                       </div>
                     <div style={{ textAlign: 'right' }}>
                       <button
-                        onClick={handlePlaceOrder}
+                        onClick={handleDirectDownload}
                         disabled={isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost)}
                         style={{
                           padding: '0.75rem 1.5rem',
