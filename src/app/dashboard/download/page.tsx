@@ -14,7 +14,8 @@ import {
   ExternalLink,
   AlertCircle
 } from 'lucide-react'
-import { UrlParser } from '@/lib/url-parser'
+import { ComprehensiveUrlParser } from '@/lib/comprehensive-url-parser'
+import { ModernLoadingBar } from '@/components/ui/ModernLoadingBar'
 
 interface FileInfo {
   id: string
@@ -55,6 +56,11 @@ export default function DownloadPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [supportedSites, setSupportedSites] = useState<any[]>([])
   const [isLoadingSites, setIsLoadingSites] = useState(true)
+  
+  // Loading bar state
+  const [showLoadingBar, setShowLoadingBar] = useState(false)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingStatus, setLoadingStatus] = useState<'analyzing' | 'processing' | 'downloading' | 'completed'>('analyzing')
   
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -164,19 +170,26 @@ export default function DownloadPage() {
       return
     }
 
-    setIsLoading(true)
+    // Start loading bar
+    setShowLoadingBar(true)
+    setLoadingProgress(0)
+    setLoadingStatus('analyzing')
     setError(null)
     setFileInfo(null)
 
     try {
-      // First try our advanced URL parser
-      const parsedData = UrlParser.parseUrl(inputUrl)
+      // Step 1: Parse URL with comprehensive parser (20%)
+      setLoadingProgress(20)
+      const parsedData = ComprehensiveUrlParser.parseUrl(inputUrl)
       console.log('Parsed data:', parsedData)
 
       if (parsedData) {
-        // Use our advanced parser
-      const response = await fetch('/api/file-preview', {
-        method: 'POST',
+        // Step 2: Process with advanced parser (40%)
+        setLoadingProgress(40)
+        setLoadingStatus('processing')
+        
+        const response = await fetch('/api/file-preview', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             url: inputUrl, 
@@ -185,13 +198,29 @@ export default function DownloadPage() {
         })
 
         if (response.ok) {
-      const data = await response.json()
-        setFileInfo(data.fileInfo)
-      } else {
+          // Step 3: Complete processing (70%)
+          setLoadingProgress(70)
+          setLoadingStatus('downloading')
+          
+          const data = await response.json()
+          setFileInfo(data.fileInfo)
+          
+          // Step 4: Complete (100%)
+          setLoadingProgress(100)
+          setLoadingStatus('completed')
+          
+          // Hide loading bar after completion
+          setTimeout(() => {
+            setShowLoadingBar(false)
+          }, 1000)
+        } else {
           throw new Error('Failed to get file preview')
         }
       } else {
         // Fallback to original API
+        setLoadingProgress(40)
+        setLoadingStatus('processing')
+        
         const response = await fetch('/api/file-preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -199,15 +228,26 @@ export default function DownloadPage() {
         })
 
         if (response.ok) {
-        const data = await response.json()
+          setLoadingProgress(70)
+          setLoadingStatus('downloading')
+          
+          const data = await response.json()
           setFileInfo(data.fileInfo)
+          
+          setLoadingProgress(100)
+          setLoadingStatus('completed')
+          
+          setTimeout(() => {
+            setShowLoadingBar(false)
+          }, 1000)
         } else {
           throw new Error('Failed to get file preview')
         }
       }
-      } catch (error) {
+    } catch (error) {
       console.error('Error getting file preview:', error)
       setError('Failed to analyze URL. Please check the URL and try again.')
+      setShowLoadingBar(false)
     } finally {
       setIsLoading(false)
     }
@@ -330,9 +370,18 @@ export default function DownloadPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    <>
+      {/* Modern Loading Bar */}
+      <ModernLoadingBar
+        isVisible={showLoadingBar}
+        progress={loadingProgress}
+        status={loadingStatus}
+        onComplete={() => setShowLoadingBar(false)}
+      />
+      
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
       {/* Header */}
@@ -1221,5 +1270,6 @@ export default function DownloadPage() {
       </div>
 
     </div>
+    </>
   )
 }
