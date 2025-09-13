@@ -106,15 +106,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Get plan info
+    console.log('Plan ID received:', planId)
+    console.log('Available plans:', Object.keys(planData))
     const planInfo = planData[planId as keyof typeof planData]
     if (!planInfo) {
+      console.log('Invalid plan selected:', planId)
       return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 })
     }
+    console.log('Plan info found:', planInfo)
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user and subscription in a transaction
+    console.log('Starting transaction for user creation...')
     const result = await prisma.$transaction(async (tx) => {
       // Create or get subscription plan
       const plan = await tx.subscriptionPlan.upsert({
@@ -183,6 +188,11 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
     return NextResponse.json({ 
       error: 'Registration failed',
       details: error instanceof Error ? error.message : 'Unknown error'
