@@ -126,13 +126,13 @@ export default function DownloadPage() {
           setSupportedSites(data.sites)
         } else {
           console.error('Failed to load supported sites:', data)
-        }
-      } catch (error) {
+      }
+    } catch (error) {
         console.error('Error loading supported sites:', error)
       } finally {
         setIsLoadingSites(false)
-      }
     }
+  }
 
     loadSupportedSites()
   }, [])
@@ -181,11 +181,13 @@ export default function DownloadPage() {
 
   // Auto-preview URL when pasted or typed - contact API
   const handleUrlChange = useCallback(async (url: string) => {
+    console.log('=== handleUrlChange START ===')
     console.log('handleUrlChange called with:', url)
+    console.log('Current loading state:', isLoading)
     
     if (!url.trim()) {
       console.log('Empty URL, clearing file info')
-      setFileInfo(null)
+    setFileInfo(null)
       setError(null)
       return
     }
@@ -210,13 +212,22 @@ export default function DownloadPage() {
 
       if (parsedData) {
         console.log('Contacting API with parsed data:', parsedData)
+        console.log('API endpoint URL:', '/api/file-preview')
+        console.log('Request payload:', JSON.stringify({ 
+          url: url, 
+          parsedData: parsedData 
+        }))
         
         // Contact API to get real file preview with timeout
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+        const timeoutId = setTimeout(() => {
+          console.log('API call timed out after 10 seconds')
+          controller.abort()
+        }, 10000) // 10 second timeout
         
-        const response = await fetch('/api/file-preview', {
-          method: 'POST',
+        console.log('Making fetch request...')
+      const response = await fetch('/api/file-preview', {
+        method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             url: url, 
@@ -226,17 +237,18 @@ export default function DownloadPage() {
         })
         
         clearTimeout(timeoutId)
-
+        console.log('Fetch request completed')
         console.log('API response status:', response.status)
+        console.log('API response headers:', Object.fromEntries(response.headers.entries()))
         
         if (response.ok) {
-          const data = await response.json()
+      const data = await response.json()
           console.log('API response data:', data)
-          
+
           if (data.success && data.fileInfo) {
             console.log('Setting file info:', data.fileInfo)
-            setFileInfo(data.fileInfo)
-          } else {
+        setFileInfo(data.fileInfo)
+      } else {
             console.error('API returned error:', data.error)
             throw new Error(data.error || 'Failed to get file preview from API')
           }
@@ -291,20 +303,27 @@ export default function DownloadPage() {
 
   // Handle paste event - immediate processing
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    console.log('=== PASTE EVENT START ===')
     const pastedText = e.clipboardData.getData('text')
     console.log('Paste event:', pastedText)
+    console.log('Pasted text length:', pastedText.length)
     setInputUrl(pastedText)
     
     // Clear existing timer
     if (debounceTimer) {
+      console.log('Clearing existing debounce timer')
       clearTimeout(debounceTimer)
     }
     
     // Process immediately for paste events
     if (pastedText.match(/^https?:\/\//)) {
       console.log('Processing paste immediately for:', pastedText)
+      console.log('Calling handleUrlChange...')
       handleUrlChange(pastedText)
+    } else {
+      console.log('Pasted text does not match URL pattern')
     }
+    console.log('=== PASTE EVENT END ===')
   }, [handleUrlChange, debounceTimer])
 
   // Handle URL input change - with debounce
@@ -580,9 +599,9 @@ export default function DownloadPage() {
                     Access premium stock content instantly
                   </p>
               </div>
-              </div>
             </div>
           </div>
+        </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{
               background: 'rgba(255, 255, 255, 0.1)',
@@ -614,10 +633,10 @@ export default function DownloadPage() {
                 ) : (
                   <span style={{ fontWeight: '600' }}>{userPoints} Points</span>
                 )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {/* Main Content */}
         <div style={{
@@ -693,9 +712,9 @@ export default function DownloadPage() {
                   }}>
                     <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
                     Getting preview...
-                  </div>
+                      </div>
                 )}
-              </div>
+                    </div>
 
               {/* Supported Sites - 2025 Trendy Design */}
               <div style={{ marginBottom: '2rem' }}>
@@ -735,7 +754,7 @@ export default function DownloadPage() {
                     }}>
                       Access premium stock media from 30+ trusted platforms
                     </p>
-          </div>
+                  </div>
 
                   {/* View Mode Toggle */}
                   <div style={{
@@ -780,8 +799,8 @@ export default function DownloadPage() {
                     >
                       List
                     </button>
+                      </div>
                     </div>
-                  </div>
 
                 {/* Search Section */}
                 <div style={{
@@ -825,7 +844,7 @@ export default function DownloadPage() {
                     height: '1.25rem',
                     color: 'rgba(255, 255, 255, 0.6)'
                   }} />
-                    </div>
+                          </div>
 
                 {/* Results Count */}
                 <div style={{
