@@ -55,71 +55,12 @@ export default function DownloadPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-
-  // Comprehensive list of all supported sites
-  const allSupportedSites = [
-    // Premium Sites
-    { name: 'Shutterstock', url: 'https://www.shutterstock.com', cost: 0.37 },
-    { name: 'Adobe Stock', url: 'https://stock.adobe.com', cost: 0.25 },
-    { name: 'Getty Images', url: 'https://www.gettyimages.com', cost: 0.5 },
-    { name: 'Alamy', url: 'https://www.alamy.com', cost: 16.0 },
-    { name: 'Envato Elements', url: 'https://elements.envato.com', cost: 0.35 },
-    { name: 'UI8', url: 'https://ui8.net', cost: 2.0 },
-    { name: 'Craftwork', url: 'https://craftwork.design', cost: 1.0 },
-    { name: 'Pixelsquid', url: 'https://pixelsquid.com', cost: 0.65 },
-    
-    // Popular Sites
-    { name: 'Freepik', url: 'https://www.freepik.com', cost: 0.15 },
-    { name: 'Flaticon', url: 'https://www.flaticon.com', cost: 0.15 },
-    { name: 'Vecteezy', url: 'https://www.vecteezy.com', cost: 0.2 },
-    { name: 'Rawpixel', url: 'https://www.rawpixel.com', cost: 0.2 },
-    { name: 'Motion Array', url: 'https://motionarray.com', cost: 0.2 },
-    { name: 'IconScout', url: 'https://iconscout.com', cost: 0.2 },
-    { name: 'Soundstripe', url: 'https://soundstripe.com', cost: 0.2 },
-    { name: 'Epidemic Sound', url: 'https://epidemicsound.com', cost: 0.2 },
-    
-    // Additional Sites
-    { name: 'Depositphotos', url: 'https://depositphotos.com', cost: 0.3 },
-    { name: '123RF', url: 'https://www.123rf.com', cost: 0.25 },
-    { name: 'iStock', url: 'https://www.istockphoto.com', cost: 0.4 },
-    { name: 'Dreamstime', url: 'https://www.dreamstime.com', cost: 0.2 },
-    { name: 'Pixabay', url: 'https://pixabay.com', cost: 0.1 },
-    { name: 'Unsplash', url: 'https://unsplash.com', cost: 0.1 },
-    { name: 'Pexels', url: 'https://www.pexels.com', cost: 0.1 },
-    { name: 'Creative Fabrica', url: 'https://www.creativefabrica.com', cost: 0.4 },
-    { name: 'Pixel Buddha', url: 'https://pixelbuddha.net', cost: 0.4 },
-    { name: 'Pixeden', url: 'https://pixeden.com', cost: 0.4 },
-    { name: 'Artlist', url: 'https://artlist.io', cost: 0.5 },
-    { name: 'Footage Crate', url: 'https://footagecrate.com', cost: 0.8 },
-    { name: 'Deezzy', url: 'https://deeezy.com', cost: 0.2 },
-    { name: 'Yellow Images', url: 'https://yellowimages.com', cost: 10.0 },
-    { name: 'Storyblocks', url: 'https://www.storyblocks.com', cost: 0.3 },
-    { name: 'Pond5', url: 'https://www.pond5.com', cost: 0.5 },
-    { name: 'Videoblocks', url: 'https://www.videoblocks.com', cost: 0.3 },
-    { name: 'Canva', url: 'https://www.canva.com', cost: 0.2 },
-    { name: 'Figma', url: 'https://www.figma.com', cost: 0.3 },
-    { name: 'Sketch', url: 'https://www.sketch.com', cost: 0.3 },
-    { name: '123RF', url: 'https://www.123rf.com', cost: 0.25 },
-    { name: 'Bigstock', url: 'https://www.bigstockphoto.com', cost: 0.3 },
-    { name: 'Agefotostock', url: 'https://www.agefotostock.com', cost: 0.4 },
-    { name: 'Westend61', url: 'https://www.westend61.de', cost: 0.5 },
-    { name: 'Mauritius', url: 'https://www.mauritius-images.com', cost: 0.4 },
-    { name: 'Imagebank', url: 'https://www.imagebank.se', cost: 0.3 },
-    { name: 'Photocase', url: 'https://www.photocase.com', cost: 0.2 },
-    { name: 'Plainpicture', url: 'https://www.plainpicture.com', cost: 0.4 },
-    { name: '123RF', url: 'https://www.123rf.com', cost: 0.25 },
-    { name: 'Bigstock', url: 'https://www.bigstockphoto.com', cost: 0.3 },
-    { name: 'Agefotostock', url: 'https://www.agefotostock.com', cost: 0.4 },
-    { name: 'Westend61', url: 'https://www.westend61.de', cost: 0.5 },
-    { name: 'Mauritius', url: 'https://www.mauritius-images.com', cost: 0.4 },
-    { name: 'Imagebank', url: 'https://www.imagebank.se', cost: 0.3 },
-    { name: 'Photocase', url: 'https://www.photocase.com', cost: 0.2 },
-    { name: 'Plainpicture', url: 'https://www.plainpicture.com', cost: 0.4 }
-  ]
+  const [supportedSites, setSupportedSites] = useState<any[]>([])
+  const [isLoadingSites, setIsLoadingSites] = useState(true)
 
   // Filter sites based on search query
-  const filteredSites = allSupportedSites.filter(site => 
-    site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredSites = supportedSites.filter(site => 
+    site.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     site.url.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -136,6 +77,29 @@ export default function DownloadPage() {
       loadUserData()
     }
   }, [status, session])
+
+  // Load supported sites from API
+  useEffect(() => {
+    const loadSupportedSites = async () => {
+      try {
+        setIsLoadingSites(true)
+        const response = await fetch('/api/supported-sites')
+        const data = await response.json()
+        
+        if (data.success && data.sites) {
+          setSupportedSites(data.sites)
+        } else {
+          console.error('Failed to load supported sites:', data)
+        }
+      } catch (error) {
+        console.error('Error loading supported sites:', error)
+      } finally {
+        setIsLoadingSites(false)
+      }
+    }
+
+    loadSupportedSites()
+  }, [])
 
   // Load user points and recent orders
   const loadUserData = useCallback(async () => {
@@ -656,90 +620,158 @@ export default function DownloadPage() {
                   fontSize: '0.875rem',
                   color: 'rgba(255, 255, 255, 0.7)'
                 }}>
-                  {searchQuery ? `Found ${filteredSites.length} sites` : `Showing all ${allSupportedSites.length} supported sites`}
+                  {isLoadingSites ? 'Loading sites...' : 
+                   searchQuery ? `Found ${filteredSites.length} sites` : 
+                   `Showing all ${supportedSites.length} supported sites`}
                 </div>
 
-                {/* Sites Grid/List */}
-                <div style={{
-                  display: viewMode === 'grid' ? 'grid' : 'flex',
-                  gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fit, minmax(300px, 1fr))' : 'none',
-                  flexDirection: viewMode === 'list' ? 'column' : 'row',
-                  gap: '0.75rem',
-                  marginBottom: '1rem'
-                }}>
-                  {filteredSites.map((site) => (
-                    <a
-                      key={site.name}
-                      href={site.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                {/* Loading State */}
+                {isLoadingSites ? (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '3rem',
+                    color: 'rgba(255, 255, 255, 0.6)'
+                  }}>
+                    <div style={{
+                      width: '2rem',
+                      height: '2rem',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '2px solid #10b981',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <span style={{ marginLeft: '0.75rem' }}>Loading supported sites...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* Sites Grid/List */}
+                    <div 
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '0.75rem 1rem',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '0.75rem',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        textDecoration: 'none',
-                        color: 'white',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                        e.currentTarget.style.transform = 'translateY(-2px)'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = 'none'
+                        display: viewMode === 'grid' ? 'grid' : 'flex',
+                        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fit, minmax(300px, 1fr))' : 'none',
+                        flexDirection: viewMode === 'list' ? 'column' : 'row',
+                        gap: '0.75rem',
+                        marginBottom: '1rem',
+                        ...(viewMode === 'list' && {
+                          maxHeight: '400px',
+                          overflowY: 'auto',
+                          paddingRight: '0.5rem',
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent'
+                        })
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontSize: '0.875rem',
-                          fontWeight: '600',
-                          marginBottom: '0.25rem'
-                        }}>
-                          {site.name}
-                        </div>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          wordBreak: 'break-all'
-                        }}>
-                          {site.url}
-                        </div>
-                      </div>
-                      <div style={{
-                        textAlign: 'right',
-                        marginLeft: '1rem'
-                      }}>
-                        <div style={{
-                          fontSize: '0.875rem',
-                          fontWeight: '700',
-                          color: '#ffffff',
-                          background: 'rgba(255, 255, 255, 0.2)',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.375rem',
-                          marginBottom: '0.25rem'
-                        }}>
-                          {site.cost} pts
-                        </div>
-                        <ExternalLink style={{
-                          width: '0.75rem',
-                          height: '0.75rem',
-                          color: 'rgba(255, 255, 255, 0.5)'
-                        }} />
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                      {filteredSites.map((site, index) => (
+                        <a
+                          key={site.name}
+                          href={site.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: viewMode === 'list' ? '0.625rem 1rem' : '0.75rem 1rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            borderRadius: viewMode === 'list' ? '0.5rem' : '0.75rem',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            textDecoration: 'none',
+                            color: 'white',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            ...(viewMode === 'list' && {
+                              marginBottom: '0.5rem',
+                              backdropFilter: 'blur(10px)',
+                              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
+                            })
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = viewMode === 'list' 
+                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)'
+                              : 'rgba(255, 255, 255, 0.2)'
+                            e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)'
+                            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = viewMode === 'list'
+                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
+                              : 'rgba(255, 255, 255, 0.1)'
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                            e.currentTarget.style.boxShadow = 'none'
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                          }}
+                        >
+                          {/* 2025 Trendy Gradient Overlay */}
+                          <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '2px',
+                            background: 'linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6, #f59e0b)',
+                            opacity: 0,
+                            transition: 'opacity 0.3s ease'
+                          }} />
+                          
+                          <div style={{ flex: 1, zIndex: 1 }}>
+                            <div style={{
+                              fontSize: viewMode === 'list' ? '0.8rem' : '0.875rem',
+                              fontWeight: '600',
+                              marginBottom: '0.25rem',
+                              background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
+                              backgroundClip: 'text',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent'
+                            }}>
+                              {site.displayName}
+                            </div>
+                            <div style={{
+                              fontSize: viewMode === 'list' ? '0.7rem' : '0.75rem',
+                              color: 'rgba(255, 255, 255, 0.6)',
+                              wordBreak: 'break-all',
+                              opacity: 0.8
+                            }}>
+                              {site.url}
+                            </div>
+                          </div>
+                          <div style={{
+                            textAlign: 'right',
+                            marginLeft: '1rem',
+                            zIndex: 1
+                          }}>
+                            <div style={{
+                              fontSize: viewMode === 'list' ? '0.75rem' : '0.875rem',
+                              fontWeight: '700',
+                              color: '#ffffff',
+                              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '0.375rem',
+                              marginBottom: '0.25rem',
+                              border: '1px solid rgba(16, 185, 129, 0.3)',
+                              backdropFilter: 'blur(10px)'
+                            }}>
+                              {site.cost} pts
+                            </div>
+                            <ExternalLink style={{
+                              width: viewMode === 'list' ? '0.625rem' : '0.75rem',
+                              height: viewMode === 'list' ? '0.625rem' : '0.75rem',
+                              color: 'rgba(255, 255, 255, 0.5)',
+                              transition: 'color 0.3s ease'
+                            }} />
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </>
+                )}
 
                 {/* No Results */}
-                {filteredSites.length === 0 && searchQuery && (
+                {!isLoadingSites && filteredSites.length === 0 && searchQuery && (
                   <div style={{
                     textAlign: 'center',
                     padding: '2rem',
@@ -1072,13 +1104,6 @@ export default function DownloadPage() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   )
 }
