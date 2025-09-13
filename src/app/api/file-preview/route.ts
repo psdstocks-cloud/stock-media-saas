@@ -117,19 +117,52 @@ export async function POST(request: NextRequest) {
 
 // Helper function to generate preview URLs
 function generatePreviewUrl(site: string, id: string): string {
-  // Use Unsplash for better placeholder images
-  const unsplashImages = [
-    'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop'
-  ]
-  
-  // Use a deterministic approach to select image based on ID
-  const imageIndex = parseInt(id) % unsplashImages.length
-  return unsplashImages[imageIndex]
+  // Generate actual preview URLs based on the stock site
+  switch (site.toLowerCase()) {
+    case 'shutterstock':
+      // Shutterstock preview URL format
+      return `https://image.shutterstock.com/image-vector/${id}-260nw-${id}.jpg`
+    
+    case 'getty':
+    case 'gettyimages':
+      // Getty Images preview URL format
+      return `https://media.gettyimages.com/photos/${id}-id${id}?s=612x612&w=0&k=20&c=`
+    
+    case 'adobe':
+    case 'adobestock':
+      // Adobe Stock preview URL format
+      return `https://as1.ftcdn.net/v2/jpg/${id.substring(0, 3)}/${id.substring(3, 6)}/${id}_1.jpg`
+    
+    case 'istock':
+    case 'istockphoto':
+      // iStock preview URL format
+      return `https://media.istockphoto.com/photos/${id}-id${id}?s=612x612&w=0&k=20&c=`
+    
+    case 'depositphotos':
+      // Depositphotos preview URL format
+      return `https://st.depositphotos.com/${id.substring(0, 2)}/${id.substring(2, 4)}/${id}_1.jpg`
+    
+    case 'freepik':
+      // Freepik preview URL format
+      return `https://img.freepik.com/free-vector/${id}.jpg`
+    
+    default:
+      // Fallback to Unsplash for unknown sites
+      const unsplashImages = [
+        'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop'
+      ]
+      
+      let hash = 0
+      for (let i = 0; i < id.length; i++) {
+        const char = id.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash
+      }
+      
+      const index = Math.abs(hash) % unsplashImages.length
+      return unsplashImages[index]
+  }
 }

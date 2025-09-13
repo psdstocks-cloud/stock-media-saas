@@ -741,70 +741,170 @@ export default function DownloadPage() {
                 )}
                   </div>
 
-              {/* File Preview Section */}
-              {(() => {
-                console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)
-                return null
-              })()}
-              
+              {/* File Preview Section - Redesigned for Better UX */}
               {fileInfo && (
                 <div style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '1rem',
-                  padding: '1.5rem',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                  borderRadius: '1.5rem',
+                  padding: '2rem',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
-                  margin: '1rem 0',
-                  minHeight: '200px'
+                  margin: '1.5rem 0',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
                 }}>
+                  {/* Header with Status */}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: '1rem'
+                    marginBottom: '1.5rem'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem'
+                    }}>
                       <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '0.5rem',
-                        background: `url(${fileInfo.image || fileInfo.previewUrl}) center/cover`,
-                        border: '2px solid rgba(255, 255, 255, 0.2)'
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: fileInfo.isAvailable ? '#10b981' : '#ef4444',
+                        boxShadow: `0 0 10px ${fileInfo.isAvailable ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`
                       }} />
-                      <div>
-                        <h4 style={{
-                          color: 'white',
-                          fontSize: '1.125rem',
-                          fontWeight: '600',
-                          margin: '0 0 0.25rem 0'
-                        }}>
-                          {fileInfo.title}
-                        </h4>
-                        <p style={{
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          fontSize: '0.875rem',
-                          margin: 0
-                        }}>
-                          {fileInfo.site} • {fileInfo.format} • {fileInfo.size}
-                        </p>
-                        </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{
-                        color: '#ffffff',
-                        fontSize: '1.5rem',
-                        fontWeight: '800',
-                        margin: '0 0 0.25rem 0',
-                        background: 'linear-gradient(135deg, #10b981, #059669)',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '0.75rem',
-                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        textAlign: 'center',
-                        minWidth: '120px'
+                      <span style={{
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
                       }}>
-                          {fileInfo.cost} points
+                        {fileInfo.isAvailable ? 'Ready to Download' : 'Unavailable'}
+                      </span>
+                    </div>
+                    
+                    {/* Points Badge - Redesigned */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '2rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '700',
+                      boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)',
+                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      💎 {fileInfo.cost} Points
+                    </div>
+                  </div>
+
+                  {/* Main Content Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '200px 1fr auto',
+                    gap: '2rem',
+                    alignItems: 'center'
+                  }}>
+                    {/* Preview Image */}
+                    <div style={{
+                      position: 'relative',
+                      borderRadius: '1rem',
+                      overflow: 'hidden',
+                      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
+                    }}>
+                      <div style={{
+                        width: '200px',
+                        height: '150px',
+                        background: `url(${fileInfo.image || fileInfo.previewUrl}) center/cover`,
+                        borderRadius: '1rem'
+                      }} />
+                      <div style={{
+                        position: 'absolute',
+                        top: '0.5rem',
+                        right: '0.5rem',
+                        background: 'rgba(0, 0, 0, 0.7)',
+                        color: 'white',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}>
+                        {fileInfo.format || 'Unknown'}
                       </div>
-                        <button
+                    </div>
+
+                    {/* File Details */}
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{
+                        color: 'white',
+                        fontSize: '1.5rem',
+                        fontWeight: '700',
+                        margin: '0 0 0.5rem 0',
+                        lineHeight: '1.2'
+                      }}>
+                        {fileInfo.title}
+                      </h3>
+                      
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '1rem',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          fontSize: '0.875rem'
+                        }}>
+                          <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#3b82f6'
+                          }} />
+                          {fileInfo.site}
+                        </div>
+                        
+                        {fileInfo.size && (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            fontSize: '0.875rem'
+                          }}>
+                            <div style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: '#8b5cf6'
+                            }} />
+                            {fileInfo.size}
+                          </div>
+                        )}
+                        
+                        {fileInfo.author && (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            fontSize: '0.875rem'
+                          }}>
+                            <div style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: '#f59e0b'
+                            }} />
+                            {fileInfo.author}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Download Button - Redesigned */}
+                    <div style={{ textAlign: 'center' }}>
+                      <button
                         onClick={handleDirectDownload}
                         disabled={isOrdering || !fileInfo.isAvailable}
                         style={{
@@ -813,57 +913,68 @@ export default function DownloadPage() {
                             : 'rgba(107, 114, 128, 0.5)',
                           color: 'white',
                           border: 'none',
-                          borderRadius: '0.5rem',
-                          padding: '0.75rem 1.5rem',
-                          fontSize: '0.875rem',
-                          fontWeight: '600',
+                          borderRadius: '1rem',
+                          padding: '1rem 2rem',
+                          fontSize: '1rem',
+                          fontWeight: '700',
                           cursor: fileInfo.isAvailable ? 'pointer' : 'not-allowed',
-                          transition: 'all 0.2s ease',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           display: 'flex',
+                          flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.5rem'
+                          gap: '0.5rem',
+                          minWidth: '140px',
+                          boxShadow: fileInfo.isAvailable 
+                            ? '0 10px 25px rgba(16, 185, 129, 0.4)' 
+                            : 'none'
                         }}
                         onMouseOver={(e) => {
                           if (fileInfo.isAvailable) {
-                            e.currentTarget.style.transform = 'translateY(-1px)'
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)'
+                            e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+                            e.currentTarget.style.boxShadow = '0 15px 35px rgba(16, 185, 129, 0.6)'
                           }
                         }}
                         onMouseOut={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)'
-                          e.currentTarget.style.boxShadow = 'none'
+                          e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                          e.currentTarget.style.boxShadow = fileInfo.isAvailable 
+                            ? '0 10px 25px rgba(16, 185, 129, 0.4)' 
+                            : 'none'
                         }}
                       >
                         {isOrdering ? (
                           <>
-                            <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
-                            Processing...
-                            </>
-                          ) : (
-                            <>
-                            <Download style={{ width: '1rem', height: '1rem' }} />
-                            Download Now
-                            </>
-                          )}
-                        </button>
-                      </div>
+                            <Loader2 style={{ width: '1.5rem', height: '1.5rem', animation: 'spin 1s linear infinite' }} />
+                            <span>Processing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download style={{ width: '1.5rem', height: '1.5rem' }} />
+                            <span>Download Now</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   
                   {fileInfo.error && (
                     <div style={{
-                      padding: '0.75rem',
+                      padding: '1rem',
                       background: 'rgba(239, 68, 68, 0.1)',
                       border: '1px solid rgba(239, 68, 68, 0.3)',
-                      borderRadius: '0.5rem',
+                      borderRadius: '0.75rem',
                       color: '#fca5a5',
                       fontSize: '0.875rem',
-                      marginTop: '1rem'
+                      marginTop: '1.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
                     }}>
+                      <AlertCircle style={{ width: '1rem', height: '1rem' }} />
                       {fileInfo.error}
-                            </div>
+                    </div>
                   )}
-                            </div>
-                          )}
+                </div>
+              )}
 
               {/* Supported Sites - 2025 Trendy Design */}
               <div style={{ marginBottom: '2rem' }}>
