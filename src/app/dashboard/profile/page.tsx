@@ -31,8 +31,11 @@ import {
   RotateCcw,
   Camera,
   Upload,
-  X
+  X,
+  History,
+  TrendingUp
 } from 'lucide-react'
+import { PointsHistoryCard } from '@/components/ui/PointsHistoryCard'
 
 interface UserProfile {
   id: string
@@ -66,7 +69,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'subscription' | 'privacy'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'subscription' | 'privacy' | 'points'>('overview')
   const [showPassword, setShowPassword] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [formData, setFormData] = useState({
@@ -333,6 +336,7 @@ export default function ProfilePage() {
     { id: 'overview', label: 'Overview', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'subscription', label: 'Subscription', icon: CreditCard },
+    { id: 'points', label: 'Points History', icon: TrendingUp },
     { id: 'privacy', label: 'Privacy', icon: Lock }
   ]
 
@@ -1388,6 +1392,154 @@ export default function ProfilePage() {
                       View Plans
                     </button>
                   </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'points' && (
+              <div>
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: '600',
+                  color: '#0f172a',
+                  marginBottom: '24px'
+                }}>
+                  Points Usage History
+                </h3>
+                
+                <div style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '24px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white'
+                    }}>
+                      <TrendingUp size={20} />
+                    </div>
+                    <div>
+                      <h4 style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#0f172a',
+                        margin: '0 0 4px 0'
+                      }}>
+                        Track Your Points Activity
+                      </h4>
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#64748b',
+                        margin: 0
+                      }}>
+                        View detailed history of all your points transactions, downloads, and usage patterns.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '16px',
+                    marginTop: '16px'
+                  }}>
+                    <div style={{
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#3b82f6',
+                        marginBottom: '4px'
+                      }}>
+                        {profile?.pointsBalance?.currentPoints || 0}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        Available Points
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#10b981',
+                        marginBottom: '4px'
+                      }}>
+                        {profile?.pointsBalance?.totalUsed || 0}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        Total Used
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#8b5cf6',
+                        marginBottom: '4px'
+                      }}>
+                        {profile?.pointsBalance?.totalPurchased || 0}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        Total Purchased
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Points History Component */}
+                {session?.user?.id && (
+                  <PointsHistoryCard 
+                    userId={session.user.id}
+                    timezone={Intl.DateTimeFormat().resolvedOptions().timeZone}
+                  />
                 )}
               </div>
             )}
