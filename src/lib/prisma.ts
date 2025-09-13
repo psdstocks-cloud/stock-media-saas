@@ -10,7 +10,11 @@ if (!process.env.DATABASE_URL) {
 }
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  // Remove datasources override as it might be causing issues
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
+    },
+  },
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 })
 
