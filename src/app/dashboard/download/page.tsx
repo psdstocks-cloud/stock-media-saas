@@ -489,45 +489,304 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              {/* Supported Sites */}
+              {/* Supported Sites - Comprehensive List */}
               <div style={{ marginBottom: '1.5rem' }}>
-                <p style={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: '0.875rem',
-                  marginBottom: '0.5rem'
-                }}>
-                  Supported sites:
-                </p>
-                <div style={{
+                <h3 style={{
+                  color: 'white',
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  marginBottom: '1rem',
                   display: 'flex',
-                  flexWrap: 'wrap',
+                  alignItems: 'center',
                   gap: '0.5rem'
                 }}>
-                  {['Shutterstock', 'Adobe Stock', 'Depositphotos', '123RF', 'iStock', 'Freepik', 'Flaticon', 'Envato'].map((site) => (
-                    <span
-                      key={site}
-                      style={{
-                        padding: '0.25rem 0.75rem',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '1rem',
-                        fontSize: '0.75rem',
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)'
-                      }}
-                    >
-                      {site}
-                    </span>
-                  ))}
-                  <span style={{
-                    padding: '0.25rem 0.75rem',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '1rem',
-                    fontSize: '0.75rem',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                  <ExternalLink style={{ width: '1.25rem', height: '1.25rem' }} />
+                  Supported Stock Sites & Pricing
+                </h3>
+                
+                {/* Premium Sites */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <h4 style={{
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    marginBottom: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
                   }}>
-                    +31 more
-                  </span>
+                    Premium Sites
+                  </h4>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '0.75rem'
+                  }}>
+                    {[
+                      { name: 'Shutterstock', url: 'https://www.shutterstock.com', cost: 0.37, category: 'Photos & Videos' },
+                      { name: 'Adobe Stock', url: 'https://stock.adobe.com', cost: 0.25, category: 'Creative Assets' },
+                      { name: 'Getty Images', url: 'https://www.gettyimages.com', cost: 0.5, category: 'Editorial & Creative' },
+                      { name: 'Alamy', url: 'https://www.alamy.com', cost: 16.0, category: 'Editorial Photos' },
+                      { name: 'Envato Elements', url: 'https://elements.envato.com', cost: 0.35, category: 'Templates & Assets' },
+                      { name: 'UI8', url: 'https://ui8.net', cost: 2.0, category: 'UI Templates' },
+                      { name: 'Craftwork', url: 'https://craftwork.design', cost: 1.0, category: 'Design Templates' },
+                      { name: 'Pixelsquid', url: 'https://pixelsquid.com', cost: 0.65, category: '3D Assets' }
+                    ].map((site) => (
+                      <a
+                        key={site.name}
+                        href={site.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.75rem 1rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          borderRadius: '0.75rem',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          textDecoration: 'none',
+                          color: 'white',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                      >
+                        <div>
+                          <div style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            marginBottom: '0.25rem'
+                          }}>
+                            {site.name}
+                          </div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: 'rgba(255, 255, 255, 0.7)'
+                          }}>
+                            {site.category}
+                          </div>
+                        </div>
+                        <div style={{
+                          textAlign: 'right'
+                        }}>
+                          <div style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '700',
+                            color: '#10b981'
+                          }}>
+                            {site.cost} pts
+                          </div>
+                          <ExternalLink style={{
+                            width: '0.75rem',
+                            height: '0.75rem',
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            marginTop: '0.25rem'
+                          }} />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Popular Sites */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <h4 style={{
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    marginBottom: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    Popular Sites
+                  </h4>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '0.75rem'
+                  }}>
+                    {[
+                      { name: 'Freepik', url: 'https://www.freepik.com', cost: 0.15, category: 'Vectors & Photos' },
+                      { name: 'Flaticon', url: 'https://www.flaticon.com', cost: 0.15, category: 'Icons' },
+                      { name: 'Vecteezy', url: 'https://www.vecteezy.com', cost: 0.2, category: 'Vectors' },
+                      { name: 'Rawpixel', url: 'https://www.rawpixel.com', cost: 0.2, category: 'Photos' },
+                      { name: 'Motion Array', url: 'https://motionarray.com', cost: 0.2, category: 'Video Templates' },
+                      { name: 'IconScout', url: 'https://iconscout.com', cost: 0.2, category: 'Icons & Illustrations' },
+                      { name: 'Soundstripe', url: 'https://soundstripe.com', cost: 0.2, category: 'Music' },
+                      { name: 'Epidemic Sound', url: 'https://epidemicsound.com', cost: 0.2, category: 'Music' }
+                    ].map((site) => (
+                      <a
+                        key={site.name}
+                        href={site.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.75rem 1rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          borderRadius: '0.75rem',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          textDecoration: 'none',
+                          color: 'white',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                      >
+                        <div>
+                          <div style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            marginBottom: '0.25rem'
+                          }}>
+                            {site.name}
+                          </div>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: 'rgba(255, 255, 255, 0.7)'
+                          }}>
+                            {site.category}
+                          </div>
+                        </div>
+                        <div style={{
+                          textAlign: 'right'
+                        }}>
+                          <div style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '700',
+                            color: '#10b981'
+                          }}>
+                            {site.cost} pts
+                          </div>
+                          <ExternalLink style={{
+                            width: '0.75rem',
+                            height: '0.75rem',
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            marginTop: '0.25rem'
+                          }} />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional Sites */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '0.75rem',
+                  padding: '1rem',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <h4 style={{
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      margin: 0,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      More Supported Sites
+                    </h4>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '0.5rem'
+                    }}>
+                      20+ more sites
+                    </span>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem'
+                  }}>
+                    {[
+                      'Depositphotos', '123RF', 'iStock', 'Dreamstime', 'Pixabay', 'Unsplash', 'Pexels',
+                      'Creative Fabrica', 'Pixel Buddha', 'Pixeden', 'Artlist', 'Footage Crate', 'Deezzy',
+                      'Yellow Images', 'Storyblocks', 'Pond5', 'Videoblocks', 'Canva', 'Figma', 'Sketch'
+                    ].map((site) => (
+                      <span
+                        key={site}
+                        style={{
+                          padding: '0.375rem 0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          borderRadius: '0.5rem',
+                          fontSize: '0.75rem',
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                          e.currentTarget.style.transform = 'scale(1.05)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      >
+                        {site}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pricing Note */}
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem 1rem',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <CheckCircle style={{ width: '1rem', height: '1rem', color: '#10b981' }} />
+                  <div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: '#10b981',
+                      marginBottom: '0.25rem'
+                    }}>
+                      All sites included in your subscription
+                    </div>
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: 'rgba(16, 185, 129, 0.8)'
+                    }}>
+                      No additional fees - just use your points to download from any supported site
+                    </div>
+                  </div>
                 </div>
               </div>
 
