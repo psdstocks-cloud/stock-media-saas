@@ -1390,7 +1390,7 @@ export default function DownloadPage() {
                     }}>
                       <CheckCircle style={{ width: '1rem', height: '1rem' }} />
                       <span>Available for download</span>
-                </div>
+                    </div>
                   )}
             </div>
           )}
