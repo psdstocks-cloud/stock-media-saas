@@ -4,41 +4,37 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { 
+  ArrowLeft, 
   Download, 
-  ExternalLink, 
-  Loader2, 
+  Search, 
+  CreditCard, 
+  Clock, 
   CheckCircle, 
-  AlertCircle, 
-  Search,
-  CreditCard,
-  Clock,
-  ArrowLeft,
-  Sparkles,
-  Zap,
-  Star
+  XCircle, 
+  Loader2,
+  ExternalLink,
+  AlertCircle
 } from 'lucide-react'
-import { UrlParser, ParsedUrl } from '@/lib/url-parser'
+import { UrlParser } from '@/lib/url-parser'
 
 interface FileInfo {
   id: string
   site: string
   title: string
-  cost: number
   previewUrl: string
+  cost: number
   isAvailable: boolean
   error?: string
 }
 
 interface Order {
   id: string
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
   title: string
   cost: number
+  status: string
   downloadUrl?: string
-  fileName?: string
   createdAt: string
   stockSite: {
-    name: string
     displayName: string
   }
 }
@@ -65,7 +61,7 @@ export default function DownloadPage() {
     }
   }, [status, router])
 
-  // Load user data on mount
+  // Load user data when authenticated
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
       loadUserData()
@@ -116,56 +112,67 @@ export default function DownloadPage() {
     setFileInfo(null)
 
     try {
-      // First, try to parse with our advanced parser
-      const parsedUrl = UrlParser.parseUrl(inputUrl)
-      
-      if (!parsedUrl) {
-        // Fallback to API if our parser doesn't support the URL
+      // First try our advanced URL parser
+      const parsedData = UrlParser.parseUrl(inputUrl)
+      console.log('Parsed data:', parsedData)
+
+      if (parsedData) {
+        // Use our advanced parser
+        const response = await fetch('/api/file-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            url: inputUrl, 
+            parsedData: parsedData 
+          })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setFileInfo(data.fileInfo)
+        } else {
+          throw new Error('Failed to get file preview')
+        }
+      } else {
+        // Fallback to original API
         const response = await fetch('/api/file-preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: inputUrl })
         })
 
-        if (!response.ok) {
+        if (response.ok) {
+          const data = await response.json()
+          setFileInfo(data.fileInfo)
+        } else {
           throw new Error('Failed to get file preview')
         }
-
-        const data = await response.json()
-        setFileInfo(data.fileInfo)
-      } else {
-        // Use our parsed data to create file info
-        const response = await fetch('/api/file-preview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            url: inputUrl,
-            parsedData: parsedUrl
-          })
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to get file preview')
-        }
-
-        const data = await response.json()
-        setFileInfo(data.fileInfo)
       }
     } catch (error) {
       console.error('Error getting file preview:', error)
-      setError('Failed to process URL. Please check the format and try again.')
+      setError('Failed to analyze URL. Please check the URL and try again.')
     } finally {
       setIsLoading(false)
     }
   }, [inputUrl])
 
+  // Handle paste event
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const pastedText = e.clipboardData.getData('text')
+    setInputUrl(pastedText)
+    
+    // Auto-analyze if it looks like a URL
+    if (pastedText.match(/^https?:\/\//)) {
+      setTimeout(() => handleUrlSubmit(), 100)
+    }
+  }, [handleUrlSubmit])
+
   // Place order
   const handlePlaceOrder = useCallback(async () => {
-    if (!fileInfo) return
+    if (!fileInfo || !session?.user?.id) return
 
     setIsOrdering(true)
     setError(null)
-    setSuccess(null)
 
     try {
       const response = await fetch('/api/place-stock-order', {
@@ -177,17 +184,18 @@ export default function DownloadPage() {
           id: fileInfo.id,
           title: fileInfo.title,
           cost: fileInfo.cost,
-          previewUrl: fileInfo.previewUrl
+          imageUrl: fileInfo.previewUrl
         })
       })
 
       const data = await response.json()
 
       if (data.success) {
-        setSuccess('Order placed successfully! Processing your download...')
+        setSuccess('Order placed successfully! Download will be ready shortly.')
         setFileInfo(null)
         setInputUrl('')
-        loadUserData() // Refresh user data
+        // Reload user data to update points and orders
+        loadUserData()
       } else {
         setError(data.error || 'Failed to place order')
       }
@@ -226,10 +234,27 @@ export default function DownloadPage() {
   // Show loading state
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white">Loading...</h2>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <Loader2 style={{ 
+            width: '3rem', 
+            height: '3rem', 
+            color: 'white', 
+            margin: '0 auto 1rem',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: '700',
+            color: 'white',
+            margin: 0
+          }}>Loading...</h2>
         </div>
       </div>
     )
@@ -241,42 +266,128 @@ export default function DownloadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* Header */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-6 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <Download className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-                  Download Center V2.0
-                </h1>
-                <p className="text-gray-300 text-xl mt-2">
-                  Access premium stock content instantly
-                </p>
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '0 1rem'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '2rem 0',
+          marginBottom: '2rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.5rem'
+          }}>
+            <button
+              onClick={() => router.back()}
+              style={{
+                padding: '0.75rem',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(8px)',
+                borderRadius: '1rem',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                e.currentTarget.style.transform = 'scale(1.05)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <ArrowLeft style={{ width: '1.5rem', height: '1.5rem' }} />
+            </button>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                marginBottom: '0.75rem'
+              }}>
+                <div style={{
+                  width: '3rem',
+                  height: '3rem',
+                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                  borderRadius: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <Download style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+                </div>
+                <div>
+                  <h1 style={{
+                    fontSize: '2.25rem',
+                    fontWeight: '700',
+                    background: 'linear-gradient(135deg, #ffffff, #e0e7ff, #f3e8ff)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    margin: 0
+                  }}>
+                    Download Center V2.0
+                  </h1>
+                  <p style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '1.25rem',
+                    margin: '0.5rem 0 0 0'
+                  }}>
+                    Access premium stock content instantly
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-white">
-                <CreditCard className="w-5 h-5" />
+          <div style={{ textAlign: 'right' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(8px)',
+              borderRadius: '1rem',
+              padding: '1rem',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'white'
+              }}>
+                <CreditCard style={{ width: '1.25rem', height: '1.25rem' }} />
                 {isLoadingPoints ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="font-semibold">Loading...</span>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <Loader2 style={{ 
+                      width: '1rem', 
+                      height: '1rem', 
+                      animation: 'spin 1s linear infinite' 
+                    }} />
+                    <span style={{ fontWeight: '600' }}>Loading...</span>
                   </div>
                 ) : (
-                  <span className="font-semibold">{userPoints} Points</span>
+                  <span style={{ fontWeight: '600' }}>{userPoints} Points</span>
                 )}
               </div>
             </div>
@@ -284,93 +395,284 @@ export default function DownloadPage() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '2rem'
+        }}>
           {/* URL Input Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <Search className="w-6 h-6" />
+          <div style={{ gridColumn: 'span 2' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(8px)',
+              borderRadius: '1.5rem',
+              padding: '2rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: 'white',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <Search style={{ width: '1.5rem', height: '1.5rem' }} />
                 Paste Stock URL
               </h2>
               
-              <div className="space-y-4">
-                <div className="flex gap-4">
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem' }}>
                   <input
                     type="url"
                     value={inputUrl}
                     onChange={(e) => setInputUrl(e.target.value)}
-                    placeholder="Paste your stock media URL here..."
-                    className="flex-1 px-6 py-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                    onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
+                    onPaste={handlePaste}
+                    placeholder="Paste your stock media URI"
+                    style={{
+                      flex: 1,
+                      padding: '1rem',
+                      borderRadius: '0.75rem',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: 'white',
+                      fontSize: '1rem',
+                      backdropFilter: 'blur(8px)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
+                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                      e.target.style.boxShadow = 'none'
+                    }}
                   />
                   <button
                     onClick={handleUrlSubmit}
                     disabled={isLoading || !inputUrl.trim()}
-                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl text-white font-semibold hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
+                    style={{
+                      padding: '1rem 2rem',
+                      background: isLoading ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                      color: 'white',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: '0.75rem',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                        e.currentTarget.style.transform = 'scale(1)'
+                      }
+                    }}
                   >
                     {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
                     ) : (
                       'Analyze'
                     )}
                   </button>
                 </div>
+              </div>
 
-                {/* Supported Sites */}
-                <div className="text-sm text-gray-300">
-                  <p className="mb-2">Supported sites:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {UrlParser.getSupportedSites().slice(0, 8).map((site) => (
-                      <span
-                        key={site}
-                        className="px-3 py-1 bg-white/10 rounded-full text-xs"
-                      >
-                        {site}
-                      </span>
-                    ))}
-                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs">
-                      +{UrlParser.getSupportedSites().length - 8} more
+              {/* Supported Sites */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '0.875rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Supported sites:
+                </p>
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem'
+                }}>
+                  {['Shutterstock', 'Adobe Stock', 'Depositphotos', '123RF', 'iStock', 'Freepik', 'Flaticon', 'Envato'].map((site) => (
+                    <span
+                      key={site}
+                      style={{
+                        padding: '0.25rem 0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '1rem',
+                        fontSize: '0.75rem',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                      }}
+                    >
+                      {site}
                     </span>
-                  </div>
+                  ))}
+                  <span style={{
+                    padding: '0.25rem 0.75rem',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '1rem',
+                    fontSize: '0.75rem',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                  }}>
+                    +31 more
+                  </span>
                 </div>
               </div>
 
+              {/* Error/Success Messages */}
+              {error && (
+                <div style={{
+                  padding: '1rem',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '0.75rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: '#fca5a5'
+                }}>
+                  <AlertCircle style={{ width: '1rem', height: '1rem' }} />
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div style={{
+                  padding: '1rem',
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                  borderRadius: '0.75rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: '#86efac'
+                }}>
+                  <CheckCircle style={{ width: '1rem', height: '1rem' }} />
+                  {success}
+                </div>
+              )}
+
               {/* File Preview */}
               {fileInfo && (
-                <div className="mt-8 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
-                  <div className="flex items-start gap-6">
-                    <img
-                      src={fileInfo.previewUrl}
-                      alt={fileInfo.title}
-                      className="w-24 h-24 object-cover rounded-xl shadow-lg"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {fileInfo.title}
-                      </h3>
-                      <p className="text-gray-300 mb-4">
-                        {fileInfo.site} • {fileInfo.cost} points
-                      </p>
-                      {fileInfo.error ? (
-                        <div className="flex items-center gap-2 text-red-400">
-                          <AlertCircle className="w-5 h-5" />
-                          <span>{fileInfo.error}</span>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '1rem',
+                  padding: '1.5rem',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '1rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{
+                        width: '4rem',
+                        height: '4rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <img
+                          src={fileInfo.previewUrl}
+                          alt={fileInfo.title}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '0.75rem'
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement
+                            if (nextElement) {
+                              nextElement.style.display = 'flex'
+                            }
+                          }}
+                        />
+                        <div style={{
+                          display: 'none',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          fontSize: '1.5rem'
+                        }}>
+                          ?
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-green-400">
-                          <CheckCircle className="w-5 h-5" />
-                          <span>Available for download</span>
-                        </div>
-                      )}
+                      </div>
+                      <div>
+                        <h3 style={{
+                          fontSize: '1.125rem',
+                          fontWeight: '600',
+                          color: 'white',
+                          margin: '0 0 0.25rem 0'
+                        }}>
+                          {fileInfo.title}
+                        </h3>
+                        <p style={{
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '0.875rem',
+                          margin: 0
+                        }}>
+                          {fileInfo.site} • {fileInfo.cost} points
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
+                    <div style={{ textAlign: 'right' }}>
                       <button
                         onClick={handlePlaceOrder}
                         disabled={isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost)}
-                        className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white font-semibold hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
+                        style={{
+                          padding: '0.75rem 1.5rem',
+                          background: isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost) 
+                            ? 'rgba(255, 255, 255, 0.2)' 
+                            : 'linear-gradient(135deg, #10b981, #059669)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.75rem',
+                          cursor: isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost) 
+                            ? 'not-allowed' 
+                            : 'pointer',
+                          fontSize: '1rem',
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isOrdering && fileInfo.isAvailable && !isLoadingPoints && userPoints >= fileInfo.cost) {
+                            e.currentTarget.style.background = 'linear-gradient(135deg, #059669, #047857)'
+                            e.currentTarget.style.transform = 'scale(1.05)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isOrdering && fileInfo.isAvailable && !isLoadingPoints && userPoints >= fileInfo.cost) {
+                            e.currentTarget.style.background = 'linear-gradient(135deg, #10b981, #059669)'
+                            e.currentTarget.style.transform = 'scale(1)'
+                          }
+                        }}
                       >
                         {isOrdering ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 style={{ width: '1.25rem', height: '1.25rem', animation: 'spin 1s linear infinite' }} />
                         ) : isLoadingPoints ? (
                           'Loading Points...'
                         ) : userPoints < fileInfo.cost ? (
@@ -381,83 +683,147 @@ export default function DownloadPage() {
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Error/Success Messages */}
-              {error && (
-                <div className="mt-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-400" />
-                  <span className="text-red-300">{error}</span>
-                </div>
-              )}
-
-              {success && (
-                <div className="mt-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span className="text-green-300">{success}</span>
+                  
+                  {fileInfo.isAvailable && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: '#86efac',
+                      fontSize: '0.875rem'
+                    }}>
+                      <CheckCircle style={{ width: '1rem', height: '1rem' }} />
+                      <span>Available for download</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
           {/* Recent Orders Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                <Clock className="w-5 h-5" />
+          <div>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(8px)',
+              borderRadius: '1.5rem',
+              padding: '1.5rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: 'white',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <Clock style={{ width: '1.25rem', height: '1.25rem' }} />
                 Recent Orders
               </h3>
               
-              {recentOrders.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Download className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-400">No recent orders</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recentOrders.map((order) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {recentOrders.length === 0 ? (
+                  <p style={{
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    fontSize: '0.875rem',
+                    textAlign: 'center',
+                    padding: '2rem 0'
+                  }}>
+                    No recent orders
+                  </p>
+                ) : (
+                  recentOrders.map((order) => (
                     <div
                       key={order.id}
-                      className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: '0.75rem',
+                        padding: '1rem',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="text-white font-semibold text-sm truncate">
-                          {order.title}
-                        </h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'COMPLETED' 
-                            ? 'bg-green-500/20 text-green-400'
-                            : order.status === 'PROCESSING'
-                            ? 'bg-yellow-500/20 text-yellow-400'
-                            : order.status === 'FAILED'
-                            ? 'bg-red-500/20 text-red-400'
-                            : 'bg-gray-500/20 text-gray-400'
-                        }`}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '0.5rem'
+                      }}>
+                        <div>
+                          <h4 style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            color: 'white',
+                            margin: '0 0 0.25rem 0'
+                          }}>
+                            {order.title}
+                          </h4>
+                          <p style={{
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontSize: '0.75rem',
+                            margin: 0
+                          }}>
+                            {order.stockSite.displayName} • {order.cost} points
+                          </p>
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          fontWeight: '600',
+                          color: order.status === 'COMPLETED' ? '#86efac' : '#fbbf24',
+                          textTransform: 'uppercase'
+                        }}>
                           {order.status}
                         </span>
                       </div>
-                      <p className="text-gray-400 text-xs mb-3">
-                        {order.stockSite.displayName} • {order.cost} points
-                      </p>
+                      
                       {order.status === 'COMPLETED' && (
                         <button
                           onClick={() => handleDownload(order)}
-                          className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: '0.5rem',
+                            cursor: 'pointer',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.25rem'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                          }}
                         >
+                          <Download style={{ width: '0.75rem', height: '0.75rem' }} />
                           Download
                         </button>
                       )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   )
 }
