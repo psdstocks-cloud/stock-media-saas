@@ -394,12 +394,20 @@ export default function DownloadPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          url: inputUrl,
-          site: fileInfo.site,
-          id: fileInfo.id,
-          title: fileInfo.title,
-          cost: fileInfo.cost,
-          imageUrl: fileInfo.previewUrl || fileInfo.image
+          fileInfo: {
+            url: inputUrl,
+            site: fileInfo.site,
+            id: fileInfo.id,
+            title: fileInfo.title,
+            cost: fileInfo.cost,
+            imageUrl: fileInfo.previewUrl || fileInfo.image,
+            previewUrl: fileInfo.previewUrl,
+            image: fileInfo.image,
+            size: fileInfo.size,
+            format: fileInfo.format,
+            author: fileInfo.author,
+            isAvailable: fileInfo.isAvailable
+          }
         })
       })
 
@@ -422,14 +430,17 @@ export default function DownloadPage() {
           if (downloadData.order?.downloadUrl) {
             // Open download link
             window.open(downloadData.order.downloadUrl, '_blank', 'noopener,noreferrer')
+            setSuccess('Download started! Your file is being downloaded.')
+          } else {
+            setSuccess('Order placed successfully! Download link will be available shortly.')
           }
+        } else {
+          setSuccess('Order placed successfully! Download link will be available shortly.')
         }
         
         // Step 3: Complete (100%)
         setLoadingProgress(100)
         setLoadingStatus('completed')
-        
-        setSuccess('Download started! Your file is being downloaded.')
         
         // Hide loading bar after completion
         setTimeout(() => {
@@ -741,17 +752,10 @@ export default function DownloadPage() {
                   background: 'rgba(255, 255, 255, 0.1)',
                   borderRadius: '1rem',
                   padding: '1.5rem',
-                  border: '2px solid #00ff00',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   margin: '1rem 0',
                   minHeight: '200px'
                 }}>
-                  {(() => {
-                    console.log('Rendering file preview with fileInfo:', fileInfo)
-                    return null
-                  })()}
-                  <div style={{ color: 'white', fontSize: '1.2rem', marginBottom: '1rem' }}>
-                    🎉 FILE PREVIEW IS WORKING! 🎉
-                          </div>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -763,7 +767,7 @@ export default function DownloadPage() {
                         width: '80px',
                         height: '80px',
                         borderRadius: '0.5rem',
-                        background: `url(${fileInfo.previewUrl}) center/cover`,
+                        background: `url(${fileInfo.image || fileInfo.previewUrl}) center/cover`,
                         border: '2px solid rgba(255, 255, 255, 0.2)'
                       }} />
                       <div>
@@ -786,10 +790,17 @@ export default function DownloadPage() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{
-                        color: '#10b981',
+                        color: '#ffffff',
                         fontSize: '1.5rem',
-                        fontWeight: '700',
-                        margin: '0 0 0.25rem 0'
+                        fontWeight: '800',
+                        margin: '0 0 0.25rem 0',
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                        textAlign: 'center',
+                        minWidth: '120px'
                       }}>
                           {fileInfo.cost} points
                       </div>
