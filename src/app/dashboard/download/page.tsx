@@ -211,15 +211,21 @@ export default function DownloadPage() {
       if (parsedData) {
         console.log('Contacting API with parsed data:', parsedData)
         
-        // Contact API to get real file preview
+        // Contact API to get real file preview with timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+        
         const response = await fetch('/api/file-preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             url: url, 
             parsedData: parsedData 
-          })
+          }),
+          signal: controller.signal
         })
+        
+        clearTimeout(timeoutId)
 
         console.log('API response status:', response.status)
         
@@ -247,6 +253,15 @@ export default function DownloadPage() {
     } catch (error) {
       console.error('Error getting file preview:', error)
       
+      // Check if it's a timeout error
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('API call timed out, using fallback')
+        setError('Request timed out. Using fallback preview.')
+      } else {
+        console.log('API call failed, using fallback')
+        setError(error instanceof Error ? error.message : 'Failed to get file preview. Using fallback.')
+      }
+      
       // Fallback: Create mock file info if API fails
       if (parsedData) {
         console.log('Creating fallback file info for:', parsedData)
@@ -266,7 +281,7 @@ export default function DownloadPage() {
         console.log('Set fallback file info:', fallbackFileInfo)
       } else {
         setFileInfo(null)
-        setError(error instanceof Error ? error.message : 'Failed to get file preview. Please try again.')
+        setError('Unsupported URL format. Please use a valid stock media URL.')
       }
     } finally {
       console.log('Setting loading to false')
@@ -274,7 +289,7 @@ export default function DownloadPage() {
     }
   }, [])
 
-  // Handle paste event
+  // Handle paste event - immediate processing
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     const pastedText = e.clipboardData.getData('text')
     console.log('Paste event:', pastedText)
@@ -285,17 +300,14 @@ export default function DownloadPage() {
       clearTimeout(debounceTimer)
     }
     
-    // Auto-preview if it looks like a URL
+    // Process immediately for paste events
     if (pastedText.match(/^https?:\/\//)) {
-      const timer = setTimeout(() => {
-        console.log('Debounced paste handling for:', pastedText)
-        handleUrlChange(pastedText)
-      }, 500) // 500ms debounce
-      setDebounceTimer(timer)
+      console.log('Processing paste immediately for:', pastedText)
+      handleUrlChange(pastedText)
     }
   }, [handleUrlChange, debounceTimer])
 
-  // Handle URL input change
+  // Handle URL input change - with debounce
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value
     console.log('Input change:', url)
@@ -306,12 +318,12 @@ export default function DownloadPage() {
       clearTimeout(debounceTimer)
     }
     
-    // Debounce the API call
+    // Debounce only for typing, not paste
     if (url.trim() && url.match(/^https?:\/\//)) {
       const timer = setTimeout(() => {
         console.log('Debounced input handling for:', url)
         handleUrlChange(url)
-      }, 1000) // 1 second debounce for typing
+      }, 1500) // 1.5 second debounce for typing
       setDebounceTimer(timer)
     } else if (!url.trim()) {
       // Clear immediately if empty
@@ -680,7 +692,7 @@ export default function DownloadPage() {
                     fontSize: '0.875rem'
                   }}>
                     <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
-                    Loading...
+                    Getting preview...
                   </div>
                 )}
               </div>
