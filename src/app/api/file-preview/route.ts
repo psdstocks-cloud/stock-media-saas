@@ -27,47 +27,70 @@ export async function POST(request: NextRequest) {
     if (parsedData) {
       console.log('Using parsed data from advanced parser:', parsedData)
       
-      // Get stock site configuration
-      const stockSite = await prisma.stockSite.findFirst({
-        where: {
-          OR: [
-            { name: parsedData.source },
-            { displayName: { contains: parsedData.source, mode: 'insensitive' } }
-          ]
-        }
-      })
+      try {
+        // Get stock site configuration
+        console.log('Querying database for stock site:', parsedData.source)
+        const stockSite = await prisma.stockSite.findFirst({
+          where: {
+            OR: [
+              { name: parsedData.source },
+              { displayName: { contains: parsedData.source, mode: 'insensitive' } }
+            ]
+          }
+        })
+        console.log('Database query result:', stockSite)
 
-      if (!stockSite) {
+        if (!stockSite) {
+          console.log('No stock site found in database, creating fallback')
+          fileInfo = {
+            id: parsedData.id,
+            site: parsedData.source,
+            title: `${parsedData.source.charAt(0).toUpperCase() + parsedData.source.slice(1)} - ${parsedData.id}`,
+            image: generatePreviewUrl(parsedData.source, parsedData.id),
+            previewUrl: generatePreviewUrl(parsedData.source, parsedData.id),
+            cost: 10, // Fixed 10 points for all sites
+            size: 'Unknown',
+            format: 'Unknown',
+            author: 'Unknown',
+            isAvailable: true, // Changed to true for fallback
+            error: undefined // No error for fallback
+          }
+        } else {
+          console.log('Stock site found, creating file info')
+          fileInfo = {
+            id: parsedData.id,
+            site: parsedData.source,
+            title: `${stockSite.displayName} - ${parsedData.id}`,
+            image: generatePreviewUrl(parsedData.source, parsedData.id),
+            previewUrl: generatePreviewUrl(parsedData.source, parsedData.id),
+            cost: 10, // Fixed 10 points for all sites
+            size: 'Unknown',
+            format: 'Unknown',
+            author: 'Unknown',
+            isAvailable: stockSite.isActive,
+            error: stockSite.isActive ? undefined : 'Site currently unavailable'
+          }
+        }
+      } catch (dbError) {
+        console.error('Database error:', dbError)
+        // Fallback if database query fails
         fileInfo = {
           id: parsedData.id,
           site: parsedData.source,
           title: `${parsedData.source.charAt(0).toUpperCase() + parsedData.source.slice(1)} - ${parsedData.id}`,
           image: generatePreviewUrl(parsedData.source, parsedData.id),
           previewUrl: generatePreviewUrl(parsedData.source, parsedData.id),
-          cost: 10, // Fixed 10 points for all sites
+          cost: 10,
           size: 'Unknown',
           format: 'Unknown',
           author: 'Unknown',
-          isAvailable: false,
-          error: 'Site not supported'
-        }
-      } else {
-        fileInfo = {
-          id: parsedData.id,
-          site: parsedData.source,
-          title: `${stockSite.displayName} - ${parsedData.id}`,
-          image: generatePreviewUrl(parsedData.source, parsedData.id),
-          previewUrl: generatePreviewUrl(parsedData.source, parsedData.id),
-          cost: 10, // Fixed 10 points for all sites
-          size: 'Unknown',
-          format: 'Unknown',
-          author: 'Unknown',
-          isAvailable: stockSite.isActive,
-          error: stockSite.isActive ? undefined : 'Site currently unavailable'
+          isAvailable: true,
+          error: undefined
         }
       }
     } else {
       // Fallback to original StockAPI
+      console.log('No parsed data, using StockAPI fallback')
       fileInfo = await StockAPI.getFilePreview(url)
     }
 
