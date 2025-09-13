@@ -731,6 +731,130 @@ export default function DownloadPage() {
                 )}
                     </div>
 
+              {/* File Preview Section */}
+              {(() => {
+                console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)
+                return null
+              })()}
+              
+              {fileInfo && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '1rem',
+                  padding: '1.5rem',
+                  border: '2px solid #00ff00',
+                  margin: '1rem 0',
+                  minHeight: '200px'
+                }}>
+                  {(() => {
+                    console.log('Rendering file preview with fileInfo:', fileInfo)
+                    return null
+                  })()}
+                  <div style={{ color: 'white', fontSize: '1.2rem', marginBottom: '1rem' }}>
+                    🎉 FILE PREVIEW IS WORKING! 🎉
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '1rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '0.5rem',
+                        background: `url(${fileInfo.previewUrl}) center/cover`,
+                        border: '2px solid rgba(255, 255, 255, 0.2)'
+                      }} />
+                      <div>
+                        <h4 style={{
+                          color: 'white',
+                          fontSize: '1.125rem',
+                          fontWeight: '600',
+                          margin: '0 0 0.25rem 0'
+                        }}>
+                          {fileInfo.title}
+                        </h4>
+                        <p style={{
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '0.875rem',
+                          margin: 0
+                        }}>
+                          {fileInfo.site} • {fileInfo.format} • {fileInfo.size}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{
+                        color: '#10b981',
+                        fontSize: '1.5rem',
+                        fontWeight: '700',
+                        margin: '0 0 0.25rem 0'
+                      }}>
+                        {fileInfo.cost} points
+                      </div>
+                      <button
+                        onClick={handleDirectDownload}
+                        disabled={isOrdering || !fileInfo.isAvailable}
+                        style={{
+                          background: fileInfo.isAvailable 
+                            ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                            : 'rgba(107, 114, 128, 0.5)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.5rem',
+                          padding: '0.75rem 1.5rem',
+                          fontSize: '0.875rem',
+                          fontWeight: '600',
+                          cursor: fileInfo.isAvailable ? 'pointer' : 'not-allowed',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        onMouseOver={(e) => {
+                          if (fileInfo.isAvailable) {
+                            e.currentTarget.style.transform = 'translateY(-1px)'
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                      >
+                        {isOrdering ? (
+                          <>
+                            <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Download style={{ width: '1rem', height: '1rem' }} />
+                            Download Now
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {fileInfo.error && (
+                    <div style={{
+                      padding: '0.75rem',
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      borderRadius: '0.5rem',
+                      color: '#fca5a5',
+                      fontSize: '0.875rem',
+                      marginTop: '1rem'
+                    }}>
+                      {fileInfo.error}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Supported Sites - 2025 Trendy Design */}
               <div style={{ marginBottom: '2rem' }}>
                 {/* Header Section */}
@@ -1147,41 +1271,6 @@ export default function DownloadPage() {
                     </div>
               )}
 
-              {/* File Preview */}
-              {(() => {
-                console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)
-                return null
-              })()}
-              
-              {/* TEST: Always show this to verify rendering */}
-              <div style={{
-                background: 'red',
-                color: 'white',
-                padding: '1rem',
-                margin: '1rem 0',
-                border: '3px solid yellow',
-                fontSize: '1.5rem',
-                textAlign: 'center'
-              }}>
-                🔥 TEST: This should always be visible! 🔥
-              </div>
-              
-              {fileInfo && (
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '1rem',
-                  padding: '1.5rem',
-                  border: '2px solid #00ff00',
-                  margin: '1rem 0',
-                  minHeight: '200px'
-                }}>
-                  {(() => {
-                    console.log('Rendering file preview with fileInfo:', fileInfo)
-                    return null
-                  })()}
-                  <div style={{ color: 'white', fontSize: '1.2rem', marginBottom: '1rem' }}>
-                    🎉 FILE PREVIEW IS WORKING! 🎉
-                  </div>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
