@@ -1147,7 +1147,10 @@ export default function DownloadPage() {
               )}
 
               {/* File Preview */}
-              {console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)}
+              {(() => {
+                console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)
+                return null
+              })()}
               {fileInfo && (
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -1155,7 +1158,10 @@ export default function DownloadPage() {
                   padding: '1.5rem',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                  {console.log('Rendering file preview with fileInfo:', fileInfo)}
+                  {(() => {
+                    console.log('Rendering file preview with fileInfo:', fileInfo)
+                    return null
+                  })()}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
