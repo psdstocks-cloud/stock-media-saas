@@ -103,12 +103,12 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
   // Setup socket event listeners
   useEffect(() => {
     if (socket && session?.user?.id) {
-      socket.on('new-message', (data) => {
+      socket.on('new-message', (data: any) => {
         setMessages(prev => [...prev, data.message])
         scrollToBottom()
       })
 
-      socket.on('user-typing', (data) => {
+      socket.on('user-typing', (data: any) => {
         if (data.userId !== session.user.id) {
           setTypingUsers(prev => {
             if (data.isTyping) {
@@ -120,7 +120,7 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
         }
       })
 
-      socket.on('message-read', (data) => {
+      socket.on('message-read', (data: any) => {
         setMessages(prev => prev.map(msg => 
           msg.id === data.messageId 
             ? {
@@ -135,7 +135,7 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
         ))
       })
 
-      socket.on('error', (error) => {
+      socket.on('error', (error: any) => {
         console.error('Socket error:', error)
       })
     }
