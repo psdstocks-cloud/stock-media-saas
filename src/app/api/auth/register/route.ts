@@ -121,64 +121,67 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user and subscription in a transaction
-    console.log('Starting transaction for user creation...')
+    // Create user and subscription sequentially (without transaction due to Prisma issues)
+    console.log('Starting user creation...')
     
-    const result = await prisma.$transaction(async (tx) => {
-      // Create or get subscription plan
-      const plan = await tx.subscriptionPlan.upsert({
-        where: { name: planInfo.name },
-        update: {},
-        create: {
-          name: planInfo.name,
-          description: planInfo.description,
-          price: planInfo.price,
-          points: planInfo.points,
-          rolloverLimit: planInfo.rolloverLimit,
-          isActive: true
-        }
-      })
-
-      // Create user with email normalization
-      const user = await tx.user.create({
-        data: {
-          name: name.trim(),
-          email: email.toLowerCase().trim(),
-          password: hashedPassword,
-        }
-      })
-
-      // Create subscription
-      const subscription = await tx.subscription.create({
-        data: {
-          userId: user.id,
-          planId: plan.id,
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        }
-      })
-
-      // Initialize points balance with subscription points
-      const pointsBalance = await tx.pointsBalance.create({
-        data: {
-          userId: user.id,
-          currentPoints: plan.points,
-          totalPurchased: plan.points,
-        }
-      })
-
-      // Create points history entry
-      await tx.pointsHistory.create({
-        data: {
-          userId: user.id,
-          type: 'SUBSCRIPTION',
-          amount: plan.points,
-          description: `Initial subscription points for ${plan.name} plan`,
-        }
-      })
-
-      return { user, subscription, plan }
+    // Create or get subscription plan
+    const plan = await prisma.subscriptionPlan.upsert({
+      where: { name: planInfo.name },
+      update: {},
+      create: {
+        name: planInfo.name,
+        description: planInfo.description,
+        price: planInfo.price,
+        points: planInfo.points,
+        rolloverLimit: planInfo.rolloverLimit,
+        isActive: true
+      }
     })
+    console.log('Plan created/found:', plan.id)
+
+    // Create user with email normalization
+    const user = await prisma.user.create({
+      data: {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+      }
+    })
+    console.log('User created:', user.id)
+
+    // Create subscription
+    const subscription = await prisma.subscription.create({
+      data: {
+        userId: user.id,
+        planId: plan.id,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      }
+    })
+    console.log('Subscription created:', subscription.id)
+
+    // Initialize points balance with subscription points
+    const pointsBalance = await prisma.pointsBalance.create({
+      data: {
+        userId: user.id,
+        currentPoints: plan.points,
+        totalPurchased: plan.points,
+      }
+    })
+    console.log('Points balance created:', pointsBalance.id)
+
+    // Create points history entry
+    await prisma.pointsHistory.create({
+      data: {
+        userId: user.id,
+        type: 'SUBSCRIPTION',
+        amount: plan.points,
+        description: `Initial subscription points for ${plan.name} plan`,
+      }
+    })
+    console.log('Points history created')
+
+    const result = { user, subscription, plan }
 
     console.log('Registration successful:', result.user.email)
 
