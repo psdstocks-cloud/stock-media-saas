@@ -5,10 +5,13 @@ import { checkRegistrationRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Registration API called')
     const { name, email, password, planId } = await request.json()
     const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
 
     console.log('Registration attempt:', { name, email, planId, clientIP })
+    console.log('Database URL exists:', !!process.env.DATABASE_URL)
+    console.log('Database URL starts with:', process.env.DATABASE_URL?.substring(0, 20))
 
     // Apply rate limiting
     const rateLimitResult = await checkRegistrationRateLimit(clientIP)
@@ -120,6 +123,15 @@ export async function POST(request: NextRequest) {
 
     // Create user and subscription in a transaction
     console.log('Starting transaction for user creation...')
+    console.log('Testing Prisma connection...')
+    try {
+      await prisma.$connect()
+      console.log('Prisma connected successfully')
+    } catch (connectError) {
+      console.error('Prisma connection error:', connectError)
+      throw connectError
+    }
+    
     const result = await prisma.$transaction(async (tx) => {
       // Create or get subscription plan
       const plan = await tx.subscriptionPlan.upsert({
