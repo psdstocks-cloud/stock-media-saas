@@ -36,6 +36,9 @@ model User {
   passwordResetTokens PasswordResetToken[]
   reviews       Review[]
   supportTickets SupportTicket[]
+  chatParticipants ChatParticipant[]
+  messages      Message[]
+  messageStatuses MessageStatus[]
 
   @@map("users")
 }
@@ -298,5 +301,80 @@ model SupportTicket {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("support_tickets")
+}
+
+// Chat system models
+model ChatRoom {
+  id          String   @id @default(cuid())
+  name        String?
+  type        String   @default("SUPPORT") // SUPPORT, GENERAL, ADMIN
+  status      String   @default("ACTIVE") // ACTIVE, ARCHIVED, CLOSED
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  lastMessageAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  participants ChatParticipant[]
+  messages     Message[]
+
+  @@map("chat_rooms")
+}
+
+model ChatParticipant {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  role      String   @default("MEMBER") // MEMBER, ADMIN, MODERATOR
+  joinedAt  DateTime @default(now())
+  lastReadAt DateTime?
+
+  // Relations
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  roomId      String
+  userId      String
+  content     String?  @db.Text
+  type        String   @default("TEXT") // TEXT, IMAGE, FILE, SYSTEM
+  fileUrl     String?
+  fileName    String?
+  fileSize    Int?
+  replyToId   String?
+  isEdited    Boolean  @default(false)
+  editedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  room        ChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replyTo     Message?     @relation("MessageReply", fields: [replyToId], references: [id])
+  replies     Message[]    @relation("MessageReply")
+  statuses    MessageStatus[]
+
+  @@map("messages")
+}
+
+model MessageStatus {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  status    String   @default("SENT") // SENT, DELIVERED, READ
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@map("message_statuses")
 }
 
