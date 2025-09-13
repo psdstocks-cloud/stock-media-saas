@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import io, { Socket } from 'socket.io-client'
+import io from 'socket.io-client'
 import { 
   Send, 
   Paperclip, 
@@ -74,7 +74,7 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfaceProps) {
   const { data: session } = useSession()
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const [socket, setSocket] = useState<any | null>(null)
   const [rooms, setRooms] = useState<ChatRoom[]>([])
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
