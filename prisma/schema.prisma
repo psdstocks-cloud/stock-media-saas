@@ -163,6 +163,7 @@ model StockSite {
   cost        Float   // Cost in points
   isActive    Boolean @default(true)
   category    String? // e.g., "photos", "videos", "music"
+  icon        String? // Icon filename for the site
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

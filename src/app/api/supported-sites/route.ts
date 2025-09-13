@@ -63,9 +63,10 @@ export async function GET() {
       name: site.name,
       displayName: site.displayName,
       url: siteUrls[site.name] || `https://www.${site.name}.com`,
-      cost: 10, // Fixed 10 points for all sites
+      cost: 10, // Fixed 10 points for all sites (business requirement)
       description: `Stock media from ${site.displayName}`,
       category: site.category || 'mixed',
+      icon: site.icon,
       isActive: site.isActive
     }))
 

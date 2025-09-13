@@ -90,8 +90,8 @@ export default function DownloadPage() {
           setSupportedSites(data.sites)
         } else {
           console.error('Failed to load supported sites:', data)
-        }
-      } catch (error) {
+      }
+    } catch (error) {
         console.error('Error loading supported sites:', error)
       } finally {
         setIsLoadingSites(false)
@@ -151,8 +151,8 @@ export default function DownloadPage() {
 
       if (parsedData) {
         // Use our advanced parser
-        const response = await fetch('/api/file-preview', {
-          method: 'POST',
+      const response = await fetch('/api/file-preview', {
+        method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             url: inputUrl, 
@@ -161,9 +161,9 @@ export default function DownloadPage() {
         })
 
         if (response.ok) {
-          const data = await response.json()
-          setFileInfo(data.fileInfo)
-        } else {
+      const data = await response.json()
+        setFileInfo(data.fileInfo)
+      } else {
           throw new Error('Failed to get file preview')
         }
       } else {
@@ -175,13 +175,13 @@ export default function DownloadPage() {
         })
 
         if (response.ok) {
-          const data = await response.json()
+        const data = await response.json()
           setFileInfo(data.fileInfo)
         } else {
           throw new Error('Failed to get file preview')
         }
       }
-    } catch (error) {
+      } catch (error) {
       console.error('Error getting file preview:', error)
       setError('Failed to analyze URL. Please check the URL and try again.')
     } finally {
@@ -379,7 +379,7 @@ export default function DownloadPage() {
                     margin: 0
                   }}>
                     Download Center V2.0
-                  </h1>
+                </h1>
                   <p style={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     fontSize: '1.25rem',
@@ -387,7 +387,7 @@ export default function DownloadPage() {
                   }}>
                     Access premium stock content instantly
                   </p>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -522,47 +522,68 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              {/* Supported Sites - Enhanced with Search & View Options */}
-              <div style={{ marginBottom: '1.5rem' }}>
+              {/* Supported Sites - 2025 Trendy Design */}
+              <div style={{ marginBottom: '2rem' }}>
+                {/* Header Section */}
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: '1rem'
+                  marginBottom: '1.5rem',
+                  padding: '1.5rem',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                  borderRadius: '1rem',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(20px)'
                 }}>
-                  <h3 style={{
-                    color: 'white',
-                    fontSize: '1.125rem',
-                    fontWeight: '600',
-                    margin: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    <ExternalLink style={{ width: '1.25rem', height: '1.25rem' }} />
-                    Supported Stock Sites & Pricing
-                  </h3>
-                  
+                  <div>
+                    <h3 style={{
+                      color: 'white',
+                      fontSize: '1.5rem',
+                      fontWeight: '700',
+                      margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent'
+                    }}>
+                      <ExternalLink style={{ width: '1.5rem', height: '1.5rem', color: '#10b981' }} />
+                      Supported Stock Sites
+                    </h3>
+                    <p style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '0.875rem',
+                      margin: '0.5rem 0 0 0'
+                    }}>
+                      Access premium stock media from 30+ trusted platforms
+                    </p>
+          </div>
+
                   {/* View Mode Toggle */}
                   <div style={{
                     display: 'flex',
                     background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '0.5rem',
+                    borderRadius: '0.75rem',
                     padding: '0.25rem',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)'
                   }}>
                     <button
                       onClick={() => setViewMode('grid')}
                       style={{
-                        padding: '0.5rem 1rem',
-                        background: viewMode === 'grid' ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                        padding: '0.75rem 1.25rem',
+                        background: viewMode === 'grid' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '0.375rem',
+                        borderRadius: '0.5rem',
                         cursor: 'pointer',
-                        fontSize: '0.75rem',
+                        fontSize: '0.875rem',
                         fontWeight: '600',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: viewMode === 'grid' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'
                       }}
                     >
                       Grid
@@ -570,24 +591,28 @@ export default function DownloadPage() {
                     <button
                       onClick={() => setViewMode('list')}
                       style={{
-                        padding: '0.5rem 1rem',
-                        background: viewMode === 'list' ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                        padding: '0.75rem 1.25rem',
+                        background: viewMode === 'list' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '0.375rem',
+                        borderRadius: '0.5rem',
                         cursor: 'pointer',
-                        fontSize: '0.75rem',
+                        fontSize: '0.875rem',
                         fontWeight: '600',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: viewMode === 'list' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'
                       }}
                     >
                       List
                     </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Search Bar */}
-                <div style={{ marginBottom: '1rem' }}>
+                {/* Search Section */}
+                <div style={{
+                  marginBottom: '1.5rem',
+                  position: 'relative'
+                }}>
                   <input
                     type="text"
                     placeholder="Search sites by name or URL..."
@@ -595,71 +620,85 @@ export default function DownloadPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '0.75rem 1rem',
-                      borderRadius: '0.75rem',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      padding: '1rem 1.25rem 1rem 3rem',
+                      borderRadius: '1rem',
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
                       background: 'rgba(255, 255, 255, 0.1)',
                       color: 'white',
-                      fontSize: '0.875rem',
-                      backdropFilter: 'blur(8px)'
+                      fontSize: '1rem',
+                      backdropFilter: 'blur(20px)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      outline: 'none'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
-                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                      e.target.style.borderColor = 'rgba(16, 185, 129, 0.5)'
+                      e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'
+                      e.target.style.background = 'rgba(255, 255, 255, 0.15)'
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
                       e.target.style.boxShadow = 'none'
+                      e.target.style.background = 'rgba(255, 255, 255, 0.1)'
                     }}
                   />
-                </div>
+                  <Search style={{
+                    position: 'absolute',
+                    left: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '1.25rem',
+                    height: '1.25rem',
+                    color: 'rgba(255, 255, 255, 0.6)'
+                  }} />
+                    </div>
 
                 {/* Results Count */}
                 <div style={{
-                  marginBottom: '1rem',
-                  fontSize: '0.875rem',
-                  color: 'rgba(255, 255, 255, 0.7)'
+                  marginBottom: '1.5rem',
+                  fontSize: '1rem',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontWeight: '500'
                 }}>
                   {isLoadingSites ? 'Loading sites...' : 
                    searchQuery ? `Found ${filteredSites.length} sites` : 
                    `Showing all ${supportedSites.length} supported sites`}
-                </div>
-
+                      </div>
+                      
                 {/* Loading State */}
                 {isLoadingSites ? (
                   <div style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    padding: '3rem',
+                    padding: '4rem',
                     color: 'rgba(255, 255, 255, 0.6)'
                   }}>
                     <div style={{
-                      width: '2rem',
-                      height: '2rem',
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      borderTop: '2px solid #10b981',
+                      width: '3rem',
+                      height: '3rem',
+                      border: '3px solid rgba(255, 255, 255, 0.2)',
+                      borderTop: '3px solid #10b981',
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }} />
-                    <span style={{ marginLeft: '0.75rem' }}>Loading supported sites...</span>
-                  </div>
+                    <span style={{ marginLeft: '1rem', fontSize: '1.125rem' }}>Loading supported sites...</span>
+                          </div>
                 ) : (
                   <>
-                    {/* Sites Grid/List */}
+                    {/* Sites Container - 2025 Trendy Scrolling */}
                     <div 
                       style={{
                         display: viewMode === 'grid' ? 'grid' : 'flex',
-                        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fit, minmax(300px, 1fr))' : 'none',
+                        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fit, minmax(320px, 1fr))' : 'none',
                         flexDirection: viewMode === 'list' ? 'column' : 'row',
-                        gap: '0.75rem',
-                        marginBottom: '1rem',
+                        gap: '1rem',
+                        marginBottom: '2rem',
                         ...(viewMode === 'list' && {
-                          maxHeight: '400px',
+                          maxHeight: '500px',
                           overflowY: 'auto',
                           paddingRight: '0.5rem',
                           scrollbarWidth: 'thin',
-                          scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent'
+                          scrollbarColor: 'rgba(16, 185, 129, 0.3) transparent'
                         })
                       }}
                     >
@@ -673,94 +712,135 @@ export default function DownloadPage() {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            padding: viewMode === 'list' ? '0.625rem 1rem' : '0.75rem 1rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            borderRadius: viewMode === 'list' ? '0.5rem' : '0.75rem',
+                            padding: viewMode === 'list' ? '1rem 1.25rem' : '1.25rem',
+                            background: viewMode === 'list' 
+                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
+                              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                            borderRadius: viewMode === 'list' ? '0.75rem' : '1rem',
                             border: '1px solid rgba(255, 255, 255, 0.2)',
                             textDecoration: 'none',
                             color: 'white',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             cursor: 'pointer',
                             position: 'relative',
                             overflow: 'hidden',
+                            backdropFilter: 'blur(20px)',
                             ...(viewMode === 'list' && {
-                              marginBottom: '0.5rem',
-                              backdropFilter: 'blur(10px)',
-                              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
+                              marginBottom: '0.75rem'
                             })
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = viewMode === 'list' 
-                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)'
-                              : 'rgba(255, 255, 255, 0.2)'
-                            e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
-                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)'
-                            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)'
+                              ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%)'
+                              : 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)'
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'
+                            e.currentTarget.style.boxShadow = '0 12px 40px rgba(16, 185, 129, 0.2)'
+                            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)'
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = viewMode === 'list'
                               ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                              : 'rgba(255, 255, 255, 0.1)'
+                              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)'
                             e.currentTarget.style.transform = 'translateY(0) scale(1)'
                             e.currentTarget.style.boxShadow = 'none'
                             e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
                           }}
                         >
-                          {/* 2025 Trendy Gradient Overlay */}
+                          {/* 2025 Gradient Accent */}
                           <div style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             right: 0,
-                            height: '2px',
+                            height: '3px',
                             background: 'linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6, #f59e0b)',
                             opacity: 0,
                             transition: 'opacity 0.3s ease'
                           }} />
                           
-                          <div style={{ flex: 1, zIndex: 1 }}>
-                            <div style={{
-                              fontSize: viewMode === 'list' ? '0.8rem' : '0.875rem',
-                              fontWeight: '600',
-                              marginBottom: '0.25rem',
-                              background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
-                              backgroundClip: 'text',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent'
-                            }}>
-                              {site.displayName}
+                          <div style={{ flex: 1, zIndex: 1, display: 'flex', alignItems: 'center' }}>
+                            {/* Site Icon */}
+                            {site.icon && (
+                              <div style={{
+                                width: viewMode === 'list' ? '40px' : '48px',
+                                height: viewMode === 'list' ? '40px' : '48px',
+                                marginRight: '1rem',
+                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '2px solid rgba(255, 255, 255, 0.3)',
+                                backdropFilter: 'blur(20px)',
+                                flexShrink: 0,
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                <img 
+                                  src={`/assets/icons/${site.icon?.replace('.png', '.svg')}`}
+                                  alt={`${site.displayName} icon`}
+                                  style={{
+                                    width: viewMode === 'list' ? '24px' : '28px',
+                                    height: viewMode === 'list' ? '24px' : '28px',
+                                    objectFit: 'contain'
+                                  }}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                    const parent = e.currentTarget.parentElement
+                                    if (parent) {
+                                      parent.innerHTML = '<div style="color: rgba(255, 255, 255, 0.8); font-size: 16px; font-weight: bold;">📁</div>'
+                                    }
+                                  }}
+                                />
+                      </div>
+                    )}
+
+                            {/* Site Info */}
+                            <div style={{ flex: 1 }}>
+                              <div style={{
+                                fontSize: viewMode === 'list' ? '1rem' : '1.125rem',
+                                fontWeight: '700',
+                                marginBottom: '0.5rem',
+                                background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                              }}>
+                                {site.displayName}
                             </div>
-                            <div style={{
-                              fontSize: viewMode === 'list' ? '0.7rem' : '0.75rem',
-                              color: 'rgba(255, 255, 255, 0.6)',
-                              wordBreak: 'break-all',
-                              opacity: 0.8
-                            }}>
-                              {site.url}
+                              <div style={{
+                                fontSize: viewMode === 'list' ? '0.875rem' : '0.9rem',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                wordBreak: 'break-all',
+                                opacity: 0.9
+                              }}>
+                                {site.url}
                             </div>
                           </div>
+                        </div>
+                        
+                          {/* Points Badge */}
                           <div style={{
                             textAlign: 'right',
                             marginLeft: '1rem',
                             zIndex: 1
                           }}>
                             <div style={{
-                              fontSize: viewMode === 'list' ? '0.75rem' : '0.875rem',
-                              fontWeight: '700',
+                              fontSize: viewMode === 'list' ? '0.875rem' : '1rem',
+                              fontWeight: '800',
                               color: '#ffffff',
-                              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%)',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '0.375rem',
-                              marginBottom: '0.25rem',
-                              border: '1px solid rgba(16, 185, 129, 0.3)',
-                              backdropFilter: 'blur(10px)'
+                              background: 'linear-gradient(135deg, #10b981, #059669)',
+                              padding: '0.5rem 1rem',
+                              borderRadius: '0.75rem',
+                              marginBottom: '0.5rem',
+                              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                              border: '1px solid rgba(255, 255, 255, 0.2)'
                             }}>
                               {site.cost} pts
-                            </div>
+                      </div>
                             <ExternalLink style={{
-                              width: viewMode === 'list' ? '0.625rem' : '0.75rem',
-                              height: viewMode === 'list' ? '0.625rem' : '0.75rem',
-                              color: 'rgba(255, 255, 255, 0.5)',
+                              width: viewMode === 'list' ? '1rem' : '1.125rem',
+                              height: viewMode === 'list' ? '1rem' : '1.125rem',
+                              color: 'rgba(255, 255, 255, 0.6)',
                               transition: 'color 0.3s ease'
                             }} />
                           </div>
@@ -774,46 +854,51 @@ export default function DownloadPage() {
                 {!isLoadingSites && filteredSites.length === 0 && searchQuery && (
                   <div style={{
                     textAlign: 'center',
-                    padding: '2rem',
-                    color: 'rgba(255, 255, 255, 0.6)'
+                    padding: '3rem',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '1rem',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
                   }}>
-                    <Search style={{ width: '2rem', height: '2rem', marginBottom: '0.5rem', opacity: 0.5 }} />
-                    <div style={{ fontSize: '0.875rem' }}>
+                    <Search style={{ width: '3rem', height: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
+                    <div style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                       No sites found matching "{searchQuery}"
-                    </div>
-                    <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                              </div>
+                    <div style={{ fontSize: '0.875rem' }}>
                       Try searching by site name or URL
-                    </div>
-                  </div>
+                            </div>
+                          </div>
                 )}
 
                 {/* Pricing Note */}
                 <div style={{
-                  marginTop: '1rem',
-                  padding: '0.75rem 1rem',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: '0.75rem',
+                  marginTop: '2rem',
+                  padding: '1.5rem',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                  border: '2px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '1rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '1rem',
+                  backdropFilter: 'blur(20px)'
                 }}>
-                  <CheckCircle style={{ width: '1rem', height: '1rem', color: '#10b981' }} />
+                  <CheckCircle style={{ width: '1.5rem', height: '1.5rem', color: '#10b981', flexShrink: 0 }} />
                   <div>
                     <div style={{
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
+                      fontSize: '1.125rem',
+                      fontWeight: '700',
                       color: '#10b981',
-                      marginBottom: '0.25rem'
+                      marginBottom: '0.5rem'
                     }}>
                       All sites included in your subscription
-                    </div>
+                        </div>
                     <div style={{
-                      fontSize: '0.75rem',
-                      color: 'rgba(16, 185, 129, 0.8)'
+                      fontSize: '0.875rem',
+                      color: 'rgba(16, 185, 129, 0.9)',
+                      lineHeight: '1.5'
                     }}>
-                      No additional fees - just use your points to download from any supported site
-                    </div>
+                      No additional fees - just use your points to download from any supported site. Each download costs exactly 10 points regardless of the original site's pricing.
+                      </div>
                   </div>
                 </div>
               </div>
@@ -833,8 +918,8 @@ export default function DownloadPage() {
                 }}>
                   <AlertCircle style={{ width: '1rem', height: '1rem' }} />
                   {error}
-                </div>
-              )}
+            </div>
+          )}
 
               {success && (
                 <div style={{
@@ -850,7 +935,7 @@ export default function DownloadPage() {
                 }}>
                   <CheckCircle style={{ width: '1rem', height: '1rem' }} />
                   {success}
-                </div>
+                    </div>
               )}
 
               {/* File Preview */}
@@ -902,9 +987,9 @@ export default function DownloadPage() {
                           fontSize: '1.5rem'
                         }}>
                           ?
+                          </div>
                         </div>
-                      </div>
-                      <div>
+                        <div>
                         <h3 style={{
                           fontSize: '1.125rem',
                           fontWeight: '600',
@@ -919,9 +1004,9 @@ export default function DownloadPage() {
                           margin: 0
                         }}>
                           {fileInfo.site} • {fileInfo.cost} points
-                        </p>
+                          </p>
+                        </div>
                       </div>
-                    </div>
                     <div style={{ textAlign: 'right' }}>
                       <button
                         onClick={handlePlaceOrder}
@@ -968,8 +1053,8 @@ export default function DownloadPage() {
                           'Download Now'
                         )}
                       </button>
+                      </div>
                     </div>
-                  </div>
                   
                   {fileInfo.isAvailable && (
                     <div style={{
@@ -981,10 +1066,10 @@ export default function DownloadPage() {
                     }}>
                       <CheckCircle style={{ width: '1rem', height: '1rem' }} />
                       <span>Available for download</span>
-                    </div>
-                  )}
                 </div>
-              )}
+                  )}
+            </div>
+          )}
             </div>
           </div>
 
@@ -1053,8 +1138,8 @@ export default function DownloadPage() {
                             margin: 0
                           }}>
                             {order.stockSite.displayName} • {order.cost} points
-                          </p>
-                        </div>
+                  </p>
+                </div>
                         <span style={{
                           fontSize: '0.75rem',
                           fontWeight: '600',
@@ -1063,7 +1148,7 @@ export default function DownloadPage() {
                         }}>
                           {order.status}
                         </span>
-                      </div>
+                  </div>
                       
                       {order.status === 'COMPLETED' && (
                         <button
@@ -1095,7 +1180,7 @@ export default function DownloadPage() {
                           Download
                         </button>
                       )}
-                    </div>
+                </div>
                   ))
                 )}
               </div>

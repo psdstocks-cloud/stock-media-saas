@@ -58,64 +58,72 @@ async function main() {
     },
   })
 
-  // Create stock sites with fixed 10 points cost for all sites
+  // Create stock sites with fixed 10 points cost for all sites (business requirement)
   const stockSites = [
-    { name: 'freepik', displayName: 'Freepik', cost: 10, category: 'photos' },
-    { name: 'flaticon', displayName: 'Flaticon', cost: 10, category: 'icons' },
-    { name: 'vecteezy', displayName: 'Vecteezy', cost: 10, category: 'vectors' },
-    { name: 'rawpixel', displayName: 'Rawpixel', cost: 10, category: 'photos' },
-    { name: 'motionarray', displayName: 'Motion Array', cost: 10, category: 'videos' },
-    { name: 'iconscout', displayName: 'IconScout', cost: 10, category: 'icons' },
-    { name: 'soundstripe', displayName: 'Soundstripe', cost: 10, category: 'music' },
-    { name: 'epidemicsound', displayName: 'Epidemic Sound', cost: 10, category: 'music' },
-    { name: 'deeezy', displayName: 'Deezzy', cost: 10, category: 'videos' },
-    { name: 'adobestock', displayName: 'Adobe Stock', cost: 10, category: 'photos' },
-    { name: 'envato', displayName: 'Envato', cost: 10, category: 'mixed' },
-    { name: 'shutterstock', displayName: 'Shutterstock', cost: 10, category: 'photos' },
-    { name: 'pixeden', displayName: 'Pixeden', cost: 10, category: 'templates' },
-    { name: 'creativefabrica', displayName: 'Creative Fabrica', cost: 10, category: 'fonts' },
-    { name: 'pixelbuddha', displayName: 'Pixel Buddha', cost: 10, category: 'templates' },
-    { name: 'artlist_video', displayName: 'Artlist Video', cost: 10, category: 'videos' },
-    { name: 'pixelsquid', displayName: 'Pixelsquid', cost: 10, category: '3d' },
-    { name: 'footagecrate', displayName: 'Footage Crate', cost: 10, category: 'videos' },
-    { name: 'craftwork', displayName: 'Craftwork', cost: 10, category: 'templates' },
-    { name: 'ui8', displayName: 'UI8', cost: 10, category: 'templates' },
-    { name: 'ss_video_hd', displayName: 'Shutterstock Video HD', cost: 10, category: 'videos' },
-    { name: 'yellowimages', displayName: 'Yellow Images', cost: 10, category: 'photos' },
-    { name: 'ss_video_4k', displayName: 'Shutterstock Video 4K', cost: 10, category: 'videos' },
-    { name: 'alamy', displayName: 'Alamy', cost: 10, category: 'photos' },
-    { name: 'istock_video_hd', displayName: 'iStock Video HD', cost: 10, category: 'videos' },
-    { name: 'gettyimages', displayName: 'Getty Images', cost: 10, category: 'photos' },
-    { name: 'unsplash', displayName: 'Unsplash', cost: 10, category: 'photos' },
-    { name: 'pexels', displayName: 'Pexels', cost: 10, category: 'photos' },
-    { name: 'depositphotos', displayName: 'Depositphotos', cost: 10, category: 'photos' },
-    { name: '123rf', displayName: '123RF', cost: 10, category: 'photos' },
-    { name: 'istock', displayName: 'iStock', cost: 10, category: 'photos' },
-    { name: 'dreamstime', displayName: 'Dreamstime', cost: 10, category: 'photos' },
-    { name: 'pixabay', displayName: 'Pixabay', cost: 10, category: 'photos' },
-    { name: 'canva', displayName: 'Canva', cost: 10, category: 'templates' },
-    { name: 'pond5', displayName: 'Pond5', cost: 10, category: 'videos' },
-    { name: 'videoblocks', displayName: 'Videoblocks', cost: 10, category: 'videos' },
-    { name: 'storyblocks', displayName: 'Storyblocks', cost: 10, category: 'videos' },
-    { name: 'istockphoto', displayName: 'iStock Photo', cost: 10, category: 'photos' },
-    { name: 'agefotostock', displayName: 'Age Fotostock', cost: 10, category: 'photos' },
-    { name: 'westend61', displayName: 'Westend61', cost: 10, category: 'photos' },
-    { name: 'mauritius', displayName: 'Mauritius Images', cost: 10, category: 'photos' },
-    { name: 'imagebank', displayName: 'Imagebank', cost: 10, category: 'photos' },
-    { name: 'photocase', displayName: 'Photocase', cost: 10, category: 'photos' },
-    { name: 'plainpicture', displayName: 'Plainpicture', cost: 10, category: 'photos' },
+    // Major Stock Photo Sites
+    { name: 'shutterstock', displayName: 'Shutterstock', cost: 10, category: 'photos', icon: 'shutterstock.png', isActive: true },
+    { name: 'adobestock', displayName: 'Adobe Stock', cost: 10, category: 'photos', icon: 'adobestock.png', isActive: true },
+    { name: 'gettyimages', displayName: 'Getty Images', cost: 10, category: 'photos', icon: 'gettyimages.png', isActive: true },
+    { name: 'istockphoto', displayName: 'iStock Photo', cost: 10, category: 'photos', icon: 'istockphoto.png', isActive: true },
+    { name: 'depositphotos', displayName: 'Depositphotos', cost: 10, category: 'photos', icon: 'depositphotos.png', isActive: true },
+    { name: 'dreamstime', displayName: 'Dreamstime', cost: 10, category: 'photos', icon: 'dreamstime.png', isActive: true },
+    { name: '123rf', displayName: '123RF', cost: 10, category: 'photos', icon: '123rf.png', isActive: true },
+    { name: 'alamy', displayName: 'Alamy', cost: 10, category: 'photos', icon: 'alamy.png', isActive: true },
+    { name: 'rawpixel', displayName: 'Rawpixel', cost: 10, category: 'photos', icon: 'rawpixel.png', isActive: true },
+    
+    // Free Stock Sites
+    { name: 'unsplash', displayName: 'Unsplash', cost: 10, category: 'photos', icon: 'unsplash.png', isActive: true },
+    { name: 'pexels', displayName: 'Pexels', cost: 10, category: 'photos', icon: 'pexels.png', isActive: true },
+    { name: 'pixabay', displayName: 'Pixabay', cost: 10, category: 'photos', icon: 'pixabay.png', isActive: true },
+    
+    // Vector & Icon Sites
+    { name: 'freepik', displayName: 'Freepik', cost: 10, category: 'vectors', icon: 'freepik.png', isActive: true },
+    { name: 'flaticon', displayName: 'Flaticon', cost: 10, category: 'icons', icon: 'flaticon.png', isActive: true },
+    { name: 'vecteezy', displayName: 'Vecteezy', cost: 10, category: 'vectors', icon: 'vecteezy.png', isActive: true },
+    { name: 'iconscout', displayName: 'IconScout', cost: 10, category: 'icons', icon: 'iconscout.png', isActive: true },
+    
+    // Video Sites
+    { name: 'storyblocks', displayName: 'Storyblocks', cost: 10, category: 'videos', icon: 'storyblocks.png', isActive: true },
+    { name: 'motionarray', displayName: 'Motion Array', cost: 10, category: 'videos', icon: 'motionarray.png', isActive: true },
+    { name: 'videoblocks', displayName: 'Videoblocks', cost: 10, category: 'videos', icon: 'videoblocks.png', isActive: true },
+    { name: 'pond5', displayName: 'Pond5', cost: 10, category: 'videos', icon: 'pond5.png', isActive: true },
+    
+    // Music & Audio
+    { name: 'epidemicsound', displayName: 'Epidemic Sound', cost: 10, category: 'music', icon: 'epidemicsound.png', isActive: true },
+    { name: 'soundstripe', displayName: 'Soundstripe', cost: 10, category: 'music', icon: 'soundstripe.png', isActive: true },
+    { name: 'artlist_music', displayName: 'Artlist Music', cost: 10, category: 'music', icon: 'artlist_sound.png', isActive: true },
+    
+    // Design & Templates
+    { name: 'envato', displayName: 'Envato Elements', cost: 10, category: 'templates', icon: 'envato.png', isActive: true },
+    { name: 'creativefabrica', displayName: 'Creative Fabrica', cost: 10, category: 'fonts', icon: 'creativefabrica.png', isActive: true },
+    { name: 'craftwork', displayName: 'Craftwork', cost: 10, category: 'templates', icon: 'craftwork.png', isActive: true },
+    { name: 'ui8', displayName: 'UI8', cost: 10, category: 'templates', icon: 'ui8.png', isActive: true },
+    { name: 'pixeden', displayName: 'Pixeden', cost: 10, category: 'templates', icon: 'pixeden.png', isActive: true },
+    { name: 'pixelbuddha', displayName: 'Pixel Buddha', cost: 10, category: 'templates', icon: 'pixelbuddha.png', isActive: true },
+    
+    // 3D & Specialized
+    { name: 'pixelsquid', displayName: 'Pixelsquid', cost: 10, category: '3d', icon: 'pixelsquid.png', isActive: true },
+    { name: 'footagecrate', displayName: 'Footage Crate', cost: 10, category: 'videos', icon: 'footagecrate.png', isActive: true },
+    { name: 'yellowimages', displayName: 'Yellow Images', cost: 10, category: 'photos', icon: 'yellowimages.png', isActive: true },
   ]
 
   for (const site of stockSites) {
     await prisma.stockSite.upsert({
       where: { name: site.name },
-      update: { cost: site.cost },
+      update: { 
+        cost: site.cost,
+        displayName: site.displayName,
+        category: site.category,
+        icon: site.icon,
+        isActive: site.isActive !== false
+      },
       create: {
         name: site.name,
         displayName: site.displayName,
         cost: site.cost,
         category: site.category,
-        isActive: true,
+        icon: site.icon,
+        isActive: site.isActive !== false,
       },
     })
   }
