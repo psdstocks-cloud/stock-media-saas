@@ -22,7 +22,11 @@ interface FileInfo {
   site: string
   title: string
   previewUrl: string
+  image?: string
   cost: number
+  size?: string
+  format?: string
+  author?: string
   isAvailable: boolean
   error?: string
 }
