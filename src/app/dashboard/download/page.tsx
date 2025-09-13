@@ -242,14 +242,28 @@ export default function DownloadPage() {
         console.log('API response headers:', Object.fromEntries(response.headers.entries()))
         
         if (response.ok) {
-      const data = await response.json()
+          const data = await response.json()
           console.log('API response data:', data)
-
+          console.log('Response success:', data.success)
+          console.log('Response fileInfo:', data.fileInfo)
+          
           if (data.success && data.fileInfo) {
             console.log('Setting file info:', data.fileInfo)
-        setFileInfo(data.fileInfo)
-      } else {
-            console.error('API returned error:', data.error)
+            console.log('File info type:', typeof data.fileInfo)
+            console.log('File info keys:', Object.keys(data.fileInfo))
+            console.log('File info details:', JSON.stringify(data.fileInfo, null, 2))
+            setFileInfo(data.fileInfo)
+            console.log('File info state set successfully')
+            
+            // Check if fileInfo state was actually set
+            setTimeout(() => {
+              console.log('FileInfo state after setting:', fileInfo)
+            }, 100)
+          } else {
+            console.error('API returned error or missing data:')
+            console.error('Success:', data.success)
+            console.error('FileInfo:', data.fileInfo)
+            console.error('Error:', data.error)
             throw new Error(data.error || 'Failed to get file preview from API')
           }
         } else {
@@ -1133,6 +1147,7 @@ export default function DownloadPage() {
               )}
 
               {/* File Preview */}
+              {console.log('Checking fileInfo for preview:', fileInfo, 'Boolean:', !!fileInfo)}
               {fileInfo && (
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -1140,6 +1155,7 @@ export default function DownloadPage() {
                   padding: '1.5rem',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
+                  {console.log('Rendering file preview with fileInfo:', fileInfo)}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
