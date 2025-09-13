@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { io, Socket } from 'socket.io-client'
+import io, { Socket } from 'socket.io-client'
 import { 
   Send, 
   Paperclip, 
