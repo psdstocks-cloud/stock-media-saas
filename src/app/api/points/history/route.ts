@@ -212,7 +212,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Export function for manual rate limit checking
-export async function checkRateLimit(clientId: string) {
-  return await rateLimiters.pointsHistory.checkLimit(clientId)
-}
+// Note: Rate limit checking is handled internally by the GET function
