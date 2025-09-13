@@ -1,13 +1,27 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { ArrowLeft, Download, ExternalLink, Loader2, CheckCircle, AlertCircle, Sparkles, Zap, Star, Search, CreditCard } from 'lucide-react'
+import { 
+  Download, 
+  ExternalLink, 
+  Loader2, 
+  CheckCircle, 
+  AlertCircle, 
+  Search,
+  CreditCard,
+  Clock,
+  ArrowLeft,
+  Sparkles,
+  Zap,
+  Star
+} from 'lucide-react'
+import { UrlParser, ParsedUrl } from '@/lib/url-parser'
 
 interface FileInfo {
-  site: string
   id: string
+  site: string
   title: string
   cost: number
   previewUrl: string
@@ -15,878 +29,410 @@ interface FileInfo {
   error?: string
 }
 
+interface Order {
+  id: string
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+  title: string
+  cost: number
+  downloadUrl?: string
+  fileName?: string
+  createdAt: string
+  stockSite: {
+    name: string
+    displayName: string
+  }
+}
+
 export default function DownloadPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  
+  // State management
   const [inputUrl, setInputUrl] = useState('')
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [ordering, setOrdering] = useState(false)
-  const [orderResult, setOrderResult] = useState<{
-    success: boolean
-    orderId?: string
-    error?: string
-    warning?: string
-  } | null>(null)
-  const [orderStatus, setOrderStatus] = useState<{
-    status: string
-    downloadUrl?: string
-    fileName?: string
-  } | null>(null)
-  const [recentOrders, setRecentOrders] = useState<any[]>([])
-  const [pageState, setPageState] = useState<'loading' | 'authenticated' | 'unauthenticated' | 'error'>('loading')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isOrdering, setIsOrdering] = useState(false)
+  const [recentOrders, setRecentOrders] = useState<Order[]>([])
+  const [userPoints, setUserPoints] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
-  const [isInitialized, setIsInitialized] = useState(false)
-  const [apiHealth, setApiHealth] = useState<'checking' | 'healthy' | 'unhealthy'>('checking')
-  const [isLoadingOrders, setIsLoadingOrders] = useState(false)
-  const [manualSession, setManualSession] = useState<any>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  // Debug session status
-  console.log('🔍 Download Page Debug:', {
-    status,
-    hasSession: !!session,
-    sessionUser: session?.user,
-    pageState,
-    isInitialized,
-    manualSession,
-    timestamp: new Date().toISOString()
-  })
-
-  // IMMEDIATE AUTHENTICATION: Force page to load
+  // Redirect if not authenticated
   useEffect(() => {
-    console.log('🚀 IMMEDIATE AUTH: Forcing page to load immediately')
-    
-    // Force authentication immediately - the page is working, just stuck in loading
-    setPageState('authenticated')
-    setIsInitialized(true)
-    setApiHealth('healthy')
-    
-    // Set a mock session since the page is clearly working for the user
-    setManualSession({
-      user: {
-        id: 'working-user',
-        email: 'user@example.com',
-        name: 'Working User'
-      }
-    })
-    
-    console.log('✅ IMMEDIATE AUTH: Page forced to load - user can now see content')
-  }, [])
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
 
-  const loadRecentOrders = useCallback(async () => {
+  // Load user data on mount
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.id) {
+      loadUserData()
+    }
+  }, [status, session])
+
+  // Load user points and recent orders
+  const loadUserData = useCallback(async () => {
     try {
-      // Add cache control to prevent excessive calls
-      const response = await fetch('/api/orders', {
-        headers: {
-          'Cache-Control': 'max-age=30' // Cache for 30 seconds
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setRecentOrders(data.orders?.slice(0, 5) || [])
-        console.log('📦 Recent orders loaded:', data.orders?.length || 0)
-      } else {
-        console.warn('⚠️ Failed to load recent orders:', response.status)
+      // Load points
+      const pointsResponse = await fetch('/api/points')
+      if (pointsResponse.ok) {
+        const pointsData = await pointsResponse.json()
+        setUserPoints(pointsData.currentPoints || 0)
+      }
+
+      // Load recent orders
+      const ordersResponse = await fetch('/api/orders')
+      if (ordersResponse.ok) {
+        const ordersData = await ordersResponse.json()
+        setRecentOrders(ordersData.orders?.slice(0, 5) || [])
       }
     } catch (error) {
-      console.error('💥 Error loading recent orders:', error)
+      console.error('Error loading user data:', error)
     }
   }, [])
 
-  // Debounced orders loading to prevent excessive calls
-  useEffect(() => {
-    if (!isInitialized || isLoadingOrders) return
-    
-    const timeoutId = setTimeout(() => {
-      setIsLoadingOrders(true)
-      loadRecentOrders().finally(() => {
-        setIsLoadingOrders(false)
-      })
-    }, 1000) // 1 second delay
-
-    return () => clearTimeout(timeoutId)
-  }, [isInitialized, loadRecentOrders, isLoadingOrders])
-
-  // OLD AUTHENTICATION LOGIC REMOVED - Using nuclear option instead
-
-  // Timeout handler for loading state
-  useEffect(() => {
-    if (pageState === 'loading') {
-      const timeout = setTimeout(() => {
-        console.error('⏰ Authentication timeout after 5 seconds')
-        setPageState('error')
-        setError('Authentication timeout. Please try refreshing the page.')
-      }, 5000)
-
-      return () => clearTimeout(timeout)
+  // Parse URL and get file info
+  const handleUrlSubmit = useCallback(async () => {
+    if (!inputUrl.trim()) {
+      setError('Please enter a valid URL')
+      return
     }
-  }, [pageState])
 
-  const handleRetry = useCallback(() => {
-    setRetryCount(prev => prev + 1)
+    setIsLoading(true)
     setError(null)
-    setPageState('loading')
-    // Force re-authentication
-    window.location.reload()
-  }, [])
-
-  // Memoize expensive computations
-  const isOrderButtonDisabled = useMemo(() => {
-    return ordering || !fileInfo || !fileInfo.isAvailable
-  }, [ordering, fileInfo])
-
-  const shouldShowPricingRedirect = useMemo(() => {
-    return orderResult?.error?.toLowerCase().includes('insufficient points')
-  }, [orderResult?.error])
-
-  const handlePreview = async () => {
-    if (!inputUrl || !inputUrl.trim()) return
-
-    setLoading(true)
     setFileInfo(null)
-    setOrderResult(null)
-    setOrderStatus(null)
 
     try {
-      const response = await fetch('/api/file-preview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: inputUrl }),
-      })
+      // First, try to parse with our advanced parser
+      const parsedUrl = UrlParser.parseUrl(inputUrl)
+      
+      if (!parsedUrl) {
+        // Fallback to API if our parser doesn't support the URL
+        const response = await fetch('/api/file-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: inputUrl })
+        })
 
-      const data = await response.json()
+        if (!response.ok) {
+          throw new Error('Failed to get file preview')
+        }
 
-      if (data.success) {
+        const data = await response.json()
         setFileInfo(data.fileInfo)
       } else {
-        setFileInfo({
-          site: 'unknown',
-          id: 'unknown',
-          title: 'Preview Failed',
-          cost: 0,
-          previewUrl: 'https://via.placeholder.com/400x300/DC2626/FFFFFF?text=Preview+Failed',
-          isAvailable: false,
-          error: data.error || 'Failed to process URL'
+        // Use our parsed data to create file info
+        const response = await fetch('/api/file-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            url: inputUrl,
+            parsedData: parsedUrl
+          })
         })
+
+        if (!response.ok) {
+          throw new Error('Failed to get file preview')
+        }
+
+        const data = await response.json()
+        setFileInfo(data.fileInfo)
       }
     } catch (error) {
       console.error('Error getting file preview:', error)
-      setFileInfo({
-        site: 'unknown',
-        id: 'unknown',
-        title: 'Network Error',
-        cost: 0,
-        previewUrl: 'https://via.placeholder.com/400x300/DC2626/FFFFFF?text=Network+Error',
-        isAvailable: false,
-        error: 'Network error occurred'
-      })
+      setError('Failed to process URL. Please check the format and try again.')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
-  }
+  }, [inputUrl])
 
-  const checkOrderStatus = useCallback(async (orderId: string) => {
-    const maxAttempts = 10 // Reduced from 20
-    let attempts = 0
-    let isPolling = true
-    
-    const checkStatus = async () => {
-      if (!isPolling) return // Prevent multiple concurrent polls
-      
-      try {
-        attempts++
-        console.log(`🔍 Checking order status (${attempts}/${maxAttempts}):`, orderId)
-        
-        const response = await fetch(`/api/orders/${orderId}/status`)
-        const data = await response.json()
-        
-        if (data.success && data.order) {
-          setOrderStatus({
-            status: data.order.status,
-            downloadUrl: data.order.downloadUrl,
-            fileName: data.order.fileName
-          })
-          
-          if (data.order.status === 'COMPLETED' && data.order.downloadUrl) {
-            console.log('✅ Order completed with download link:', data.order.downloadUrl)
-            isPolling = false
-            return
-          }
-          
-          if (data.order.status === 'FAILED') {
-            console.log('❌ Order failed, stopping polling')
-            isPolling = false
-            return
-          }
-        }
-        
-        // Only continue polling if we haven't exceeded max attempts and order is still processing
-        if (attempts < maxAttempts && isPolling) {
-          setTimeout(checkStatus, 10000) // Increased from 6000ms to 10000ms
-        } else {
-          isPolling = false
-          console.log('⏰ Order status polling stopped after max attempts')
-        }
-      } catch (error) {
-        console.error('💥 Error checking order status:', error)
-        if (attempts < maxAttempts && isPolling) {
-          setTimeout(checkStatus, 10000)
-        } else {
-          isPolling = false
-        }
-      }
-    }
-    
-    // Start polling after 5 seconds instead of 3
-    setTimeout(checkStatus, 5000)
-    
-    // Return cleanup function
-    return () => {
-      isPolling = false
-    }
-  }, [])
+  // Place order
+  const handlePlaceOrder = useCallback(async () => {
+    if (!fileInfo) return
 
-  const handleOrder = async () => {
-    if (!fileInfo || !fileInfo.isAvailable) return
-
-    setOrdering(true)
-    setOrderResult(null)
-    setOrderStatus(null)
+    setIsOrdering(true)
+    setError(null)
+    setSuccess(null)
 
     try {
       const response = await fetch('/api/place-stock-order', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ fileInfo }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: inputUrl,
+          site: fileInfo.site,
+          id: fileInfo.id,
+          title: fileInfo.title,
+          cost: fileInfo.cost,
+          previewUrl: fileInfo.previewUrl
+        })
       })
 
       const data = await response.json()
 
       if (data.success) {
-        setOrderResult({
-          success: true,
-          orderId: data.order.id,
-          warning: data.warning,
-          error: data.order.status === 'FAILED' ? data.message : undefined
-        })
-        
-        if (data.order.id && data.order.status === 'PROCESSING') {
-          checkOrderStatus(data.order.id)
-        }
+        setSuccess('Order placed successfully! Processing your download...')
+        setFileInfo(null)
+        setInputUrl('')
+        loadUserData() // Refresh user data
       } else {
-        setOrderResult({
-          success: false,
-          error: data.error || 'Failed to place order'
-        })
-        
-        // If it's an insufficient points error, show pricing redirect
-        if (data.error && data.error.toLowerCase().includes('insufficient points')) {
-          // The error display will handle showing the pricing redirect
-        }
+        setError(data.error || 'Failed to place order')
       }
     } catch (error) {
       console.error('Error placing order:', error)
-      
-      let errorMessage = 'Network error occurred'
-      
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Connection failed. Please check your internet connection and try again.'
-      } else if (error instanceof Error) {
-        errorMessage = error.message
-      }
-      
-      setOrderResult({
-        success: false,
-        error: errorMessage
-      })
+      setError('Failed to place order. Please try again.')
     } finally {
-      setOrdering(false)
+      setIsOrdering(false)
     }
-  }
+  }, [fileInfo, inputUrl, loadUserData])
 
-  // Enhanced loading and error states
-  if (pageState === 'loading') {
+  // Handle download
+  const handleDownload = useCallback(async (order: Order) => {
+    try {
+      if (order.downloadUrl) {
+        window.open(order.downloadUrl, '_blank', 'noopener,noreferrer')
+      } else {
+        // Regenerate download link
+        const response = await fetch(`/api/orders/${order.id}/regenerate-link`, {
+          method: 'POST'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.downloadUrl) {
+            window.open(data.downloadUrl, '_blank', 'noopener,noreferrer')
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error downloading file:', error)
+      setError('Failed to download file. Please try again.')
+    }
+  }, [])
+
+  // Show loading state
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-              <Loader2 className="w-10 h-10 animate-spin text-white" />
-            </div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-3 h-3 text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Loading Download Center</h2>
-          <p className="text-gray-300 text-lg">Please wait while we prepare everything...</p>
-          <div className="mt-4 text-sm text-gray-400">
-            {retryCount > 0 && `Retry attempt ${retryCount}`}
-          </div>
+          <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white">Loading...</h2>
         </div>
       </div>
     )
   }
 
-  if (pageState === 'error') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-red-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="relative mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-              <AlertCircle className="w-10 h-10 text-white" />
-            </div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Authentication Error</h2>
-          <p className="text-red-200 text-lg mb-6">
-            {error || 'There was an issue loading the page. Please try again.'}
-          </p>
-          <div className="space-y-3">
-            <button
-              onClick={handleRetry}
-              className="w-full px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl font-bold text-lg"
-            >
-              🔄 Retry
-            </button>
-            <button
-              onClick={() => router.push('/login')}
-              className="w-full px-8 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-2xl hover:from-gray-600 hover:to-gray-700 transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl font-bold text-lg"
-            >
-              🔑 Go to Login
-            </button>
-          </div>
-          {retryCount > 2 && (
-            <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm">
-                💡 If the problem persists, try clearing your browser cache or contact support.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    )
+  // Show not authenticated
+  if (status === 'unauthenticated') {
+    return null
   }
-
-  if (pageState === 'unauthenticated') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-              <AlertCircle className="w-10 h-10 text-white" />
-            </div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-2">Authentication Required</h2>
-          <p className="text-gray-300 text-lg mb-6">
-            Please log in to access the download center.
-          </p>
-          <button
-            onClick={() => router.push('/login')}
-            className="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-2xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl font-bold text-lg"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // Debug information for development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 Debug Info:', {
-      status,
-      hasSession: !!session,
-      pageState,
-      isInitialized,
-      sessionUserId: session?.user?.id
-    })
-  }
-
-  // FORCE RENDER: Always show the main content since backend is working
-  console.log('🎯 RENDER CHECK:', { pageState, isInitialized, shouldShowContent: pageState === 'authenticated' && isInitialized })
-  
-  // TEMPORARY: Always render the main content to test if the issue is with the condition
-  // if (pageState !== 'authenticated' || !isInitialized) {
-  //   return (
-  //     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="relative mb-8">
-  //           <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-  //             <Loader2 className="w-10 h-10 animate-spin text-white" />
-  //           </div>
-  //         </div>
-  //         <h2 className="text-3xl font-bold text-white mb-2">Initializing...</h2>
-  //         <p className="text-gray-300 text-lg">Setting up your download center</p>
-  //         
-  //         {/* Debug information */}
-  //         <div className="mt-6 p-4 bg-black/20 rounded-lg text-left text-xs text-gray-300 max-w-md mx-auto">
-  //           <h3 className="text-white font-bold mb-2">AUTH DEBUG:</h3>
-  //           <p>PageState: <span className="text-blue-400">{pageState}</span></p>
-  //           <p>IsInitialized: <span className="text-purple-400">{isInitialized ? 'Yes' : 'No'}</span></p>
-  //           <p>ManualSession: <span className="text-green-400">{manualSession ? 'Yes' : 'No'}</span></p>
-  //           <p>API Health: <span className="text-yellow-400">{apiHealth}</span></p>
-  //           {manualSession?.user && (
-  //             <p>User: <span className="text-cyan-400">{manualSession.user.name || manualSession.user.email}</span></p>
-  //           )}
-  //           <p className="text-gray-400 text-xs mt-2">
-  //             Using proper authentication with direct session check.
-  //           </p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   )
-  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Status indicator */}
-      <div className={`fixed top-4 right-4 text-white px-4 py-2 rounded-full z-50 font-semibold text-sm shadow-lg backdrop-blur-sm border ${
-        apiHealth === 'healthy' 
-          ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-400/30'
-          : apiHealth === 'unhealthy'
-          ? 'bg-gradient-to-r from-red-500 to-red-600 border-red-400/30'
-          : 'bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-400/30'
-      }`}>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${
-            apiHealth === 'healthy' 
-              ? 'bg-white animate-pulse'
-              : apiHealth === 'unhealthy'
-              ? 'bg-white animate-pulse'
-              : 'bg-white animate-spin'
-          }`}></div>
-          {apiHealth === 'healthy' && 'Download Center Active'}
-          {apiHealth === 'unhealthy' && 'Service Issues Detected'}
-          {apiHealth === 'checking' && 'Checking Services...'}
-        </div>
-      </div>
-      
+      {/* Header */}
       <div className="container mx-auto px-4 py-8">
-        {/* Modern Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-6 mb-8">
-            <button
-              onClick={() => router.back()}
-              className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 shadow-lg"
-            >
-              <ArrowLeft className="w-6 h-6 text-white" />
-            </button>
-            <div className="flex-1">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-                  <Download className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-                    Download Media
-                  </h1>
-                  <p className="text-gray-300 text-xl mt-2">Access premium stock content instantly with our advanced platform</p>
-                </div>
+        <div className="flex items-center gap-6 mb-8">
+          <button
+            onClick={() => router.back()}
+            className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 shadow-lg"
+          >
+            <ArrowLeft className="w-6 h-6 text-white" />
+          </button>
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
+                <Download className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                  Download Center V2.0
+                </h1>
+                <p className="text-gray-300 text-xl mt-2">
+                  Access premium stock content instantly
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
+              <div className="flex items-center gap-2 text-white">
+                <CreditCard className="w-5 h-5" />
+                <span className="font-semibold">{userPoints} Points</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="w-full max-w-6xl mx-auto">
-          {/* Modern URL Input */}
-          <div className="mb-12">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 to-purple-600/30 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-2">
-                <div className="flex gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* URL Input Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <Search className="w-6 h-6" />
+                Paste Stock URL
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex gap-4">
                   <input
                     type="url"
                     value={inputUrl}
                     onChange={(e) => setInputUrl(e.target.value)}
-                    placeholder="Paste any stock media URL here (Shutterstock, Adobe Stock, etc.)"
-                    className="flex-1 px-6 py-4 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg font-medium"
-                    style={{ color: 'white' }}
-                    disabled={loading}
+                    placeholder="Paste your stock media URL here..."
+                    className="flex-1 px-6 py-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                    onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
                   />
                   <button
-                    onClick={handlePreview}
-                    disabled={loading || !inputUrl || !inputUrl.trim()}
-                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-bold text-lg transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl"
+                    onClick={handleUrlSubmit}
+                    disabled={isLoading || !inputUrl.trim()}
+                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl text-white font-semibold hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
                   >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Analyzing...
-                      </>
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <>
-                        <Search className="w-5 h-5" />
-                        Preview
-                      </>
+                      'Analyze'
                     )}
                   </button>
                 </div>
+
+                {/* Supported Sites */}
+                <div className="text-sm text-gray-300">
+                  <p className="mb-2">Supported sites:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {UrlParser.getSupportedSites().slice(0, 8).map((site) => (
+                      <span
+                        key={site}
+                        className="px-3 py-1 bg-white/10 rounded-full text-xs"
+                      >
+                        {site}
+                      </span>
+                    ))}
+                    <span className="px-3 py-1 bg-white/10 rounded-full text-xs">
+                      +{UrlParser.getSupportedSites().length - 8} more
+                    </span>
+                  </div>
+                </div>
               </div>
+
+              {/* File Preview */}
+              {fileInfo && (
+                <div className="mt-8 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20">
+                  <div className="flex items-start gap-6">
+                    <img
+                      src={fileInfo.previewUrl}
+                      alt={fileInfo.title}
+                      className="w-24 h-24 object-cover rounded-xl shadow-lg"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {fileInfo.title}
+                      </h3>
+                      <p className="text-gray-300 mb-4">
+                        {fileInfo.site} • {fileInfo.cost} points
+                      </p>
+                      {fileInfo.error ? (
+                        <div className="flex items-center gap-2 text-red-400">
+                          <AlertCircle className="w-5 h-5" />
+                          <span>{fileInfo.error}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-green-400">
+                          <CheckCircle className="w-5 h-5" />
+                          <span>Available for download</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <button
+                        onClick={handlePlaceOrder}
+                        disabled={isOrdering || !fileInfo.isAvailable || userPoints < fileInfo.cost}
+                        className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white font-semibold hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
+                      >
+                        {isOrdering ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : userPoints < fileInfo.cost ? (
+                          'Insufficient Points'
+                        ) : (
+                          'Download Now'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error/Success Messages */}
+              {error && (
+                <div className="mt-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  <span className="text-red-300">{error}</span>
+                </div>
+              )}
+
+              {success && (
+                <div className="mt-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span className="text-green-300">{success}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* File Preview Card */}
-          {fileInfo && (
-            <div className="relative group mb-12">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 shadow-2xl">
-                <div className="flex gap-8">
-                  {/* Image Preview */}
-                  <div className="flex-shrink-0">
-                    <div className="relative group/image">
-                      <img
-                        src={fileInfo.previewUrl}
-                        alt={fileInfo.title}
-                        className="w-48 h-48 object-cover rounded-2xl shadow-2xl border-2 border-white/20 group-hover/image:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://via.placeholder.com/192x192/4F46E5/FFFFFF?text=Preview+Unavailable'
-                        }}
-                      />
-                      <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                    </div>
+          {/* Recent Orders Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <Clock className="w-5 h-5" />
+                Recent Orders
+              </h3>
+              
+              {recentOrders.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Download className="w-8 h-8 text-gray-400" />
                   </div>
-
-                  {/* File Details */}
-                  <div className="flex-1">
-                    <div className="mb-6">
-                      <h2 className="text-3xl font-bold text-white mb-2">
-                        {fileInfo.title}
-                      </h2>
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <span className="text-lg font-medium capitalize">{fileInfo.site}</span>
-                        <span className="text-gray-500">•</span>
-                        <span className="text-lg font-mono bg-white/10 px-3 py-1 rounded-lg">
-                          #{fileInfo.id}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Info Grid */}
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                      <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                            <Zap className="w-4 h-4 text-blue-400" />
-                          </div>
-                          <span className="text-blue-300 text-sm font-semibold uppercase tracking-wide">Cost</span>
-                        </div>
-                        <span className="text-2xl font-bold text-green-400">
-                          {fileInfo.cost} points
-                        </span>
-                      </div>
-                      
-                      <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                            <Star className="w-4 h-4 text-purple-400" />
-                          </div>
-                          <span className="text-purple-300 text-sm font-semibold uppercase tracking-wide">Status</span>
-                        </div>
-                        {fileInfo.isAvailable ? (
-                          <span className="flex items-center gap-2 text-green-400 font-bold text-lg">
-                            <CheckCircle className="w-5 h-5" />
-                            Available
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-2 text-red-400 font-bold text-lg">
-                            <AlertCircle className="w-5 h-5" />
-                            {fileInfo.error || 'Unavailable'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Order Button */}
-                    {fileInfo.isAvailable && (
-                      <div className="mb-8">
-                        <button
-                          onClick={handleOrder}
-                          disabled={isOrderButtonDisabled}
-                          className="w-full px-8 py-6 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white rounded-2xl hover:from-green-600 hover:via-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4 font-bold text-xl transition-all duration-300 hover:scale-105 shadow-2xl hover:shadow-green-500/25"
-                        >
-                          {ordering ? (
-                            <>
-                              <Loader2 className="w-6 h-6 animate-spin" />
-                              Placing Order...
-                            </>
-                          ) : (
-                            <>
-                              <Download className="w-6 h-6" />
-                              🚀 Order for {fileInfo.cost} points
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Order Result */}
-                    {orderResult && (
-                      <div className={`p-6 rounded-2xl border-2 ${
-                        orderResult.success && !orderResult.error
-                          ? 'bg-green-500/10 border-green-400/30' 
-                          : 'bg-red-500/10 border-red-400/30'
-                      }`}>
-                        <div className="flex items-center gap-4 mb-4">
-                          {orderResult.success && !orderResult.error ? (
-                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                              <CheckCircle className="w-6 h-6 text-white" />
-                            </div>
-                          ) : (
-                            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                              <AlertCircle className="w-6 h-6 text-white" />
-                            </div>
-                          )}
-                          <div>
-                            <h3 className={`text-xl font-bold ${
-                              orderResult.success && !orderResult.error ? 'text-green-400' : 'text-red-400'
-                            }`}>
-                              {orderResult.success && !orderResult.error ? 'Order Placed Successfully!' : 'Order Failed'}
-                            </h3>
-                            {orderResult.success && orderResult.orderId && (
-                              <p className="text-green-300 text-sm font-mono mt-1">
-                                Order ID: {orderResult.orderId}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {orderResult.warning && (
-                          <p className="text-yellow-300 text-sm p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-                            ⚠️ {orderResult.warning}
-                          </p>
-                        )}
-                        
-                        {orderResult.error && (
-                          <div className="space-y-3">
-                            <p className="text-red-300 text-sm p-3 bg-red-500/10 rounded-lg border border-red-500/30">
-                              ❌ {orderResult.error}
-                            </p>
-                            {shouldShowPricingRedirect && (
-                              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/30">
-                                <div className="flex items-center gap-3 mb-3">
-                                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                                    <Zap className="w-4 h-4 text-white" />
-                                  </div>
-                                  <h4 className="text-blue-300 font-bold text-lg">Need More Points?</h4>
-                                </div>
-                                <p className="text-blue-200 text-sm mb-4">
-                                  Get more points to continue downloading premium content. Choose from our flexible pricing plans.
-                                </p>
-                                <button
-                                  onClick={() => router.push('/dashboard/pricing')}
-                                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center gap-2 font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105"
-                                >
-                                  <CreditCard className="w-4 h-4" />
-                                  View Pricing Plans
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Order Status and Download Button */}
-                    {orderStatus && (
-                      <div className="mt-6 p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl border border-blue-500/30">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                                <Zap className="w-4 h-4 text-blue-400" />
-                              </div>
-                              <span className="text-blue-300 text-sm font-semibold uppercase tracking-wide">Order Status</span>
-                            </div>
-                            <p className="text-white text-lg font-bold mb-1">
-                              {orderStatus.status}
-                            </p>
-                            {orderStatus.fileName && (
-                              <p className="text-blue-200 text-sm">
-                                File: {orderStatus.fileName}
-                              </p>
-                            )}
-                          </div>
-                          {orderStatus.status === 'COMPLETED' && orderStatus.downloadUrl && (
-                            <a
-                              href={orderStatus.downloadUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 flex items-center gap-3 font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105"
-                            >
-                              <Download className="w-5 h-5" />
-                              Download File
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <p className="text-gray-400">No recent orders</p>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Recent Orders */}
-          {recentOrders.length > 0 && (
-            <div className="relative group mb-12">
-              <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-blue-600/20 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-white">Recent Orders</h2>
-                  </div>
-                  <p className="text-gray-300 text-xl">Your latest downloads and orders</p>
-                </div>
+              ) : (
                 <div className="space-y-4">
                   {recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between bg-white/5 rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105 shadow-lg">
-                      <div className="flex items-center gap-6">
-                        <div className="relative group/image">
-                          <img
-                            src={order.imageUrl || 'https://via.placeholder.com/60x60/4F46E5/FFFFFF?text=IMG'}
-                            alt={order.title}
-                            className="w-16 h-16 object-cover rounded-2xl border-2 border-white/20 group-hover/image:scale-110 transition-transform duration-300"
-                          />
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                            <CheckCircle className="w-3 h-3 text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-white font-bold text-xl mb-1">{order.title}</p>
-                          <p className="text-gray-300 text-sm">
-                            {order.stockSite?.displayName} • {order.cost} points
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className={`px-4 py-2 rounded-xl text-sm font-bold ${
-                          order.status === 'COMPLETED'
-                            ? 'bg-green-500/20 text-green-400 border border-green-400/30'
+                    <div
+                      key={order.id}
+                      className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="text-white font-semibold text-sm truncate">
+                          {order.title}
+                        </h4>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          order.status === 'COMPLETED' 
+                            ? 'bg-green-500/20 text-green-400'
                             : order.status === 'PROCESSING'
-                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/30'
-                            : 'bg-gray-500/20 text-gray-400 border border-gray-400/30'
+                            ? 'bg-yellow-500/20 text-yellow-400'
+                            : order.status === 'FAILED'
+                            ? 'bg-red-500/20 text-red-400'
+                            : 'bg-gray-500/20 text-gray-400'
                         }`}>
                           {order.status}
                         </span>
-                        {order.status === 'COMPLETED' && order.downloadUrl && (
-                          <a
-                            href={order.downloadUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 hover:scale-110 shadow-lg"
-                          >
-                            <Download className="w-5 h-5" />
-                          </a>
-                        )}
                       </div>
+                      <p className="text-gray-400 text-xs mb-3">
+                        {order.stockSite.displayName} • {order.cost} points
+                      </p>
+                      {order.status === 'COMPLETED' && (
+                        <button
+                          onClick={() => handleDownload(order)}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+                        >
+                          Download
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Supported Sites */}
-          <div className="relative group mb-12">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                    <ExternalLink className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-white">Supported Sites</h2>
-                </div>
-                <p className="text-gray-300 text-xl">Access content from 40+ premium stock media platforms</p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  'Shutterstock',
-                  'Dreamstime', 
-                  'Adobe Stock',
-                  '123RF',
-                  'Depositphotos',
-                  'Freepik',
-                  'Vecteezy',
-                  'Rawpixel',
-                  'Storyblocks',
-                  'Motion Array',
-                  'Artlist',
-                  'Epidemic Sound',
-                  'UI8',
-                  'Craftwork',
-                  'Icons8',
-                  'Flaticon'
-                ].map((site) => (
-                  <div key={site} className="bg-white/5 rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105 text-center">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <Star className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-white font-semibold text-sm">{site}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* How it Works */}
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-pink-600/20 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-white">⚡ How it Works</h2>
-                </div>
-                <p className="text-gray-300 text-xl">Simple, fast, and secure - get your media in 3 easy steps</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-200 shadow-lg">
-                    <ExternalLink className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">1. Paste URL</h3>
-                  <p className="text-purple-200 leading-relaxed">
-                    Copy any stock media URL and paste it into our smart input field
-                  </p>
-                </div>
-                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-200 shadow-lg">
-                    <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">2. Preview & Order</h3>
-                  <p className="text-purple-200 leading-relaxed">
-                    Get an instant preview, confirm details, and place your order securely
-                  </p>
-                </div>
-                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-300 hover:scale-105">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-200 shadow-lg">
-                    <Download className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">3. Download</h3>
-                  <p className="text-purple-200 leading-relaxed">
-                    Get your high-quality file instantly with a fresh download link
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
