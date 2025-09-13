@@ -14,8 +14,8 @@ import {
   ExternalLink,
   AlertCircle
 } from 'lucide-react'
-import { ComprehensiveUrlParser } from '@/lib/comprehensive-url-parser'
-import { ModernLoadingBar } from '@/components/ui/ModernLoadingBar'
+import { ComprehensiveUrlParser } from '../../../lib/comprehensive-url-parser'
+import { ModernLoadingBar } from '../../../components/ui/ModernLoadingBar'
 
 interface FileInfo {
   id: string
@@ -244,10 +244,10 @@ export default function DownloadPage() {
         clearTimeout(timeoutId)
         console.log('Fetch request completed')
         console.log('API response status:', response.status)
-        console.log('API response headers:', Object.fromEntries(response.headers.entries()))
+        console.log('API response headers:', response.headers)
         
         if (response.ok) {
-          const data = await response.json()
+      const data = await response.json()
           console.log('API response data:', data)
           console.log('Response success:', data.success)
           console.log('Response fileInfo:', data.fileInfo)
@@ -257,10 +257,10 @@ export default function DownloadPage() {
             console.log('File info type:', typeof data.fileInfo)
             console.log('File info keys:', Object.keys(data.fileInfo))
             console.log('File info details:', JSON.stringify(data.fileInfo, null, 2))
-            setFileInfo(data.fileInfo)
+        setFileInfo(data.fileInfo)
             console.log('File info state set successfully')
             console.log('Set fileInfo with data:', data.fileInfo)
-          } else {
+      } else {
             console.error('API returned error or missing data:')
             console.error('Success:', data.success)
             console.error('FileInfo:', data.fileInfo)
@@ -527,8 +527,8 @@ export default function DownloadPage() {
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
       {/* Header */}
       <div style={{
         maxWidth: '1280px',
@@ -728,7 +728,7 @@ export default function DownloadPage() {
                     Getting preview...
                       </div>
                 )}
-                    </div>
+                  </div>
 
               {/* File Preview Section */}
               {(() => {
@@ -751,7 +751,7 @@ export default function DownloadPage() {
                   })()}
                   <div style={{ color: 'white', fontSize: '1.2rem', marginBottom: '1rem' }}>
                     🎉 FILE PREVIEW IS WORKING! 🎉
-                  </div>
+                          </div>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -782,7 +782,7 @@ export default function DownloadPage() {
                         }}>
                           {fileInfo.site} • {fileInfo.format} • {fileInfo.size}
                         </p>
-                      </div>
+                        </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{
@@ -791,9 +791,9 @@ export default function DownloadPage() {
                         fontWeight: '700',
                         margin: '0 0 0.25rem 0'
                       }}>
-                        {fileInfo.cost} points
+                          {fileInfo.cost} points
                       </div>
-                      <button
+                        <button
                         onClick={handleDirectDownload}
                         disabled={isOrdering || !fileInfo.isAvailable}
                         style={{
@@ -827,15 +827,15 @@ export default function DownloadPage() {
                           <>
                             <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
                             Processing...
-                          </>
-                        ) : (
-                          <>
+                            </>
+                          ) : (
+                            <>
                             <Download style={{ width: '1rem', height: '1rem' }} />
                             Download Now
-                          </>
-                        )}
-                      </button>
-                    </div>
+                            </>
+                          )}
+                        </button>
+                      </div>
                   </div>
                   
                   {fileInfo.error && (
@@ -849,10 +849,10 @@ export default function DownloadPage() {
                       marginTop: '1rem'
                     }}>
                       {fileInfo.error}
-                    </div>
+                            </div>
                   )}
-                </div>
-              )}
+                            </div>
+                          )}
 
               {/* Supported Sites - 2025 Trendy Design */}
               <div style={{ marginBottom: '2rem' }}>
@@ -868,7 +868,7 @@ export default function DownloadPage() {
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   backdropFilter: 'blur(20px)'
                 }}>
-                  <div>
+                          <div>
                     <h3 style={{
                       color: 'white',
                       fontSize: '1.5rem',
@@ -884,7 +884,7 @@ export default function DownloadPage() {
                     }}>
                       <ExternalLink style={{ width: '1.5rem', height: '1.5rem', color: '#10b981' }} />
                       Supported Stock Sites
-                    </h3>
+                            </h3>
                     <p style={{
                       color: 'rgba(255, 255, 255, 0.7)',
                       fontSize: '0.875rem',
@@ -937,9 +937,9 @@ export default function DownloadPage() {
                     >
                       List
                     </button>
-                      </div>
-                    </div>
-
+                          </div>
+                        </div>
+                        
                 {/* Search Section */}
                 <div style={{
                   marginBottom: '1.5rem',
@@ -1014,7 +1014,7 @@ export default function DownloadPage() {
                       animation: 'spin 1s linear infinite'
                     }} />
                     <span style={{ marginLeft: '1rem', fontSize: '1.125rem' }}>Loading supported sites...</span>
-                          </div>
+                              </div>
                 ) : (
                   <>
                     {/* Sites Container - 2025 Trendy Scrolling */}
@@ -1038,8 +1038,8 @@ export default function DownloadPage() {
                         <a
                           key={site.name}
                           href={site.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                              target="_blank"
+                              rel="noopener noreferrer"
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
@@ -1138,7 +1138,7 @@ export default function DownloadPage() {
                                 WebkitTextFillColor: 'transparent'
                               }}>
                                 {site.displayName}
-                            </div>
+                  </div>
                               <div style={{
                                 fontSize: viewMode === 'list' ? '0.875rem' : '0.9rem',
                                 color: 'rgba(255, 255, 255, 0.7)',
@@ -1146,9 +1146,9 @@ export default function DownloadPage() {
                                 opacity: 0.9
                               }}>
                                 {site.url}
-                            </div>
-                          </div>
-                        </div>
+                </div>
+              </div>
+            </div>
                         
                           {/* Points Badge */}
                           <div style={{
@@ -1168,17 +1168,17 @@ export default function DownloadPage() {
                               border: '1px solid rgba(255, 255, 255, 0.2)'
                             }}>
                               {site.cost} pts
-                      </div>
+                    </div>
                             <ExternalLink style={{
                               width: viewMode === 'list' ? '1rem' : '1.125rem',
                               height: viewMode === 'list' ? '1rem' : '1.125rem',
                               color: 'rgba(255, 255, 255, 0.6)',
                               transition: 'color 0.3s ease'
                             }} />
-                          </div>
+                  </div>
                         </a>
-                      ))}
-                    </div>
+                  ))}
+                </div>
                   </>
                 )}
 
@@ -1195,11 +1195,11 @@ export default function DownloadPage() {
                     <Search style={{ width: '3rem', height: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
                     <div style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                       No sites found matching "{searchQuery}"
-                              </div>
+                  </div>
                     <div style={{ fontSize: '0.875rem' }}>
                       Try searching by site name or URL
-                            </div>
-                          </div>
+                </div>
+              </div>
                 )}
 
                 {/* Pricing Note */}
@@ -1223,17 +1223,17 @@ export default function DownloadPage() {
                       marginBottom: '0.5rem'
                     }}>
                       All sites included in your subscription
-                        </div>
+                    </div>
                     <div style={{
                       fontSize: '0.875rem',
                       color: 'rgba(16, 185, 129, 0.9)',
                       lineHeight: '1.5'
                     }}>
                       No additional fees - just use your points to download from any supported site. Each download costs exactly 10 points regardless of the original site's pricing.
-                      </div>
                   </div>
-                </div>
               </div>
+            </div>
+          </div>
 
               {/* Error/Success Messages */}
               {error && (
@@ -1250,7 +1250,7 @@ export default function DownloadPage() {
                 }}>
                   <AlertCircle style={{ width: '1rem', height: '1rem' }} />
                   {error}
-            </div>
+                  </div>
           )}
 
               {success && (
@@ -1267,132 +1267,8 @@ export default function DownloadPage() {
                 }}>
                   <CheckCircle style={{ width: '1rem', height: '1rem' }} />
                   {success}
-                    </div>
+                </div>
               )}
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1rem'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{
-                        width: '4rem',
-                        height: '4rem',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '0.75rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        <img
-                          src={fileInfo.previewUrl}
-                          alt={fileInfo.title}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '0.75rem'
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement
-                            if (nextElement) {
-                              nextElement.style.display = 'flex'
-                            }
-                          }}
-                        />
-                        <div style={{
-                          display: 'none',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          fontSize: '1.5rem'
-                        }}>
-                          ?
-                          </div>
-                        </div>
-                        <div>
-                        <h3 style={{
-                          fontSize: '1.125rem',
-                          fontWeight: '600',
-                          color: 'white',
-                          margin: '0 0 0.25rem 0'
-                        }}>
-                          {fileInfo.title}
-                        </h3>
-                        <p style={{
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          fontSize: '0.875rem',
-                          margin: 0
-                        }}>
-                          {fileInfo.site} • {fileInfo.cost} points
-                          </p>
-                        </div>
-                      </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={handleDirectDownload}
-                        disabled={isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost)}
-                        style={{
-                          padding: '0.75rem 1.5rem',
-                          background: isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost) 
-                            ? 'rgba(255, 255, 255, 0.2)' 
-                            : 'linear-gradient(135deg, #10b981, #059669)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.75rem',
-                          cursor: isOrdering || !fileInfo.isAvailable || (isLoadingPoints ? true : userPoints < fileInfo.cost) 
-                            ? 'not-allowed' 
-                            : 'pointer',
-                          fontSize: '1rem',
-                          fontWeight: '600',
-                          transition: 'all 0.3s ease',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isOrdering && fileInfo.isAvailable && !isLoadingPoints && userPoints >= fileInfo.cost) {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #059669, #047857)'
-                            e.currentTarget.style.transform = 'scale(1.05)'
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isOrdering && fileInfo.isAvailable && !isLoadingPoints && userPoints >= fileInfo.cost) {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #10b981, #059669)'
-                            e.currentTarget.style.transform = 'scale(1)'
-                          }
-                        }}
-                      >
-                        {isOrdering ? (
-                          <Loader2 style={{ width: '1.25rem', height: '1.25rem', animation: 'spin 1s linear infinite' }} />
-                        ) : isLoadingPoints ? (
-                          'Loading Points...'
-                        ) : userPoints < fileInfo.cost ? (
-                          `Need ${fileInfo.cost - userPoints} more points`
-                        ) : (
-                          'Download Now'
-                        )}
-                      </button>
-                      </div>
-                    </div>
-                  
-                  {fileInfo.isAvailable && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: '#86efac',
-                      fontSize: '0.875rem'
-                    }}>
-                      <CheckCircle style={{ width: '1rem', height: '1rem' }} />
-                      <span>Available for download</span>
-                    </div>
-                  )}
-            </div>
             </div>
           </div>
 
@@ -1511,6 +1387,7 @@ export default function DownloadPage() {
           </div>
         </div>
       </div>
+    </div>
     </>
-  )
+  );
 }
