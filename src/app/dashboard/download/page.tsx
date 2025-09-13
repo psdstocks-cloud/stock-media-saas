@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { 
   ArrowLeft, 
@@ -40,7 +39,6 @@ interface Order {
 }
 
 export default function DownloadPage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   
   // State management
@@ -57,6 +55,11 @@ export default function DownloadPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [supportedSites, setSupportedSites] = useState<any[]>([])
   const [isLoadingSites, setIsLoadingSites] = useState(true)
+  
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [session, setSession] = useState<any>(null)
 
   // Filter sites based on search query
   const filteredSites = supportedSites.filter(site => 
@@ -64,19 +67,30 @@ export default function DownloadPage() {
     site.url.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // Redirect if not authenticated
+  // Check authentication on mount
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/session')
+        const data = await response.json()
+        
+        if (data.user) {
+          setSession(data)
+          setIsAuthenticated(true)
+          loadUserData(data.user)
+        } else {
+          router.push('/login')
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        router.push('/login')
+      } finally {
+        setIsInitialized(true)
+      }
     }
-  }, [status, router])
 
-  // Load user data when authenticated
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user?.id) {
-      loadUserData()
-    }
-  }, [status, session])
+    checkAuth()
+  }, [router])
 
   // Load supported sites from API
   useEffect(() => {
@@ -102,8 +116,9 @@ export default function DownloadPage() {
   }, [])
 
   // Load user points and recent orders
-  const loadUserData = useCallback(async () => {
-    if (!session?.user?.id) return
+  const loadUserData = useCallback(async (user?: any) => {
+    const userId = user?.id || session?.user?.id
+    if (!userId) return
     
     setIsLoadingPoints(true)
     
@@ -265,7 +280,7 @@ export default function DownloadPage() {
   }, [])
 
   // Show loading state
-  if (status === 'loading') {
+  if (!isInitialized) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -293,8 +308,10 @@ export default function DownloadPage() {
     )
   }
 
-  // Show not authenticated
-  if (status === 'unauthenticated') {
+
+  // Redirect if not authenticated
+  if (isInitialized && !isAuthenticated) {
+    router.push('/login')
     return null
   }
 
