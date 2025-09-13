@@ -9,6 +9,7 @@ export interface StockFileInfo {
   cost: number
   isAvailable: boolean
   error?: string
+  originalUrl?: string
 }
 
 export interface OrderResult {
@@ -235,7 +236,7 @@ export class StockAPI {
           userId,
           stockSiteId: stockSite.id,
           stockItemId: fileInfo.id,
-          stockItemUrl: fileInfo.previewUrl,
+          stockItemUrl: fileInfo.originalUrl || fileInfo.previewUrl, // Use original URL if available, fallback to preview
           title: fileInfo.title,
           cost: fileInfo.cost,
           status: 'PENDING'

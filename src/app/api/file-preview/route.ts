@@ -104,7 +104,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      fileInfo
+      fileInfo: {
+        ...fileInfo,
+        originalUrl: url // Include the original URL for order creation
+      }
     })
 
   } catch (error) {
