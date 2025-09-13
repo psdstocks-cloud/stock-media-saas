@@ -1393,7 +1393,6 @@ export default function DownloadPage() {
                     </div>
                   )}
             </div>
-          )}
             </div>
           </div>
 
