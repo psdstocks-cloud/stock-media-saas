@@ -74,16 +74,25 @@ export default function DownloadPage() {
         const response = await fetch('/api/auth/session')
         const data = await response.json()
         
+        console.log('Session data:', data)
+        
         if (data.user) {
           setSession(data)
           setIsAuthenticated(true)
           loadUserData(data.user)
         } else {
-          router.push('/login')
+          console.log('No user found, redirecting to login')
+          // Add a small delay to show the loading state
+          setTimeout(() => {
+            router.push('/login')
+          }, 1000)
         }
       } catch (error) {
         console.error('Auth check failed:', error)
-        router.push('/login')
+        // Add a small delay to show the loading state
+        setTimeout(() => {
+          router.push('/login')
+        }, 1000)
       } finally {
         setIsInitialized(true)
       }
@@ -302,7 +311,12 @@ export default function DownloadPage() {
             fontWeight: '700',
             color: 'white',
             margin: 0
-          }}>Loading...</h2>
+          }}>Checking authentication...</h2>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.8)',
+            fontSize: '0.875rem',
+            margin: '0.5rem 0 0 0'
+          }}>Please wait while we verify your session</p>
         </div>
       </div>
     )

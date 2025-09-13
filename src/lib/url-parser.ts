@@ -49,6 +49,14 @@ export class UrlParser {
         url: matches.input || ''
       })
     },
+    {
+      match: /shutterstock\.com\/image-photo\/[^\/]*-([0-9]+)$/,
+      result: (matches) => ({
+        source: 'shutterstock',
+        id: matches[1],
+        url: matches.input || ''
+      })
+    },
     
     // Adobe Stock patterns
     {
