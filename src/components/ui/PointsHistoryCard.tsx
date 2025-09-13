@@ -139,27 +139,27 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
       case 'SUBSCRIPTION':
       case 'PURCHASE':
       case 'BONUS':
-        return isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'
+        return isPositive ? { color: '#16a34a', background: '#f0fdf4' } : { color: '#dc2626', background: '#fef2f2' }
       case 'DOWNLOAD':
-        return 'text-blue-600 bg-blue-50'
+        return { color: '#2563eb', background: '#eff6ff' }
       case 'REFUND':
-        return 'text-purple-600 bg-purple-50'
+        return { color: '#7c3aed', background: '#faf5ff' }
       case 'ROLLOVER':
-        return 'text-amber-600 bg-amber-50'
+        return { color: '#d97706', background: '#fffbeb' }
       case 'ADMIN_ADJUSTMENT':
-        return 'text-gray-600 bg-gray-50'
+        return { color: '#6b7280', background: '#f9fafb' }
       default:
-        return isPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'
+        return isPositive ? { color: '#16a34a', background: '#f0fdf4' } : { color: '#dc2626', background: '#fef2f2' }
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'COMPLETED': return <CheckCircle size={14} className="text-green-500" />
-      case 'PROCESSING': return <Loader2 size={14} className="text-blue-500 animate-spin" />
-      case 'FAILED': return <XCircle size={14} className="text-red-500" />
-      case 'PENDING': return <Clock size={14} className="text-amber-500" />
-      default: return <AlertCircle size={14} className="text-gray-500" />
+      case 'COMPLETED': return <CheckCircle size={14} style={{ color: '#10b981' }} />
+      case 'PROCESSING': return <Loader2 size={14} style={{ color: '#3b82f6', animation: 'spin 1s linear infinite' }} />
+      case 'FAILED': return <XCircle size={14} style={{ color: '#ef4444' }} />
+      case 'PENDING': return <Clock size={14} style={{ color: '#f59e0b' }} />
+      default: return <AlertCircle size={14} style={{ color: '#6b7280' }} />
     }
   }
 
@@ -206,11 +206,27 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
 
   if (loading && !data) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="flex flex-col items-center space-y-4">
-            <Loader2 size={32} className="text-blue-500 animate-spin" />
-            <p className="text-gray-500">Loading points history...</p>
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e2e8f0',
+        padding: '32px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '256px'
+        }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <Loader2 size={32} style={{ color: '#3b82f6', animation: 'spin 1s linear infinite' }} />
+            <p style={{ color: '#64748b' }}>Loading points history...</p>
           </div>
         </div>
       </div>
@@ -219,14 +235,44 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="flex flex-col items-center space-y-4">
-            <AlertCircle size={32} className="text-red-500" />
-            <p className="text-red-600">{error}</p>
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+        border: '1px solid #e2e8f0',
+        padding: '32px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '256px'
+        }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <AlertCircle size={32} style={{ color: '#ef4444' }} />
+            <p style={{ color: '#dc2626' }}>{error}</p>
             <button
               onClick={() => fetchHistory()}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              style={{
+                padding: '8px 16px',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = '#2563eb'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = '#3b82f6'
+              }}
             >
               Retry
             </button>
@@ -237,23 +283,68 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div style={{
+      background: 'white',
+      borderRadius: '20px',
+      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #e2e8f0',
+      overflow: 'hidden'
+    }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-100">
-        <div className="flex items-center justify-between">
+      <div style={{
+        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+        padding: '24px 32px',
+        borderBottom: '1px solid #e2e8f0'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '16px'
+        }}>
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <Zap className="text-blue-500" size={28} />
+            <h3 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: '#0f172a',
+              margin: '0 0 8px 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <Zap size={28} style={{ color: '#3b82f6' }} />
               Points Usage History
             </h3>
-            <p className="text-gray-600 mt-1">
+            <p style={{
+              color: '#64748b',
+              margin: 0,
+              fontSize: '16px'
+            }}>
               Track your points transactions and download history
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                background: 'white',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = '#f9fafb'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'white'
+              }}
             >
               <Filter size={16} />
               Filters
@@ -263,24 +354,57 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
         </div>
 
         {/* Search Bar */}
-        <div className="mt-4 relative">
-          <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <div style={{ position: 'relative' }}>
+          <Search size={20} style={{
+            position: 'absolute',
+            left: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#9ca3af'
+          }} />
           <input
             type="text"
             placeholder="Search transactions, orders, or descriptions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            style={{
+              width: '100%',
+              padding: '12px 16px 12px 44px',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              fontSize: '16px',
+              outline: 'none',
+              transition: 'border-color 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#3b82f6'
+              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db'
+              e.target.style.boxShadow = 'none'
+            }}
           />
         </div>
 
         {/* Filters */}
         {showFilters && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div style={{
+            marginTop: '16px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px'
+          }}>
             <select
               value={filters.type}
               onChange={(e) => handleFilterChange('type', e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             >
               <option value="">All Types</option>
               <option value="SUBSCRIPTION">Subscription</option>
@@ -297,7 +421,13 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
               value={filters.startDate}
               onChange={(e) => handleFilterChange('startDate', e.target.value)}
               placeholder="Start Date"
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             />
 
             <input
@@ -305,13 +435,25 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
               value={filters.endDate}
               onChange={(e) => handleFilterChange('endDate', e.target.value)}
               placeholder="End Date"
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             />
 
             <select
               value={filters.limit}
               onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             >
               <option value={10}>10 per page</option>
               <option value={20}>20 per page</option>
@@ -324,134 +466,329 @@ export function PointsHistoryCard({ userId, timezone = 'UTC' }: PointsHistoryCar
 
       {/* Summary Stats */}
       {data?.summary && (
-        <div className="px-8 py-6 bg-gray-50 border-b border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
+        <div style={{
+          padding: '24px 32px',
+          background: '#f8fafc',
+          borderBottom: '1px solid #e2e8f0'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '24px'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#0f172a',
+                marginBottom: '4px'
+              }}>
                 {data.summary.totalTransactions.toLocaleString()}
               </div>
-              <div className="text-sm text-gray-600">Total Transactions</div>
+              <div style={{
+                fontSize: '14px',
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Total Transactions
+              </div>
             </div>
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${data.summary.netAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: data.summary.netAmount >= 0 ? '#16a34a' : '#dc2626',
+                marginBottom: '4px'
+              }}>
                 {formatAmount(data.summary.netAmount)}
               </div>
-              <div className="text-sm text-gray-600">Net Points</div>
+              <div style={{
+                fontSize: '14px',
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Net Points
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#3b82f6',
+                marginBottom: '4px'
+              }}>
                 {timezone}
               </div>
-              <div className="text-sm text-gray-600">Timezone</div>
+              <div style={{
+                fontSize: '14px',
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                Timezone
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* History List */}
-      <div className="divide-y divide-gray-100">
+      <div style={{ borderTop: '1px solid #e2e8f0' }}>
         {filteredHistory.length === 0 ? (
-          <div className="px-8 py-12 text-center">
-            <Calendar size={48} className="text-gray-300 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h4>
-            <p className="text-gray-500">
+          <div style={{
+            padding: '48px 32px',
+            textAlign: 'center'
+          }}>
+            <Calendar size={48} style={{ color: '#d1d5db', margin: '0 auto 16px auto' }} />
+            <h4 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#0f172a',
+              margin: '0 0 8px 0'
+            }}>
+              No transactions found
+            </h4>
+            <p style={{
+              color: '#64748b',
+              margin: 0
+            }}>
               {searchTerm ? 'Try adjusting your search terms' : 'No points transactions yet'}
             </p>
           </div>
         ) : (
-          filteredHistory.map((entry) => (
-            <div key={entry.id} className="px-8 py-6 hover:bg-gray-50 transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4 flex-1">
-                  <div className={`p-2 rounded-lg ${getTypeColor(entry.type, entry.amount)}`}>
-                    {getTypeIcon(entry.type)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-gray-900 capitalize">
-                        {entry.type.replace('_', ' ').toLowerCase()}
-                      </h4>
-                      {entry.order && getStatusIcon(entry.order.status)}
+          filteredHistory.map((entry) => {
+            const typeColors = getTypeColor(entry.type, entry.amount)
+            return (
+              <div key={entry.id} style={{
+                padding: '24px 32px',
+                borderBottom: '1px solid #f1f5f9',
+                transition: 'background-color 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = '#f8fafc'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent'
+              }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '16px',
+                    flex: 1,
+                    minWidth: 0
+                  }}>
+                    <div style={{
+                      padding: '8px',
+                      borderRadius: '8px',
+                      color: typeColors.color,
+                      background: typeColors.background,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {getTypeIcon(entry.type)}
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-2">
-                      {entry.description || 'No description available'}
-                    </p>
-
-                    {entry.order && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-blue-900">
-                              {entry.order.title || `Order #${entry.order.id.slice(-8)}`}
-                            </p>
-                            <p className="text-sm text-blue-700">
-                              {entry.order.stockSite.displayName} • {entry.order.stockItemId}
-                            </p>
-                          </div>
-                          {entry.order.stockItemUrl && (
-                            <a
-                              href={entry.order.stockItemUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <ExternalLink size={16} />
-                            </a>
-                          )}
-                        </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '4px'
+                      }}>
+                        <h4 style={{
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          color: '#0f172a',
+                          margin: 0,
+                          textTransform: 'capitalize'
+                        }}>
+                          {entry.type.replace('_', ' ').toLowerCase()}
+                        </h4>
+                        {entry.order && getStatusIcon(entry.order.status)}
                       </div>
-                    )}
+                      
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#64748b',
+                        margin: '0 0 8px 0'
+                      }}>
+                        {entry.description || 'No description available'}
+                      </p>
 
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Clock size={12} className="mr-1" />
-                      {formatDate(entry.createdAt)}
+                      {entry.order && (
+                        <div style={{
+                          background: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          borderRadius: '8px',
+                          padding: '12px',
+                          marginBottom: '8px'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}>
+                            <div>
+                              <p style={{
+                                fontWeight: '600',
+                                color: '#1e40af',
+                                margin: '0 0 4px 0',
+                                fontSize: '14px'
+                              }}>
+                                {entry.order.title || `Order #${entry.order.id.slice(-8)}`}
+                              </p>
+                              <p style={{
+                                fontSize: '12px',
+                                color: '#1d4ed8',
+                                margin: 0
+                              }}>
+                                {entry.order.stockSite.displayName} • {entry.order.stockItemId}
+                              </p>
+                            </div>
+                            {entry.order.stockItemUrl && (
+                              <a
+                                href={entry.order.stockItemUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: '#2563eb' }}
+                              >
+                                <ExternalLink size={16} />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        color: '#9ca3af'
+                      }}>
+                        <Clock size={12} style={{ marginRight: '4px' }} />
+                        {formatDate(entry.createdAt)}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-right">
-                  <div className={`text-lg font-bold ${entry.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatAmount(entry.amount)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {entry.amount > 0 ? 'Added' : 'Deducted'}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: entry.amount > 0 ? '#16a34a' : '#dc2626',
+                      marginBottom: '4px'
+                    }}>
+                      {formatAmount(entry.amount)}
+                    </div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#9ca3af',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      {entry.amount > 0 ? 'Added' : 'Deducted'}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
       {/* Pagination */}
       {data?.pagination && data.pagination.totalPages > 1 && (
-        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+        <div style={{
+          padding: '24px 32px',
+          background: '#f8fafc',
+          borderTop: '1px solid #e2e8f0'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{
+              fontSize: '14px',
+              color: '#64748b'
+            }}>
               Showing {((data.pagination.page - 1) * data.pagination.limit) + 1} to{' '}
               {Math.min(data.pagination.page * data.pagination.limit, data.pagination.totalCount)} of{' '}
               {data.pagination.totalCount} transactions
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
               <button
                 onClick={() => handlePageChange(data.pagination.page - 1)}
                 disabled={!data.pagination.hasPrevPage}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                style={{
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  background: data.pagination.hasPrevPage ? 'white' : '#f9fafb',
+                  color: data.pagination.hasPrevPage ? '#374151' : '#9ca3af',
+                  cursor: data.pagination.hasPrevPage ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  if (data.pagination.hasPrevPage) {
+                    e.currentTarget.style.background = '#f3f4f6'
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (data.pagination.hasPrevPage) {
+                    e.currentTarget.style.background = 'white'
+                  }
+                }}
               >
                 Previous
               </button>
               
-              <span className="px-3 py-2 text-sm text-gray-600">
+              <span style={{
+                padding: '8px 12px',
+                fontSize: '14px',
+                color: '#64748b'
+              }}>
                 Page {data.pagination.page} of {data.pagination.totalPages}
               </span>
               
               <button
                 onClick={() => handlePageChange(data.pagination.page + 1)}
                 disabled={!data.pagination.hasNextPage}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                style={{
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  background: data.pagination.hasNextPage ? 'white' : '#f9fafb',
+                  color: data.pagination.hasNextPage ? '#374151' : '#9ca3af',
+                  cursor: data.pagination.hasNextPage ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  if (data.pagination.hasNextPage) {
+                    e.currentTarget.style.background = '#f3f4f6'
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (data.pagination.hasNextPage) {
+                    e.currentTarget.style.background = 'white'
+                  }
+                }}
               >
                 Next
               </button>
