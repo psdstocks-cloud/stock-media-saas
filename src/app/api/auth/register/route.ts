@@ -123,14 +123,6 @@ export async function POST(request: NextRequest) {
 
     // Create user and subscription in a transaction
     console.log('Starting transaction for user creation...')
-    console.log('Testing Prisma connection...')
-    try {
-      await prisma.$connect()
-      console.log('Prisma connected successfully')
-    } catch (connectError) {
-      console.error('Prisma connection error:', connectError)
-      throw connectError
-    }
     
     const result = await prisma.$transaction(async (tx) => {
       // Create or get subscription plan
