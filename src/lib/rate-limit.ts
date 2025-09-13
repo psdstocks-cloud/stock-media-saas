@@ -1,14 +1,17 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+// Initialize Redis client only if environment variables are available
+let redis: Redis | null = null
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  })
+}
 
-// Rate limiters for different endpoints
-export const rateLimiters = {
+// Rate limiters for different endpoints (only if Redis is available)
+export const rateLimiters = redis ? {
   // General API rate limiting
   general: new Ratelimit({
     redis: redis,
@@ -48,13 +51,28 @@ export const rateLimiters = {
     analytics: true,
     prefix: 'ratelimit:auth',
   }),
-}
+} : null
 
 // Rate limiting middleware
 export async function checkRateLimit(
   identifier: string,
-  type: keyof typeof rateLimiters
+  type: keyof NonNullable<typeof rateLimiters>
 ) {
+  // If Redis is not available, allow all requests
+  if (!rateLimiters) {
+    return {
+      success: true,
+      limit: 1000,
+      reset: Date.now() + 60000,
+      remaining: 999,
+      headers: {
+        'X-RateLimit-Limit': '1000',
+        'X-RateLimit-Remaining': '999',
+        'X-RateLimit-Reset': new Date(Date.now() + 60000).toISOString(),
+      }
+    }
+  }
+
   const { success, limit, reset, remaining } = await rateLimiters[type].limit(identifier)
   
   return {
