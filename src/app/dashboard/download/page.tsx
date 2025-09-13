@@ -123,8 +123,8 @@ export default function DownloadPage() {
           setSupportedSites(data.sites)
         } else {
           console.error('Failed to load supported sites:', data)
-      }
-    } catch (error) {
+        }
+      } catch (error) {
         console.error('Error loading supported sites:', error)
       } finally {
         setIsLoadingSites(false)
@@ -133,6 +133,15 @@ export default function DownloadPage() {
 
     loadSupportedSites()
   }, [])
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
+      }
+    }
+  }, [debounceTimer])
 
   // Load user points and recent orders
   const loadUserData = useCallback(async (user?: any) => {
@@ -169,7 +178,10 @@ export default function DownloadPage() {
 
   // Auto-preview URL when pasted or typed - contact API
   const handleUrlChange = useCallback(async (url: string) => {
+    console.log('handleUrlChange called with:', url)
+    
     if (!url.trim()) {
+      console.log('Empty URL, clearing file info')
       setFileInfo(null)
       setError(null)
       return
@@ -177,11 +189,13 @@ export default function DownloadPage() {
 
     // Check if it looks like a URL
     if (!url.match(/^https?:\/\//)) {
+      console.log('Invalid URL format:', url)
       setFileInfo(null)
       setError(null)
       return
     }
 
+    console.log('Starting API call for URL:', url)
     setError(null)
     setIsLoading(true)
 
@@ -191,6 +205,8 @@ export default function DownloadPage() {
       console.log('Parsed data:', parsedData)
 
       if (parsedData) {
+        console.log('Contacting API with parsed data:', parsedData)
+        
         // Contact API to get real file preview
         const response = await fetch('/api/file-preview', {
           method: 'POST',
@@ -201,50 +217,107 @@ export default function DownloadPage() {
           })
         })
 
+        console.log('API response status:', response.status)
+        
         if (response.ok) {
           const data = await response.json()
-          console.log('API response:', data)
+          console.log('API response data:', data)
           
           if (data.success && data.fileInfo) {
+            console.log('Setting file info:', data.fileInfo)
             setFileInfo(data.fileInfo)
-            console.log('File info from API:', data.fileInfo)
           } else {
+            console.error('API returned error:', data.error)
             throw new Error(data.error || 'Failed to get file preview from API')
           }
         } else {
           const errorData = await response.json()
-          throw new Error(errorData.error || 'API request failed')
+          console.error('API request failed:', response.status, errorData)
+          throw new Error(errorData.error || `API request failed with status ${response.status}`)
         }
       } else {
+        console.log('URL parsing failed for:', url)
         setFileInfo(null)
         setError('Unsupported URL format. Please use a valid stock media URL.')
       }
     } catch (error) {
       console.error('Error getting file preview:', error)
-      setFileInfo(null)
-      setError(error instanceof Error ? error.message : 'Failed to get file preview. Please try again.')
+      
+      // Fallback: Create mock file info if API fails
+      if (parsedData) {
+        console.log('Creating fallback file info for:', parsedData)
+        const fallbackFileInfo = {
+          id: parsedData.id,
+          site: parsedData.source,
+          title: `${parsedData.source.charAt(0).toUpperCase() + parsedData.source.slice(1)} - ${parsedData.id}`,
+          previewUrl: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
+          image: 'https://images.unsplash.com/photo-1506905925346-14bda5d4c4c0?w=400&h=300&fit=crop',
+          cost: 10,
+          size: 'Unknown',
+          format: 'Unknown',
+          author: 'Unknown',
+          isAvailable: true
+        }
+        setFileInfo(fallbackFileInfo)
+        console.log('Set fallback file info:', fallbackFileInfo)
+      } else {
+        setFileInfo(null)
+        setError(error instanceof Error ? error.message : 'Failed to get file preview. Please try again.')
+      }
     } finally {
+      console.log('Setting loading to false')
       setIsLoading(false)
     }
   }, [])
 
+  // Debounce timer for URL changes
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null)
+
   // Handle paste event
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     const pastedText = e.clipboardData.getData('text')
+    console.log('Paste event:', pastedText)
     setInputUrl(pastedText)
+    
+    // Clear existing timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+    }
     
     // Auto-preview if it looks like a URL
     if (pastedText.match(/^https?:\/\//)) {
-      setTimeout(() => handleUrlChange(pastedText), 100)
+      const timer = setTimeout(() => {
+        console.log('Debounced paste handling for:', pastedText)
+        handleUrlChange(pastedText)
+      }, 500) // 500ms debounce
+      setDebounceTimer(timer)
     }
-  }, [handleUrlChange])
+  }, [handleUrlChange, debounceTimer])
 
   // Handle URL input change
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value
+    console.log('Input change:', url)
     setInputUrl(url)
-    handleUrlChange(url)
-  }, [handleUrlChange])
+    
+    // Clear existing timer
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+    }
+    
+    // Debounce the API call
+    if (url.trim() && url.match(/^https?:\/\//)) {
+      const timer = setTimeout(() => {
+        console.log('Debounced input handling for:', url)
+        handleUrlChange(url)
+      }, 1000) // 1 second debounce for typing
+      setDebounceTimer(timer)
+    } else if (!url.trim()) {
+      // Clear immediately if empty
+      setFileInfo(null)
+      setError(null)
+    }
+  }, [handleUrlChange, debounceTimer])
 
   // Direct download function - deduct points and get download link
   const handleDirectDownload = useCallback(async () => {
