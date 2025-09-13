@@ -13,16 +13,16 @@ export async function POST(request: NextRequest) {
     console.log('Database URL exists:', !!process.env.DATABASE_URL)
     console.log('Database URL starts with:', process.env.DATABASE_URL?.substring(0, 20))
 
-    // Apply rate limiting
-    const rateLimitResult = await checkRegistrationRateLimit(clientIP)
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: 'Too many registration attempts. Please try again later.',
-        type: 'RATE_LIMIT_EXCEEDED',
-        remaining: rateLimitResult.remaining,
-        resetTime: new Date(rateLimitResult.reset).toISOString()
-      }, { status: 429 })
-    }
+    // Apply rate limiting (temporarily disabled for debugging)
+    // const rateLimitResult = await checkRegistrationRateLimit(clientIP)
+    // if (!rateLimitResult.success) {
+    //   return NextResponse.json({
+    //     error: 'Too many registration attempts. Please try again later.',
+    //     type: 'RATE_LIMIT_EXCEEDED',
+    //     remaining: rateLimitResult.remaining,
+    //     resetTime: new Date(rateLimitResult.reset).toISOString()
+    //   }, { status: 429 })
+    // }
 
     // Validate required fields
     if (!name || !email || !password || !planId) {
