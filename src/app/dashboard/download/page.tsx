@@ -1154,15 +1154,20 @@ export default function DownloadPage() {
               })()}
               {fileInfo && (
                 <div style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
+                  background: 'rgba(255, 255, 255, 0.1)',
                   borderRadius: '1rem',
                   padding: '1.5rem',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: '2px solid #00ff00',
+                  margin: '1rem 0',
+                  minHeight: '200px'
                 }}>
                   {(() => {
                     console.log('Rendering file preview with fileInfo:', fileInfo)
                     return null
                   })()}
+                  <div style={{ color: 'white', fontSize: '1.2rem', marginBottom: '1rem' }}>
+                    🎉 FILE PREVIEW IS WORKING! 🎉
+                  </div>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
