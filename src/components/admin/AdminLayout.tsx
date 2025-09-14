@@ -271,9 +271,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               { href: '/admin/chat', label: 'Support Chat', icon: Settings },
               { href: '/admin/settings', label: 'Settings', icon: Settings }
             ].map((item) => (
-              <a
+              <div
                 key={item.href}
-                href={item.href}
+                onClick={() => router.push(item.href)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -283,7 +283,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   textDecoration: 'none',
                   borderRadius: '8px',
                   transition: 'all 0.2s ease',
-                  background: 'rgba(255, 255, 255, 0.1)'
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  cursor: 'pointer'
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
@@ -296,7 +297,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <span style={{ fontSize: '14px', fontWeight: '500' }}>
                   {item.label}
                 </span>
-              </a>
+              </div>
             ))}
           </nav>
 
