@@ -1,7 +1,7 @@
 // src/lib/babylon-utils.ts
 // Babylon.js utility functions for 3D visualizations
 
-import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, MeshBuilder, StandardMaterial, Color3, Color4 } from '@babylonjs/core'
+import { Engine, Scene, ArcRotateCamera, HemisphericLight, Vector3, MeshBuilder, StandardMaterial, Color3, Color4, TransformNode } from '@babylonjs/core'
 import { AdvancedDynamicTexture, Button, TextBlock, Rectangle } from '@babylonjs/gui'
 
 export interface BabylonSceneConfig {
@@ -14,8 +14,8 @@ export interface BabylonSceneConfig {
 export class BabylonSceneManager {
   private engine: Engine
   private scene: Scene
-  private camera: ArcRotateCamera
-  private light: HemisphericLight
+  private camera!: ArcRotateCamera
+  private light!: HemisphericLight
   private advancedTexture?: AdvancedDynamicTexture
 
   constructor(private canvas: HTMLCanvasElement, config: BabylonSceneConfig = {}) {
@@ -171,7 +171,7 @@ export class BabylonAnimationUtils {
 // Data visualization helpers
 export class BabylonDataVisualizer {
   static createBarChart(scene: Scene, data: number[], maxValue: number, barWidth: number = 0.8, spacing: number = 0.2) {
-    const group = new BABYLON.TransformNode('barChart', scene)
+    const group = new TransformNode('barChart', scene)
     
     data.forEach((value, index) => {
       const height = (value / maxValue) * 10
@@ -202,7 +202,7 @@ export class BabylonDataVisualizer {
   }
 
   static createPieChart(scene: Scene, data: { value: number; color: Color3; label: string }[], radius: number = 5) {
-    const group = new BABYLON.TransformNode('pieChart', scene)
+    const group = new TransformNode('pieChart', scene)
     let currentAngle = 0
     const total = data.reduce((sum, item) => sum + item.value, 0)
     
@@ -228,7 +228,7 @@ export class BabylonDataVisualizer {
 
   static createNetworkGraph(scene: Scene, nodes: { id: string; x: number; y: number; z: number; size: number; color: Color3 }[], 
                           edges: { from: string; to: string }[]) {
-    const group = new BABYLON.TransformNode('networkGraph', scene)
+    const group = new TransformNode('networkGraph', scene)
     const nodeMap = new Map()
     
     // Create nodes
