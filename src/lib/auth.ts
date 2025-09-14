@@ -128,11 +128,17 @@ export const authOptions: NextAuthOptions = {
       }
       return token
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl, token }) {
       // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`
       // Allows callback URLs on the same origin
       else if (new URL(url).origin === baseUrl) return url
+      
+      // Redirect admin users to admin dashboard
+      if (token?.role === 'ADMIN' || token?.role === 'SUPER_ADMIN') {
+        return `${baseUrl}/admin`
+      }
+      
       return `${baseUrl}/dashboard`
     }
   },
