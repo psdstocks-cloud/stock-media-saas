@@ -104,8 +104,7 @@ async function getSystemMetrics() {
     const [
       totalUsers,
       totalOrders,
-      activeSubscriptions,
-      totalRevenue
+      activeSubscriptions
     ] = await Promise.all([
       prisma.user.count(),
       prisma.order.count(),
@@ -113,16 +112,16 @@ async function getSystemMetrics() {
         where: {
           status: 'ACTIVE'
         }
-      }),
-      prisma.subscription.aggregate({
-        _sum: {
-          amount: true
-        },
-        where: {
-          status: 'ACTIVE'
-        }
       })
     ])
+
+    // Calculate total revenue from subscription plans
+    const activeSubs = await prisma.subscription.findMany({
+      where: { status: 'ACTIVE' },
+      include: { plan: true }
+    })
+    
+    const totalRevenue = activeSubs.reduce((sum, sub) => sum + sub.plan.price, 0)
 
     return {
       totalUsers,
