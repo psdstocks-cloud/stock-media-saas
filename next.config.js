@@ -42,7 +42,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.nehtw.com https://vitals.vercel-insights.com",
+              "connect-src 'self' https://api.nehtw.com https://vitals.vercel-insights.com ws: wss:",
               "frame-src 'self' https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",

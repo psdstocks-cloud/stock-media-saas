@@ -95,7 +95,9 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
   useEffect(() => {
     if (session?.user?.id) {
       console.log('Setting up socket connection for user:', session.user.id)
-      const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000')
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
+      console.log('Socket URL:', socketUrl)
+      const newSocket = io(socketUrl)
       
       newSocket.on('connect', () => {
         console.log('Socket connected:', newSocket.id)
