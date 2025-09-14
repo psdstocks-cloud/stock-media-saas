@@ -293,7 +293,7 @@ model FeatureFlag {
 // System health monitoring
 model SystemHealth {
   id          String   @id @default(cuid())
-  service     String   // database, api, payment, email, etc.
+  service     String   @unique // database, api, payment, email, etc.
   status      String   // healthy, warning, critical, down
   message     String?
   metrics     String?  // JSON metrics data
@@ -301,7 +301,6 @@ model SystemHealth {
   createdAt   DateTime @default(now())
 
   @@map("system_health")
-  @@index([service])
   @@index([lastChecked])
 }
 

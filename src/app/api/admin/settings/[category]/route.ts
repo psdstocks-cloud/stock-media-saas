@@ -108,7 +108,7 @@ export async function PUT(
       }
 
       // Validate value based on type
-      const validationResult = validateSettingValue(value, type, currentSetting.validation)
+      const validationResult = validateSettingValue(value, type, currentSetting.validation || undefined)
       if (!validationResult.valid) {
         return NextResponse.json({ 
           error: `Invalid value for ${key}: ${validationResult.error}` 
