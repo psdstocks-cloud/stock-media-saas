@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import Analytics3D from '@/components/admin/3d/Analytics3D'
 import SystemHealth3D from '@/components/admin/3d/SystemHealth3D'
+import './styles.css'
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -90,53 +91,230 @@ export default async function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="admin-container">
-        <div className="admin-content">
-          <div className="admin-header">
-            <h1 className="admin-title">Admin Dashboard</h1>
-            <p className="admin-subtitle">Welcome back! Here's what's happening with your platform.</p>
+      <div className="admin-container" style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh',
+        padding: '2rem',
+        position: 'relative'
+      }}>
+        <div className="admin-content" style={{
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: '1400px',
+          margin: '0 auto'
+        }}>
+          <div className="admin-header" style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '20px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            padding: '2rem',
+            marginBottom: '2rem',
+            transition: 'all 0.3s ease'
+          }}>
+            <h1 className="admin-title" style={{
+              fontSize: '2.5rem',
+              fontWeight: '800',
+              marginBottom: '0.5rem',
+              background: 'linear-gradient(45deg, #667eea, #764ba2)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>Admin Dashboard</h1>
+            <p className="admin-subtitle" style={{
+              fontSize: '1.1rem',
+              color: '#1f2937',
+              opacity: 0.8,
+              marginBottom: 0
+            }}>Welcome back! Here's what's happening with your platform.</p>
           </div>
 
           {/* Stats Overview */}
-          <div className="admin-stats-grid">
-            <div className="admin-stat-card admin-hover-lift">
-              <div className="admin-stat-icon" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
-                <svg className="w-6 h-6" style={{ color: 'var(--admin-info)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="admin-stats-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '2rem'
+          }}>
+            <div className="admin-stat-card admin-hover-lift" style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div className="admin-stat-icon" style={{ 
+                background: 'rgba(59, 130, 246, 0.1)',
+                width: '3rem',
+                height: '3rem',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem',
+                transition: 'all 0.3s ease'
+              }}>
+                <svg className="w-6 h-6" style={{ color: '#3b82f6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
               </div>
-              <div className="admin-stat-value">{stats.totalUsers}</div>
-              <div className="admin-stat-label">Total Users</div>
+              <div className="admin-stat-value" style={{
+                fontSize: '2rem',
+                fontWeight: '800',
+                color: '#1f2937',
+                marginBottom: '0.25rem',
+                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>{stats.totalUsers}</div>
+              <div className="admin-stat-label" style={{
+                fontSize: '0.875rem',
+                color: '#1f2937',
+                opacity: 0.7,
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>Total Users</div>
             </div>
 
-            <div className="admin-stat-card admin-hover-lift">
-              <div className="admin-stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
-                <svg className="w-6 h-6" style={{ color: 'var(--admin-success)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="admin-stat-card admin-hover-lift" style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div className="admin-stat-icon" style={{ 
+                background: 'rgba(16, 185, 129, 0.1)',
+                width: '3rem',
+                height: '3rem',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem',
+                transition: 'all 0.3s ease'
+              }}>
+                <svg className="w-6 h-6" style={{ color: '#10b981' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <div className="admin-stat-value">{stats.totalPointsInCirculation}</div>
-              <div className="admin-stat-label">Points in Circulation</div>
+              <div className="admin-stat-value" style={{
+                fontSize: '2rem',
+                fontWeight: '800',
+                color: '#1f2937',
+                marginBottom: '0.25rem',
+                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>{stats.totalPointsInCirculation}</div>
+              <div className="admin-stat-label" style={{
+                fontSize: '0.875rem',
+                color: '#1f2937',
+                opacity: 0.7,
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>Points in Circulation</div>
             </div>
 
-            <div className="admin-stat-card admin-hover-lift">
-              <div className="admin-stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)' }}>
-                <svg className="w-6 h-6" style={{ color: 'var(--admin-warning)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="admin-stat-card admin-hover-lift" style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div className="admin-stat-icon" style={{ 
+                background: 'rgba(245, 158, 11, 0.1)',
+                width: '3rem',
+                height: '3rem',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem',
+                transition: 'all 0.3s ease'
+              }}>
+                <svg className="w-6 h-6" style={{ color: '#f59e0b' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <div className="admin-stat-value">{stats.totalPointsUsed}</div>
-              <div className="admin-stat-label">Points Used</div>
+              <div className="admin-stat-value" style={{
+                fontSize: '2rem',
+                fontWeight: '800',
+                color: '#1f2937',
+                marginBottom: '0.25rem',
+                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>{stats.totalPointsUsed}</div>
+              <div className="admin-stat-label" style={{
+                fontSize: '0.875rem',
+                color: '#1f2937',
+                opacity: 0.7,
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>Points Used</div>
             </div>
 
-            <div className="admin-stat-card admin-hover-lift">
-              <div className="admin-stat-icon" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
-                <svg className="w-6 h-6" style={{ color: 'var(--admin-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="admin-stat-card admin-hover-lift" style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <div className="admin-stat-icon" style={{ 
+                background: 'rgba(139, 92, 246, 0.1)',
+                width: '3rem',
+                height: '3rem',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem',
+                transition: 'all 0.3s ease'
+              }}>
+                <svg className="w-6 h-6" style={{ color: '#8b5cf6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
-              <div className="admin-stat-value">{recentOrders.length}</div>
-              <div className="admin-stat-label">Total Orders</div>
+              <div className="admin-stat-value" style={{
+                fontSize: '2rem',
+                fontWeight: '800',
+                color: '#1f2937',
+                marginBottom: '0.25rem',
+                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>{recentOrders.length}</div>
+              <div className="admin-stat-label" style={{
+                fontSize: '0.875rem',
+                color: '#1f2937',
+                opacity: 0.7,
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>Total Orders</div>
             </div>
         </div>
 
