@@ -1,6 +1,6 @@
 'use client'
 
-import io, { type Socket } from 'socket.io-client'
+import io from 'socket.io-client'
 
 interface ChatMessage {
   id: string
@@ -44,7 +44,7 @@ interface ChatEvents {
 }
 
 class ChatWebSocket {
-  private socket: Socket | null = null
+  private socket: ReturnType<typeof io> | null = null
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectDelay = 1000
@@ -158,7 +158,7 @@ class ChatWebSocket {
     return this.socket?.connected || false
   }
 
-  getSocket(): Socket | null {
+  getSocket(): ReturnType<typeof io> | null {
     return this.socket
   }
 }
