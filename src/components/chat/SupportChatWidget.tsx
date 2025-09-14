@@ -159,7 +159,7 @@ export default function SupportChatWidget({
           setMessages(data.messages)
           
           // Play sound for new messages from others
-          const hasNewMessagesFromOthers = newMessages.some(msg => msg.user.id !== session?.user?.id)
+          const hasNewMessagesFromOthers = newMessages.some((msg: Message) => msg.user.id !== session?.user?.id)
           if (hasNewMessagesFromOthers) {
             playNotificationSound()
             setUnreadCount(prev => prev + 1)
