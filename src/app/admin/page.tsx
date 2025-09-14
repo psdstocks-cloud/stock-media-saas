@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
-// Removed 3D components due to implementation issues
 import './styles.css'
 
 export default async function AdminDashboard() {
@@ -20,16 +19,10 @@ export default async function AdminDashboard() {
     select: { role: true }
   })
 
-  console.log('Admin page - User role check:', { 
-    userId: session.user.id, 
-    userRole: user?.role,
-    isAdmin: user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
-  })
-
   if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-    console.log('User is not admin, redirecting to dashboard')
     redirect('/dashboard')
   }
+
   const [
     stats,
     recentUsers,
@@ -63,30 +56,6 @@ export default async function AdminDashboard() {
       orderBy: { cost: 'asc' },
     }),
   ])
-
-  // Mock system health data for 3D visualization
-  const systemHealthData = {
-    database: {
-      status: 'healthy',
-      responseTime: 45,
-      lastChecked: new Date().toISOString()
-    },
-    api: {
-      status: 'healthy',
-      responseTime: 120,
-      lastChecked: new Date().toISOString()
-    },
-    payment: {
-      status: 'warning',
-      responseTime: 800,
-      lastChecked: new Date().toISOString()
-    },
-    email: {
-      status: 'healthy',
-      responseTime: 200,
-      lastChecked: new Date().toISOString()
-    }
-  }
 
   return (
     <AdminLayout>
@@ -314,84 +283,6 @@ export default async function AdminDashboard() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}>Total Orders</div>
-            </div>
-        </div>
-
-          {/* Service Status */}
-          <div className="admin-card">
-            <div className="admin-card-header">
-              <h3 className="admin-card-title">System Status</h3>
-            </div>
-            <div className="admin-card-content">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="admin-service-status">
-                  <div className="admin-service-name">
-                    <div className="admin-service-status-indicator"></div>
-                    Database
-                  </div>
-                  <div className="admin-service-metrics">
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">99.9%</div>
-                      <div className="admin-service-metric-label">Uptime</div>
-                    </div>
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">45ms</div>
-                      <div className="admin-service-metric-label">Response</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="admin-service-status">
-                  <div className="admin-service-name">
-                    <div className="admin-service-status-indicator"></div>
-                    API Server
-                  </div>
-                  <div className="admin-service-metrics">
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">99.8%</div>
-                      <div className="admin-service-metric-label">Uptime</div>
-                    </div>
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">120ms</div>
-                      <div className="admin-service-metric-label">Response</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="admin-service-status">
-                  <div className="admin-service-name">
-                    <div className="admin-service-status-indicator"></div>
-                    Payment Gateway
-                  </div>
-                  <div className="admin-service-metrics">
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">100%</div>
-                      <div className="admin-service-metric-label">Uptime</div>
-                    </div>
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">200ms</div>
-                      <div className="admin-service-metric-label">Response</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="admin-service-status">
-                  <div className="admin-service-name">
-                    <div className="admin-service-status-indicator"></div>
-                    Email Service
-                  </div>
-                  <div className="admin-service-metrics">
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">99.5%</div>
-                      <div className="admin-service-metric-label">Uptime</div>
-                    </div>
-                    <div className="admin-service-metric">
-                      <div className="admin-service-metric-value">300ms</div>
-                      <div className="admin-service-metric-label">Response</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -748,7 +639,6 @@ export default async function AdminDashboard() {
                   ))}
                 </div>
               )}
-              </div>
             </div>
           </div>
         </div>
