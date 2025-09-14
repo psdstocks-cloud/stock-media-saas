@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
       }
 
       // Redirect to admin dashboard
-      router.push('/admin')
+      window.location.href = '/admin'
     } catch (error) {
       console.error('Login error:', error)
       setError('An error occurred. Please try again.')
