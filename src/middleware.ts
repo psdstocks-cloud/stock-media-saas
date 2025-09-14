@@ -18,6 +18,11 @@ export function middleware(req: NextRequest) {
 
   // Logic for Admin Panel routes
   if (pathname.startsWith('/admin')) {
+    // Allow access to admin login page without cookie check
+    if (pathname === '/admin/login') {
+      return NextResponse.next()
+    }
+    
     // If trying to access admin area without an admin cookie, redirect to admin login
     if (!adminCookie) {
       console.log('No admin cookie, redirecting to admin login')
@@ -33,17 +38,16 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
   }
-
-  // Redirect admin users from regular login to admin login
-  if (pathname === '/login' && adminCookie) {
-    console.log('Admin user accessing regular login, redirecting to admin login')
-    return NextResponse.redirect(new URL('/admin/login', req.url))
+  
+  // Allow access to regular login page without cookie check
+  else if (pathname === '/login') {
+    return NextResponse.next()
   }
 
-  // Redirect regular users from admin login to regular login
-  if (pathname === '/admin/login' && userCookie && !adminCookie) {
-    console.log('Regular user accessing admin login, redirecting to regular login')
-    return NextResponse.redirect(new URL('/login', req.url))
+  // Redirect admin users from regular login to admin login (only if they have admin cookie)
+  if (pathname === '/login' && adminCookie && !userCookie) {
+    console.log('Admin user accessing regular login, redirecting to admin login')
+    return NextResponse.redirect(new URL('/admin/login', req.url))
   }
 
   // If all checks pass, continue to the requested page
