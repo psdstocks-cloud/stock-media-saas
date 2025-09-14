@@ -21,6 +21,44 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true)
   const { isSupported, isRegistered } = useServiceWorker()
   const [showNewChatModal, setShowNewChatModal] = useState(false)
+  const [isCreatingChat, setIsCreatingChat] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+
+  const createNewChat = async () => {
+    if (!session?.user?.id) return
+
+    setIsCreatingChat(true)
+    try {
+      const response = await fetch('/api/chat/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `Support Chat - ${new Date().toLocaleDateString()}`,
+          type: 'SUPPORT',
+          priority: 'MEDIUM'
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('New chat room created:', data.room)
+        
+        // Close modal and refresh the page to show the new room
+        setShowNewChatModal(false)
+        window.location.reload() // Simple refresh to show new room
+      } else {
+        console.error('Failed to create chat room')
+        alert('Failed to create chat room. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error creating chat room:', error)
+      alert('Error creating chat room. Please try again.')
+    } finally {
+      setIsCreatingChat(false)
+    }
+  }
 
   useEffect(() => {
     if (status === 'loading') return
@@ -189,10 +227,7 @@ export default function ChatPage() {
           </button>
           
           <button 
-            onClick={() => {
-              // Open settings or show settings modal
-              alert('Settings functionality coming soon!')
-            }}
+            onClick={() => setShowSettingsModal(true)}
             style={{
               padding: '8px',
               border: 'none',
@@ -245,20 +280,13 @@ export default function ChatPage() {
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
           }}>
             <h3 style={{
-              margin: '0 0 16px 0',
+              margin: '0 0 20px 0',
               fontSize: '18px',
               fontWeight: '600',
               color: '#1f2937'
             }}>
               Start New Chat
             </h3>
-            <p style={{
-              margin: '0 0 20px 0',
-              color: '#6b7280',
-              fontSize: '14px'
-            }}>
-              A new support chat will be created for you. Our team will respond as soon as possible.
-            </p>
             <div style={{
               display: 'flex',
               gap: '12px',
@@ -279,10 +307,233 @@ export default function ChatPage() {
                 Cancel
               </button>
               <button
+                onClick={createNewChat}
+                disabled={isCreatingChat}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: isCreatingChat ? '#9ca3af' : '#3b82f6',
+                  borderRadius: '6px',
+                  cursor: isCreatingChat ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {isCreatingChat ? (
+                  <>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '2px solid white',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Chat'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{
+              margin: '0 0 20px 0',
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#1f2937'
+            }}>
+              Chat Settings
+            </h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{
+                margin: '0 0 12px 0',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151'
+              }}>
+                Notifications
+              </h4>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px',
+                background: '#f9fafb',
+                borderRadius: '8px',
+                marginBottom: '8px'
+              }}>
+                <span style={{ fontSize: '14px', color: '#374151' }}>
+                  Desktop Notifications
+                </span>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '44px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    defaultChecked={true}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: '#3b82f6',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: '3px',
+                      bottom: '3px',
+                      background: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px',
+                background: '#f9fafb',
+                borderRadius: '8px'
+              }}>
+                <span style={{ fontSize: '14px', color: '#374151' }}>
+                  Sound Notifications
+                </span>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '44px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    defaultChecked={true}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: '#3b82f6',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: '3px',
+                      bottom: '3px',
+                      background: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{
+                margin: '0 0 12px 0',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151'
+              }}>
+                Chat Preferences
+              </h4>
+              <div style={{
+                padding: '12px',
+                background: '#f9fafb',
+                borderRadius: '8px',
+                marginBottom: '8px'
+              }}>
+                <span style={{ fontSize: '14px', color: '#374151' }}>
+                  Auto-refresh messages: <strong>Enabled</strong>
+                </span>
+              </div>
+              <div style={{
+                padding: '12px',
+                background: '#f9fafb',
+                borderRadius: '8px'
+              }}>
+                <span style={{ fontSize: '14px', color: '#374151' }}>
+                  Message history: <strong>Unlimited</strong>
+                </span>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #d1d5db',
+                  background: 'white',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: '#374151'
+                }}
+              >
+                Close
+              </button>
+              <button
                 onClick={() => {
-                  // Create new chat room logic here
-                  alert('New chat created! (This will be implemented with the API)')
-                  setShowNewChatModal(false)
+                  // Save settings logic here
+                  setShowSettingsModal(false)
                 }}
                 style={{
                   padding: '8px 16px',
@@ -294,7 +545,7 @@ export default function ChatPage() {
                   color: 'white'
                 }}
               >
-                Create Chat
+                Save Settings
               </button>
             </div>
           </div>
