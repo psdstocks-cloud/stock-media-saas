@@ -1,47 +1,49 @@
-import { getToken } from 'next-auth/jwt'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  console.log('Middleware check:', { 
+  // Get both user and admin session cookies
+  const userCookie = req.cookies.get('__Secure-user-session-token')
+  const adminCookie = req.cookies.get('__Secure-admin-session-token')
+
+  console.log('Dual Auth Middleware check:', { 
     pathname, 
-    hasToken: !!token, 
-    role: token?.role,
-    isAdminPath: pathname.startsWith('/admin')
+    hasUserCookie: !!userCookie,
+    hasAdminCookie: !!adminCookie,
+    isAdminPath: pathname.startsWith('/admin'),
+    isUserPath: pathname.startsWith('/dashboard')
   })
 
-  // If the user is not logged in (no token)
-  if (!token) {
-    // If they are trying to access an admin route, redirect to the admin login page
-    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-      console.log('No token, redirecting to admin login')
+  // Logic for Admin Panel routes
+  if (pathname.startsWith('/admin')) {
+    // If trying to access admin area without an admin cookie, redirect to admin login
+    if (!adminCookie) {
+      console.log('No admin cookie, redirecting to admin login')
       return NextResponse.redirect(new URL('/admin/login', req.url))
     }
-    
-    // For any other protected route, redirect to the normal user login page
-    if (pathname.startsWith('/dashboard')) {
-      console.log('No token, redirecting to user login')
+  }
+
+  // Logic for User Panel routes
+  else if (pathname.startsWith('/dashboard')) {
+    // If trying to access user dashboard without a user cookie, redirect to user login
+    if (!userCookie) {
+      console.log('No user cookie, redirecting to user login')
       return NextResponse.redirect(new URL('/login', req.url))
     }
   }
 
-  // If the user IS logged in, check for authorization
-  if (token) {
-    const isAdmin = token.role === 'ADMIN' || token.role === 'SUPER_ADMIN'
-    
-    if (pathname.startsWith('/admin') && !isAdmin) {
-      console.log('Not admin role, redirecting to dashboard')
-      return NextResponse.redirect(new URL('/dashboard', req.url))
-    }
-    
-    // Redirect admin users from regular login to admin login
-    if (pathname === '/login' && isAdmin) {
-      console.log('Admin user accessing regular login, redirecting to admin login')
-      return NextResponse.redirect(new URL('/admin/login', req.url))
-    }
+  // Redirect admin users from regular login to admin login
+  if (pathname === '/login' && adminCookie) {
+    console.log('Admin user accessing regular login, redirecting to admin login')
+    return NextResponse.redirect(new URL('/admin/login', req.url))
+  }
+
+  // Redirect regular users from admin login to regular login
+  if (pathname === '/admin/login' && userCookie && !adminCookie) {
+    console.log('Regular user accessing admin login, redirecting to regular login')
+    return NextResponse.redirect(new URL('/login', req.url))
   }
 
   // If all checks pass, continue to the requested page
