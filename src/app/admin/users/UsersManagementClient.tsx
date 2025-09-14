@@ -90,6 +90,10 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
   const [totalUsers, setTotalUsers] = useState(0)
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [showUserModal, setShowUserModal] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const itemsPerPage = 20
 
@@ -224,6 +228,23 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user)
+    setShowUserModal(true)
+  }
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user)
+    setShowEditModal(true)
+  }
+
+  const handleCloseModals = () => {
+    setShowUserModal(false)
+    setShowEditModal(false)
+    setSelectedUser(null)
+    setEditingUser(null)
   }
 
   return (
@@ -527,6 +548,7 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button
+                      onClick={() => handleViewUser(user)}
                       style={{
                         padding: '0.5rem',
                         border: 'none',
@@ -544,6 +566,7 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
                       <Eye size={16} />
                     </button>
                     <button
+                      onClick={() => handleEditUser(user)}
                       style={{
                         padding: '0.5rem',
                         border: 'none',
@@ -670,6 +693,331 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
           </>
         )}
       </div>
+
+      {/* User Details Modal */}
+      {showUserModal && selectedUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '2rem',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0
+              }}>User Details</h2>
+              <button
+                onClick={handleCloseModals}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#6b7280'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{
+                  width: '4rem',
+                  height: '4rem',
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white'
+                }}>
+                  {selectedUser.image ? (
+                    <img 
+                      src={selectedUser.image} 
+                      alt={selectedUser.name || selectedUser.email}
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <UserCheck size={24} />
+                  )}
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '600' }}>
+                    {selectedUser.name || 'No Name'}
+                  </h3>
+                  <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280' }}>
+                    {selectedUser.email}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                marginTop: '1rem'
+              }}>
+                <div>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Role</label>
+                  <div style={{ marginTop: '0.25rem' }}>
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      ...getRoleBadgeStyle(selectedUser.role)
+                    }}>
+                      {selectedUser.role}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Status</label>
+                  <div style={{ marginTop: '0.25rem' }}>
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      ...getStatusBadgeStyle(selectedUser)
+                    }}>
+                      {getStatusBadgeStyle(selectedUser).text}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Points</label>
+                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '1.125rem', fontWeight: '600', color: '#667eea' }}>
+                    {selectedUser.pointsBalance?.currentPoints || 0}
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Orders</label>
+                  <p style={{ margin: '0.25rem 0 0 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                    {selectedUser._count.orders}
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Joined</label>
+                  <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280' }}>
+                    {formatDate(selectedUser.createdAt)}
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Last Login</label>
+                  <p style={{ margin: '0.25rem 0 0 0', color: '#6b7280' }}>
+                    {formatDate(selectedUser.lastLoginAt)}
+                  </p>
+                </div>
+              </div>
+
+              {selectedUser.subscriptions && selectedUser.subscriptions.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>Active Subscriptions</label>
+                  <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {selectedUser.subscriptions.map((sub) => (
+                      <div key={sub.id} style={{
+                        padding: '0.75rem',
+                        background: 'rgba(59, 130, 246, 0.05)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(59, 130, 246, 0.1)'
+                      }}>
+                        <div style={{ fontWeight: '600', color: '#1f2937' }}>
+                          {sub.plan.name}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                          Status: {sub.status} • ${sub.plan.price}/month
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && editingUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '2rem',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.5rem'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0
+              }}>Edit User</h2>
+              <button
+                onClick={handleCloseModals}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#6b7280'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', display: 'block', marginBottom: '0.5rem' }}>
+                  Name
+                </label>
+                <input
+                  type="text"
+                  defaultValue={editingUser.name || ''}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', display: 'block', marginBottom: '0.5rem' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  defaultValue={editingUser.email}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', display: 'block', marginBottom: '0.5rem' }}>
+                  Role
+                </label>
+                <select
+                  defaultValue={editingUser.role}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <button
+                  onClick={handleCloseModals}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    background: 'white',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: Implement save functionality
+                    handleCloseModals()
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    border: 'none',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

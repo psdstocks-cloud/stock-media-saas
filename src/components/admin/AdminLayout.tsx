@@ -27,6 +27,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [sessionTimeout, setSessionTimeout] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications] = useState([
+    {
+      id: 1,
+      title: 'New User Registration',
+      message: 'A new user has registered on the platform',
+      time: '2 minutes ago',
+      type: 'info'
+    },
+    {
+      id: 2,
+      title: 'System Update',
+      message: 'Scheduled maintenance completed successfully',
+      time: '1 hour ago',
+      type: 'success'
+    },
+    {
+      id: 3,
+      title: 'High Traffic Alert',
+      message: 'Server load is above normal levels',
+      time: '3 hours ago',
+      type: 'warning'
+    }
+  ])
 
   // Session timeout management
   useEffect(() => {
@@ -409,16 +433,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '6px',
-              color: '#6b7280',
-              position: 'relative'
-            }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              style={{
+                background: showNotifications ? '#f3f4f6' : 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '6px',
+                color: '#6b7280',
+                position: 'relative',
+                transition: 'all 0.2s ease'
+              }}
+            >
               <Bell size={20} />
               <div style={{
                 position: 'absolute',
@@ -430,6 +458,109 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 borderRadius: '50%'
               }} />
             </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: '0',
+                marginTop: '8px',
+                width: '320px',
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                border: '1px solid #e5e7eb',
+                zIndex: 1000,
+                maxHeight: '400px',
+                overflow: 'auto'
+              }}>
+                <div style={{
+                  padding: '16px',
+                  borderBottom: '1px solid #e5e7eb',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
+                    Notifications
+                  </h3>
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#6b7280',
+                      fontSize: '18px'
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <div style={{ padding: '8px' }}>
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '8px',
+                        marginBottom: '4px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease',
+                        borderLeft: `3px solid ${
+                          notification.type === 'info' ? '#3b82f6' :
+                          notification.type === 'success' ? '#10b981' :
+                          notification.type === 'warning' ? '#f59e0b' : '#6b7280'
+                        }`
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        marginBottom: '4px'
+                      }}>
+                        {notification.title}
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        color: '#6b7280',
+                        marginBottom: '4px'
+                      }}>
+                        {notification.message}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#9ca3af'
+                      }}>
+                        {notification.time}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div style={{
+                  padding: '12px',
+                  borderTop: '1px solid #e5e7eb',
+                  textAlign: 'center'
+                }}>
+                  <button style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#3b82f6',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}>
+                    View All Notifications
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div style={{
               display: 'flex',
