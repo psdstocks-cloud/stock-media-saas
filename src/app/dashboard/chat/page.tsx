@@ -20,6 +20,7 @@ export default function ChatPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const { isSupported, isRegistered } = useServiceWorker()
+  const [showNewChatModal, setShowNewChatModal] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -129,58 +130,88 @@ export default function ChatPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button style={{
-            padding: '8px 16px',
-            border: '1px solid #e2e8f0',
-            background: 'white',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            fontWeight: '500',
-            color: '#374151',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = '#f8fafc'
-            e.currentTarget.style.borderColor = '#d1d5db'
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'white'
-            e.currentTarget.style.borderColor = '#e2e8f0'
-          }}
+          <button 
+            onClick={() => setShowNewChatModal(true)}
+            style={{
+              padding: '8px 16px',
+              border: '1px solid #e2e8f0',
+              background: 'white',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#374151',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = '#f8fafc'
+              e.currentTarget.style.borderColor = '#d1d5db'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'white'
+              e.currentTarget.style.borderColor = '#e2e8f0'
+            }}
           >
             <Plus size={16} />
             New Chat
           </button>
           
-          <button style={{
-            padding: '8px',
-            border: 'none',
-            background: '#f3f4f6',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#6b7280'
-          }}>
+          <button 
+            onClick={() => {
+              // Request notification permission
+              if ('Notification' in window) {
+                Notification.requestPermission()
+              }
+            }}
+            style={{
+              padding: '8px',
+              border: 'none',
+              background: '#f3f4f6',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#6b7280',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = '#e5e7eb'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = '#f3f4f6'
+            }}
+          >
             <Bell size={16} />
           </button>
           
-          <button style={{
-            padding: '8px',
-            border: 'none',
-            background: '#f3f4f6',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#6b7280'
-          }}>
+          <button 
+            onClick={() => {
+              // Open settings or show settings modal
+              alert('Settings functionality coming soon!')
+            }}
+            style={{
+              padding: '8px',
+              border: 'none',
+              background: '#f3f4f6',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#6b7280',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = '#e5e7eb'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = '#f3f4f6'
+            }}
+          >
             <Settings size={16} />
           </button>
         </div>
@@ -190,6 +221,85 @@ export default function ChatPage() {
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <ChatInterface />
       </div>
+
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{
+              margin: '0 0 16px 0',
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#1f2937'
+            }}>
+              Start New Chat
+            </h3>
+            <p style={{
+              margin: '0 0 20px 0',
+              color: '#6b7280',
+              fontSize: '14px'
+            }}>
+              A new support chat will be created for you. Our team will respond as soon as possible.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => setShowNewChatModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #d1d5db',
+                  background: 'white',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: '#374151'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Create new chat room logic here
+                  alert('New chat created! (This will be implemented with the API)')
+                  setShowNewChatModal(false)
+                }}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: '#3b82f6',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: 'white'
+                }}
+              >
+                Create Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

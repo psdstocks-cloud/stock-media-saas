@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 async function makeUserAdmin() {
   try {
     // Get your email from environment or prompt
-    const userEmail = process.env.ADMIN_EMAIL || 'test@example.com' // Using the first test user
+    const userEmail = process.env.ADMIN_EMAIL || 'testuser@example.com' // Using the actual signed-in user
     
     console.log(`Looking for user with email: ${userEmail}`)
     

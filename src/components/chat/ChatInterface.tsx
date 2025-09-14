@@ -505,40 +505,76 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <NotificationSettings />
-                <button style={{
-                  padding: '8px',
-                  border: 'none',
-                  background: '#f3f4f6',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
+                <button 
+                  onClick={() => {
+                    alert('Voice call functionality coming soon!')
+                  }}
+                  style={{
+                    padding: '8px',
+                    border: 'none',
+                    background: '#f3f4f6',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#e5e7eb'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#f3f4f6'
+                  }}
+                >
                   <Phone size={16} />
                 </button>
-                <button style={{
-                  padding: '8px',
-                  border: 'none',
-                  background: '#f3f4f6',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
+                <button 
+                  onClick={() => {
+                    alert('Video call functionality coming soon!')
+                  }}
+                  style={{
+                    padding: '8px',
+                    border: 'none',
+                    background: '#f3f4f6',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#e5e7eb'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#f3f4f6'
+                  }}
+                >
                   <Video size={16} />
                 </button>
-                <button style={{
-                  padding: '8px',
-                  border: 'none',
-                  background: '#f3f4f6',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
+                <button 
+                  onClick={() => {
+                    alert('More options coming soon!')
+                  }}
+                  style={{
+                    padding: '8px',
+                    border: 'none',
+                    background: '#f3f4f6',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#e5e7eb'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#f3f4f6'
+                  }}
+                >
                   <MoreVertical size={16} />
                 </button>
               </div>
