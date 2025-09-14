@@ -635,25 +635,146 @@ export default function AdminChatDashboard({ onRoomSelect }: AdminChatDashboardP
               </div>
             </div>
 
-            {/* Chat Interface Placeholder */}
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: '#f8fafc',
-              color: '#6b7280'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <MessageCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>
-                  Chat Interface
-                </h3>
-                <p style={{ margin: '8px 0 0', fontSize: '14px' }}>
-                  The full chat interface would be rendered here
-                </p>
+            {/* Chat Interface */}
+            {selectedRoom ? (
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                background: 'white'
+              }}>
+                {/* Chat Header */}
+                <div style={{
+                  padding: '16px 20px',
+                  borderBottom: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
+                      {selectedRoom.name}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
+                      {selectedRoom._count.participants} participants
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button style={{
+                      padding: '8px',
+                      border: 'none',
+                      background: '#f3f4f6',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Phone size={16} />
+                    </button>
+                    <button style={{
+                      padding: '8px',
+                      border: 'none',
+                      background: '#f3f4f6',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <MoreVertical size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Messages Area */}
+                <div style={{
+                  flex: 1,
+                  padding: '20px',
+                  overflowY: 'auto',
+                  background: '#f8fafc'
+                }}>
+                  <div style={{ textAlign: 'center', color: '#6b7280' }}>
+                    <MessageCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>
+                      Chat with {selectedRoom.name}
+                    </h3>
+                    <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                      Messages will appear here when users start chatting
+                    </p>
+                  </div>
+                </div>
+
+                {/* Message Input */}
+                <div style={{
+                  padding: '16px 20px',
+                  borderTop: '1px solid #e2e8f0',
+                  background: 'white'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'flex-end'
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <textarea
+                        placeholder="Type your message..."
+                        style={{
+                          width: '100%',
+                          minHeight: '40px',
+                          maxHeight: '120px',
+                          padding: '10px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '20px',
+                          resize: 'none',
+                          fontSize: '14px',
+                          fontFamily: 'inherit',
+                          outline: 'none'
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            // Handle send message
+                          }
+                        }}
+                      />
+                    </div>
+                    <button style={{
+                      padding: '10px',
+                      border: 'none',
+                      background: '#3b82f6',
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white'
+                    }}>
+                      <MessageCircle size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#f8fafc',
+                color: '#6b7280'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <MessageCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '500' }}>
+                    Select a conversation
+                  </h3>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                    Choose a chat room to start managing conversations
+                  </p>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div style={{

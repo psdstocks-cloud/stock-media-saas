@@ -20,6 +20,7 @@ import {
   Download
 } from 'lucide-react'
 import { notificationService } from '@/lib/notification-service'
+import { soundService } from '@/lib/sound-service'
 import NotificationSettings from '@/components/notifications/NotificationSettings'
 
 interface User {
@@ -109,8 +110,9 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
         setMessages(prev => [...prev, data.message])
         scrollToBottom()
         
-        // Show notification if message is from another user
+        // Play receive sound if message is from another user
         if (data.message.user.id !== session.user.id) {
+          soundService.playMessageReceived()
           handleNewMessageNotification(data.message)
         }
       })
@@ -243,6 +245,9 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
 
     socket.emit('send-message', messageData)
     setNewMessage('')
+    
+    // Play send sound
+    soundService.playMessageSent()
     
     // Stop typing indicator
     if (typingTimeoutRef.current) {
@@ -528,30 +533,6 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
                   }}
                 >
                   <Phone size={16} />
-                </button>
-                <button 
-                  onClick={() => {
-                    alert('Video call functionality coming soon!')
-                  }}
-                  style={{
-                    padding: '8px',
-                    border: 'none',
-                    background: '#f3f4f6',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#e5e7eb'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#f3f4f6'
-                  }}
-                >
-                  <Video size={16} />
                 </button>
                 <button 
                   onClick={() => {
