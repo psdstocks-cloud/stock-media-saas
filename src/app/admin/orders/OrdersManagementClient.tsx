@@ -588,7 +588,7 @@ export default function OrdersManagementClient({ initialOrders }: OrdersManageme
                       </button>
                       {order.downloadUrl && (
                         <button
-                          onClick={() => window.open(order.downloadUrl, '_blank')}
+                          onClick={() => window.open(order.downloadUrl!, '_blank')}
                           style={{
                             padding: '0.5rem',
                             border: 'none',
@@ -903,7 +903,7 @@ export default function OrdersManagementClient({ initialOrders }: OrdersManageme
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button
-                      onClick={() => window.open(selectedOrder.downloadUrl, '_blank')}
+                      onClick={() => window.open(selectedOrder.downloadUrl!, '_blank')}
                       style={{
                         padding: '0.75rem 1.5rem',
                         background: 'linear-gradient(135deg, #10b981, #059669)',
