@@ -271,18 +271,20 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
 
       const data = await response.json()
 
-      if (data.success) {
-        const messageData = {
-          roomId: selectedRoom.id,
-          userId: session?.user?.id,
-          content: `Shared a file: ${data.file.name}`,
-          type: 'FILE',
-          fileUrl: data.file.url,
-          fileName: data.file.name,
-          fileSize: data.file.size
-        }
-
-        socket?.emit('send-message', messageData)
+      if (data.success && session?.user?.id) {
+        const message = await chatPollingService.sendMessage(
+          selectedRoom.id,
+          session.user.id,
+          `Shared a file: ${data.file.name}`,
+          'FILE'
+        )
+        
+        // Add message to local state immediately for better UX
+        setMessages(prev => [...prev, message])
+        scrollToBottom()
+        
+        // Play send sound
+        soundService.playMessageSent()
       }
     } catch (error) {
       console.error('Error uploading file:', error)
