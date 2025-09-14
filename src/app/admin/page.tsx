@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
 import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { AdminNavigation } from '@/components/admin/navigation'
 
 export default async function AdminDashboard() {
-  const session = await getServerSession()
+  const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
     redirect('/login')
@@ -17,7 +18,14 @@ export default async function AdminDashboard() {
     select: { role: true }
   })
 
+  console.log('Admin page - User role check:', { 
+    userId: session.user.id, 
+    userRole: user?.role,
+    isAdmin: user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
+  })
+
   if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+    console.log('User is not admin, redirecting to dashboard')
     redirect('/dashboard')
   }
   const [
