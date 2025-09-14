@@ -14,14 +14,17 @@ datasource db {
 
 // User model for authentication and profile
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  image     String?
-  password  String?  // Add password field
-  role      String @default("USER")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  password      String?   // Add password field
+  role          String    @default("USER")
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // OAuth fields
   accounts  Account[]
@@ -39,6 +42,7 @@ model User {
   chatParticipants ChatParticipant[]
   messages      Message[]
   messageStatuses MessageStatus[]
+  adminAuditLogs AdminAuditLog[]
 
   @@map("users")
 }
@@ -227,6 +231,78 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+// Enhanced admin settings with categories
+model AdminSetting {
+  id          String   @id @default(cuid())
+  category    String   // general, security, payment, email, etc.
+  key         String   @unique
+  value       String
+  type        String   @default("string") // string, number, boolean, json, password
+  description String?
+  isEncrypted Boolean  @default(false)
+  isRequired  Boolean  @default(false)
+  validation  String?  // JSON validation rules
+  options     String?  // JSON options for select/radio inputs
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("admin_settings")
+  @@index([category])
+}
+
+// Admin audit logs for tracking all changes
+model AdminAuditLog {
+  id           String   @id @default(cuid())
+  adminId      String
+  action       String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  resourceType String?  // setting, user, order, etc.
+  resourceId   String?
+  oldValues    String?  // JSON
+  newValues    String?  // JSON
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("admin_audit_logs")
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+// Feature flags for gradual rollouts
+model FeatureFlag {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  description       String?
+  isEnabled         Boolean  @default(false)
+  rolloutPercentage Int      @default(0) // 0-100
+  targetUsers       String?  // JSON array of user IDs or conditions
+  conditions        String?  // JSON conditions for enabling
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+// System health monitoring
+model SystemHealth {
+  id          String   @id @default(cuid())
+  service     String   // database, api, payment, email, etc.
+  status      String   // healthy, warning, critical, down
+  message     String?
+  metrics     String?  // JSON metrics data
+  lastChecked DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@map("system_health")
+  @@index([service])
+  @@index([lastChecked])
 }
 
 // Password reset tokens for secure password recovery
