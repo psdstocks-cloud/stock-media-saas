@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import io from 'socket.io-client'
 import { 
   Send, 
   Paperclip, 
@@ -143,11 +142,10 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
 
   // Load messages when room is selected
   useEffect(() => {
-    if (selectedRoom && socket) {
+    if (selectedRoom) {
       loadMessages(selectedRoom.id)
-      socket.emit('join-room', { roomId: selectedRoom.id, userId: session?.user?.id })
     }
-  }, [selectedRoom, socket, session?.user?.id])
+  }, [selectedRoom])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
