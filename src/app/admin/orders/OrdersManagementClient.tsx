@@ -232,7 +232,7 @@ export default function OrdersManagementClient({ initialOrders }: OrdersManageme
     })
   }
 
-  const formatFileSize = (bytes?: number) => {
+  const formatFileSize = (bytes?: number | null) => {
     if (!bytes) return 'Unknown'
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(1024))
