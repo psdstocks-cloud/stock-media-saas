@@ -26,6 +26,7 @@ export default function ChatPage() {
   const createNewChat = async () => {
     if (!session?.user?.id) return
 
+    console.log('Creating new chat...')
     setIsCreatingChat(true)
     try {
       const response = await fetch('/api/chat/rooms', {
@@ -43,6 +44,7 @@ export default function ChatPage() {
       if (response.ok) {
         const data = await response.json()
         console.log('New chat room created:', data.room)
+        alert('Chat room created successfully!')
         
         // Refresh the page to show the new room
         window.location.reload() // Simple refresh to show new room

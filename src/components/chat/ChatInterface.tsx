@@ -94,10 +94,21 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
   // Initialize socket connection
   useEffect(() => {
     if (session?.user?.id) {
+      console.log('Setting up socket connection for user:', session.user.id)
       const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000')
+      
+      newSocket.on('connect', () => {
+        console.log('Socket connected:', newSocket.id)
+      })
+
+      newSocket.on('disconnect', () => {
+        console.log('Socket disconnected')
+      })
+
       setSocket(newSocket)
 
       return () => {
+        console.log('Disconnecting socket')
         newSocket.close()
       }
     }
@@ -234,8 +245,16 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
   }
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedRoom || !socket) return
+    if (!newMessage.trim() || !selectedRoom || !socket) {
+      console.log('Cannot send message:', { 
+        hasMessage: !!newMessage.trim(), 
+        hasRoom: !!selectedRoom, 
+        hasSocket: !!socket 
+      })
+      return
+    }
 
+    console.log('Sending message:', newMessage.trim())
     const messageData = {
       roomId: selectedRoom.id,
       userId: session?.user?.id,
