@@ -24,7 +24,7 @@ export default async function AdminUsersPage() {
   }
 
   // Fetch initial user data and stats
-  const [users, stats] = await Promise.all([
+  const [users, totalUsers, adminUsers, newUsersThisMonth, activeUsers] = await Promise.all([
     prisma.user.findMany({
       take: 20,
       orderBy: { createdAt: 'desc' },
@@ -38,26 +38,35 @@ export default async function AdminUsersPage() {
         },
       },
     }),
-    prisma.$queryRaw<Array<{
-      total_users: bigint
-      admin_users: bigint
-      new_users_this_month: bigint
-      active_users: bigint
-    }>>`
-      SELECT 
-        COUNT(*) as total_users,
-        COUNT(CASE WHEN role = 'ADMIN' OR role = 'SUPER_ADMIN' THEN 1 END) as admin_users,
-        COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END) as new_users_this_month,
-        COUNT(CASE WHEN last_login_at >= NOW() - INTERVAL '7 days' THEN 1 END) as active_users
-      FROM users
-    `
+    prisma.user.count(),
+    prisma.user.count({
+      where: {
+        role: {
+          in: ['ADMIN', 'SUPER_ADMIN']
+        }
+      }
+    }),
+    prisma.user.count({
+      where: {
+        createdAt: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        }
+      }
+    }),
+    prisma.user.count({
+      where: {
+        lastLoginAt: {
+          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        }
+      }
+    })
   ])
 
   const userStats = {
-    totalUsers: Number(stats[0]?.total_users || 0),
-    adminUsers: Number(stats[0]?.admin_users || 0),
-    newUsersThisMonth: Number(stats[0]?.new_users_this_month || 0),
-    activeUsers: Number(stats[0]?.active_users || 0),
+    totalUsers,
+    adminUsers,
+    newUsersThisMonth,
+    activeUsers,
   }
 
   return (
