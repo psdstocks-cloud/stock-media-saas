@@ -33,14 +33,14 @@ interface Order {
   userId: string
   stockSiteId: string
   stockItemId: string
-  stockItemUrl?: string
-  title?: string
+  stockItemUrl?: string | null
+  title?: string | null
   cost: number
   status: string
-  taskId?: string
-  downloadUrl?: string
-  fileName?: string
-  fileSize?: number
+  taskId?: string | null
+  downloadUrl?: string | null
+  fileName?: string | null
+  fileSize?: number | null
   createdAt: Date
   updatedAt: Date
   user: {
@@ -54,7 +54,11 @@ interface Order {
     name: string
     displayName: string
     cost: number
-    category?: string
+    category?: string | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    icon?: string | null
   }
 }
 
