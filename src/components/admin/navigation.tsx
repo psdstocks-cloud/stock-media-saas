@@ -10,7 +10,8 @@ import {
   Settings, 
   Webhook,
   BarChart3,
-  CreditCard
+  CreditCard,
+  MessageCircle
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -18,6 +19,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+  { name: 'Chat', href: '/admin/chat', icon: MessageCircle },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Webhooks', href: '/admin/webhooks', icon: Webhook },
   { name: 'Settings', href: '/admin/settings', icon: Settings },

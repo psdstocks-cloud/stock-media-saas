@@ -735,21 +735,30 @@ export default function AdminChatDashboard({ onRoomSelect }: AdminChatDashboardP
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
                             // Handle send message
+                            console.log('Admin sending message:', e.currentTarget.value)
                           }
                         }}
                       />
                     </div>
-                    <button style={{
-                      padding: '10px',
-                      border: 'none',
-                      background: '#3b82f6',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white'
-                    }}>
+                    <button 
+                      onClick={() => {
+                        const textarea = document.querySelector('textarea') as HTMLTextAreaElement
+                        if (textarea) {
+                          console.log('Admin sending message:', textarea.value)
+                          textarea.value = ''
+                        }
+                      }}
+                      style={{
+                        padding: '10px',
+                        border: 'none',
+                        background: '#3b82f6',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white'
+                      }}>
                       <MessageCircle size={16} />
                     </button>
                   </div>

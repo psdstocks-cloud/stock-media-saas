@@ -231,7 +231,9 @@ export default function AdminChatPage() {
 
       {/* Admin Chat Dashboard */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        <AdminChatDashboard />
+        <AdminChatDashboard onRoomSelect={(room) => {
+          console.log('Room selected in admin:', room)
+        }} />
       </div>
     </div>
   )
