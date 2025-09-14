@@ -6,14 +6,18 @@ export default withAuth(
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
-    // Admin route protection
+    console.log('Middleware check:', { pathname, hasToken: !!token, role: token?.role })
+
+    // Admin route protection - redirect to admin login if no token
     if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
       if (!token) {
+        console.log('No token, redirecting to admin login')
         return NextResponse.redirect(new URL('/admin/login', req.url))
       }
       
       // Check if user has admin role
       if (token.role !== 'ADMIN' && token.role !== 'SUPER_ADMIN') {
+        console.log('Not admin role, redirecting to dashboard')
         return NextResponse.redirect(new URL('/dashboard', req.url))
       }
     }
@@ -49,7 +53,7 @@ export default withAuth(
           return !!token
         }
         
-        // Admin routes require authentication
+        // Admin routes - always require authentication
         if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
           return !!token
         }
