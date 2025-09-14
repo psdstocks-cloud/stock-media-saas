@@ -45,8 +45,12 @@ export default withAuth(
         }
 
         // Require authentication for protected routes
-        if (pathname.startsWith('/dashboard') ||
-            pathname.startsWith('/admin')) {
+        if (pathname.startsWith('/dashboard')) {
+          return !!token
+        }
+        
+        // Admin routes require authentication
+        if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
           return !!token
         }
 

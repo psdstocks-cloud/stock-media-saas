@@ -9,7 +9,7 @@ export default async function ThreeDDemo() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
-    redirect('/login')
+    redirect('/admin/login')
   }
 
   // Check if user is admin
