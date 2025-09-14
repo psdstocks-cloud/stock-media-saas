@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
+import './styles.css'
 import { 
   Settings, 
   Shield, 
@@ -251,34 +252,35 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <AdminLayout>
-      <div className="max-w-7xl mx-auto">
+    <div className="admin-settings-container">
+      <div className="admin-settings-card">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="admin-settings-header">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-              <p className="text-gray-600 mt-2">
+              <h1 className="admin-settings-title">Settings</h1>
+              <p className="admin-settings-subtitle">
                 Manage your platform configuration and system settings
               </p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <button
                 onClick={loadSystemHealth}
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="admin-settings-button secondary"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4" />
                 Refresh Health
               </button>
               <button
                 onClick={handleSaveSettings}
                 disabled={isSaving}
-                className="flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="admin-settings-button"
+                style={{ opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
               >
                 {isSaving ? (
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  <RefreshCw className="w-4 h-4" style={{ animation: 'spin 1s linear infinite' }} />
                 ) : (
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4" />
                 )}
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
@@ -288,23 +290,19 @@ export default function AdminSettingsPage() {
 
         {/* System Health Overview */}
         {systemHealth && (
-          <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="admin-settings-metrics">
+            <div className="admin-settings-metric-card">
               <div className="flex items-center">
-                <div className={`p-3 rounded-lg ${
-                  systemHealth.status === 'healthy' ? 'bg-green-100' :
-                  systemHealth.status === 'warning' ? 'bg-yellow-100' :
-                  'bg-red-100'
+                <div className={`admin-settings-metric-icon ${
+                  systemHealth.status === 'healthy' ? 'healthy' :
+                  systemHealth.status === 'warning' ? 'warning' :
+                  'critical'
                 }`}>
-                  <Activity className={`w-6 h-6 ${
-                    systemHealth.status === 'healthy' ? 'text-green-600' :
-                    systemHealth.status === 'warning' ? 'text-yellow-600' :
-                    'text-red-600'
-                  }`} />
+                  <Activity className="w-6 h-6" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">System Status</p>
-                  <p className={`text-2xl font-semibold capitalize ${
+                  <p className="admin-settings-metric-label">System Status</p>
+                  <p className={`admin-settings-metric-value capitalize ${
                     systemHealth.status === 'healthy' ? 'text-green-600' :
                     systemHealth.status === 'warning' ? 'text-yellow-600' :
                     'text-red-600'
@@ -315,42 +313,42 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="admin-settings-metric-card">
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <Users className="w-6 h-6 text-blue-600" />
+                <div className="admin-settings-metric-icon blue">
+                  <Users className="w-6 h-6" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-2xl font-semibold text-gray-900">
+                  <p className="admin-settings-metric-label">Total Users</p>
+                  <p className="admin-settings-metric-value text-gray-900">
                     {systemHealth.metrics.totalUsers.toLocaleString()}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="admin-settings-metric-card">
               <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                <div className="admin-settings-metric-icon purple">
+                  <TrendingUp className="w-6 h-6" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Active Subscriptions</p>
-                  <p className="text-2xl font-semibold text-gray-900">
+                  <p className="admin-settings-metric-label">Active Subscriptions</p>
+                  <p className="admin-settings-metric-value text-gray-900">
                     {systemHealth.metrics.activeSubscriptions.toLocaleString()}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="admin-settings-metric-card">
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CreditCard className="w-6 h-6 text-green-600" />
+                <div className="admin-settings-metric-icon green">
+                  <CreditCard className="w-6 h-6" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-gray-900">
+                  <p className="admin-settings-metric-label">Total Revenue</p>
+                  <p className="admin-settings-metric-value text-gray-900">
                     ${systemHealth.metrics.totalRevenue.toLocaleString()}
                   </p>
                 </div>
@@ -359,206 +357,170 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="admin-settings-layout">
           {/* Categories Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Categories</h3>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                {categories.map((category) => {
-                  const IconComponent = iconMap[category.icon as keyof typeof iconMap] || Settings
-                  return (
-                    <button
-                      key={category.key}
-                      onClick={() => handleCategoryChange(category.key)}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
-                        selectedCategory === category.key
-                          ? 'bg-blue-50 border border-blue-200 text-blue-700'
-                          : 'hover:bg-gray-50 text-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <div className={`p-2 rounded-lg mr-3 ${
-                          selectedCategory === category.key
-                            ? `bg-${category.color}-100`
-                            : 'bg-gray-100'
-                        }`}>
-                          <IconComponent className={`w-4 h-4 ${
-                            selectedCategory === category.key
-                              ? `text-${category.color}-600`
-                              : 'text-gray-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <p className="font-medium">{category.name}</p>
-                          <p className="text-xs text-gray-500">{category.description}</p>
-                        </div>
-                      </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        selectedCategory === category.key
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {category.count}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
+          <div className="admin-settings-sidebar">
+            <h3 className="admin-settings-sidebar-title">Categories</h3>
+            <div className="admin-settings-search">
+              <Search className="admin-settings-search-icon" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div>
+              {categories.map((category) => {
+                const IconComponent = iconMap[category.icon as keyof typeof iconMap] || Settings
+                return (
+                  <button
+                    key={category.key}
+                    onClick={() => handleCategoryChange(category.key)}
+                    className={`admin-settings-category ${
+                      selectedCategory === category.key ? 'active' : ''
+                    }`}
+                  >
+                    <div className="admin-settings-category-icon">
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                    <div className="admin-settings-category-info">
+                      <p className="admin-settings-category-name">{category.name}</p>
+                      <p className="admin-settings-category-description">{category.description}</p>
+                    </div>
+                    <span className="admin-settings-category-count">
+                      {category.count}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
           {/* Settings Content */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {categories.find(c => c.key === selectedCategory)?.name || 'Settings'}
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {categories.find(c => c.key === selectedCategory)?.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Filter className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-500">
-                      {filteredSettings.length} settings
-                    </span>
-                  </div>
+          <div className="admin-settings-content">
+            <div className="admin-settings-content-header">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h2 className="admin-settings-content-title">
+                    {categories.find(c => c.key === selectedCategory)?.name || 'Settings'}
+                  </h2>
+                  <p className="admin-settings-content-subtitle">
+                    {categories.find(c => c.key === selectedCategory)?.description}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">
+                    {filteredSettings.length} settings
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <div className="p-6">
-                {filteredSettings.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No settings found</h3>
-                    <p className="text-gray-500">
-                      {searchQuery ? 'Try adjusting your search terms' : 'No settings available for this category'}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {filteredSettings.map((setting) => (
-                      <div key={setting.key} className="border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                              <h3 className="text-lg font-medium text-gray-900">
-                                {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </h3>
-                              {setting.isRequired && (
-                                <span className="ml-2 px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full">
-                                  Required
-                                </span>
-                              )}
-                              {setting.isEncrypted && (
-                                <span className="ml-2 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full">
-                                  Encrypted
-                                </span>
-                              )}
-                            </div>
-                            
-                            {setting.description && (
-                              <p className="text-sm text-gray-600 mb-4">{setting.description}</p>
-                            )}
-
-                            <div className="flex items-center space-x-4">
-                              {setting.type === 'boolean' ? (
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={setting.value === 'true'}
-                                    onChange={(e) => handleSettingChange(setting.key, e.target.checked.toString())}
-                                    className="sr-only peer"
-                                  />
-                                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                              ) : setting.type === 'password' || (setting.isEncrypted && setting.value !== '••••••••') ? (
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type={showEncrypted[setting.key] ? 'text' : 'password'}
-                                    value={setting.value}
-                                    onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder={`Enter ${setting.key.replace(/_/g, ' ')}`}
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleEncrypted(setting.key)}
-                                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                                  >
-                                    {showEncrypted[setting.key] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                  </button>
-                                </div>
-                              ) : setting.options ? (
-                                <select
-                                  value={setting.value}
-                                  onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                  {JSON.parse(setting.options).map((option: string) => (
-                                    <option key={option} value={option}>
-                                      {option.charAt(0).toUpperCase() + option.slice(1)}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <input
-                                  type={setting.type === 'number' ? 'number' : setting.type === 'email' ? 'email' : setting.type === 'url' ? 'url' : 'text'}
-                                  value={setting.value}
-                                  onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder={`Enter ${setting.key.replace(/_/g, ' ')}`}
-                                />
-                              )}
-                            </div>
-                          </div>
+            <div className="admin-settings-content-body">
+              {filteredSettings.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+                  <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No settings found</h3>
+                  <p className="text-gray-500">
+                    {searchQuery ? 'Try adjusting your search terms' : 'No settings available for this category'}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  {filteredSettings.map((setting) => (
+                    <div key={setting.key} className="admin-settings-item">
+                      <div className="admin-settings-item-header">
+                        <h3 className="admin-settings-item-title">
+                          {setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </h3>
+                        <div className="admin-settings-item-badges">
+                          {setting.isRequired && (
+                            <span className="admin-settings-item-badge required">Required</span>
+                          )}
+                          {setting.isEncrypted && (
+                            <span className="admin-settings-item-badge encrypted">Encrypted</span>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      
+                      {setting.description && (
+                        <p className="admin-settings-item-description">{setting.description}</p>
+                      )}
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {setting.type === 'boolean' ? (
+                          <label className="admin-settings-item-toggle">
+                            <input
+                              type="checkbox"
+                              checked={setting.value === 'true'}
+                              onChange={(e) => handleSettingChange(setting.key, e.target.checked.toString())}
+                            />
+                            <span className="admin-settings-item-slider"></span>
+                          </label>
+                        ) : setting.type === 'password' || (setting.isEncrypted && setting.value !== '••••••••') ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                            <input
+                              type={showEncrypted[setting.key] ? 'text' : 'password'}
+                              value={setting.value}
+                              onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                              className="admin-settings-item-input"
+                              placeholder={`Enter ${setting.key.replace(/_/g, ' ')}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => toggleEncrypted(setting.key)}
+                              style={{ padding: '0.5rem', color: '#9ca3af' }}
+                            >
+                              {showEncrypted[setting.key] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        ) : setting.options ? (
+                          <select
+                            value={setting.value}
+                            onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                            className="admin-settings-item-input"
+                          >
+                            {JSON.parse(setting.options).map((option: string) => (
+                              <option key={option} value={option}>
+                                {option.charAt(0).toUpperCase() + option.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type={setting.type === 'number' ? 'number' : setting.type === 'email' ? 'email' : setting.type === 'url' ? 'url' : 'text'}
+                            value={setting.value}
+                            onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                            className="admin-settings-item-input"
+                            placeholder={`Enter ${setting.key.replace(/_/g, ' ')}`}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Notification */}
         {notification && (
-          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-            notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
-            notification.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
-            'bg-blue-100 text-blue-800 border border-blue-200'
-          }`}>
-            <div className="flex items-center">
-              {notification.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 mr-2" />
-              ) : notification.type === 'error' ? (
-                <AlertCircle className="w-5 h-5 mr-2" />
-              ) : (
-                <Bell className="w-5 h-5 mr-2" />
-              )}
-              {notification.message}
-            </div>
+          <div className={`admin-settings-notification ${notification.type}`}>
+            {notification.type === 'success' ? (
+              <CheckCircle className="w-5 h-5" />
+            ) : notification.type === 'error' ? (
+              <AlertCircle className="w-5 h-5" />
+            ) : (
+              <Bell className="w-5 h-5" />
+            )}
+            {notification.message}
           </div>
         )}
       </div>
-    </AdminLayout>
+    </div>
   )
 }
