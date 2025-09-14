@@ -35,10 +35,8 @@ export default function AdminLoginPage() {
     const checkAdminStatus = async () => {
       const session = await getSession()
       if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
-        // Get callback URL from query params or default to admin dashboard
-        const urlParams = new URLSearchParams(window.location.search)
-        const callbackUrl = urlParams.get('callbackUrl') || '/admin'
-        router.push(callbackUrl)
+        // Redirect to admin dashboard
+        router.push('/admin')
       }
     }
     
@@ -72,10 +70,8 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Get callback URL from query params or default to admin dashboard
-      const urlParams = new URLSearchParams(window.location.search)
-      const callbackUrl = urlParams.get('callbackUrl') || '/admin'
-      window.location.href = callbackUrl
+      // Redirect to admin dashboard
+      window.location.href = '/admin'
     } catch (error) {
       console.error('Login error:', error)
       setError('An error occurred. Please try again.')

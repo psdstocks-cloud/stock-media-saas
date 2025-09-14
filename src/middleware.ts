@@ -16,19 +16,15 @@ export async function middleware(req: NextRequest) {
   // If the user is not logged in (no token)
   if (!token) {
     // If they are trying to access an admin route, redirect to the admin login page
-    if (pathname.startsWith('/admin')) {
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
       console.log('No token, redirecting to admin login')
-      const url = new URL('/admin/login', req.url)
-      url.searchParams.set('callbackUrl', req.url) // Save where they were going
-      return NextResponse.redirect(url)
+      return NextResponse.redirect(new URL('/admin/login', req.url))
     }
     
     // For any other protected route, redirect to the normal user login page
     if (pathname.startsWith('/dashboard')) {
       console.log('No token, redirecting to user login')
-      const url = new URL('/login', req.url)
-      url.searchParams.set('callbackUrl', req.url) // Save where they were going
-      return NextResponse.redirect(url)
+      return NextResponse.redirect(new URL('/login', req.url))
     }
   }
 
