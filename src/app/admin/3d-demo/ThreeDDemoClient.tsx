@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import ThreeScene from '@/components/3d/ThreeScene'
 import BabylonScene from '@/components/3d/BabylonScene'
 import { Color3 } from '@babylonjs/core'
+import '../settings/styles.css'
 
 export default function ThreeDDemoClient() {
   const [engine, setEngine] = useState<'three' | 'babylon'>('three')
@@ -43,40 +44,40 @@ export default function ThreeDDemoClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">3D Visualization Demo</h1>
-          <p className="text-gray-600">
+    <div className="admin-settings-container">
+      <div className="admin-settings-content">
+        <div className="admin-settings-header">
+          <h1 className="admin-settings-title">3D Visualization Demo</h1>
+          <p className="admin-settings-subtitle">
             Interactive 3D visualizations using Three.js and Babylon.js libraries
           </p>
         </div>
 
         {/* Controls */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="admin-settings-card">
+          <div className="admin-settings-form-grid">
+            <div className="admin-settings-form-group">
+              <label className="admin-settings-label">
                 3D Engine
               </label>
               <select
                 value={engine}
                 onChange={(e) => setEngine(e.target.value as 'three' | 'babylon')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="admin-settings-select"
               >
                 <option value="three">Three.js - WebGL-based 3D graphics</option>
                 <option value="babylon">Babylon.js - Complete 3D engine</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="admin-settings-form-group">
+              <label className="admin-settings-label">
                 Chart Type
               </label>
               <select
                 value={chartType}
                 onChange={(e) => setChartType(e.target.value as 'bar' | 'pie' | 'network')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="admin-settings-select"
               >
                 <option value="bar">Bar Chart</option>
                 <option value="pie">Pie Chart</option>
@@ -87,12 +88,12 @@ export default function ThreeDDemoClient() {
         </div>
 
         {/* 3D Visualization */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="admin-settings-card">
+          <h2 className="admin-settings-section-title">
             {engine === 'three' ? 'Three.js' : 'Babylon.js'} - {chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart
           </h2>
           
-          <div className="flex justify-center">
+          <div className="admin-settings-visualization">
             {engine === 'three' ? (
               <ThreeScene
                 width={600}
@@ -117,9 +118,9 @@ export default function ThreeDDemoClient() {
         </div>
 
         {/* Features Comparison */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Three.js Features</h3>
+        <div className="admin-settings-grid">
+          <div className="admin-settings-card">
+            <h3 className="admin-settings-card-title">Three.js Features</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
@@ -144,8 +145,8 @@ export default function ThreeDDemoClient() {
             </ul>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Babylon.js Features</h3>
+          <div className="admin-settings-card">
+            <h3 className="admin-settings-card-title">Babylon.js Features</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
@@ -172,8 +173,8 @@ export default function ThreeDDemoClient() {
         </div>
 
         {/* Usage Examples */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Examples</h3>
+        <div className="admin-settings-card">
+          <h3 className="admin-settings-card-title">Usage Examples</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
