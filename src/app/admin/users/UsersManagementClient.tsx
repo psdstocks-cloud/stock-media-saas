@@ -220,7 +220,7 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
     }
   }
 
-  const formatDate = (date: Date | string | null) => {
+  const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return 'Never'
     const dateObj = typeof date === 'string' ? new Date(date) : date
     return dateObj.toLocaleDateString('en-US', {
