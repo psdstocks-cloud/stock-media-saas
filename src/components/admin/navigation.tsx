@@ -11,7 +11,8 @@ import {
   Webhook,
   BarChart3,
   CreditCard,
-  MessageCircle
+  MessageCircle,
+  Box
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
   { name: 'Chat', href: '/admin/chat', icon: MessageCircle },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: '3D Demo', href: '/admin/3d-demo', icon: Box },
   { name: 'Webhooks', href: '/admin/webhooks', icon: Webhook },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]

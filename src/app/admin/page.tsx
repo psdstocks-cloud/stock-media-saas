@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
+import Analytics3D from '@/components/admin/3d/Analytics3D'
+import SystemHealth3D from '@/components/admin/3d/SystemHealth3D'
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -61,6 +63,30 @@ export default async function AdminDashboard() {
       orderBy: { cost: 'asc' },
     }),
   ])
+
+  // Mock system health data for 3D visualization
+  const systemHealthData = {
+    database: {
+      status: 'healthy',
+      responseTime: 45,
+      lastChecked: new Date().toISOString()
+    },
+    api: {
+      status: 'healthy',
+      responseTime: 120,
+      lastChecked: new Date().toISOString()
+    },
+    payment: {
+      status: 'warning',
+      responseTime: 800,
+      lastChecked: new Date().toISOString()
+    },
+    email: {
+      status: 'healthy',
+      responseTime: 200,
+      lastChecked: new Date().toISOString()
+    }
+  }
 
   return (
     <AdminLayout>
@@ -122,6 +148,24 @@ export default async function AdminDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* 3D Visualizations */}
+        <div className="mb-8">
+          <Analytics3D 
+            data={{
+              users: stats.totalUsers,
+              orders: recentOrders.length,
+              revenue: 0, // We don't have revenue data in the current schema
+              subscriptions: recentUsers.reduce((sum, user) => sum + user.subscriptions.length, 0)
+            }}
+            className="mb-8"
+          />
+          
+          <SystemHealth3D 
+            healthData={systemHealthData}
+            className="mb-8"
+          />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
