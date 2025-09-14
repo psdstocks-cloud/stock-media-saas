@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import SupportChatWidget from '@/components/chat/SupportChatWidget'
+import ModernChatWidget from '@/components/chat/ModernChatWidget'
 
 interface GlobalLayoutProps {
   children: ReactNode
@@ -11,7 +11,7 @@ export default function GlobalLayout({ children }: GlobalLayoutProps) {
   return (
     <>
       {children}
-      <SupportChatWidget position="bottom-right" theme="light" />
+      <ModernChatWidget position="bottom-right" theme="light" />
     </>
   )
 }

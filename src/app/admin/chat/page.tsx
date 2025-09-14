@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import AdminChatDashboard from '@/components/chat/AdminChatDashboard'
+import ModernAdminChat from '@/components/chat/ModernAdminChat'
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter'
 import { 
   ArrowLeft, 
@@ -260,9 +260,9 @@ export default function AdminChatPage() {
         </div>
       </header>
 
-      {/* Admin Chat Dashboard */}
+      {/* Modern Admin Chat */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        <AdminChatDashboard onRoomSelect={(room) => {
+        <ModernAdminChat onRoomSelect={(room) => {
           console.log('Room selected in admin:', room)
         }} />
       </div>
