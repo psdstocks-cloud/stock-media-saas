@@ -113,6 +113,8 @@ export default function PricingPage() {
   const [paymentStep, setPaymentStep] = useState<'method' | 'processing' | 'success' | 'error'>('method')
   const [paymentError, setPaymentError] = useState<string>('')
   const [simulateFailure, setSimulateFailure] = useState(false)
+  const [balanceLoading, setBalanceLoading] = useState(true)
+  const [balanceError, setBalanceError] = useState<string>('')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -120,18 +122,35 @@ export default function PricingPage() {
       router.push('/login')
       return
     }
-    fetchUserBalance()
+    
+    // Add error handling for fetchUserBalance
+    try {
+      fetchUserBalance()
+    } catch (error) {
+      console.error('Error in useEffect fetchUserBalance:', error)
+      setUserBalance(0)
+    }
   }, [session, status, router])
 
   const fetchUserBalance = async () => {
     try {
+      setBalanceLoading(true)
+      setBalanceError('')
       const response = await fetch('/api/points')
       if (response.ok) {
         const data = await response.json()
-        setUserBalance(data.balance || 0)
+        // The API returns { balance, history } where balance is the full balance object
+        setUserBalance(data.balance?.currentPoints || 0)
+      } else {
+        setBalanceError('Failed to load balance')
+        setUserBalance(0)
       }
     } catch (error) {
       console.error('Error fetching user balance:', error)
+      setBalanceError('Failed to load balance')
+      setUserBalance(0)
+    } finally {
+      setBalanceLoading(false)
     }
   }
 
@@ -281,7 +300,15 @@ export default function PricingPage() {
             fontWeight: '600'
           }}>
             <Zap size={20} />
-            Current Balance: {userBalance} points
+            Current Balance: {
+              balanceLoading ? (
+                <span style={{ opacity: 0.7 }}>Loading...</span>
+              ) : balanceError ? (
+                <span style={{ color: '#ef4444' }}>Error loading</span>
+              ) : (
+                `${userBalance} points`
+              )
+            }
           </div>
         </div>
 
