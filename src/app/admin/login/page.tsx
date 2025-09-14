@@ -48,23 +48,7 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
-      // Use the admin auth API for enhanced security
-      const response = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Authentication failed')
-        return
-      }
-
-      // Sign in with NextAuth
+      // Sign in with NextAuth credentials
       const result = await signIn('credentials', {
         email,
         password,
@@ -72,7 +56,16 @@ export default function AdminLoginPage() {
       })
 
       if (result?.error) {
-        setError('Session creation failed. Please try again.')
+        setError('Invalid email or password. Please check your credentials and try again.')
+        return
+      }
+
+      // Check if the user is an admin
+      const session = await getSession()
+      console.log('Session after login:', session)
+      
+      if (session?.user?.role !== 'ADMIN' && session?.user?.role !== 'SUPER_ADMIN') {
+        setError('Access denied. Admin privileges required.')
         return
       }
 
