@@ -42,7 +42,8 @@ import {
   Wifi,
   HardDrive,
   Cpu,
-  MemoryStick
+  MemoryStick,
+  ArrowLeft
 } from 'lucide-react'
 
 interface Setting {
@@ -257,11 +258,41 @@ export default function AdminSettingsPage() {
         {/* Header */}
         <div className="admin-settings-header">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <h1 className="admin-settings-title">Settings</h1>
-              <p className="admin-settings-subtitle">
-                Manage your platform configuration and system settings
-              </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button
+                onClick={() => router.push('/admin')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                <ArrowLeft size={16} />
+                Back to Dashboard
+              </button>
+              <div>
+                <h1 className="admin-settings-title">Settings</h1>
+                <p className="admin-settings-subtitle">
+                  Manage your platform configuration and system settings
+                </p>
+              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <button
