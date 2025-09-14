@@ -24,28 +24,48 @@ import {
 
 interface User {
   id: string
-  name: string
+  name: string | null
   email: string
-  image?: string
+  image?: string | null
   role: string
-  createdAt: string
-  updatedAt: string
-  lastLoginAt?: string
+  createdAt: Date
+  updatedAt: Date
+  lastLoginAt?: Date | null
   loginAttempts: number
-  lockedUntil?: string
+  lockedUntil?: Date | null
   pointsBalance?: {
+    id: string
+    createdAt: Date
+    updatedAt: Date
+    userId: string
     currentPoints: number
     totalPurchased: number
     totalUsed: number
-  }
+    lastRollover: Date | null
+  } | null
   subscriptions?: Array<{
     id: string
+    userId: string
+    planId: string
+    stripeCustomerId: string | null
+    stripeSubscriptionId: string | null
     status: string
-    currentPeriodEnd: string
+    currentPeriodStart: Date
+    currentPeriodEnd: Date
+    cancelAtPeriodEnd: boolean
+    canceledAt: Date | null
+    createdAt: Date
+    updatedAt: Date
     plan: {
+      id: string
       name: string
+      description: string | null
       price: number
       points: number
+      rolloverLimit: number
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
     }
   }>
   _count: {
@@ -196,8 +216,10 @@ export default function UsersManagementClient({ initialUsers }: UsersManagementC
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return 'Never'
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    return dateObj.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
