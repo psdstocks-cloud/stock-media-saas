@@ -1,23 +1,52 @@
 import { withAuth } from 'next-auth/middleware'
+import { NextResponse } from 'next/server'
 
 export default withAuth(
   function middleware(req) {
-    // Add any additional middleware logic here
+    const { pathname } = req.nextUrl
+    const token = req.nextauth.token
+
+    // Admin route protection
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+      if (!token) {
+        return NextResponse.redirect(new URL('/admin/login', req.url))
+      }
+      
+      // Check if user has admin role
+      if (token.role !== 'ADMIN' && token.role !== 'SUPER_ADMIN') {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+      }
+    }
+
+    // Redirect admin users from regular login to admin login
+    if (pathname === '/login' && token?.role === 'ADMIN') {
+      return NextResponse.redirect(new URL('/admin/login', req.url))
+    }
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl
+        
         // Allow access to public routes
-        if (req.nextUrl.pathname.startsWith('/api/auth') || 
-            req.nextUrl.pathname === '/' ||
-            req.nextUrl.pathname === '/register' ||
-            req.nextUrl.pathname === '/login') {
+        if (pathname.startsWith('/api/auth') || 
+            pathname === '/' ||
+            pathname === '/register' ||
+            pathname === '/login' ||
+            pathname === '/admin/login' ||
+            pathname.startsWith('/about') ||
+            pathname.startsWith('/contact') ||
+            pathname.startsWith('/blog') ||
+            pathname.startsWith('/careers') ||
+            pathname.startsWith('/reviews') ||
+            pathname.startsWith('/terms') ||
+            pathname.startsWith('/privacy')) {
           return true
         }
 
         // Require authentication for protected routes
-        if (req.nextUrl.pathname.startsWith('/dashboard') ||
-            req.nextUrl.pathname.startsWith('/admin')) {
+        if (pathname.startsWith('/dashboard') ||
+            pathname.startsWith('/admin')) {
           return !!token
         }
 

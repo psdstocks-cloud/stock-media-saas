@@ -3,7 +3,7 @@ import { PointsManager } from '@/lib/points'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { AdminNavigation } from '@/components/admin/navigation'
+import AdminLayout from '@/components/admin/AdminLayout'
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
@@ -63,10 +63,8 @@ export default async function AdminDashboard() {
   ])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminNavigation />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminLayout>
+      <div className="max-w-7xl mx-auto">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -262,6 +260,6 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   )
 }
