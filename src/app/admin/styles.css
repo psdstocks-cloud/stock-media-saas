@@ -452,6 +452,165 @@
   border-radius: var(--admin-border-radius-sm);
 }
 
+/* User and Order Items */
+.admin-user-item,
+.admin-order-item {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--admin-border-radius-sm);
+  padding: 1rem;
+  transition: var(--admin-transition);
+  backdrop-filter: blur(10px);
+}
+
+.admin-user-item:hover,
+.admin-order-item:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-user-avatar,
+.admin-order-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.admin-user-name,
+.admin-order-user {
+  font-weight: 600;
+  color: var(--admin-dark);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-user-email,
+.admin-order-details {
+  color: var(--admin-dark);
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-user-date,
+.admin-order-date {
+  color: var(--admin-dark);
+  opacity: 0.5;
+  font-size: 0.75rem;
+}
+
+.admin-user-points {
+  font-weight: 600;
+  color: var(--admin-primary);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-user-subscriptions {
+  color: var(--admin-dark);
+  opacity: 0.6;
+  font-size: 0.75rem;
+}
+
+/* Service Status Cards */
+.admin-service-status {
+  background: var(--admin-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--admin-border-radius-sm);
+  padding: 1.5rem;
+  transition: var(--admin-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-service-status::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--admin-success), var(--admin-primary));
+}
+
+.admin-service-status.warning::before {
+  background: linear-gradient(90deg, var(--admin-warning), var(--admin-error));
+}
+
+.admin-service-status.error::before {
+  background: linear-gradient(90deg, var(--admin-error), var(--admin-warning));
+}
+
+.admin-service-status:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-service-name {
+  font-weight: 700;
+  color: var(--admin-dark);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-service-status-indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--admin-success);
+  animation: pulse 2s infinite;
+}
+
+.admin-service-status-indicator.warning {
+  background: var(--admin-warning);
+}
+
+.admin-service-status-indicator.error {
+  background: var(--admin-error);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.admin-service-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-service-metric {
+  text-align: center;
+}
+
+.admin-service-metric-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--admin-primary);
+  margin-bottom: 0.25rem;
+}
+
+.admin-service-metric-label {
+  font-size: 0.75rem;
+  color: var(--admin-dark);
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* Scrollbar Styling */
 .admin-scrollbar::-webkit-scrollbar {
   width: 8px;

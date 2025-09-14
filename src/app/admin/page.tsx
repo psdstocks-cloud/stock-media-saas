@@ -140,6 +140,84 @@ export default async function AdminDashboard() {
             </div>
         </div>
 
+          {/* Service Status */}
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <h3 className="admin-card-title">System Status</h3>
+            </div>
+            <div className="admin-card-content">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="admin-service-status">
+                  <div className="admin-service-name">
+                    <div className="admin-service-status-indicator"></div>
+                    Database
+                  </div>
+                  <div className="admin-service-metrics">
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">99.9%</div>
+                      <div className="admin-service-metric-label">Uptime</div>
+                    </div>
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">45ms</div>
+                      <div className="admin-service-metric-label">Response</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="admin-service-status">
+                  <div className="admin-service-name">
+                    <div className="admin-service-status-indicator"></div>
+                    API Server
+                  </div>
+                  <div className="admin-service-metrics">
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">99.8%</div>
+                      <div className="admin-service-metric-label">Uptime</div>
+                    </div>
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">120ms</div>
+                      <div className="admin-service-metric-label">Response</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="admin-service-status">
+                  <div className="admin-service-name">
+                    <div className="admin-service-status-indicator"></div>
+                    Payment Gateway
+                  </div>
+                  <div className="admin-service-metrics">
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">100%</div>
+                      <div className="admin-service-metric-label">Uptime</div>
+                    </div>
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">200ms</div>
+                      <div className="admin-service-metric-label">Response</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="admin-service-status">
+                  <div className="admin-service-name">
+                    <div className="admin-service-status-indicator"></div>
+                    Email Service
+                  </div>
+                  <div className="admin-service-metrics">
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">99.5%</div>
+                      <div className="admin-service-metric-label">Uptime</div>
+                    </div>
+                    <div className="admin-service-metric">
+                      <div className="admin-service-metric-value">300ms</div>
+                      <div className="admin-service-metric-label">Response</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* 3D Visualizations */}
           <div className="admin-3d-container">
             <h2 className="admin-card-title">3D Analytics Dashboard</h2>
@@ -169,26 +247,33 @@ export default async function AdminDashboard() {
                 {recentUsers.length === 0 ? (
                   <p className="text-center py-4" style={{ color: 'var(--admin-dark)', opacity: 0.7 }}>No users yet</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                   {recentUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {user.name || user.email}
+                    <div key={user.id} className="admin-user-item">
+                      <div className="flex items-center space-x-3">
+                        <div className="admin-user-avatar">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {user.email}
+                        <div className="flex-1">
+                          <div className="admin-user-name">
+                            {user.name || user.email}
+                          </div>
+                          <div className="admin-user-email">
+                            {user.email}
+                          </div>
+                          <div className="admin-user-date">
+                            Joined {new Date(user.createdAt).toLocaleDateString()}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-400">
-                          Joined {new Date(user.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.pointsBalance?.currentPoints || 0} points
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {user.subscriptions.length} subscription(s)
+                        <div className="text-right">
+                          <div className="admin-user-points">
+                            {user.pointsBalance?.currentPoints || 0} points
+                          </div>
+                          <div className="admin-user-subscriptions">
+                            {user.subscriptions.length} subscription(s)
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -204,37 +289,44 @@ export default async function AdminDashboard() {
                 <h3 className="admin-card-title">Recent Orders</h3>
               </div>
               <div className="admin-card-content">
-              {recentOrders.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No orders yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {recentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {order.user.name || order.user.email}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {order.stockSite.displayName} • {order.cost} points
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                {recentOrders.length === 0 ? (
+                  <p className="text-center py-4" style={{ color: 'var(--admin-dark)', opacity: 0.7 }}>No orders yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {recentOrders.map((order) => (
+                      <div key={order.id} className="admin-order-item">
+                        <div className="flex items-center space-x-3">
+                          <div className="admin-order-icon">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 2L3 7v11a1 1 0 001 1h12a1 1 0 001-1V7l-7-5zM8 15v-5h4v5H8z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="flex-1">
+                            <div className="admin-order-user">
+                              {order.user.name || order.user.email}
+                            </div>
+                            <div className="admin-order-details">
+                              {order.stockSite.displayName} • {order.cost} points
+                            </div>
+                            <div className="admin-order-date">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className={`admin-badge ${
+                              order.status === 'COMPLETED' ? 'admin-badge-success' :
+                              order.status === 'PROCESSING' ? 'admin-badge-warning' :
+                              order.status === 'FAILED' ? 'admin-badge-error' :
+                              'admin-badge-info'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`admin-badge ${
-                          order.status === 'COMPLETED' ? 'admin-badge-success' :
-                          order.status === 'PROCESSING' ? 'admin-badge-warning' :
-                          order.status === 'FAILED' ? 'admin-badge-error' :
-                          'admin-badge-info'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
         </div>
