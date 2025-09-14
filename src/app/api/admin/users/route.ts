@@ -25,6 +25,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const search = searchParams.get('search')
     const role = searchParams.get('role')
+    const status = searchParams.get('status')
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrder = searchParams.get('sortOrder') || 'desc'
 
     const skip = (page - 1) * limit
 
@@ -38,13 +41,43 @@ export async function GET(request: NextRequest) {
     if (role) {
       where.role = role
     }
+    if (status) {
+      if (status === 'active') {
+        where.lastLoginAt = {
+          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        }
+      } else if (status === 'inactive') {
+        where.OR = [
+          { lastLoginAt: null },
+          { lastLoginAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }
+        ]
+      } else if (status === 'locked') {
+        where.lockedUntil = {
+          gt: new Date()
+        }
+      }
+    }
+
+    // Build orderBy clause
+    const orderBy: any = {}
+    if (sortBy === 'name') {
+      orderBy.name = sortOrder
+    } else if (sortBy === 'email') {
+      orderBy.email = sortOrder
+    } else if (sortBy === 'role') {
+      orderBy.role = sortOrder
+    } else if (sortBy === 'lastLoginAt') {
+      orderBy.lastLoginAt = sortOrder
+    } else {
+      orderBy.createdAt = sortOrder
+    }
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         include: {
           pointsBalance: true,
           subscriptions: {
