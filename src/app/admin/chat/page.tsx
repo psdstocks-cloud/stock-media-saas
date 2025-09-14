@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import AdminChatDashboard from '@/components/chat/AdminChatDashboard'
+import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter'
 import { 
   ArrowLeft, 
   MessageCircle, 
@@ -18,6 +19,9 @@ export default function AdminChatPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -185,45 +189,72 @@ export default function AdminChatPage() {
             </span>
           </div>
           
-          <button style={{
-            padding: '8px',
-            border: 'none',
-            background: '#f3f4f6',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#6b7280'
-          }}>
+          <button 
+            onClick={() => setShowAnalytics(!showAnalytics)}
+            style={{
+              padding: '8px',
+              border: 'none',
+              background: showAnalytics ? '#3b82f6' : '#f3f4f6',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: showAnalytics ? 'white' : '#6b7280',
+              transition: 'all 0.2s ease'
+            }}
+            title="Analytics"
+          >
             <BarChart3 size={16} />
           </button>
           
-          <button style={{
-            padding: '8px',
-            border: 'none',
-            background: '#f3f4f6',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#6b7280'
-          }}>
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            style={{
+              padding: '8px',
+              border: 'none',
+              background: showNotifications ? '#3b82f6' : '#f3f4f6',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: showNotifications ? 'white' : '#6b7280',
+              transition: 'all 0.2s ease',
+              position: 'relative'
+            }}
+            title="Notifications"
+          >
             <Bell size={16} />
+            {/* Notification badge */}
+            <div style={{
+              position: 'absolute',
+              top: '-2px',
+              right: '-2px',
+              width: '8px',
+              height: '8px',
+              background: '#ef4444',
+              borderRadius: '50%',
+              animation: 'pulse 2s infinite'
+            }} />
           </button>
           
-          <button style={{
-            padding: '8px',
-            border: 'none',
-            background: '#f3f4f6',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#6b7280'
-          }}>
+          <button 
+            onClick={() => setShowSettings(!showSettings)}
+            style={{
+              padding: '8px',
+              border: 'none',
+              background: showSettings ? '#3b82f6' : '#f3f4f6',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: showSettings ? 'white' : '#6b7280',
+              transition: 'all 0.2s ease'
+            }}
+            title="Settings"
+          >
             <Settings size={16} />
           </button>
         </div>
@@ -235,6 +266,195 @@ export default function AdminChatPage() {
           console.log('Room selected in admin:', room)
         }} />
       </div>
+
+      {/* Notification Center */}
+      <AdminNotificationCenter 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
+
+      {/* Analytics Modal */}
+      {showAnalytics && (
+        <div style={{
+          position: 'fixed',
+          top: '80px',
+          right: '20px',
+          width: '400px',
+          maxHeight: '600px',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '20px',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
+              Chat Analytics
+            </h3>
+            <button
+              onClick={() => setShowAnalytics(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '4px',
+                color: '#6b7280'
+              }}
+            >
+              ×
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{
+              background: '#f8fafc',
+              padding: '16px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                Active Conversations
+              </h4>
+              <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#3b82f6' }}>
+                12
+              </p>
+            </div>
+            
+            <div style={{
+              background: '#f8fafc',
+              padding: '16px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                Messages Today
+              </h4>
+              <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#22c55e' }}>
+                156
+              </p>
+            </div>
+            
+            <div style={{
+              background: '#f8fafc',
+              padding: '16px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                Avg Response Time
+              </h4>
+              <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#f59e0b' }}>
+                2.3m
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div style={{
+          position: 'fixed',
+          top: '80px',
+          right: '20px',
+          width: '400px',
+          maxHeight: '600px',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '20px',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
+              Chat Settings
+            </h3>
+            <button
+              onClick={() => setShowSettings(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '4px',
+                color: '#6b7280'
+              }}
+            >
+              ×
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              background: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                Auto-assign conversations
+              </span>
+              <input type="checkbox" defaultChecked style={{ transform: 'scale(1.2)' }} />
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              background: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                Sound notifications
+              </span>
+              <input type="checkbox" defaultChecked style={{ transform: 'scale(1.2)' }} />
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              background: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                Email notifications
+              </span>
+              <input type="checkbox" style={{ transform: 'scale(1.2)' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   )
 }
