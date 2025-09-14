@@ -3,6 +3,7 @@ import { Inter, Poppins, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import QueryProvider from "@/components/providers/QueryProvider";
+import GlobalLayout from "@/components/layout/GlobalLayout";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -105,7 +106,9 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthSessionProvider>
-            {children}
+            <GlobalLayout>
+              {children}
+            </GlobalLayout>
           </AuthSessionProvider>
         </QueryProvider>
       </body>

@@ -16,6 +16,7 @@ import {
   Activity,
   AlertTriangle
 } from 'lucide-react'
+import AdminNotificationCenter from './AdminNotificationCenter'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -596,6 +597,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           to { transform: rotate(360deg); }
         }
       `}</style>
+
+      {/* Admin Notification Center */}
+      <AdminNotificationCenter 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
     </div>
   )
 }
