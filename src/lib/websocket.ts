@@ -1,7 +1,6 @@
 'use client'
 
-import io from 'socket.io-client'
-import type { Socket } from 'socket.io-client'
+import io, { Socket } from 'socket.io-client'
 
 interface ChatMessage {
   id: string
@@ -81,7 +80,7 @@ class ChatWebSocket {
           resolve()
         })
 
-        this.socket.on('disconnect', (reason) => {
+        this.socket.on('disconnect', (reason: Socket.DisconnectReason) => {
           console.log('WebSocket disconnected:', reason)
           this.isConnecting = false
           
@@ -91,14 +90,14 @@ class ChatWebSocket {
           }
         })
 
-        this.socket.on('connect_error', (error) => {
+        this.socket.on('connect_error', (error: Error) => {
           console.error('WebSocket connection error:', error)
           this.isConnecting = false
           this.handleReconnect()
           reject(error)
         })
 
-        this.socket.on('error', (error) => {
+        this.socket.on('error', (error: Error) => {
           console.error('WebSocket error:', error)
         })
 
