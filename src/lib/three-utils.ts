@@ -191,7 +191,8 @@ export class ThreeDataVisualizer {
     
     data.forEach((value, index) => {
       const height = (value / maxValue) * 10 // Scale to reasonable height
-      const bar = ThreeObjectFactory.createCube(barWidth, height, `hsl(${(value / maxValue) * 120}, 70%, 50%)`)
+      const bar = ThreeObjectFactory.createCube(barWidth, `hsl(${(value / maxValue) * 120}, 70%, 50%)`)
+      bar.scale.y = height
       bar.position.set(index * (barWidth + spacing), height / 2, 0)
       group.add(bar)
     })
