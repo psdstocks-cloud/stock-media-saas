@@ -40,7 +40,7 @@ export class BabylonSceneManager {
       Vector3.Zero(),
       this.scene
     )
-    this.camera.attachControls(this.canvas, true)
+    this.camera.attachControl(this.canvas, true)
   }
 
   private setupLighting() {
