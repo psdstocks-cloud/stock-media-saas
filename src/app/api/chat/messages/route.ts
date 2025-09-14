@@ -1,26 +1,27 @@
+// src/app/api/chat/messages/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET /api/chat/messages - Get messages for a room
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
     const roomId = searchParams.get('roomId')
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const skip = (page - 1) * limit
+    const lastMessageId = searchParams.get('lastMessageId')
 
     if (!roomId) {
       return NextResponse.json({ error: 'Room ID is required' }, { status: 400 })
     }
 
-    // Check if user is participant in the room
+    // Verify user is participant in the room
     const participant = await prisma.chatParticipant.findFirst({
       where: {
         roomId,
@@ -32,9 +33,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Get messages for the room
+    // Get messages
+    const whereClause: any = {
+      roomId
+    }
+
+    if (lastMessageId) {
+      whereClause.id = {
+        gt: lastMessageId
+      }
+    }
+
     const messages = await prisma.message.findMany({
-      where: { roomId },
+      where: whereClause,
       include: {
         user: {
           select: {
@@ -62,70 +73,36 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit
-    })
-
-    // Get total count for pagination
-    const totalCount = await prisma.message.count({
-      where: { roomId }
-    })
-
-    // Mark messages as read for this user
-    await prisma.messageStatus.updateMany({
-      where: {
-        messageId: {
-          in: messages.map(m => m.id)
-        },
-        userId: session.user.id,
-        status: { not: 'READ' }
+      orderBy: {
+        createdAt: 'asc'
       },
-      data: {
-        status: 'READ',
-        readAt: new Date()
-      }
+      take: 50 // Limit to last 50 messages
     })
 
-    // Update participant's last read time
-    await prisma.chatParticipant.update({
-      where: { id: participant.id },
-      data: { lastReadAt: new Date() }
-    })
-
-    return NextResponse.json({
-      success: true,
-      messages: messages.reverse(), // Reverse to show oldest first
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        pages: Math.ceil(totalCount / limit)
-      }
-    })
-
+    return NextResponse.json({ messages })
   } catch (error) {
     console.error('Error fetching messages:', error)
-    return NextResponse.json({ 
-      error: 'Failed to fetch messages' 
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
+// POST /api/chat/messages - Send a message
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession()
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { roomId, content, type = 'TEXT', fileUrl, fileName, fileSize, replyToId } = await request.json()
+    const body = await request.json()
+    const { roomId, userId, content, type = 'TEXT', fileUrl, fileName, fileSize, replyToId } = body
 
-    if (!roomId || !content) {
-      return NextResponse.json({ error: 'Room ID and content are required' }, { status: 400 })
+    if (!roomId || !userId || !content) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Check if user is participant in the room
+    // Verify user is participant in the room
     const participant = await prisma.chatParticipant.findFirst({
       where: {
         roomId,
@@ -195,15 +172,15 @@ export async function POST(request: NextRequest) {
       data: messageStatuses
     })
 
-    return NextResponse.json({
-      success: true,
-      message
-    })
+    // Add statuses to message
+    const messageWithStatuses = {
+      ...message,
+      statuses: messageStatuses
+    }
 
+    return NextResponse.json({ message: messageWithStatuses })
   } catch (error) {
-    console.error('Error creating message:', error)
-    return NextResponse.json({ 
-      error: 'Failed to create message' 
-    }, { status: 500 })
+    console.error('Error sending message:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

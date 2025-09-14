@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { notificationService } from '@/lib/notification-service'
 import { soundService } from '@/lib/sound-service'
+import { chatPollingService } from '@/lib/chat-polling'
 import NotificationSettings from '@/components/notifications/NotificationSettings'
 
 interface User {
@@ -77,7 +78,7 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfaceProps) {
   const { data: session } = useSession()
-  const [socket, setSocket] = useState<any | null>(null)
+  const [isPolling, setIsPolling] = useState(false)
   const [rooms, setRooms] = useState<ChatRoom[]>([])
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -91,77 +92,47 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
   const fileInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Initialize socket connection
+  // Initialize polling service
   useEffect(() => {
     if (session?.user?.id) {
-      console.log('Setting up socket connection for user:', session.user.id)
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
-      console.log('Socket URL:', socketUrl)
-      const newSocket = io(socketUrl)
+      console.log('Setting up chat polling for user:', session.user.id)
       
-      newSocket.on('connect', () => {
-        console.log('Socket connected:', newSocket.id)
+      // Set up polling callbacks
+      chatPollingService.onNewMessage((message) => {
+        console.log('New message received:', message)
+        setMessages(prev => [...prev, message])
+        scrollToBottom()
+        
+        // Play receive sound if message is from another user
+        if (message.user.id !== session.user.id) {
+          soundService.playMessageReceived()
+          handleNewMessageNotification(message)
+        }
       })
 
-      newSocket.on('disconnect', () => {
-        console.log('Socket disconnected')
+      chatPollingService.onError((error) => {
+        console.error('Chat polling error:', error)
       })
-
-      setSocket(newSocket)
 
       return () => {
-        console.log('Disconnecting socket')
-        newSocket.close()
+        console.log('Stopping chat polling')
+        chatPollingService.stopPolling()
       }
     }
   }, [session?.user?.id])
 
-  // Setup socket event listeners
+  // Start polling when a room is selected
   useEffect(() => {
-    if (socket && session?.user?.id) {
-      socket.on('new-message', (data: any) => {
-        setMessages(prev => [...prev, data.message])
-        scrollToBottom()
-        
-        // Play receive sound if message is from another user
-        if (data.message.user.id !== session.user.id) {
-          soundService.playMessageReceived()
-          handleNewMessageNotification(data.message)
-        }
-      })
-
-      socket.on('user-typing', (data: any) => {
-        if (data.userId !== session.user.id) {
-          setTypingUsers(prev => {
-            if (data.isTyping) {
-              return [...new Set([...prev, data.userId])]
-            } else {
-              return prev.filter(id => id !== data.userId)
-            }
-          })
-        }
-      })
-
-      socket.on('message-read', (data: any) => {
-        setMessages(prev => prev.map(msg => 
-          msg.id === data.messageId 
-            ? {
-                ...msg,
-                statuses: msg.statuses.map(status => 
-                  status.status === 'DELIVERED' && data.userId === session.user.id
-                    ? { ...status, status: 'READ', readAt: new Date().toISOString() }
-                    : status
-                )
-              }
-            : msg
-        ))
-      })
-
-      socket.on('error', (error: any) => {
-        console.error('Socket error:', error)
-      })
+    if (selectedRoom && session?.user?.id && !isPolling) {
+      console.log('Starting polling for room:', selectedRoom.id)
+      setIsPolling(true)
+      chatPollingService.startPolling(selectedRoom.id, session.user.id)
+    } else if (!selectedRoom && isPolling) {
+      console.log('Stopping polling - no room selected')
+      setIsPolling(false)
+      chatPollingService.stopPolling()
     }
-  }, [socket, session?.user?.id])
+  }, [selectedRoom, session?.user?.id, isPolling])
 
   // Load chat rooms
   useEffect(() => {
@@ -247,50 +218,43 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
   }
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedRoom || !socket) {
+    if (!newMessage.trim() || !selectedRoom || !session?.user?.id) {
       console.log('Cannot send message:', { 
         hasMessage: !!newMessage.trim(), 
         hasRoom: !!selectedRoom, 
-        hasSocket: !!socket 
+        hasUser: !!session?.user?.id 
       })
       return
     }
 
     console.log('Sending message:', newMessage.trim())
-    const messageData = {
-      roomId: selectedRoom.id,
-      userId: session?.user?.id,
-      content: newMessage.trim(),
-      type: 'TEXT'
-    }
-
-    socket.emit('send-message', messageData)
-    setNewMessage('')
     
-    // Play send sound
-    soundService.playMessageSent()
-    
-    // Stop typing indicator
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
+    try {
+      const message = await chatPollingService.sendMessage(
+        selectedRoom.id,
+        session.user.id,
+        newMessage.trim(),
+        'TEXT'
+      )
+      
+      setNewMessage('')
+      
+      // Play send sound
+      soundService.playMessageSent()
+      
+      // Add message to local state immediately for better UX
+      setMessages(prev => [...prev, message])
+      scrollToBottom()
+      
+    } catch (error) {
+      console.error('Error sending message:', error)
+      alert('Failed to send message. Please try again.')
     }
-    socket.emit('typing-stop', { roomId: selectedRoom.id, userId: session?.user?.id })
   }
 
   const handleTyping = () => {
-    if (!selectedRoom || !socket) return
-
-    socket.emit('typing-start', { roomId: selectedRoom.id, userId: session?.user?.id })
-    setIsTyping(true)
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('typing-stop', { roomId: selectedRoom.id, userId: session?.user?.id })
-      setIsTyping(false)
-    }, 1000)
+    // Typing functionality removed for simplicity
+    // Can be re-implemented with polling if needed
   }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -432,8 +396,14 @@ export default function ChatInterface({ roomId, onRoomSelect }: ChatInterfacePro
             <div
               key={room.id}
               onClick={() => {
+                console.log('Room selected:', room)
                 setSelectedRoom(room)
                 onRoomSelect?.(room)
+                
+                // Join the room for polling
+                if (session?.user?.id) {
+                  chatPollingService.joinRoom(room.id, session.user.id)
+                }
               }}
               style={{
                 padding: '12px 16px',
