@@ -5,11 +5,13 @@ class SoundService {
   private isEnabled = true
 
   constructor() {
-    // Check if sound is enabled from localStorage
-    const savedSettings = localStorage.getItem('notification-settings')
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings)
-      this.isEnabled = settings.sound !== false
+    // Check if sound is enabled from localStorage (only in browser)
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem('notification-settings')
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings)
+        this.isEnabled = settings.sound !== false
+      }
     }
   }
 
