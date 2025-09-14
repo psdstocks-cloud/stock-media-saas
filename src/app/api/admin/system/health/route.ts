@@ -127,7 +127,7 @@ async function getSystemMetrics() {
       totalUsers,
       totalOrders,
       activeSubscriptions,
-      totalRevenue: totalRevenue._sum.amount || 0,
+      totalRevenue,
       timestamp: new Date().toISOString()
     }
   } catch (error) {
