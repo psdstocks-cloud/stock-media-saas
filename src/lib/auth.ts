@@ -136,7 +136,5 @@ export const authOptions: NextAuthOptions = {
       return `${baseUrl}/dashboard`
     }
   },
-  pages: {
-    signIn: '/login',
-  }
+  // Removed pages configuration - middleware handles redirects
 }
