@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Server as HttpServer } from 'http'
 import { Socket as NetSocket } from 'net'
 import { Server as SocketIOServer } from 'socket.io'
-import { DefaultEventsMap } from 'socket.io/dist/typed-events'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -162,7 +161,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
         })
 
         await prisma.messageStatus.createMany({
-          data: roomParticipants.map((p: ChatParticipant) => ({
+          data: roomParticipants.map((p) => ({
             messageId: message.id,
             userId: p.userId,
             status: p.userId === socket.data.userId ? 'SENT' : 'DELIVERED'

@@ -1,6 +1,6 @@
 'use client'
 
-import io, { Socket } from 'socket.io-client'
+import io, { Socket } from 'socket.io-client';
 
 interface ChatMessage {
   id: string
@@ -80,7 +80,7 @@ class ChatWebSocket {
           resolve()
         })
 
-        this.socket.on('disconnect', (reason: Socket.DisconnectReason) => {
+        this.socket.on('disconnect', (reason: string) => {
           console.log('WebSocket disconnected:', reason)
           this.isConnecting = false
           
