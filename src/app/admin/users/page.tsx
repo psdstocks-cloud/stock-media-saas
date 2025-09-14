@@ -38,14 +38,19 @@ export default async function AdminUsersPage() {
         },
       },
     }),
-    prisma.$queryRaw`
+    prisma.$queryRaw<Array<{
+      total_users: bigint
+      admin_users: bigint
+      new_users_this_month: bigint
+      active_users: bigint
+    }>>`
       SELECT 
         COUNT(*) as total_users,
         COUNT(CASE WHEN role = 'ADMIN' OR role = 'SUPER_ADMIN' THEN 1 END) as admin_users,
         COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END) as new_users_this_month,
         COUNT(CASE WHEN last_login_at >= NOW() - INTERVAL '7 days' THEN 1 END) as active_users
       FROM users
-    ` as any[]
+    `
   ])
 
   const userStats = {
