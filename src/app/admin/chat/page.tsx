@@ -31,11 +31,11 @@ export default function AdminChatPage() {
     console.log('Admin Chat Page - Session data:', {
       user: session.user,
       role: session.user.role,
-      isAdmin: session.user.role === 'ADMIN'
+      isAdmin: session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN'
     })
 
-    // Check if user is admin
-    if (session.user.role !== 'ADMIN') {
+    // Check if user is admin or super admin
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
       console.log('User is not admin, redirecting to dashboard')
       router.push('/dashboard')
       return
