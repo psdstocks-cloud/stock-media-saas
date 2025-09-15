@@ -16,7 +16,7 @@ export async function POST() {
     // Test email sending
     const { data, error } = await resend.emails.send({
       from: 'Stock Media SaaS <onboarding@resend.dev>',
-      to: ['psdstockspay@gmail.com'],
+      to: ['psdstockss@gmail.com'], // Use your verified email
       subject: '🧪 Test Email - Admin Login System',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
