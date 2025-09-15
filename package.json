@@ -4,8 +4,9 @@
   "description": "Stock Media SaaS Platform with Real-time Processing",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "npm run lint",

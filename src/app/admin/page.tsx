@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
 import { auth } from '@/lib/auth-admin'
@@ -110,21 +112,22 @@ type StockSiteType = {
 }
 
 export default async function AdminDashboard() {
-  const session = await auth()
-  
-  if (!session?.user?.id) {
-    redirect('/admin/login')
-  }
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      redirect('/admin/login')
+    }
 
-  // Check if user is admin
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true }
-  })
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    })
 
-  if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-    redirect('/dashboard')
-  }
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      redirect('/dashboard')
+    }
 
   const [
     stats,
@@ -977,4 +980,19 @@ export default async function AdminDashboard() {
       </div>
     </AdminLayout>
   )
+
+  } catch (error) {
+    // This will catch any errors from auth() or prisma and prevent the build from crashing.
+    console.error("🔴 Failed to fetch admin dashboard data:", error);
+    
+    // Return a simple error state instead of crashing
+    return (
+      <AdminLayout>
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600">Error Loading Dashboard</h1>
+          <p className="text-gray-700">An error occurred while fetching data. Please check the server logs.</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 }
