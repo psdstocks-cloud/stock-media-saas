@@ -161,7 +161,7 @@ const SocketHandler = (req: NextApiRequest, res: NextApiResponseWithSocket) => {
         })
 
         await prisma.messageStatus.createMany({
-          data: roomParticipants.map((p) => ({
+          data: roomParticipants.map((p: { userId: string }) => ({
             messageId: message.id,
             userId: p.userId,
             status: p.userId === socket.data.userId ? 'SENT' : 'DELIVERED'
