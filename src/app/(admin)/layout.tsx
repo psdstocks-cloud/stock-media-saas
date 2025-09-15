@@ -4,6 +4,9 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
 import { Toaster } from '@/components/ui/toaster'
 
+// Force dynamic rendering for admin layout
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayout({
   children,
 }: {

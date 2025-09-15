@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth/userAuth'
 import { PointsManager } from '@/lib/points'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,11 +13,15 @@ export async function GET(request: NextRequest) {
     // Get user ID from session if not provided in query params
     let finalUserId = userId
     if (!finalUserId) {
-      const session = await getServerSession(authOptions)
+      const session = await auth()
       if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
       finalUserId = session.user.id
+    }
+
+    if (!finalUserId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
     const [balance, history] = await Promise.all([
