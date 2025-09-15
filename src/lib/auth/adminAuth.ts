@@ -18,14 +18,14 @@ export const adminAuthOptions: NextAuthOptions = {
   providers: [
     EmailProvider({
       server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
+        host: 'smtp.resend.com',
+        port: 587,
         auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
+          user: 'resend',
+          pass: process.env.RESEND_API_KEY,
         },
       },
-      from: process.env.EMAIL_FROM,
+      from: process.env.EMAIL_FROM || 'Stock Media SaaS <noreply@stockmedia.com>',
       sendVerificationRequest,
       maxAge: 10 * 60, // 10 minutes
     })

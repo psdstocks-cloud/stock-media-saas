@@ -1,3 +1,5 @@
-import { GET, POST } from '@/lib/auth/adminAuth'
+import NextAuth from 'next-auth'
+import { adminAuthOptions } from '@/lib/auth/adminAuth'
 
-export { GET, POST }
+// This is the correct syntax for the Pages Router
+export default NextAuth(adminAuthOptions)

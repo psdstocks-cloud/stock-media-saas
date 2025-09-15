@@ -1,17 +1,13 @@
 import { render } from '@react-email/render'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import AdminMagicLinkEmail from '../../emails/AdminMagicLinkEmail'
 
-// Create Gmail transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD,
-  },
-})
+// Validate Resend API key
+if (!process.env.RESEND_API_KEY) {
+  throw new Error('RESEND_API_KEY environment variable is required but not set. Please add it to your Vercel environment variables.')
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendVerificationRequest({
   identifier: email,
@@ -30,17 +26,22 @@ export async function sendVerificationRequest({
       userEmail: email,
     }))
 
-    // Send the email using Gmail SMTP
-    const info = await transporter.sendMail({
-      from: from || process.env.EMAIL_FROM || 'Stock Media SaaS <psdstockspay@gmail.com>',
-      to: email,
+    // Send the email using Resend
+    const { data, error } = await resend.emails.send({
+      from: from || process.env.EMAIL_FROM || 'Stock Media SaaS <noreply@stockmedia.com>',
+      to: [email],
       subject: '🔐 Your Admin Login Link - Stock Media SaaS',
       html: emailHtml,
     })
 
+    if (error) {
+      console.error('Failed to send admin magic link email:', error)
+      throw new Error(`Failed to send email: ${error.message}`)
+    }
+
     console.log('Admin magic link email sent successfully:', {
       email,
-      messageId: info.messageId,
+      messageId: data?.id,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
