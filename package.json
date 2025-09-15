@@ -4,7 +4,7 @@
   "description": "Stock Media SaaS Platform with Real-time Processing",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "DATABASE_URL=\"$DATABASE_URL_UNPOOLED\" prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
