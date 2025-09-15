@@ -17,7 +17,7 @@ export const adminAuthOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
-      server: {
+      server: process.env.EMAIL_SERVER || {
         host: 'smtp.resend.com',
         port: 587,
         auth: {
@@ -25,9 +25,9 @@ export const adminAuthOptions: NextAuthOptions = {
           pass: process.env.RESEND_API_KEY,
         },
       },
-      from: 'Stock Media SaaS <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || 'Stock Media SaaS <onboarding@resend.dev>',
       sendVerificationRequest,
-      maxAge: 10 * 60, // 10 minutes
+      maxAge: 10 * 60, // 10 minutes - Security: Magic link expires quickly
     })
   ],
   session: {

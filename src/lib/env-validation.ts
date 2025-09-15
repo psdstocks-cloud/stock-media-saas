@@ -8,6 +8,7 @@ export function validateEnvironmentVariables() {
 
   const optionalVars = {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_FROM: process.env.EMAIL_FROM,
     EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
     EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
