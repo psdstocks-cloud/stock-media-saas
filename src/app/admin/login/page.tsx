@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useFormState } from 'react-dom'
-import { authenticateAdmin } from '@/actions/adminLoginAction'
+import { adminLoginAction } from '@/actions/adminLoginAction'
 import {
   Mail,
   Send,
@@ -18,7 +18,7 @@ type LoginState = 'default' | 'loading' | 'success' | 'error'
 
 export default function AdminLoginPage() {
   const [loginState, setLoginState] = useState<LoginState>('default')
-  const [result, dispatch] = useFormState(authenticateAdmin, undefined)
+  const [result, dispatch] = useFormState(adminLoginAction, undefined)
 
   // Handle form submission
   const handleSubmit = async (formData: FormData) => {

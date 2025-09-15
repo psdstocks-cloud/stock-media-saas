@@ -134,9 +134,12 @@ export const adminAuthOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       console.log('🔍 Admin redirect callback:', { url, baseUrl })
       
-      // Always redirect admin users to admin dashboard
-      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // After a successful magic link sign-in, always redirect to the admin dashboard
+      if (url.startsWith("/admin")) return `${baseUrl}${url}`
+      else if (url.startsWith("/")) return `${baseUrl}${url}`
       else if (new URL(url).origin === baseUrl) return url
+      
+      // Default redirect to admin dashboard
       return `${baseUrl}/admin`
     }
   },
