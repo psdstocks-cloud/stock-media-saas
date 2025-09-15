@@ -1,20 +1,20 @@
 import { Resend } from 'resend'
 import { AdminMagicLinkEmail } from '@/emails/AdminMagicLinkEmail'
 
-// Validate Resend API key (only at runtime, not build time)
-if (typeof window === 'undefined' && !process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY environment variable is required but not set. Please add it to your Vercel environment variables.')
-}
-
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function sendVerificationRequest(params: {
   identifier: string
   url: string
   provider: any
 }) {
   const { identifier: email, url } = params
-  
+
+  // Validate Resend API key only at runtime
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY environment variable is required but not set. Please add it to your Vercel environment variables.')
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
   try {
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'Stock Media SaaS <onboarding@resend.dev>',
