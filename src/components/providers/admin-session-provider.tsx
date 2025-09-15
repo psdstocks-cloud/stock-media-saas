@@ -15,6 +15,8 @@ export default function AdminSessionProvider({ children }: Props) {
       refetchInterval={10 * 60} // 10 minutes
       refetchOnWindowFocus={false}
       refetchWhenOffline={false}
+      // Ensure we're using the admin auth configuration
+      session={undefined}
     >
       {children}
     </SessionProvider>

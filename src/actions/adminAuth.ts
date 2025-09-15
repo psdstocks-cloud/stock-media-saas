@@ -1,37 +1,22 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { signIn } from '@/lib/auth/adminAuth'
 
 export async function authenticateAdmin(
   previousState: string | undefined, 
   formData: FormData
 ) {
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-
   try {
-    // Call the admin authentication API directly
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/admin/callback/credentials`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        email,
-        password,
-        redirect: 'false',
-        callbackUrl: '/admin'
-      })
-    })
-
-    if (!response.ok) {
+    // Use the admin-specific signIn function
+    await signIn('admin-credentials', formData)
+    // On success, NextAuth will handle the redirect
+  } catch (error) {
+    if ((error as Error).message.includes('CredentialsSignin')) {
       return 'Invalid credentials. Please check your email and password.'
     }
-
-    // If successful, redirect to admin dashboard
-    redirect('/admin')
-  } catch (error) {
-    console.error('Admin authentication error:', error)
-    return 'An error occurred during authentication. Please try again.'
+    // For any other error (like the 500 you were seeing)
+    console.error('Unhandled authentication error:', error)
+    return 'An unexpected error occurred. Please try again.'
   }
 }
