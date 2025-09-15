@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Define your session cookie names
+const USER_COOKIE_NAME = '__Secure-user-session-token'
+const ADMIN_COOKIE_NAME = '__Secure-admin-session-token'
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-
-  // Get both user and admin session cookies
-  const userCookie = req.cookies.get('__Secure-user-session-token')
-  const adminCookie = req.cookies.get('__Secure-admin-session-token')
+  
+  const userCookie = req.cookies.get(USER_COOKIE_NAME)
+  const adminCookie = req.cookies.get(ADMIN_COOKIE_NAME)
 
   console.log('Dual Auth Middleware check:', { 
     pathname, 
@@ -16,50 +19,49 @@ export function middleware(req: NextRequest) {
     isUserPath: pathname.startsWith('/dashboard')
   })
 
-  // Logic for Admin Panel routes
+  // --- Logic for Admin Panel ---
   if (pathname.startsWith('/admin')) {
-    // Allow access to admin login page without cookie check
-    if (pathname === '/admin/login') {
-      return NextResponse.next()
-    }
-    
-    // If trying to access admin area without an admin cookie, redirect to admin login
+    // If user is trying to access an admin route but is not logged in as an admin,
+    // redirect them to the admin login page.
     if (!adminCookie) {
       console.log('No admin cookie, redirecting to admin login')
       return NextResponse.redirect(new URL('/admin/login', req.url))
     }
   }
 
-  // Logic for User Panel routes
+  // --- Logic for User Panel ---
   else if (pathname.startsWith('/dashboard')) {
-    // If trying to access user dashboard without a user cookie, redirect to user login
+    // If user is trying to access a protected user route but is not logged in,
+    // redirect them to the user login page.
     if (!userCookie) {
       console.log('No user cookie, redirecting to user login')
       return NextResponse.redirect(new URL('/login', req.url))
     }
   }
   
-  // Allow access to regular login page without cookie check
-  else if (pathname === '/login') {
-    return NextResponse.next()
+  // --- Edge Case Handling ---
+  // If a logged-in admin visits the user login page, redirect them to the admin dashboard.
+  if (adminCookie && pathname === '/login') {
+    console.log('Admin user accessing regular login, redirecting to admin dashboard')
+    return NextResponse.redirect(new URL('/admin', req.url))
+  }
+  // If a logged-in user visits the admin login page, redirect them to their dashboard.
+  if (userCookie && pathname === '/admin/login') {
+    console.log('User accessing admin login, redirecting to user dashboard')
+    return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
-  // Redirect admin users from regular login to admin login (only if they have admin cookie)
-  if (pathname === '/login' && adminCookie && !userCookie) {
-    console.log('Admin user accessing regular login, redirecting to admin login')
-    return NextResponse.redirect(new URL('/admin/login', req.url))
-  }
-
-  // If all checks pass, continue to the requested page
+  // If all checks pass, allow the request to proceed.
   return NextResponse.next()
 }
 
-// Apply this middleware to all protected routes
+// The matcher should protect your content routes but EXCLUDE login pages.
 export const config = {
   matcher: [
     '/dashboard/:path*',
     '/admin/:path*',
+    // Edge case: also apply middleware to login pages to handle redirects for already-logged-in users.
     '/login',
-    // Add other protected routes here
+    '/admin/login'
   ],
 }

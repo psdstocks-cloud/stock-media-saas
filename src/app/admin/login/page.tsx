@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useFormState } from 'react-dom'
+import { authenticateAdmin } from '@/actions/adminAuth'
 import { 
   Shield, 
   Eye, 
@@ -20,81 +20,10 @@ import {
 } from 'lucide-react'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [mounted, setMounted] = useState(false)
-  const router = useRouter()
+  const [errorMessage, dispatch] = useFormState(authenticateAdmin, undefined)
 
-  useEffect(() => {
-    setMounted(true)
-    
-    // Check if user is already logged in and is admin
-    const checkAdminStatus = async () => {
-      const session = await getSession()
-      if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
-        // Redirect to admin dashboard
-        router.push('/admin')
-      }
-    }
-    
-    checkAdminStatus()
-  }, [router])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-
-    try {
-      // Use NextAuth signIn with admin provider
-      const result = await signIn('admin-credentials', {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: '/admin'
-      })
-
-      if (result?.error) {
-        console.error('Admin login error:', result.error)
-        setError('Invalid email or password. Please check your credentials and try again.')
-        return
-      }
-
-      if (result?.ok) {
-        // Redirect to admin dashboard
-        window.location.href = '/admin'
-      }
-    } catch (error) {
-      console.error('Admin login error:', error)
-      setError('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  if (!mounted) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '4px solid rgba(255,255,255,0.3)',
-          borderTop: '4px solid white',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
-      </div>
-    )
-  }
+  // Form submission is now handled by the server action
 
   return (
     <div style={{
@@ -337,7 +266,7 @@ export default function AdminLoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{
+          <form action={dispatch} style={{
             display: 'flex',
             flexDirection: 'column',
             gap: '24px'
@@ -367,8 +296,7 @@ export default function AdminLoginPage() {
                 </div>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="email"
                   required
                   style={{
                     width: '100%',
@@ -418,8 +346,7 @@ export default function AdminLoginPage() {
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
                   required
                   style={{
                     width: '100%',
@@ -462,7 +389,7 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Error Message */}
-            {error && (
+            {errorMessage && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -474,59 +401,41 @@ export default function AdminLoginPage() {
                 color: '#dc2626'
               }}>
                 <AlertCircle size={16} />
-                <span style={{ fontSize: '14px' }}>{error}</span>
+                <span style={{ fontSize: '14px' }}>{errorMessage}</span>
               </div>
             )}
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '16px',
-                background: isLoading 
-                  ? '#9ca3af' 
-                  : 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
                 fontSize: '16px',
                 fontWeight: '600',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
                 transition: 'all 0.2s ease',
-                boxShadow: isLoading 
-                  ? 'none' 
-                  : '0 8px 32px rgba(14, 165, 233, 0.3)'
+                boxShadow: '0 8px 32px rgba(14, 165, 233, 0.3)'
               }}
               onMouseOver={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(14, 165, 233, 0.4)'
-                }
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(14, 165, 233, 0.4)'
               }}
               onMouseOut={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(14, 165, 233, 0.3)'
-                }
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(14, 165, 233, 0.3)'
               }}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
-                  Signing In...
-                </>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight size={20} />
-                </>
-              )}
+              Sign In
+              <ArrowRight size={20} />
             </button>
           </form>
 
