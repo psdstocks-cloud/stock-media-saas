@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 
 export default function VerifyRequestPage() {
   const searchParams = useSearchParams()
-  const email = searchParams.get('email')
+  const email = searchParams?.get('email')
   const [mounted, setMounted] = useState(false)
   const [timeLeft, setTimeLeft] = useState(600) // 10 minutes in seconds
 

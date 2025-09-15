@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 
 export default function AuthErrorPage() {
   const searchParams = useSearchParams()
-  const error = searchParams.get('error')
+  const error = searchParams?.get('error')
   const [mounted, setMounted] = useState(false)
 
   // Ensure component is mounted before accessing searchParams
