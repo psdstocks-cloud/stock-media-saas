@@ -3,8 +3,8 @@
 import * as React from 'react'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Input } from './Input'
-import { Button } from './Button'
+import { Input } from './input'
+import { Button } from './button'
 import { useSearchSuggestions } from '@/hooks/useStockMedia'
 import { useAppStore } from '@/lib/store'
 
@@ -123,7 +123,7 @@ export function SearchBar({
         <Button
           onClick={() => handleSearch(query)}
           className="absolute inset-y-0 right-0 rounded-l-none h-12 px-6"
-          variant="gradient"
+          variant="default"
         >
           Search
         </Button>

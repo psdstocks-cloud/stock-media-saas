@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Button } from './Button'
+import { Button } from './button'
 import { MediaCard } from './MediaCard'
 import { SearchBar } from './SearchBar'
 import { 
@@ -90,7 +90,7 @@ export function DashboardPreview({ className }: DashboardPreviewProps) {
             <p className="text-gray-600">Manage your stock media library</p>
           </div>
           <Link href="/dashboard">
-            <Button variant="gradient" size="sm">
+            <Button variant="default" size="sm">
               Open Dashboard
             </Button>
           </Link>

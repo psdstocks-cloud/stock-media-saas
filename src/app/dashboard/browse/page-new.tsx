@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { MediaCard } from '@/components/ui/MediaCard'
 import { SearchResultsSkeleton, MediaListSkeleton } from '@/components/ui/LoadingSkeleton'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useSearchStockMedia } from '@/hooks/useStockMedia'
 import { useAppStore } from '@/lib/store'
 

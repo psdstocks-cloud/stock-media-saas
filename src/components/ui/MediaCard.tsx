@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import { Button } from './Button'
+import { Button } from './button'
 import { MediaItem } from '@/lib/store'
 import { useAppStore } from '@/lib/store'
 
@@ -110,7 +110,7 @@ export function MediaCard({
           </Button>
           <Button
             size="sm"
-            variant="gradient"
+            variant="default"
             onClick={handleDownload}
           >
             Download
@@ -164,7 +164,7 @@ export function MediaCard({
             </Button>
             <Button
               size="sm"
-              variant="gradient"
+              variant="default"
               onClick={handleDownload}
             >
               Download
