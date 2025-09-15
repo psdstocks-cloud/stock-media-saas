@@ -4,14 +4,9 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../prisma'
 import bcrypt from 'bcryptjs'
 
-// Check for build environment - disable adapter during build
-const isBuild = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
-const hasDatabase = process.env.DATABASE_URL && !isBuild
-
 export const adminAuthOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
-  // Use the adapter only when database is available and not in build
-  adapter: hasDatabase ? PrismaAdapter(prisma) : undefined,
+  // Use JWT strategy only - no database adapter needed
   providers: [
     CredentialsProvider({
       name: 'admin-credentials',

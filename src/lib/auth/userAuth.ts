@@ -84,7 +84,7 @@ const isBuild = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV 
 const hasDatabase = process.env.DATABASE_URL && !isBuild
 
 export const userAuthOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development-only',
   // Use the adapter only when database is available and not in build
   adapter: hasDatabase ? PrismaAdapter(prisma) : undefined,
   providers: createProviders(),
