@@ -1,6 +1,6 @@
 'use server'
 
-import { signIn, signOut } from '@/lib/auth'
+import { signIn, signOut } from '@/lib/auth/adminAuth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
