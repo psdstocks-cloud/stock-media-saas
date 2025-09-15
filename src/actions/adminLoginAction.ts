@@ -1,7 +1,8 @@
 'use server';
 
+// CRITICAL: The import for signIn MUST come from this specific file
+import { signIn } from '@/lib/auth/adminAuth';
 import { prisma } from '@/lib/prisma';
-import { sendVerificationRequest } from '@/lib/auth/sendVerificationRequest';
 
 export async function adminLoginAction(
   previousState: { success: boolean; message: string } | undefined,
@@ -36,42 +37,14 @@ export async function adminLoginAction(
       return { success: true, message: 'If this email is registered, a magic link has been sent.' };
     }
 
-    // Generate verification token and send email directly
-    console.log('🔍 Generating verification token and sending email...', { email });
+    // This will now call the correct, defined signIn function
+    console.log('🔍 Attempting to call signIn with email provider...', { email });
     
     try {
-      // Generate a secure token
-      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-      
-      // Store the verification token in the database
-      // First, delete any existing token for this email
-      await prisma.verificationToken.deleteMany({
-        where: { identifier: email }
-      });
-      
-      // Create the new token
-      await prisma.verificationToken.create({
-        data: {
-          identifier: email,
-          token: token,
-          expires: expires
-        }
-      });
-      
-      // Create the magic link URL
-      const magicLink = `${process.env.NEXTAUTH_URL}/api/auth/admin/callback/email?callbackUrl=%2Fadmin&token=${token}&email=${encodeURIComponent(email)}`;
-      
-      // Send the verification email
-      await sendVerificationRequest({
-        identifier: email,
-        url: magicLink,
-        provider: { id: 'email' }
-      });
-      
-      console.log('✅ Verification token created and email sent successfully');
+      await signIn('email', { email, redirect: false });
+      console.log('✅ signIn call completed successfully');
     } catch (signInError) {
-      console.error('🚨 Token generation or email sending failed:', signInError);
+      console.error('🚨 signIn call failed specifically:', signInError);
       throw signInError; // Re-throw to be caught by outer catch block
     }
     
