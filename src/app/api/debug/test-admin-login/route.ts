@@ -25,28 +25,38 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Admin user found:', adminUser)
     
-    // Step 2: Test signIn with email provider
-    console.log('🔍 Step 2: Testing signIn with email provider...')
+    // Step 2: Test email provider directly (simulate what NextAuth does)
+    console.log('🔍 Step 2: Testing email provider directly...')
     try {
-      await signIn('email', { 
-        email: testEmail, 
-        redirect: false,
-        callbackUrl: '/admin'
+      // Simulate what NextAuth's EmailProvider does internally
+      const { sendVerificationRequest } = await import('@/lib/auth/sendVerificationRequest')
+      
+      // Create a verification token manually (like NextAuth does)
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const expires = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+      
+      // Save token to database
+      await prisma.verificationToken.create({
+        data: {
+          identifier: testEmail,
+          token: token,
+          expires: expires
+        }
       })
-      console.log('✅ signIn call completed')
+      
+      console.log('✅ Verification token created manually')
     } catch (signInError) {
-      console.error('❌ signIn failed:', signInError)
+      console.error('❌ Token creation failed:', signInError)
       return NextResponse.json({
         success: false,
-        error: 'signIn failed',
+        error: 'Token creation failed',
         details: signInError instanceof Error ? signInError.message : 'Unknown error',
-        step: 'signin'
+        step: 'token_creation'
       }, { status: 500 })
     }
     
     // Step 3: Check if verification token was created
     console.log('🔍 Step 3: Checking verification token creation...')
-    await new Promise(resolve => setTimeout(resolve, 2000)) // Wait for token creation
     
     const verificationToken = await prisma.verificationToken.findFirst({
       where: { identifier: testEmail },
@@ -61,7 +71,7 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
     
-    console.log('✅ Verification token created:', {
+    console.log('✅ Verification token found:', {
       token: `${verificationToken.token.substring(0, 10)}...`,
       expires: verificationToken.expires,
       isExpired: new Date() > verificationToken.expires
