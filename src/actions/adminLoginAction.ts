@@ -5,9 +5,9 @@ import { signIn } from '@/lib/auth/adminAuth';
 import { prisma } from '@/lib/prisma';
 
 export async function adminLoginAction(
-  previousState: string | undefined,
+  previousState: { success: boolean; message: string } | undefined,
   formData: FormData
-) {
+): Promise<{ success: boolean; message: string }> {
   const email = formData.get('email') as string;
 
   if (!email) {
