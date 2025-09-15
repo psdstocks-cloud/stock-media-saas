@@ -33,12 +33,6 @@ export const adminAuthOptions: NextAuthOptions = {
       from: process.env.EMAIL_FROM || 'Stock Media SaaS <onboarding@resend.dev>',
       sendVerificationRequest,
       maxAge: 10 * 60, // 10 minutes - Security: Magic link expires quickly
-      // Add a small delay to prevent race conditions
-      generateVerificationToken: async () => {
-        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-        const expires = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-        return { token, expires }
-      },
     })
   ],
   session: {
