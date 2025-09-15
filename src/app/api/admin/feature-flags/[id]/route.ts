@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth-admin"
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit-log'
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

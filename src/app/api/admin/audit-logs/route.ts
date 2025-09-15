@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/lib/auth-admin" // <-- Import the new auth helper
 import { getAuditLogs, exportAuditLogs } from '@/lib/audit-log'
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth() // <-- Use the modern helper

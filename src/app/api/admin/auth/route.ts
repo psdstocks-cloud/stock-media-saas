@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth-admin"
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
