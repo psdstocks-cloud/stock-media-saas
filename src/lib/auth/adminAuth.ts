@@ -17,7 +17,7 @@ export const adminAuthOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
-      server: process.env.EMAIL_SERVER || {
+      server: {
         host: 'smtp.resend.com',
         port: 587,
         auth: {
