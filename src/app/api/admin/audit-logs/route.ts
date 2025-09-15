@@ -2,7 +2,7 @@
 // Audit logs management API
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/adminAuth' // <-- Import the new auth helper
+import { auth } from "@/lib/auth-admin" // <-- Import the new auth helper
 import { getAuditLogs, exportAuditLogs } from '@/lib/audit-log'
 
 export async function GET(request: NextRequest) {

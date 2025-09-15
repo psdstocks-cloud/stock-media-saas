@@ -1,13 +1,12 @@
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth-admin'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import OrdersManagementClient from './OrdersManagementClient'
 import './styles.css'
 
 export default async function AdminOrdersPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session?.user?.id) {
     redirect('/admin/login')

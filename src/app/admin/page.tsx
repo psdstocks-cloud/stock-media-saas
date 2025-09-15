@@ -1,13 +1,116 @@
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth-admin'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import './styles.css'
+// FIX 1: Define types based on the actual data structure
+type UserWithRelations = {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  password: string | null;
+  role: string;
+  emailVerified: Date | null;
+  loginAttempts: number;
+  lockedUntil: Date | null;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  pointsBalance: {
+    id: string;
+    userId: string;
+    currentPoints: number;
+    totalPurchased: number;
+    totalUsed: number;
+    lastRollover: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
+  subscriptions: Array<{
+    id: string;
+    userId: string;
+    planId: string;
+    status: string;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    plan: {
+      id: string;
+      name: string;
+      description: string | null;
+      price: number;
+      points: number;
+      rolloverLimit: number;
+      isActive: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }>;
+}
+
+type OrderWithRelations = {
+  id: string;
+  userId: string;
+  stockSiteId: string;
+  stockItemId: string;
+  stockItemUrl: string | null;
+  imageUrl: string | null;
+  title: string | null;
+  cost: number;
+  status: string;
+  taskId: string | null;
+  downloadUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user: {
+    name: string | null;
+    email: string;
+  };
+  stockSite: {
+    id: string;
+    name: string;
+    displayName: string;
+    url: string;
+    cost: number;
+    isActive: boolean;
+    category: string | null;
+    icon: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+type SubscriptionPlanType = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  points: number;
+  rolloverLimit: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+type StockSiteType = {
+  id: string;
+  name: string;
+  displayName: string;
+  cost: number;
+  isActive: boolean;
+  category: string | null;
+  icon: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session?.user?.id) {
     redirect('/admin/login')
@@ -443,7 +546,7 @@ export default async function AdminDashboard() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {recentUsers.map((user) => (
+                  {recentUsers.map((user: UserWithRelations) => (
                       <div key={user.id} style={{
                         background: 'rgba(255, 255, 255, 0.5)',
                         border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -557,7 +660,7 @@ export default async function AdminDashboard() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {recentOrders.map((order) => (
+                  {(recentOrders as OrderWithRelations[]).map((order) => (
                       <div key={order.id} style={{
                         background: 'rgba(255, 255, 255, 0.5)',
                         border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -690,7 +793,7 @@ export default async function AdminDashboard() {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                   gap: '1.5rem'
                 }}>
-              {subscriptionPlans.map((plan) => (
+              {subscriptionPlans.map((plan: SubscriptionPlanType) => (
                     <div key={plan.id} style={{
                       background: 'rgba(255, 255, 255, 0.5)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -810,7 +913,7 @@ export default async function AdminDashboard() {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                   gap: '1rem'
                 }}>
-              {stockSites.map((site) => (
+              {stockSites.map((site: StockSiteType) => (
                     <div key={site.id} style={{
                       background: 'rgba(255, 255, 255, 0.5)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from "@/lib/auth-user"
 import { OrderProcessor } from '@/lib/order-processor'
 import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 import { prisma } from '@/lib/prisma'
@@ -22,7 +21,7 @@ export async function GET(
       }, { status: 429 })
     }
     
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

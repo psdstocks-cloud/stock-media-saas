@@ -2,7 +2,7 @@
 // Get all settings categories with metadata
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/adminAuth'
+import { auth } from "@/lib/auth-admin"
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {

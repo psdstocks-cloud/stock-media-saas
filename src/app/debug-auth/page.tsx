@@ -1,9 +1,8 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth-user'
 import { prisma } from '@/lib/prisma'
 
 export default async function DebugAuth() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   const user = session?.user?.id ? await prisma.user.findUnique({
     where: { id: session.user.id },

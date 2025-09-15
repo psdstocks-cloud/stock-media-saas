@@ -1,6 +1,6 @@
 'use server'
 
-import { auth } from '@/lib/auth'
+import { auth } from "@/lib/auth-user"
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -10,7 +10,7 @@ type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN'
 
 // Security check function - verifies SUPER_ADMIN access
 async function verifySuperAdmin() {
-  const session = await auth()
+    const session = await auth()
   
   if (!session?.user) {
     redirect('/admin/login')

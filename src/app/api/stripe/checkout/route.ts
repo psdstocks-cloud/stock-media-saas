@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { auth } from "@/lib/auth-user"
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 
@@ -30,7 +30,7 @@ const PRICING_PLANS = {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession()
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -1,70 +1,43 @@
-import { PrismaClient } from '@prisma/client'
+// scripts/seedAdmin.ts
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
+const ADMIN_EMAIL = 'admin@stockmedia.com';
+const ADMIN_PASSWORD = 'AdminSecurePassword2025!'; // Change this in a secure way if needed
 
-async function seedAdmin() {
-  try {
-    console.log('🌱 Starting admin user seeding...')
-    
-    const adminEmail = 'psdstockss@gmail.com'
-    
-    // Check if admin user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: adminEmail },
-      select: { id: true, email: true, role: true }
-    })
-    
-    if (existingUser) {
-      console.log('✅ Admin user already exists:', {
-        id: existingUser.id,
-        email: existingUser.email,
-        role: existingUser.role
-      })
-      
-      // Update role to SUPER_ADMIN if not already
-      if (existingUser.role !== 'SUPER_ADMIN') {
-        const updatedUser = await prisma.user.update({
-          where: { email: adminEmail },
-          data: { role: 'SUPER_ADMIN' },
-          select: { id: true, email: true, role: true }
-        })
-        
-        console.log('🔄 Updated user role to SUPER_ADMIN:', updatedUser)
-      }
-      
-      return
-    }
-    
-    // Create new admin user
-    const adminUser = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        name: 'Admin User',
-        role: 'SUPER_ADMIN',
-        emailVerified: new Date(), // Mark as verified
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      select: { id: true, email: true, role: true, name: true }
-    })
-    
-    console.log('✅ Admin user created successfully:', adminUser)
-    
-  } catch (error) {
-    console.error('❌ Error seeding admin user:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
+async function main() {
+  console.log('Seeding admin user...');
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: ADMIN_EMAIL },
+  });
+
+  if (existingAdmin) {
+    console.log('Admin user already exists.');
+    return;
   }
+
+  const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12);
+
+  const adminUser = await prisma.user.create({
+    data: {
+      email: ADMIN_EMAIL,
+      name: 'Super Admin',
+      password: hashedPassword,
+      role: 'SUPER_ADMIN',
+    },
+  });
+
+  console.log('✅ Super Admin user created successfully:');
+  console.log(adminUser);
 }
 
-// Run the seed function
-seedAdmin()
-  .then(() => {
-    console.log('🎉 Admin seeding completed successfully!')
-    process.exit(0)
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
   })
-  .catch((error) => {
-    console.error('💥 Admin seeding failed:', error)
-    process.exit(1)
-  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

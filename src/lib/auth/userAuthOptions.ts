@@ -1,13 +1,12 @@
-import { type NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { type NextAuthConfig } from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '../prisma';
 import bcrypt from 'bcryptjs';
 
-export const userAuthOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+export const userAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -29,19 +28,17 @@ export const userAuthOptions: NextAuthOptions = {
           return null;
         }
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email as string },
         });
         if (!user || !user.password) {
           return null;
         }
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        const isValid = await bcrypt.compare(credentials.password as string, user.password);
         return isValid ? user : null;
       },
     }),
   ],
-  session: {
-    strategy: 'jwt',
-  },
+  session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -63,6 +60,6 @@ export const userAuthOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-    error: '/auth/error', // A general auth error page
+    error: '/auth/error',
   },
-};
+} satisfies NextAuthConfig;

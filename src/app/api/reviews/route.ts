@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from "@/lib/auth-user"
 import { reviewSchema, sanitizeString } from '@/lib/validation'
 import { csrfMiddleware } from '@/lib/csrf'
 
@@ -109,7 +108,7 @@ export async function GET(request: NextRequest) {
 // Submit a new review
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },

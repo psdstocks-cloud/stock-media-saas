@@ -1,47 +1,41 @@
-import { type NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import EmailProvider from 'next-auth/providers/email';
+import { type NextAuthConfig } from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '../prisma';
-import { sendVerificationRequest } from './sendVerificationRequest';
+import bcrypt from 'bcryptjs';
 
-export const adminAuthOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+export const adminAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    EmailProvider({
-      server: {
-        host: 'smtp.resend.com',
-        port: 587,
-        auth: {
-          user: 'resend',
-          pass: process.env.RESEND_API_KEY,
-        },
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
-      from: process.env.EMAIL_FROM || 'Stock Media SaaS <onboarding@resend.dev>',
-      maxAge: 10 * 60, // 10-minute token validity
-      sendVerificationRequest,
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+        const user = await prisma.user.findUnique({
+          where: { email: (credentials.email as string).toLowerCase() },
+        });
+
+        if (!user || !user.password || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+          return null;
+        }
+        
+        const isValid = await bcrypt.compare(credentials.password as string, user.password);
+        if (isValid) return user;
+        
+        return null;
+      },
     }),
   ],
-  session: {
-    strategy: 'jwt',
-  },
+  session: { strategy: 'jwt' },
   callbacks: {
-    async signIn({ user }) {
-      const dbUser = await prisma.user.findUnique({
-        where: { email: user.email! },
-        select: { role: true },
-      });
-
-      if (dbUser && (dbUser.role === 'ADMIN' || dbUser.role === 'SUPER_ADMIN')) {
-        return true;
-      }
-      // Explicitly return false to prevent non-admin sign-ins
-      return false;
-    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
       }
       return token;
     },
@@ -52,13 +46,8 @@ export const adminAuthOptions: NextAuthOptions = {
       }
       return session;
     },
-    async redirect({ baseUrl }) {
-      return `${baseUrl}/admin`;
-    },
   },
   pages: {
     signIn: '/admin/login',
-    error: '/admin/auth/error',
-    verifyRequest: '/admin/auth/verify-request',
   },
-};
+} satisfies NextAuthConfig;

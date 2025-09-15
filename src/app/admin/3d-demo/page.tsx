@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth-admin'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import AdminLayout from '@/components/admin/AdminLayout'
 import ThreeDDemoClient from './ThreeDDemoClient'
 
 export default async function ThreeDDemo() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   console.log('3D Demo page - Session check:', { 
     hasSession: !!session, 

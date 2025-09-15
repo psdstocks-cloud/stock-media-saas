@@ -1,8 +1,7 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth-user'
 
 export default async function TestSession() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   return (
     <div style={{ padding: '20px', fontFamily: 'monospace' }}>

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from "@/lib/auth-user"
 import { NehtwAPI, OrderManager } from '@/lib/nehtw-api'
 import { OrderProcessor } from '@/lib/order-processor'
 import { prisma } from '@/lib/prisma'
@@ -10,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Place order API called')
     
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     console.log('Session check:', { hasSession: !!session, userId: session?.user?.id })
     
     if (!session?.user?.id) {

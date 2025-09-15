@@ -1,41 +1,34 @@
-import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { AdminSidebar } from '@/components/admin/AdminSidebar'
-import { AdminHeader } from '@/components/admin/AdminHeader'
-import { Toaster } from '@/components/ui/toaster'
+// src/app/(admin)/layout.tsx
+import { auth } from '@/lib/auth-admin'; // <-- Correct import
+import { redirect } from 'next/navigation';
 
-// Force dynamic rendering for admin layout
 export const dynamic = 'force-dynamic'
 
 export default async function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const session = await auth()
-
-  // Redirect to login if no admin session
-  if (!session || !session.user) {
-    redirect('/admin/login')
+  const session = await auth();
+  if (!session?.user) {
+    redirect('/admin/login');
   }
-
-  // Check if user has admin role
   if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
-    redirect('/admin/login')
+    // Redirect non-admins away
+    redirect('/');
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminSidebar />
+      {/* <AdminSidebar /> */}
       <div className="lg:pl-64">
-        <AdminHeader user={session.user} />
+        {/* <AdminHeader user={session.user} /> */}
         <main className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>
       </div>
-      <Toaster />
     </div>
-  )
+  );
 }
