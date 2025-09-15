@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useFormState } from 'react-dom'
-import { authenticateAdmin } from '@/actions/adminAuth'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { 
   Shield, 
   Eye, 
@@ -21,9 +21,43 @@ import {
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [errorMessage, dispatch] = useFormState(authenticateAdmin, undefined)
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const router = useRouter()
 
-  // Form submission is now handled by the server action
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setErrorMessage('')
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    try {
+      const result = await signIn('admin-credentials', {
+        email,
+        password,
+        redirect: false
+      })
+
+      if (result?.error) {
+        if (result.error === 'CredentialsSignin') {
+          setErrorMessage('Invalid credentials. Please check your email and password.')
+        } else {
+          setErrorMessage('An error occurred during authentication. Please try again.')
+        }
+      } else {
+        // Success - redirect to admin dashboard
+        router.push('/admin')
+      }
+    } catch (error) {
+      console.error('Admin authentication error:', error)
+      setErrorMessage('An error occurred during authentication. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div style={{
@@ -266,7 +300,7 @@ export default function AdminLoginPage() {
             </p>
           </div>
 
-          <form action={dispatch} style={{
+          <form onSubmit={handleSubmit} style={{
             display: 'flex',
             flexDirection: 'column',
             gap: '24px'
@@ -408,16 +442,17 @@ export default function AdminLoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '16px',
-                background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
                 fontSize: '16px',
                 fontWeight: '600',
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -434,8 +469,17 @@ export default function AdminLoginPage() {
                 e.currentTarget.style.boxShadow = '0 8px 32px rgba(14, 165, 233, 0.3)'
               }}
             >
-              Sign In
-              <ArrowRight size={20} />
+              {isLoading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight size={20} />
+                </>
+              )}
             </button>
           </form>
 
