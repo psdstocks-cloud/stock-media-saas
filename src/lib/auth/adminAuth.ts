@@ -25,7 +25,7 @@ export const adminAuthOptions: NextAuthOptions = {
           pass: process.env.RESEND_API_KEY,
         },
       },
-      from: 'Stock Media SaaS <onboarding@resend.dev>',
+      from: 'Stock Media SaaS <psdstockss@gmail.com>',
       sendVerificationRequest,
       maxAge: 10 * 60, // 10 minutes
     })

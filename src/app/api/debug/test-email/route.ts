@@ -15,7 +15,7 @@ export async function POST() {
 
     // Test email sending
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Stock Media SaaS <noreply@stockmedia.com>',
+      from: 'Stock Media SaaS <psdstockss@gmail.com>',
       to: ['psdstockspay@gmail.com'],
       subject: '🧪 Test Email - Admin Login System',
       html: `
