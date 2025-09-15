@@ -1,37 +1,21 @@
 'use server'
 
-import { redirect } from 'next/navigation'
+// CRITICAL: Import the dedicated signIn function from your admin auth file
+import { signIn } from '@/lib/auth/adminAuth'
 
 export async function authenticateAdmin(
   previousState: string | undefined, 
   formData: FormData
 ) {
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-
   try {
-    // Call the admin authentication API directly
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/admin/callback/credentials`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        email,
-        password,
-        redirect: 'false',
-        callbackUrl: '/admin'
-      })
-    })
-
-    if (!response.ok) {
+    // This is the correct way to sign in.
+    // NextAuth handles the cookie and redirect automatically.
+    await signIn('admin-credentials', formData)
+  } catch (error) {
+    if ((error as Error).message.includes('CredentialsSignin')) {
       return 'Invalid credentials. Please check your email and password.'
     }
-
-    // If successful, redirect to admin dashboard
-    redirect('/admin')
-  } catch (error) {
-    console.error('Admin authentication error:', error)
+    // This will catch other errors (like network issues)
     return 'An error occurred during authentication. Please try again.'
   }
 }

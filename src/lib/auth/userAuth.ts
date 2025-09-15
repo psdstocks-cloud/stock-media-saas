@@ -1,4 +1,4 @@
-import { NextAuthOptions } from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
@@ -6,18 +6,32 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../prisma'
 import bcrypt from 'bcryptjs'
 
-export const userAuthOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID!,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    }),
+// Helper function to create providers array with optional OAuth providers
+const createProviders = () => {
+  const providers = []
+
+  // Add Google provider only if environment variables are available
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.push(
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
+    )
+  }
+
+  // Add Facebook provider only if environment variables are available
+  if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
+    providers.push(
+      FacebookProvider({
+        clientId: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      })
+    )
+  }
+
+  // Always add credentials provider
+  providers.push(
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -60,7 +74,20 @@ export const userAuthOptions: NextAuthOptions = {
         }
       }
     })
-  ],
+  )
+
+  return providers
+}
+
+// Check for build environment - disable adapter during build
+const isBuild = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+const hasDatabase = process.env.DATABASE_URL && !isBuild
+
+export const userAuthOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  // Use the adapter only when database is available and not in build
+  adapter: hasDatabase ? PrismaAdapter(prisma) : undefined,
+  providers: createProviders(),
   session: {
     strategy: 'jwt'
   },
@@ -148,3 +175,7 @@ export const userAuthOptions: NextAuthOptions = {
     }
   },
 }
+
+// Export the NextAuth handler for the API route
+const handler = NextAuth(userAuthOptions)
+export { handler as GET, handler as POST }

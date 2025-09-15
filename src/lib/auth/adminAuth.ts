@@ -1,12 +1,17 @@
-import { NextAuthOptions } from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../prisma'
 import bcrypt from 'bcryptjs'
 
+// Check for build environment - disable adapter during build
+const isBuild = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+const hasDatabase = process.env.DATABASE_URL && !isBuild
+
 export const adminAuthOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
-  adapter: PrismaAdapter(prisma),
+  // Use the adapter only when database is available and not in build
+  adapter: hasDatabase ? PrismaAdapter(prisma) : undefined,
   providers: [
     CredentialsProvider({
       name: 'admin-credentials',
@@ -113,3 +118,9 @@ export const adminAuthOptions: NextAuthOptions = {
     }
   },
 }
+
+// Initialize NextAuth with admin configuration and export admin-specific methods
+const adminAuth = NextAuth(adminAuthOptions)
+
+export const { auth, signIn, signOut } = adminAuth
+export const { GET, POST } = adminAuth
