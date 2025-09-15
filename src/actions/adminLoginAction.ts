@@ -1,7 +1,7 @@
 'use server'
 
-import { signIn } from '@/lib/auth/adminAuth'
 import { prisma } from '@/lib/prisma'
+import { sendVerificationRequest } from '@/lib/auth/sendVerificationRequest'
 
 // Simple in-memory rate limiting (for production, use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
@@ -95,10 +95,25 @@ export async function authenticateAdmin(
     // Only send email if user is actually an admin
     if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
       try {
-        // Send magic link using NextAuth's email provider
-        await signIn('email', { 
-          email: trimmedEmail, 
-          redirect: false 
+        // Generate a magic link URL (simplified approach)
+        const baseUrl = process.env.NEXTAUTH_URL || 'https://stock-media-saas-e4k2gb720-psdstocks-projects.vercel.app'
+        const magicLink = `${baseUrl}/api/auth/admin/signin?email=${encodeURIComponent(trimmedEmail)}&callbackUrl=${encodeURIComponent('/admin')}`
+        
+        // Send magic link directly using our email function
+        await sendVerificationRequest({
+          identifier: trimmedEmail,
+          url: magicLink,
+          provider: {
+            server: {
+              host: process.env.EMAIL_SERVER_HOST,
+              port: process.env.EMAIL_SERVER_PORT,
+              auth: {
+                user: process.env.EMAIL_SERVER_USER,
+                pass: process.env.EMAIL_SERVER_PASSWORD,
+              },
+            },
+            from: process.env.EMAIL_FROM || 'Stock Media SaaS <psdstockspay@gmail.com>'
+          }
         })
 
         console.log('Admin magic link sent successfully:', {
@@ -112,10 +127,10 @@ export async function authenticateAdmin(
           success: true,
           message: 'Check your inbox for the login link.'
         }
-      } catch (signInError) {
+      } catch (emailError) {
         console.error('Failed to send admin magic link:', {
           email: trimmedEmail,
-          error: signInError,
+          error: emailError,
           timestamp: new Date().toISOString()
         })
 
