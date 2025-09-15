@@ -28,7 +28,7 @@ export async function sendVerificationRequest({
 
     // Send the email using Resend
     const { data, error } = await resend.emails.send({
-      from: 'Stock Media SaaS <psdstockss@gmail.com>', // Use your verified email
+      from: 'Stock Media SaaS <onboarding@resend.dev>', // Use Resend's default domain
       to: [email],
       subject: '🔐 Your Admin Login Link - Stock Media SaaS',
       html: emailHtml,
