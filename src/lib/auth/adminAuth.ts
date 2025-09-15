@@ -148,9 +148,5 @@ export const adminAuthOptions: NextAuthOptions = {
 // Initialize NextAuth with admin configuration and export admin-specific methods
 const adminAuth = NextAuth(adminAuthOptions)
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = adminAuth
+export const { auth, signIn, signOut } = adminAuth
+export const { GET, POST } = adminAuth
