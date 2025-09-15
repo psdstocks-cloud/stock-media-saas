@@ -18,6 +18,7 @@ export const adminAuthOptions: NextAuthOptions = {
   pages: {
     error: '/admin/auth/error',
     verifyRequest: '/admin/auth/verify-request',
+    signIn: '/admin/login',
   },
   providers: [
     EmailProvider({
@@ -32,6 +33,12 @@ export const adminAuthOptions: NextAuthOptions = {
       from: process.env.EMAIL_FROM || 'Stock Media SaaS <onboarding@resend.dev>',
       sendVerificationRequest,
       maxAge: 10 * 60, // 10 minutes - Security: Magic link expires quickly
+      // Add a small delay to prevent race conditions
+      generateVerificationToken: async () => {
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        const expires = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+        return { token, expires }
+      },
     })
   ],
   session: {
@@ -106,6 +113,12 @@ export const adminAuthOptions: NextAuthOptions = {
         token.role = user.role
         token.email = user.email
         token.name = user.name
+        
+        console.log('✅ JWT token updated with user data:', {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        })
       }
       return token
     },
@@ -125,6 +138,8 @@ export const adminAuthOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
+      console.log('🔍 Admin redirect callback:', { url, baseUrl })
+      
       // Always redirect admin users to admin dashboard
       if (url.startsWith("/")) return `${baseUrl}${url}`
       else if (new URL(url).origin === baseUrl) return url
