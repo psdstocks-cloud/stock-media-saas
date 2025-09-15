@@ -3,7 +3,7 @@ import EmailProvider from 'next-auth/providers/email'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../prisma'
 import { sendVerificationRequest } from './sendVerificationRequest'
-import { validateEnvironmentVariables } from './env-validation'
+import { validateEnvironmentVariables } from '../env-validation'
 
 // Validate environment variables on startup
 try {
