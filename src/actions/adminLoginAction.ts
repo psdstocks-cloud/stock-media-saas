@@ -28,6 +28,16 @@ export async function authenticateAdmin(
   formData: FormData
 ): Promise<{ success: boolean; message?: string }> {
   try {
+    // --- DEBUGGING LOGS ---
+    console.log('--- Admin Login Action Triggered ---')
+    console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL)
+    console.log('Has NEXTAUTH_SECRET:', !!process.env.NEXTAUTH_SECRET)
+    console.log('NEXTAUTH_SECRET length:', process.env.NEXTAUTH_SECRET?.length || 0)
+    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL)
+    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
+    console.log('EMAIL_FROM:', process.env.EMAIL_FROM)
+    console.log('------------------------------------')
+
     const email = formData.get('email') as string
 
     // Input validation

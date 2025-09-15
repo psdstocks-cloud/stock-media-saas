@@ -3,9 +3,17 @@ import EmailProvider from 'next-auth/providers/email'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '../prisma'
 import { sendVerificationRequest } from './sendVerificationRequest'
+import { validateEnvironmentVariables } from './env-validation'
+
+// Validate environment variables on startup
+try {
+  validateEnvironmentVariables()
+} catch (error) {
+  console.error('Environment validation failed:', error)
+}
 
 export const adminAuthOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development-only-do-not-use-in-production',
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
