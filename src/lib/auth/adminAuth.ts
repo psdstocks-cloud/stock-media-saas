@@ -15,6 +15,10 @@ try {
 export const adminAuthOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development-only-do-not-use-in-production',
   adapter: PrismaAdapter(prisma),
+  pages: {
+    error: '/admin/auth/error',
+    verifyRequest: '/admin/auth/verify-request',
+  },
   providers: [
     EmailProvider({
       server: {
@@ -89,16 +93,14 @@ export const adminAuthOptions: NextAuthOptions = {
       console.warn('Non-email provider blocked for admin authentication:', account?.provider)
       return false
     },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.email = token.email as string
-        session.user.name = token.name as string
-      }
-      return session
-    },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      console.log('🔍 JWT callback triggered:', {
+        hasUser: !!user,
+        hasAccount: !!account,
+        provider: account?.provider,
+        timestamp: new Date().toISOString()
+      })
+
       if (user) {
         token.id = user.id
         token.role = user.role
@@ -106,6 +108,21 @@ export const adminAuthOptions: NextAuthOptions = {
         token.name = user.name
       }
       return token
+    },
+    async session({ session, token }) {
+      console.log('🔍 Session callback triggered:', {
+        hasToken: !!token,
+        hasSession: !!session,
+        timestamp: new Date().toISOString()
+      })
+
+      if (token) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+        session.user.email = token.email as string
+        session.user.name = token.name as string
+      }
+      return session
     },
     async redirect({ url, baseUrl }) {
       // Always redirect admin users to admin dashboard
