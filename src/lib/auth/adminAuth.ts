@@ -46,6 +46,12 @@ export const adminAuthOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('🔍 Admin signIn callback triggered:', {
+        provider: account?.provider,
+        email: user.email,
+        timestamp: new Date().toISOString()
+      })
+
       // Only allow email provider for admin authentication
       if (account?.provider === 'email') {
         // Verify the user has admin role
@@ -54,7 +60,14 @@ export const adminAuthOptions: NextAuthOptions = {
             where: { email: user.email! },
             select: { role: true }
           })
-          
+
+          console.log('🔍 Database user lookup result:', {
+            email: user.email,
+            found: !!dbUser,
+            role: dbUser?.role,
+            isAdmin: dbUser && (dbUser.role === 'ADMIN' || dbUser.role === 'SUPER_ADMIN')
+          })
+
           if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'SUPER_ADMIN')) {
             console.warn('Email login attempt by non-admin user:', {
               email: user.email,
@@ -63,7 +76,8 @@ export const adminAuthOptions: NextAuthOptions = {
             })
             return false
           }
-          
+
+          console.log('✅ Admin email authentication approved')
           return true
         } catch (error) {
           console.error('Admin email auth error:', error)

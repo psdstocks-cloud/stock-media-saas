@@ -102,6 +102,33 @@ export async function authenticateAdmin(
           callbackUrl: '/admin'
         })
 
+        // --- CRITICAL DEBUGGING: Check if token was saved to database ---
+        console.log('🔍 DEBUGGING: Checking verification token in database...')
+        
+        // Wait a moment for the token to be saved
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        const verificationToken = await prisma.verificationToken.findFirst({
+          where: { identifier: trimmedEmail },
+          orderBy: { expires: 'desc' }
+        })
+        
+        console.log(`🔍 Token search result for ${trimmedEmail}:`, {
+          found: !!verificationToken,
+          token: verificationToken?.token ? `${verificationToken.token.substring(0, 10)}...` : 'NONE',
+          expires: verificationToken?.expires,
+          isExpired: verificationToken ? new Date() > verificationToken.expires : 'N/A',
+          timeUntilExpiry: verificationToken ? 
+            Math.round((verificationToken.expires.getTime() - new Date().getTime()) / 1000 / 60) + ' minutes' : 'N/A'
+        })
+        
+        if (!verificationToken) {
+          console.error('🚨 CRITICAL: Verification token was NOT saved to the database!')
+          console.error('This indicates a problem with the PrismaAdapter or database connection.')
+        } else {
+          console.log('✅ Verification token found in database - email should be sent')
+        }
+
         console.log('Admin magic link sent successfully:', {
           email: trimmedEmail,
           userId: user.id,
