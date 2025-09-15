@@ -20,6 +20,7 @@ model User {
   image         String?
   password      String?   // Add password field
   role          String    @default("USER")
+  emailVerified DateTime? // Email verification timestamp
   loginAttempts Int       @default(0)
   lockedUntil   DateTime?
   lastLoginAt   DateTime?

@@ -49,28 +49,24 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
-      // Call admin authentication API directly
-      const response = await fetch('/api/auth/admin/callback/credentials', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          email,
-          password,
-          redirect: 'false',
-          callbackUrl: '/admin'
-        })
+      // Use NextAuth signIn with admin provider
+      const result = await signIn('admin-credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: '/admin'
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        setError(errorData.error || 'Invalid email or password. Please check your credentials and try again.')
+      if (result?.error) {
+        console.error('Admin login error:', result.error)
+        setError('Invalid email or password. Please check your credentials and try again.')
         return
       }
 
-      // Redirect to admin dashboard
-      window.location.href = '/admin'
+      if (result?.ok) {
+        // Redirect to admin dashboard
+        window.location.href = '/admin'
+      }
     } catch (error) {
       console.error('Admin login error:', error)
       setError('An error occurred. Please try again.')
