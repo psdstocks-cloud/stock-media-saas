@@ -43,60 +43,7 @@ export default function ForgotPasswordPage() {
   // Ensure component is mounted before rendering
   useEffect(() => {
     setMounted(true)
-    
-    // Check if there's a timer for any email in localStorage
-    const checkForActiveTimer = () => {
-      try {
-        const stored = localStorage.getItem('email_resend_timer')
-        if (stored) {
-          const timerState = JSON.parse(stored)
-          const now = Date.now()
-          const remainingTime = Math.ceil((timerState.nextAllowedAt - now) / 1000)
-          
-          if (remainingTime > 0) {
-            // There's an active timer, show success state
-            setEmail(timerState.email)
-            setResendTimer(remainingTime)
-            setCanResend(false)
-            setSuccess(true)
-            setTimerInitialized(true)
-          } else {
-            // Timer expired, clean up
-            localStorage.removeItem('email_resend_timer')
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to check localStorage timer:', error)
-      }
-    }
-    
-    checkForActiveTimer()
   }, [])
-
-  // Initialize persistent timer on mount
-  useEffect(() => {
-    if (mounted && email && !timerInitialized) {
-      // First check localStorage
-      const remainingTime = PersistentTimer.getRemainingTime(email)
-      if (remainingTime > 0) {
-        setResendTimer(remainingTime)
-        setCanResend(false)
-        setSuccess(true) // Show success state if timer is active
-        setTimerInitialized(true)
-      } else {
-        // If no localStorage timer, check server
-        checkServerTimerStatus(email)
-      }
-    }
-  }, [mounted, email, timerInitialized])
-
-  // Check server timer status on page load
-  useEffect(() => {
-    if (mounted && email && !timerInitialized) {
-      // Always check server status to ensure accuracy
-      checkServerTimerStatus(email)
-    }
-  }, [mounted, email])
 
   // Check server timer status
   const checkServerTimerStatus = async (email: string) => {
@@ -292,56 +239,6 @@ export default function ForgotPasswordPage() {
     )
   }
 
-  // Show loading state while checking timer
-  if (checkingTimer) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          padding: '40px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          textAlign: 'center',
-          maxWidth: '400px',
-          width: '100%'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <Loader2 size={24} className="animate-spin" color="#3b82f6" />
-            <span style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#374151'
-            }}>
-              Checking timer status...
-            </span>
-          </div>
-          <p style={{
-            margin: 0,
-            fontSize: '14px',
-            color: '#6b7280',
-            lineHeight: '1.5'
-          }}>
-            Verifying your email reset timer to ensure security
-          </p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <>

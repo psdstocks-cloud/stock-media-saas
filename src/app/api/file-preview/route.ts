@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth"
+import { auth } from "@/auth"
 import { StockAPI } from '@/lib/stock-api'
 import { ComprehensiveUrlParser } from '@/lib/comprehensive-url-parser'
 import { prisma } from '@/lib/prisma'

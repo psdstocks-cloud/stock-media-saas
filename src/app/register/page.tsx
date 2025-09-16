@@ -179,6 +179,12 @@ export default function RegisterPage() {
     // Clear error for this field
     setFormErrors(prev => ({ ...prev, [field]: '' }))
     
+    // Update password strength for password field
+    if (field === 'password') {
+      const strength = calculatePasswordStrength(value)
+      setPasswordStrength(strength)
+    }
+    
     // Check email existence for email field
     if (field === 'email') {
       setEmailExists(false)
@@ -378,7 +384,7 @@ export default function RegisterPage() {
     } else if (formData.password.length < 8) {
       errors.password = 'Password must be at least 8 characters'
       isValid = false
-    } else if (passwordStrength.score < 3) {
+    } else if (passwordStrength.score < 2) {
       errors.password = 'Password is too weak'
       isValid = false
     }
@@ -447,10 +453,18 @@ export default function RegisterPage() {
 
   // Handle step progression
   const handleStepContinue = () => {
+    console.log('Continue button clicked, current step:', step)
+    console.log('Form data:', formData)
+    console.log('Password strength:', passwordStrength)
+    
     if (step === 1) {
       // Validate step 1 before proceeding
-      if (!validateStep1()) {
+      const isValid = validateStep1()
+      console.log('Step 1 validation result:', isValid)
+      
+      if (!isValid) {
         const errorMessage = getStepValidationMessage()
+        console.log('Validation error message:', errorMessage)
         setError(errorMessage)
         return
       }
@@ -731,7 +745,14 @@ export default function RegisterPage() {
                             fontSize: '12px',
                             color: '#6b7280'
                           }}>
-                            {Math.round((formData.name ? 1 : 0) + (formData.email ? 1 : 0) + (formData.password ? 1 : 0) + (formData.confirmPassword ? 1 : 0))} of 4 fields completed
+                            {(() => {
+                              let completed = 0
+                              if (formData.name.trim() && formData.name.trim().length >= 2) completed++
+                              if (formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) completed++
+                              if (formData.password && formData.password.length >= 8 && passwordStrength.score >= 2) completed++
+                              if (formData.confirmPassword && formData.confirmPassword === formData.password) completed++
+                              return completed
+                            })()} of 4 fields completed
                           </span>
                         </div>
                         <div style={{
@@ -744,7 +765,14 @@ export default function RegisterPage() {
                             height: '100%',
                             background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
                             borderRadius: '3px',
-                            width: `${((formData.name ? 1 : 0) + (formData.email ? 1 : 0) + (formData.password ? 1 : 0) + (formData.confirmPassword ? 1 : 0)) * 25}%`,
+                            width: `${(() => {
+                              let completed = 0
+                              if (formData.name.trim() && formData.name.trim().length >= 2) completed++
+                              if (formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) completed++
+                              if (formData.password && formData.password.length >= 8 && passwordStrength.score >= 2) completed++
+                              if (formData.confirmPassword && formData.confirmPassword === formData.password) completed++
+                              return completed * 25
+                            })()}%`,
                             transition: 'width 0.3s ease'
                           }} />
                         </div>

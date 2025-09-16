@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth"
+import { auth } from "@/auth"
 import { NehtwAPI, OrderManager } from '@/lib/nehtw-api'
 import { OrderProcessor } from '@/lib/order-processor'
 import { prisma } from '@/lib/prisma'

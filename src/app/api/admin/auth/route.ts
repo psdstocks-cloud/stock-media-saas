@@ -2,7 +2,7 @@
 // Enhanced admin authentication API
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth"
+import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
