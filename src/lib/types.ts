@@ -40,3 +40,15 @@ export type UserWithRelations = {
     }
   }>
 }
+
+export type PointPack = {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  points: number
+  stripePriceId: string
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+}

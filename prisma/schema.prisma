@@ -446,3 +446,18 @@ model MessageStatus {
   @@map("message_statuses")
 }
 
+// Point packs for one-time purchases
+model PointPack {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  price       Float    // Price in USD
+  points      Int      // Number of points included
+  stripePriceId String @unique // The Price ID from your Stripe account
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("point_packs")
+}
+

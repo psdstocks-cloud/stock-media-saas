@@ -72,22 +72,36 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleOneTimePayment(session: Stripe.Checkout.Session) {
-  const { userId, planId, points } = session.metadata!
+  const { userId, points, type, pointPackId, planId } = session.metadata!
   
   if (!userId || !points) {
     console.error('Missing metadata in one-time payment:', session.metadata)
     return
   }
 
-  // Add points to user account
-  await PointsManager.addPoints(
-    userId,
-    parseInt(points),
-    'PURCHASE',
-    `One-time purchase: ${planId} plan - ${points} points`
-  )
-
-  console.log(`Added ${points} points to user ${userId} for ${planId} plan`)
+  // Handle point pack purchases
+  if (type === 'point_pack' && pointPackId) {
+    await PointsManager.addPoints(
+      userId,
+      parseInt(points),
+      'PURCHASE',
+      `Point pack purchase: ${points} points`
+    )
+    console.log(`Added ${points} points to user ${userId} for point pack ${pointPackId}`)
+  } 
+  // Handle subscription plan purchases (legacy)
+  else if (planId) {
+    await PointsManager.addPoints(
+      userId,
+      parseInt(points),
+      'PURCHASE',
+      `One-time purchase: ${planId} plan - ${points} points`
+    )
+    console.log(`Added ${points} points to user ${userId} for ${planId} plan`)
+  }
+  else {
+    console.error('Unknown payment type or missing metadata:', session.metadata)
+  }
 }
 
 async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
