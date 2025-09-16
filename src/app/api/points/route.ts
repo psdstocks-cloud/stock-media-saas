@@ -23,12 +23,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
-    const [balance, history] = await Promise.all([
+    const [balance, history, rolloverRecords] = await Promise.all([
       PointsManager.getBalance(finalUserId),
       PointsManager.getHistory(finalUserId, 50),
+      PointsManager.getRolloverRecords(finalUserId),
     ])
 
-    return NextResponse.json({ balance, history })
+    return NextResponse.json({ balance, history, rolloverRecords })
   } catch (error) {
     console.error('Error fetching points data:', error)
     return NextResponse.json({ error: 'Failed to fetch points data' }, { status: 500 })

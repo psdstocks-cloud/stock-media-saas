@@ -44,6 +44,7 @@ model User {
   messages      Message[]
   messageStatuses MessageStatus[]
   adminAuditLogs AdminAuditLog[]
+  rolloverRecords RolloverRecord[]
 
   @@map("users")
 }
@@ -459,5 +460,20 @@ model PointPack {
   updatedAt   DateTime @updatedAt
 
   @@map("point_packs")
+}
+
+// Stores records of points that have been rolled over for a user.
+model RolloverRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  expiresAt DateTime // The date when these specific points expire
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("rollover_records")
 }
 

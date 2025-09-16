@@ -52,3 +52,16 @@ export type PointPack = {
   createdAt: Date
   updatedAt: Date
 }
+
+export type RolloverRecord = {
+  id: string
+  userId: string
+  amount: number
+  expiresAt: Date
+  createdAt: Date
+  user?: {
+    id: string
+    name: string | null
+    email: string
+  }
+}

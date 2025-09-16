@@ -46,7 +46,7 @@ export class PointsManager {
   }
 
   /**
-   * Deduct points from user's balance
+   * Deduct points from user's balance (prioritizing rollover points)
    */
   static async deductPoints(
     userId: string,
@@ -55,36 +55,122 @@ export class PointsManager {
     orderId?: string
   ) {
     const transaction = await prisma.$transaction(async (tx) => {
-      // Check if user has enough points
-      const balance = await tx.pointsBalance.findUnique({
-        where: { userId },
-      })
+      // Get current balance and rollover records
+      const [balance, rolloverRecords] = await Promise.all([
+        tx.pointsBalance.findUnique({
+          where: { userId },
+        }),
+        tx.rolloverRecord.findMany({
+          where: {
+            userId,
+            expiresAt: {
+              gt: new Date(), // Only non-expired records
+            },
+          },
+          orderBy: {
+            expiresAt: 'asc', // Use earliest expiring first
+          },
+        }),
+      ])
 
-      if (!balance || balance.currentPoints < amount) {
+      if (!balance) {
+        throw new Error('User balance not found')
+      }
+
+      // Calculate total available points (current + rollover)
+      const totalRolloverPoints = rolloverRecords.reduce((sum, record) => sum + record.amount, 0)
+      const totalAvailablePoints = balance.currentPoints + totalRolloverPoints
+
+      if (totalAvailablePoints < amount) {
         throw new Error('Insufficient points')
       }
 
-      // Update points balance
-      const updatedBalance = await tx.pointsBalance.update({
+      let remainingToDeduct = amount
+      let pointsToDeductFromBalance = 0
+      const rolloverDeductions: { id: string; amount: number }[] = []
+
+      // First, use rollover points (FIFO - first expiring first)
+      for (const record of rolloverRecords) {
+        if (remainingToDeduct <= 0) break
+
+        const deductFromThisRecord = Math.min(remainingToDeduct, record.amount)
+        rolloverDeductions.push({
+          id: record.id,
+          amount: deductFromThisRecord,
+        })
+        remainingToDeduct -= deductFromThisRecord
+      }
+
+      // Then use regular balance points
+      if (remainingToDeduct > 0) {
+        pointsToDeductFromBalance = remainingToDeduct
+      }
+
+      // Process rollover deductions
+      for (const deduction of rolloverDeductions) {
+        const record = await tx.rolloverRecord.findUnique({
+          where: { id: deduction.id },
+        })
+
+        if (record && record.amount >= deduction.amount) {
+          // Update or delete rollover record
+          if (record.amount === deduction.amount) {
+            // Delete the record completely
+            await tx.rolloverRecord.delete({
+              where: { id: deduction.id },
+            })
+          } else {
+            // Reduce the amount
+            await tx.rolloverRecord.update({
+              where: { id: deduction.id },
+              data: {
+                amount: { decrement: deduction.amount },
+              },
+            })
+          }
+
+          // Create history entry for rollover usage
+          await tx.pointsHistory.create({
+            data: {
+              userId,
+              type: 'ROLLOVER_USED',
+              amount: -deduction.amount,
+              description: `Used ${deduction.amount} rollover points${description ? ` - ${description}` : ''}`,
+              orderId,
+            },
+          })
+        }
+      }
+
+      // Process regular balance deduction
+      if (pointsToDeductFromBalance > 0) {
+        // Update points balance
+        await tx.pointsBalance.update({
+          where: { userId },
+          data: {
+            currentPoints: { decrement: pointsToDeductFromBalance },
+            totalUsed: { increment: pointsToDeductFromBalance },
+          },
+        })
+
+        // Create points history entry
+        await tx.pointsHistory.create({
+          data: {
+            userId,
+            type: 'DOWNLOAD',
+            amount: -pointsToDeductFromBalance, // Negative for deduction
+            description: description || 'Points used for download',
+            orderId,
+          },
+        })
+      }
+
+      // Return updated balance
+      const updatedBalance = await tx.pointsBalance.findUnique({
         where: { userId },
-        data: {
-          currentPoints: { decrement: amount },
-          totalUsed: { increment: amount },
-        },
       })
 
-      // Create points history entry
-      await tx.pointsHistory.create({
-        data: {
-          userId,
-          type: 'DOWNLOAD',
-          amount: -amount, // Negative for deduction
-          description,
-          orderId,
-        },
-      })
-
-      return updatedBalance
+      return updatedBalance!
     })
 
     return transaction
@@ -123,6 +209,23 @@ export class PointsManager {
             status: true,
           },
         },
+      },
+    })
+  }
+
+  /**
+   * Get user's rollover records
+   */
+  static async getRolloverRecords(userId: string) {
+    return await prisma.rolloverRecord.findMany({
+      where: {
+        userId,
+        expiresAt: {
+          gt: new Date(), // Only non-expired records
+        },
+      },
+      orderBy: {
+        expiresAt: 'asc', // Show earliest expiring first
       },
     })
   }
