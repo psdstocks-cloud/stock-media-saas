@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'StockMedia Pro - Premium Stock Media Downloads',
     description: 'Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide.',
-    images: ['/og-image.jpg'],
+    images: ['/next.svg'],
   },
   robots: {
     index: true,
