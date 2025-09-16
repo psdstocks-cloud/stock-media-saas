@@ -1,10 +1,10 @@
-// src/lib/auth.ts
+// FILE: src/auth.ts
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from './prisma';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export const {
@@ -41,7 +41,14 @@ export const {
         if (!user || !user.password) return null;
         
         const isValid = await bcrypt.compare(credentials.password as string, user.password);
-        if (isValid) return user;
+        if (isValid) {
+          // On successful password login, update the last login time
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          });
+          return user;
+        }
 
         return null;
       },
@@ -65,6 +72,6 @@ export const {
   },
   pages: {
     signIn: '/login',
-    error: '/login', // Redirect to login on error
+    error: '/login', // Redirect all auth errors to the main login page
   },
 });
