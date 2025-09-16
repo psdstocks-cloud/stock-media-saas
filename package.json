@@ -4,9 +4,9 @@
   "description": "Stock Media SaaS Platform with Real-time Processing",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate --data-proxy",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate --data-proxy && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "npm run lint",
@@ -16,7 +16,9 @@
     "status": "git status && echo '---' && git log --oneline -5",
     "sync": "git pull origin main && npm install && npm run build",
     "seed:admin": "tsx scripts/seedAdmin.ts",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.4.1",
