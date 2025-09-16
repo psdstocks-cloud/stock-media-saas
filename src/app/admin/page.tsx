@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
-import { auth } from '@/lib/auth-admin'
+import { getAdminUser } from '@/lib/admin-server-auth'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import './styles.css'
@@ -113,21 +113,14 @@ type StockSiteType = {
 
 export default async function AdminDashboard() {
   try {
-    const session = await auth()
+    const adminUser = await getAdminUser()
     
-    if (!session?.user?.id) {
+    if (!adminUser) {
       redirect('/admin/login')
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      redirect('/dashboard')
-    }
+    // Admin user is already verified in getAdminUser()
+    // No need for additional role check
 
   const [
     stats,
@@ -466,7 +459,7 @@ export default async function AdminDashboard() {
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📈</div>
                 <div style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.25rem' }}>{stats.totalPointsUsed}</div>
                 <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Points Used</div>
-              </div>
+            </div>
               
               <div style={{
                 background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
@@ -612,7 +605,7 @@ export default async function AdminDashboard() {
                             }}>
                           {user.subscriptions.length} subscription(s)
                             </div>
-                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -864,7 +857,7 @@ export default async function AdminDashboard() {
                   </div>
                 </div>
               ))}
-                </div>
+            </div>
               )}
           </div>
         </div>
