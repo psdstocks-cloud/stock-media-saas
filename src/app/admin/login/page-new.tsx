@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,12 +14,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [mounted, setMounted] = useState(false);
-
-  // Prevent hydration issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,21 +22,16 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/admin/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Invalid email or password');
-      } else {
-        // Redirect to admin dashboard
-        window.location.href = '/admin';
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else if (result?.ok) {
+        router.push('/admin');
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -48,10 +40,6 @@ export default function AdminLoginPage() {
       setIsLoading(false);
     }
   };
-
-  if (!mounted) {
-    return null; // Prevent hydration mismatch
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
