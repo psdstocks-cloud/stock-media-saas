@@ -179,7 +179,7 @@ export default async function AdminDashboard() {
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-900">Total Points</h3>
-              <p className="text-3xl font-bold text-green-600">{stats.totalPoints.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-green-600">{stats.totalPointsInCirculation.toLocaleString()}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-900">Active Subscriptions</h3>
