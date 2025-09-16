@@ -38,10 +38,10 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { deleteUser, updateUserRole, suspendUser } from '@/actions/userActions'
-import { UserWithStatus } from '@/lib/types' // <-- IMPORT the shared type
+import { UserWithRelations } from '@/lib/types'
 
 interface UserActionsProps {
-  user: UserWithStatus
+  user: UserWithRelations
 }
 
 export function UserActions({ user }: UserActionsProps) {

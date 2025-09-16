@@ -21,3 +21,22 @@ export type OrderWithStockSite = {
     displayName: string
   }
 }
+
+export type UserWithRelations = {
+  id: string
+  name: string | null
+  email: string
+  role: string
+  createdAt: Date
+  lockedUntil: Date | null
+  isSuspended: boolean
+  pointsBalance?: {
+    currentPoints: number
+  }
+  subscriptions?: Array<{
+    status: string
+    plan: {
+      name: string
+    }
+  }>
+}
