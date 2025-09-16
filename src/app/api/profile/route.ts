@@ -1,139 +1,91 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/auth"
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
+import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+// GET user profile with subscription and points
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
 
-    const profile = await prisma.user.findUnique({
+  try {
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-        pointsBalance: {
-          select: {
-            currentPoints: true,
-            totalPurchased: true,
-            totalUsed: true,
-            lastRollover: true
-          }
-        },
         subscriptions: {
-          include: {
-            plan: {
-              select: {
-                name: true,
-                price: true,
-                points: true
-              }
-            }
-          },
-          where: {
-            status: 'ACTIVE'
-          }
-        }
+          where: { status: 'ACTIVE' },
+          include: { plan: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        pointsBalance: true,
       },
-    })
+    });
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    if (!user) {
+      return new NextResponse('User not found', { status: 404 });
     }
+    
+    // Flatten the subscription for easier frontend use
+    const profile = {
+        ...user,
+        activeSubscription: user.subscriptions[0] || null,
+    }
+    delete (profile as any).subscriptions;
 
-    return NextResponse.json({ profile })
+
+    return NextResponse.json(profile);
   } catch (error) {
-    console.error('Error fetching profile:', error)
-    return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 })
+    console.error('[PROFILE_GET]', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
 
-export async function PATCH(request: NextRequest) {
+// PATCH to update user name or password
+export async function PATCH(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
-    const session = await auth()
+    const body = await req.json();
+    const { name, password } = body;
+
+    const dataToUpdate: { name?: string; password?: string } = {};
+
+    if (name) {
+      dataToUpdate.name = name;
+    }
+
+    if (password) {
+      if (password.length < 6) {
+        return NextResponse.json({ message: 'Password must be at least 6 characters long.' }, { status: 400 });
+      }
+      dataToUpdate.password = await bcrypt.hash(password, 10);
+    }
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (Object.keys(dataToUpdate).length === 0) {
+        return NextResponse.json({ message: 'No fields to update.' }, { status: 400 });
     }
 
-    const { name, email, currentPassword, newPassword } = await request.json()
-
-    // Validate input
-    if (!name || !email) {
-      return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
-    }
-
-    // Check if email is already taken by another user
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: email,
-        id: { not: session.user.id }
-      }
-    })
-
-    if (existingUser) {
-      return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
-    }
-
-    const updateData: any = {
-      name,
-      email,
-      updatedAt: new Date()
-    }
-
-    // Handle password change if provided
-    if (newPassword) {
-      if (!currentPassword) {
-        return NextResponse.json({ error: 'Current password required to change password' }, { status: 400 })
-      }
-
-      // Verify current password
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { password: true }
-      })
-
-      if (!user?.password || !await bcrypt.compare(currentPassword, user.password)) {
-        return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 })
-      }
-
-      // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 12)
-      updateData.password = hashedPassword
-    }
-
-    const updatedProfile = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    })
+      data: dataToUpdate,
+    });
 
-    return NextResponse.json({ 
-      profile: updatedProfile,
-      message: 'Profile updated successfully' 
-    })
+    return NextResponse.json({ name: updatedUser.name, message: "Profile updated successfully!" });
   } catch (error) {
-    console.error('Error updating profile:', error)
-    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
+    console.error('[PROFILE_PATCH]', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
 
