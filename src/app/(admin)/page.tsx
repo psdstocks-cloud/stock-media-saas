@@ -182,8 +182,8 @@ export default async function AdminDashboard() {
               <p className="text-3xl font-bold text-green-600">{stats.totalPointsInCirculation.toLocaleString()}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-medium text-gray-900">Active Subscriptions</h3>
-              <p className="text-3xl font-bold text-purple-600">{stats.activeSubscriptions}</p>
+              <h3 className="text-lg font-medium text-gray-900">Total Orders</h3>
+              <p className="text-3xl font-bold text-purple-600">{stats.totalOrders}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-900">Total Revenue</h3>
