@@ -1,7 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth as adminAuth } from '@/lib/auth';
+import { auth as adminAuth } from '@/auth';
 
 export async function GET(request: NextRequest) {
   try {

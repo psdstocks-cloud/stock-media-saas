@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { auth } from '@/auth'
 
 export default async function TestSession() {
   const session = await auth()

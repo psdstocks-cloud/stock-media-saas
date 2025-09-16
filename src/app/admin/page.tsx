@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
-import { auth } from '@/lib/auth'
+import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import './styles.css'

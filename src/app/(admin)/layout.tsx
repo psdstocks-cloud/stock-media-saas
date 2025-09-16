@@ -1,5 +1,5 @@
 // src/app/(admin)/layout.tsx
-import { auth } from '@/lib/auth'; // <-- Correct import
+import { auth } from '@/auth'; // <-- Correct import
 import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic'
