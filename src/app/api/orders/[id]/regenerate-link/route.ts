@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth-user"
+import { auth } from "@/lib/auth"
 import { OrderManager } from '@/lib/nehtw-api'
 
 export async function POST(

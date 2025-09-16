@@ -1,19 +1,21 @@
-import { type NextAuthConfig } from 'next-auth';
+// src/lib/auth.ts
+import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from '../prisma';
+import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
 
-export const userAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = NextAuth({
   adapter: PrismaAdapter(prisma),
-  cookies: {
-    sessionToken: {
-      name: `__Secure-user-session-token`,
-    },
-  },
+  secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: 'jwt' },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -30,26 +32,26 @@ export const userAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: (credentials.email as string).toLowerCase() },
         });
-        if (!user || !user.password) {
-          return null;
-        }
+
+        if (!user || !user.password) return null;
+        
         const isValid = await bcrypt.compare(credentials.password as string, user.password);
-        return isValid ? user : null;
+        if (isValid) return user;
+
+        return null;
       },
     }),
   ],
-  session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
       }
       return token;
     },
@@ -60,12 +62,9 @@ export const userAuthOptions = {
       }
       return session;
     },
-    async redirect({ baseUrl }) {
-      return `${baseUrl}/dashboard`;
-    },
   },
   pages: {
     signIn: '/login',
-    error: '/auth/error',
+    error: '/login', // Redirect to login on error
   },
-} satisfies NextAuthConfig;
+});

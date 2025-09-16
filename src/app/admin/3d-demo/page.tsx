@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth-admin'
+import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import AdminLayout from '@/components/admin/AdminLayout'

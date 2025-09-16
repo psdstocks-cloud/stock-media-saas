@@ -1,6 +1,6 @@
 'use server';
 
-import { signIn, signOut } from '@/lib/auth-admin'; // <-- Correct import
+import { signIn, signOut } from '@/lib/auth'; // <-- Correct import
 import { z } from 'zod';
 
 const loginSchema = z.object({

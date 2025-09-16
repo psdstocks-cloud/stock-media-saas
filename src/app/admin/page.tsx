@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
-import { getAdminUser } from '@/lib/admin-server-auth'
+import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import './styles.css'
@@ -114,17 +114,21 @@ type StockSiteType = {
 export default async function AdminDashboard() {
   try {
     console.log('🔍 Admin dashboard: Checking authentication...');
-    const adminUser = await getAdminUser()
-    console.log('👤 Admin user:', adminUser ? { id: adminUser.id, email: adminUser.email, role: adminUser.role } : 'Not found');
+    const session = await auth()
+    console.log('👤 Admin user:', session ? { id: session.user?.id, email: session.user?.email, role: session.user?.role } : 'Not found');
     
-    if (!adminUser) {
+    if (!session?.user) {
       console.log('❌ No admin user found, redirecting to login');
       redirect('/admin/login')
     }
 
+    // Check if user is admin
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
+      console.log('❌ User is not admin, redirecting to dashboard');
+      redirect('/dashboard')
+    }
+
     console.log('✅ Admin user authenticated, loading dashboard');
-    // Admin user is already verified in getAdminUser()
-    // No need for additional role check
 
   const [
     stats,

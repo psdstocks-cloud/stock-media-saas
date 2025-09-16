@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth-user"
+import { auth } from "@/lib/auth"
 import { StockAPI } from '@/lib/stock-api'
 import { PointsManager } from '@/lib/points'
 import { OrderProcessor } from '@/lib/order-processor'

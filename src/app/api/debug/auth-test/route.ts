@@ -1,21 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuthOptions } from '@/lib/auth/adminAuthOptions';
+import { auth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    // Test if adminAuthOptions is valid
-    const hasSecret = !!adminAuthOptions.secret;
-    const hasProviders = adminAuthOptions.providers?.length > 0;
-    const hasAdapter = !!adminAuthOptions.adapter;
+    // Test if auth configuration is valid
+    const session = await auth();
+    const hasSession = !!session;
+    const hasUser = !!session?.user;
     
     return NextResponse.json({
       success: true,
       config: {
-        hasSecret,
-        hasProviders,
-        hasAdapter,
-        providerCount: adminAuthOptions.providers?.length || 0,
-        secretLength: adminAuthOptions.secret?.length || 0,
+        hasSession,
+        hasUser,
+        userRole: session?.user?.role || null,
+        userId: session?.user?.id || null,
       },
       env: {
         hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,

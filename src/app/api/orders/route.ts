@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth-user"
+import { auth } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
 import { OrderManager } from '@/lib/nehtw-api'

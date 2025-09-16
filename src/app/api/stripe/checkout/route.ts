@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/lib/auth-user"
+import { auth } from "@/lib/auth"
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 
