@@ -18,8 +18,8 @@ import {
   Users, 
   Zap
 } from 'lucide-react'
-import GoogleSignInButton from '@/components/GoogleSignInButton'
-import FacebookSignInButton from '@/components/FacebookSignInButton'
+// import GoogleSignInButton from '@/components/GoogleSignInButton'
+// import FacebookSignInButton from '@/components/FacebookSignInButton'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -710,8 +710,8 @@ export default function LoginPage() {
                 </Link>
               </p>
               
-              {/* Social Login Options */}
-              <div style={{
+              {/* Social Login Options - Temporarily disabled until OAuth setup */}
+              {/* <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
@@ -759,7 +759,7 @@ export default function LoginPage() {
                     console.error('Facebook sign-in error:', error)
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
