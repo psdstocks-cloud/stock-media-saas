@@ -4,6 +4,7 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import QueryProvider from "@/components/providers/QueryProvider";
 import GlobalLayout from "@/components/layout/GlobalLayout";
+import { headers } from 'next/headers';
 
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic'
