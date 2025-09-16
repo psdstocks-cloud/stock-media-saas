@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 const ADMIN_EMAIL = 'admin@stockmedia.com';
-const ADMIN_PASSWORD = 'AdminSecurePassword2025!'; // Change this in a secure way if needed
+const ADMIN_PASSWORD = 'AdminSecure2024!'; // Updated to match the password you're using
 
 async function main() {
   console.log('Seeding admin user...');
@@ -14,7 +14,13 @@ async function main() {
   });
 
   if (existingAdmin) {
-    console.log('Admin user already exists.');
+    console.log('Admin user already exists. Updating password...');
+    const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12);
+    await prisma.user.update({
+      where: { email: ADMIN_EMAIL },
+      data: { password: hashedPassword },
+    });
+    console.log('✅ Admin password updated successfully');
     return;
   }
 
