@@ -40,8 +40,13 @@ export default function AdminLoginPage() {
         setError(data.message || 'Invalid email or password');
       } else {
         console.log('✅ Login successful, redirecting to admin dashboard');
-        // Redirect to admin dashboard
-        window.location.href = '/admin';
+        console.log('🔍 Response data:', data);
+        
+        // Wait a moment to ensure cookie is set
+        setTimeout(() => {
+          console.log('🔄 Attempting redirect to /admin');
+          window.location.href = '/admin';
+        }, 100);
       }
     } catch (err) {
       setError('An unexpected error occurred');
