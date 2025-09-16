@@ -45,45 +45,49 @@ export class NehtwAPI {
 
   /**
    * Get stock information
+   * Per documentation, the 'url' param is optional but can help with accuracy.
    */
   async getStockInfo(site: string, id: string, url?: string): Promise<NehtwStockInfo> {
     const params = new URLSearchParams({
       site,
       id,
-      ...(url && { url: encodeURIComponent(url) }),
-    })
+    });
+    // ALWAYS pass the full URL if available, as it can help the API.
+    if (url) {
+      params.append('url', encodeURIComponent(url));
+    }
 
     const response = await fetch(`${this.baseUrl}/stockinfo/${site}/${id}?${params}`, {
       method: 'GET',
       headers: {
         'X-Api-Key': this.apiKey,
       },
-    })
+    });
 
-    return await response.json()
+    return await response.json();
   }
 
   /**
    * Place an order
+   * According to the documentation, the 'url' parameter is REQUIRED for specific sites.
    */
   async placeOrder(site: string, id: string, url?: string): Promise<NehtwOrderResponse> {
-    // Try without URL parameter first, as some sites might not need it
-    const params = new URLSearchParams()
+    const params = new URLSearchParams();
     
-    // Only add URL parameter for specific sites that need it
-    if (url && (site === 'unsplash' || site === 'pexels' || site === 'pixabay')) {
-      params.append('url', encodeURIComponent(url))
+    // Per the documentation, some sites require the original URL to place an order.
+    // We should always include it if we have it to be safe.
+    if (url) {
+      params.append('url', encodeURIComponent(url));
     }
 
-    const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}?${params}`
+    const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}?${params}`;
     console.log('Nehtw placeOrder request:', {
       site,
       id,
       url,
       requestUrl,
       apiKey: this.apiKey ? 'present' : 'missing',
-      params: params.toString()
-    })
+    });
 
     try {
       const response = await fetch(requestUrl, {
@@ -91,41 +95,32 @@ export class NehtwAPI {
         headers: {
           'X-Api-Key': this.apiKey,
         },
-      })
+      });
 
       if (!response.ok) {
+        const errorText = await response.text();
         console.error('Nehtw placeOrder HTTP error:', {
           status: response.status,
           statusText: response.statusText,
-          site,
-          id
-        })
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          body: errorText,
+        });
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const responseData = await response.json()
+      const responseData = await response.json();
       console.log('Nehtw placeOrder response:', {
         status: response.status,
         data: responseData,
-        site,
-        id
-      })
+      });
 
-      // Check if the response indicates an error
-      if (responseData.error) {
-        console.error('Nehtw placeOrder failed:', responseData)
-        throw new Error(`Nehtw API error: ${responseData.message || 'Unknown error'}`)
+      if (responseData.error || !responseData.success) {
+        throw new Error(responseData.message || 'Failed to place order with Nehtw API');
       }
 
-      if (!responseData.success && !responseData.task_id) {
-        console.error('Nehtw placeOrder failed - no success or task_id:', responseData)
-        throw new Error(`Nehtw API error: ${responseData.message || 'Order placement failed'}`)
-      }
-
-      return responseData
+      return responseData;
     } catch (error) {
-      console.error('Nehtw placeOrder network error:', error)
-      throw new Error(`Network error: ${error instanceof Error ? error.message : 'Unknown network error'}`)
+      console.error('Nehtw placeOrder network error:', error);
+      throw error;
     }
   }
 
