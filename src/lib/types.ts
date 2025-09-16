@@ -8,3 +8,16 @@ export type UserWithStatus = {
   lockedUntil: Date | null
   isSuspended: boolean
 }
+
+export type OrderWithStockSite = {
+  id: string
+  title: string | null
+  cost: number
+  status: string
+  downloadUrl: string | null
+  imageUrl: string | null
+  createdAt: string
+  stockSite: {
+    displayName: string
+  }
+}
