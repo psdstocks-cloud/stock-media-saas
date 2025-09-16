@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { signIn } from '@/lib/auth-admin';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,21 +53,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create session using NextAuth
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
+    // Create JWT token for admin session
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role,
+        name: user.name 
+      },
+      process.env.NEXTAUTH_SECRET!,
+      { expiresIn: '24h' }
+    );
 
-    if (result?.error) {
-      return NextResponse.json(
-        { message: 'Authentication failed' },
-        { status: 401 }
-      );
-    }
-
-    return NextResponse.json({ 
+    // Set HTTP-only cookie with the token
+    const response = NextResponse.json({ 
       success: true, 
       message: 'Login successful',
       user: {
@@ -77,6 +76,16 @@ export async function POST(request: NextRequest) {
         role: user.role
       }
     });
+
+    response.cookies.set('admin-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: '/'
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Admin signin error:', error);

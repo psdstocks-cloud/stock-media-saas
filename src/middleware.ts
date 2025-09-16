@@ -1,7 +1,7 @@
 // src/middleware.ts
 import { NextRequest } from 'next/server';
-import { auth as adminAuth } from '@/lib/auth-admin';
 import { auth as userAuth } from '@/lib/auth-user';
+import { getAdminUserFromToken, isAdminUser } from '@/lib/admin-auth-helper';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -12,8 +12,8 @@ export async function middleware(req: NextRequest) {
   }
 
   if (pathname.startsWith('/admin')) {
-    const session = await adminAuth();
-    if (!session) {
+    const adminUser = getAdminUserFromToken(req);
+    if (!isAdminUser(adminUser)) {
       return Response.redirect(new URL('/admin/login', req.url));
     }
   }
