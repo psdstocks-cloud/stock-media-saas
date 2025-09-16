@@ -18,7 +18,7 @@ import { KpiCard } from '@/components/admin/analytics/KpiCard';
 import { RevenueChart } from '@/components/admin/analytics/RevenueChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/LoadingSkeleton';
 
 interface KPIData {
   totalRevenue: number;
