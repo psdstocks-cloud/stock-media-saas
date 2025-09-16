@@ -660,3 +660,18 @@ export class UrlParser {
     ]
   }
 }
+
+/**
+ * Simple function to parse stock URL - returns site and id
+ */
+export function parseStockUrl(url: string): { site: string; id: string } | null {
+  const parsed = UrlParser.parseUrl(url);
+  if (!parsed) {
+    return null;
+  }
+  
+  return {
+    site: parsed.source,
+    id: parsed.id
+  };
+}
