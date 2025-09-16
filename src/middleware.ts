@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Use the Node.js runtime for this middleware
+
 // src/middleware.ts
 import { NextRequest } from 'next/server';
 import { auth as userAuth } from '@/lib/auth-user';

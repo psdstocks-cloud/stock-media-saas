@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'; // Use the Node.js runtime for this route
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
