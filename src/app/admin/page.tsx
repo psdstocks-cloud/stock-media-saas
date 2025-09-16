@@ -113,12 +113,16 @@ type StockSiteType = {
 
 export default async function AdminDashboard() {
   try {
+    console.log('🔍 Admin dashboard: Checking authentication...');
     const adminUser = await getAdminUser()
+    console.log('👤 Admin user:', adminUser ? { id: adminUser.id, email: adminUser.email, role: adminUser.role } : 'Not found');
     
     if (!adminUser) {
+      console.log('❌ No admin user found, redirecting to login');
       redirect('/admin/login')
     }
 
+    console.log('✅ Admin user authenticated, loading dashboard');
     // Admin user is already verified in getAdminUser()
     // No need for additional role check
 

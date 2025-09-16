@@ -34,10 +34,12 @@ export default function AdminLoginPage() {
       });
 
       const data = await response.json();
+      console.log('🔍 Login response:', { status: response.status, data });
 
       if (!response.ok) {
         setError(data.message || 'Invalid email or password');
       } else {
+        console.log('✅ Login successful, redirecting to admin dashboard');
         // Redirect to admin dashboard
         window.location.href = '/admin';
       }

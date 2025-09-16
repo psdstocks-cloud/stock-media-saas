@@ -8,8 +8,10 @@ import jwt from 'jsonwebtoken';
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
+    console.log('🔍 Admin login attempt:', { email, password: '***' });
 
     if (!email || !password) {
+      console.log('❌ Missing credentials');
       return NextResponse.json(
         { message: 'Email and password are required' },
         { status: 400 }
@@ -21,7 +23,10 @@ export async function POST(request: NextRequest) {
       where: { email: email.toLowerCase() },
     });
 
+    console.log('👤 User found:', user ? { id: user.id, email: user.email, role: user.role, hasPassword: !!user.password } : 'Not found');
+
     if (!user || !user.password) {
+      console.log('❌ User not found or no password');
       return NextResponse.json(
         { message: 'Invalid email or password' },
         { status: 401 }
@@ -30,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user is admin
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      console.log('❌ User is not admin:', user.role);
       return NextResponse.json(
         { message: 'Access denied. Admin privileges required.' },
         { status: 403 }
@@ -38,7 +44,10 @@ export async function POST(request: NextRequest) {
 
     // Verify password
     const isValid = await bcrypt.compare(password, user.password);
+    console.log('🔐 Password valid:', isValid);
+    
     if (!isValid) {
+      console.log('❌ Invalid password');
       return NextResponse.json(
         { message: 'Invalid email or password' },
         { status: 401 }
@@ -67,6 +76,8 @@ export async function POST(request: NextRequest) {
       { expiresIn: '24h' }
     );
 
+    console.log('🎫 JWT token created for user:', user.email);
+
     // Set HTTP-only cookie with the token
     const response = NextResponse.json({ 
       success: true, 
@@ -87,6 +98,7 @@ export async function POST(request: NextRequest) {
       path: '/'
     });
 
+    console.log('✅ Admin login successful, cookie set');
     return response;
 
   } catch (error) {
