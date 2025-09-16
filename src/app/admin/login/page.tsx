@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,28 +26,21 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      console.log('🔐 Admin login attempt:', { email });
+      
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
 
-      const data = await response.json();
-      console.log('🔍 Login response:', { status: response.status, data });
+      console.log('🔐 SignIn result:', result);
 
-      if (!response.ok) {
-        setError(data.message || 'Invalid email or password');
-      } else {
-        console.log('✅ Login successful, redirecting to admin dashboard');
-        console.log('🔍 Response data:', data);
-        
-        // Wait a moment to ensure cookie is set
-        setTimeout(() => {
-          console.log('🔄 Attempting redirect to /admin');
-          window.location.href = '/admin';
-        }, 100);
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else if (result?.ok) {
+        console.log('✅ Admin login successful, redirecting...');
+        window.location.href = '/admin';
       }
     } catch (err) {
       setError('An unexpected error occurred');

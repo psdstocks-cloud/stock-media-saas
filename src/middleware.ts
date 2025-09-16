@@ -1,33 +1,49 @@
-export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// src/middleware.ts
-import { NextRequest } from 'next/server';
-import { auth as userAuth } from '@/lib/auth-user';
-import { getAdminUserFromToken, isAdminUser } from '@/lib/admin-auth-helper';
+// Define the new, unique cookie names
+const USER_COOKIE_NAME = '__Secure-user-session-token';
+const ADMIN_COOKIE_NAME = '__Secure-admin-session-token';
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  
+  const userCookie = req.cookies.get(USER_COOKIE_NAME);
+  const adminCookie = req.cookies.get(ADMIN_COOKIE_NAME);
 
-  // Skip middleware for login pages to prevent redirect loops
-  if (pathname === '/admin/login' || pathname === '/login') {
-    return;
-  }
+  const isUserLoginPage = pathname === '/login';
+  const isAdminLoginPage = pathname === '/admin/login';
 
-  if (pathname.startsWith('/admin')) {
-    const adminUser = getAdminUserFromToken(req);
-    if (!isAdminUser(adminUser)) {
-      return Response.redirect(new URL('/admin/login', req.url));
+  // --- Logic for Admin Panel ---
+  if (pathname.startsWith('/admin') && !isAdminLoginPage) {
+    if (!adminCookie) {
+      return NextResponse.redirect(new URL('/admin/login', req.url));
     }
   }
 
-  if (pathname.startsWith('/dashboard')) {
-    const session = await userAuth();
-    if (!session) {
-      return Response.redirect(new URL('/login', req.url));
+  // --- Logic for User Panel ---
+  else if (pathname.startsWith('/dashboard')) {
+    if (!userCookie) {
+      return NextResponse.redirect(new URL('/login', req.url));
     }
   }
+  
+  // --- Redirect already logged-in users ---
+  if (adminCookie && isAdminLoginPage) {
+    return NextResponse.redirect(new URL('/admin', req.url));
+  }
+  if (userCookie && isUserLoginPage) {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/:path*'],
+  matcher: [
+    '/dashboard/:path*',
+    '/admin/:path*',
+    '/login',
+    '/admin/login'
+  ],
 };

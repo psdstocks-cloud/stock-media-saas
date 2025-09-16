@@ -7,7 +7,13 @@ import { prisma } from '../prisma';
 import bcrypt from 'bcryptjs';
 
 export const userAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
+  cookies: {
+    sessionToken: {
+      name: `__Secure-user-session-token`,
+    },
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,

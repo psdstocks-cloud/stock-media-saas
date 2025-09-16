@@ -7,6 +7,11 @@ import bcrypt from 'bcryptjs';
 export const adminAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
+  cookies: {
+    sessionToken: {
+      name: `__Secure-admin-session-token`,
+    },
+  },
   providers: [
     CredentialsProvider({
       name: 'credentials',
