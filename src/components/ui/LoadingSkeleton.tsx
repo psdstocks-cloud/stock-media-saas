@@ -104,4 +104,9 @@ export function PageSkeleton() {
   )
 }
 
+// Generic Loading Skeleton component
+export function LoadingSkeleton({ className }: { className?: string }) {
+  return <Skeleton className={className} />
+}
+
 export { Skeleton }

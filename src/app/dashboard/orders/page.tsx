@@ -12,6 +12,7 @@ import { Download, RefreshCw, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import type { OrderWithStockSite } from '@/lib/types';
 import { useState } from 'react';
+import React from 'react';
 
 // Helper to determine badge color based on status
 const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -44,16 +45,20 @@ export default function OrdersPage() {
     },
     // Poll every 5 seconds if there are processing orders
     refetchInterval: pollingEnabled ? 5000 : false,
-    onSuccess: (data) => {
+  });
+
+  // Handle polling logic with useEffect
+  React.useEffect(() => {
+    if (orders) {
       // If there are no more processing orders, stop polling
-      const isStillProcessing = data.some(order => order.status === 'PROCESSING');
+      const isStillProcessing = orders.some(order => order.status === 'PROCESSING');
       if (!isStillProcessing) {
         setPollingEnabled(false);
       } else {
         setPollingEnabled(true); // Re-enable if a new processing order appears
       }
-    },
-  });
+    }
+  }, [orders]);
   
   // Mutation to regenerate a download link
   const { mutate: regenerateLink, isPending: isRegenerating } = useMutation({
@@ -126,7 +131,7 @@ export default function OrdersPage() {
                   <TableCell className="text-right">
                     {order.status === 'READY' || order.status === 'COMPLETED' ? (
                       <Button asChild variant="default" size="sm">
-                        <a href={order.downloadUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={order.downloadUrl || '#'} target="_blank" rel="noopener noreferrer">
                           <Download className="mr-2 h-4 w-4" /> Download
                         </a>
                       </Button>
