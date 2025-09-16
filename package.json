@@ -15,7 +15,8 @@
     "commit-and-deploy": "git add . && git commit -m '🔧 Auto-commit: $(date)' && git push origin main && vercel --prod",
     "status": "git status && echo '---' && git log --oneline -5",
     "sync": "git pull origin main && npm install && npm run build",
-    "seed:admin": "tsx scripts/seedAdmin.ts"
+    "seed:admin": "tsx scripts/seedAdmin.ts",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.4.1",

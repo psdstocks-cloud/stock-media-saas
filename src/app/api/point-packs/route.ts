@@ -11,7 +11,7 @@ export async function GET() {
         isActive: true,
       },
       orderBy: {
-        points: 'asc', // Order by points ascending (cheapest first)
+        price: 'asc', // Order by price ascending (cheapest first)
       },
     });
 

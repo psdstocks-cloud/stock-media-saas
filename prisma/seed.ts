@@ -149,10 +149,55 @@ async function main() {
     })
   }
 
+  // Create point packs
+  console.log('Seeding Point Packs...')
+  
+  const starterPointPack = await prisma.pointPack.upsert({
+    where: { name: 'Starter Pack' },
+    update: {},
+    create: {
+      name: 'Starter Pack',
+      description: 'A small boost for your projects.',
+      price: 5.00,
+      points: 25,
+      stripePriceId: 'price_YOUR_STARTER_PACK_ID', // Replace with your actual Stripe Price ID
+      isActive: true,
+    },
+  })
+
+  const creatorPointPack = await prisma.pointPack.upsert({
+    where: { name: 'Creator Pack' },
+    update: {},
+    create: {
+      name: 'Creator Pack',
+      description: 'Perfect for regular creators.',
+      price: 15.00,
+      points: 100,
+      stripePriceId: 'price_YOUR_CREATOR_PACK_ID', // Replace with your actual Stripe Price ID
+      isActive: true,
+    },
+  })
+
+  const proPointPack = await prisma.pointPack.upsert({
+    where: { name: 'Pro Pack' },
+    update: {},
+    create: {
+      name: 'Pro Pack',
+      description: 'Best value for professionals.',
+      price: 40.00,
+      points: 300,
+      stripePriceId: 'price_YOUR_PRO_PACK_ID', // Replace with your actual Stripe Price ID
+      isActive: true,
+    },
+  })
+
+  console.log('Point Packs seeded successfully.')
+
   console.log('✅ Database seeded successfully!')
   console.log('📊 Created subscription plans:', [starterPlan.name, professionalPlan.name, businessPlan.name, enterprisePlan.name])
   console.log('🎨 Created stock sites:', stockSites.length)
   console.log('⚙️ Created system settings:', systemSettings.length)
+  console.log('💰 Created point packs:', [starterPointPack.name, creatorPointPack.name, proPointPack.name])
 }
 
 main()

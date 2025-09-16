@@ -22,16 +22,45 @@ export async function POST(request: NextRequest) {
 
     // Handle the event
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
+    case 'checkout.session.completed': {
+      const session = event.data.object as Stripe.Checkout.Session
+      const { userId, planId, packId, pointsAmount } = session.metadata as {
+        userId: string;
+        planId?: string;
+        packId?: string;
+        pointsAmount?: string;
+      };
+
+      if (packId && pointsAmount) {
+        // Handle successful one-time point pack purchase
+        await prisma.pointsBalance.upsert({
+          where: { userId },
+          update: {
+            currentPoints: { increment: parseInt(pointsAmount, 10) },
+          },
+          create: {
+            userId,
+            currentPoints: parseInt(pointsAmount, 10),
+            totalPurchased: parseInt(pointsAmount, 10),
+          },
+        });
         
-        if (session.mode === 'subscription') {
-          await handleSubscriptionCreated(session)
-        } else if (session.mode === 'payment') {
-          await handleOneTimePayment(session)
-        }
-        break
+        // Create a history record
+        await prisma.pointsHistory.create({
+          data: {
+            userId,
+            type: 'PURCHASE_PACK',
+            amount: parseInt(pointsAmount, 10),
+            description: `Purchased point pack.`
+          }
+        });
+
+      } else if (planId) {
+        // Handle successful subscription creation (legacy)
+        await handleOneTimePayment(session)
       }
+      break
+    }
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription

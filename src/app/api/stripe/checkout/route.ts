@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
+import { SubscriptionPlan, PointPack } from '@prisma/client'
 
 // Hardcoded pricing plans to match the frontend
 const PRICING_PLANS = {
@@ -36,21 +37,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { planId, points, price } = await request.json()
+    const { planId, packId } = await request.json()
 
-    if (!planId) {
-      return NextResponse.json({ error: 'Plan ID required' }, { status: 400 })
-    }
-
-    // Get the plan from hardcoded plans
-    const plan = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]
-
-    if (!plan) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+    if (!planId && !packId) {
+      return NextResponse.json({ error: 'Plan ID or Pack ID is required' }, { status: 400 })
     }
 
     // Get or create Stripe customer
-    let customerId: string
+    let customerId: string | null = null
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { email: true, name: true },
@@ -80,32 +74,70 @@ export async function POST(request: NextRequest) {
       customerId = customer.id
     }
 
-    // Create Stripe checkout session
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: STRIPE_CONFIG.currency,
-            product_data: {
-              name: `${plan.name} - ${plan.points} Points`,
-              description: plan.description,
-            },
-            unit_amount: Math.round(plan.price * 100), // Convert to cents
+    let stripePriceId: string
+    let line_items: any[]
+    let mode: 'subscription' | 'payment'
+    let metadata: any = { userId: session.user.id }
+
+    if (packId) {
+      // Handle Point Pack Purchase (One-Time Payment)
+      const pointPack = await prisma.pointPack.findUnique({ where: { id: packId } })
+      if (!pointPack) return NextResponse.json({ error: 'Point Pack not found' }, { status: 404 })
+      
+      stripePriceId = pointPack.stripePriceId
+      mode = 'payment'
+      metadata.packId = pointPack.id
+      metadata.pointsAmount = pointPack.points.toString()
+      
+      line_items = [{
+        price: stripePriceId,
+        quantity: 1,
+      }]
+
+    } else if (planId) {
+      // Handle Subscription Purchase (Legacy hardcoded plans)
+      const plan = PRICING_PLANS[planId as keyof typeof PRICING_PLANS]
+      if (!plan) {
+        return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+      }
+
+      mode = 'payment' // Changed from 'subscription' to 'payment' for one-time purchases
+      metadata.planId = plan.id
+      metadata.pointsAmount = plan.points.toString()
+      
+      line_items = [{
+        price_data: {
+          currency: STRIPE_CONFIG.currency,
+          product_data: {
+            name: `${plan.name} - ${plan.points} Points`,
+            description: plan.description,
           },
-          quantity: 1,
+          unit_amount: Math.round(plan.price * 100), // Convert to cents
         },
-      ],
-      mode: 'payment', // Changed from 'subscription' to 'payment' for one-time purchases
-      success_url: `${process.env.NEXTAUTH_URL}/dashboard?success=true&points=${plan.points}`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/pricing?canceled=true`,
-      metadata: {
-        userId: session.user.id,
-        planId: plan.id,
-        points: plan.points.toString(),
-      },
-    })
+        quantity: 1,
+      }]
+    } else {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    }
+
+    // Create Stripe checkout session
+    const sessionParams: any = {
+      payment_method_types: ['card'],
+      mode: mode,
+      billing_address_collection: 'auto',
+      customer_email: session.user.email,
+      line_items: line_items,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/orders?payment=success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/pricing?payment=canceled`,
+      metadata: metadata,
+    }
+
+    // Only add customer if we have a customerId
+    if (customerId) {
+      sessionParams.customer = customerId
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.create(sessionParams)
 
     return NextResponse.json({ 
       url: checkoutSession.url,
