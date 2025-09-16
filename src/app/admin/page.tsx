@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
-import { getAdminUser } from '@/lib/admin-server-auth'
+import { auth } from '@/lib/auth-admin'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import './styles.css'
@@ -113,14 +113,21 @@ type StockSiteType = {
 
 export default async function AdminDashboard() {
   try {
-    const adminUser = await getAdminUser()
+    const session = await auth()
     
-    if (!adminUser) {
+    if (!session?.user?.id) {
       redirect('/admin/login')
     }
 
-    // Admin user is already verified in getAdminUser()
-    // No need for additional role check
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    })
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      redirect('/dashboard')
+    }
 
   const [
     stats,

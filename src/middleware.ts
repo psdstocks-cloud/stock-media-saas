@@ -1,9 +1,7 @@
-export const runtime = 'nodejs'; // Use the Node.js runtime for this middleware
-
 // src/middleware.ts
 import { NextRequest } from 'next/server';
+import { auth as adminAuth } from '@/lib/auth-admin';
 import { auth as userAuth } from '@/lib/auth-user';
-import { getAdminUserFromToken, isAdminUser } from '@/lib/admin-auth-helper';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -14,8 +12,8 @@ export async function middleware(req: NextRequest) {
   }
 
   if (pathname.startsWith('/admin')) {
-    const adminUser = getAdminUserFromToken(req);
-    if (!isAdminUser(adminUser)) {
+    const session = await adminAuth();
+    if (!session) {
       return Response.redirect(new URL('/admin/login', req.url));
     }
   }
