@@ -7,11 +7,13 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   if (pathname.startsWith('/admin') && (!isLoggedIn || (req.auth?.user.role !== 'ADMIN' && req.auth?.user.role !== 'SUPER_ADMIN'))) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl));
+    const loginUrl = new URL('/login', req.url);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (pathname.startsWith('/dashboard') && !isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl));
+    const loginUrl = new URL('/login', req.url);
+    return NextResponse.redirect(loginUrl);
   }
 });
 
