@@ -222,7 +222,7 @@ export default function DashboardPage() {
                   <p className="text-muted-foreground mb-4">
                     Start by pasting a stock media URL above to download your first file
                   </p>
-                  <Button variant="secondary" onClick={() => document.querySelector('input[type="url"]')?.focus()}>
+                  <Button variant="secondary" onClick={() => (document.querySelector('input[type="url"]') as HTMLInputElement)?.focus()}>
                     <Search className="mr-2 h-4 w-4" />
                     Get Started
                   </Button>

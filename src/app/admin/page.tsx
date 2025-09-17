@@ -550,7 +550,7 @@ export default async function AdminDashboard() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {recentUsers.map((user: UserWithRelations) => (
+                  {recentUsers.map((user) => (
                       <div key={user.id} style={{
                         background: 'rgba(255, 255, 255, 0.5)',
                         border: '1px solid rgba(255, 255, 255, 0.2)',

@@ -37,7 +37,8 @@ interface User {
     id: string
     createdAt: Date
     updatedAt: Date
-    userId: string
+    userId: string | null
+    teamId: string | null
     currentPoints: number
     totalPurchased: number
     totalUsed: number

@@ -31,8 +31,16 @@ export type UserWithRelations = {
   lockedUntil: Date | null
   isSuspended: boolean
   pointsBalance?: {
+    id: string
+    userId: string | null
+    teamId: string | null
     currentPoints: number
-  }
+    totalPurchased: number
+    totalUsed: number
+    lastRollover: Date | null
+    createdAt: Date
+    updatedAt: Date
+  } | null
   subscriptions?: Array<{
     status: string
     plan: {
