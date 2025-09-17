@@ -16,10 +16,14 @@ import {
   Shield, 
   Star, 
   Users, 
-  Zap
+  Zap,
+  Sparkles
 } from 'lucide-react'
-// import GoogleSignInButton from '@/components/GoogleSignInButton'
-// import FacebookSignInButton from '@/components/FacebookSignInButton'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -163,34 +167,10 @@ export default function LoginPage() {
   // Don't render until mounted to avoid hydration issues
   if (!mounted) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%)',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          padding: '32px',
-          width: '100%',
-          maxWidth: '400px',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid #e5e7eb',
-            borderTop: '4px solid #2563eb',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px'
-          }}></div>
-          <p style={{ color: '#64748b', margin: 0 }}>Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+        <div className="bg-card p-8 rounded-xl shadow-lg text-center">
+          <div className="w-10 h-10 border-4 border-muted border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     )
@@ -200,568 +180,182 @@ export default function LoginPage() {
     <>
       <style dangerouslySetInnerHTML={{
         __html: `
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+          @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
           }
-          @keyframes slideInRight {
-            from {
-              opacity: 0;
-              transform: translateX(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          
-          @media (max-width: 768px) {
-            .login-container {
-              grid-template-columns: 1fr !important;
-              gap: 40px !important;
-              padding: 20px !important;
-            }
-            
-            .login-container > div:first-child {
-              display: none !important;
-            }
-            
-            .login-container > div:last-child {
-              max-width: 100% !important;
-              padding: 32px 24px !important;
-            }
-          }
-          
-          @media (max-width: 480px) {
-            .login-container > div:last-child {
-              padding: 24px 20px !important;
-              border-radius: 16px !important;
-            }
+          .gradient-animated {
+            background: linear-gradient(-45deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--primary)), hsl(var(--accent)));
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
           }
         `
       }} />
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      
+      <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-primary relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 gradient-animated opacity-20"></div>
+        
         {/* Background Pattern */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.3
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '60px',
-          maxWidth: '1200px',
-          width: '100%',
-          alignItems: 'center',
-          zIndex: 1
-        }}
-        className="login-container"
-        >
-          {/* Left Side - Branding & Features */}
-          <div style={{
-            color: 'white',
-            animation: 'slideInRight 0.8s ease-out'
-          }}>
-            <div style={{ marginBottom: '40px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '24px'
-              }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.3)'
-                }}>
-                  <span style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>SM</span>
+        {/* Centered Login Card */}
+        <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+          <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm border-border/50 shadow-2xl">
+            <CardHeader className="space-y-6 text-center">
+              {/* Brand Logo */}
+              <div className="flex justify-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center">
+                  <Sparkles size={32} className="text-primary-foreground" />
                 </div>
-                <span style={{ fontSize: '28px', fontWeight: 'bold' }}>
-                  StockMedia Pro
-                </span>
               </div>
-              <h1 style={{
-                fontSize: '48px',
-                fontWeight: 'bold',
-                marginBottom: '16px',
-                lineHeight: '1.2'
-              }}>
-                Welcome Back
-              </h1>
-              <p style={{
-                fontSize: '20px',
-                opacity: 0.9,
-                marginBottom: '40px',
-                lineHeight: '1.6'
-              }}>
-                Access millions of premium stock photos, videos, and graphics from 500+ top sites worldwide.
-              </p>
-            </div>
-
-            {/* Features */}
-            <div style={{
-              display: 'grid',
-              gap: '20px'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <Zap size={20} color="white" />
-                <span>Instant downloads with commercial licensing</span>
+              
+              {/* Title */}
+              <div className="space-y-2">
+                <CardTitle className="text-3xl font-bold">Welcome Back</CardTitle>
+                <CardDescription className="text-base">
+                  Sign in to access your StockMedia Pro account
+                </CardDescription>
               </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <Shield size={20} color="white" />
-                <span>Secure, encrypted transactions</span>
-              </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <Users size={20} color="white" />
-                <span>Join 10,000+ satisfied creators</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side - Login Form */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px',
-            padding: '40px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            animation: 'fadeInUp 0.8s ease-out',
-            maxWidth: '400px',
-            width: '100%'
-          }}>
-            {/* Form Header */}
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <h2 style={{
-                fontSize: '28px',
-                fontWeight: 'bold',
-                color: '#0f172a',
-                marginBottom: '8px'
-              }}>
-                Sign In
-              </h2>
-              <p style={{
-                color: '#64748b',
-                fontSize: '16px'
-              }}>
-                Enter your credentials to access your account
-              </p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '24px'
-            }}>
-              {/* Email Field */}
-              <div>
-                <label htmlFor="email" style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Email Address
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: emailError ? '#dc2626' : '#9ca3af',
-                    zIndex: 1
-                  }}>
-                    <Mail size={20} />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={handleEmailChange}
-                    style={{
-                      width: '100%',
-                      padding: '16px 16px 16px 48px',
-                      border: `2px solid ${emailError ? '#dc2626' : email ? '#10b981' : '#e5e7eb'}`,
-                      borderRadius: '12px',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease',
-                      boxSizing: 'border-box',
-                      background: 'white',
-                      outline: 'none'
-                    }}
-                    placeholder="Enter your email"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = emailError ? '#dc2626' : '#3b82f6'
-                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = emailError ? '#dc2626' : email ? '#10b981' : '#e5e7eb'
-                      e.target.style.boxShadow = 'none'
-                    }}
-                  />
-                  {email && !emailError && (
-                    <div style={{
-                      position: 'absolute',
-                      right: '16px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#10b981'
-                    }}>
-                      <CheckCircle size={20} />
-                    </div>
-                  )}
-                </div>
-                {emailError && (
-                  <p style={{
-                    color: '#dc2626',
-                    fontSize: '14px',
-                    margin: '8px 0 0 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <AlertCircle size={16} />
-                    {emailError}
-                  </p>
-                )}
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <label htmlFor="password" style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '8px'
-                }}>
-                  Password
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: passwordError ? '#dc2626' : '#9ca3af',
-                    zIndex: 1
-                  }}>
-                    <Lock size={20} />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={handlePasswordChange}
-                    style={{
-                      width: '100%',
-                      padding: '16px 48px 16px 48px',
-                      border: `2px solid ${passwordError ? '#dc2626' : password ? '#10b981' : '#e5e7eb'}`,
-                      borderRadius: '12px',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease',
-                      boxSizing: 'border-box',
-                      background: 'white',
-                      outline: 'none'
-                    }}
-                    placeholder="Enter your password"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = passwordError ? '#dc2626' : '#3b82f6'
-                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = passwordError ? '#dc2626' : password ? '#10b981' : '#e5e7eb'
-                      e.target.style.boxShadow = 'none'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '16px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#9ca3af',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {passwordError && (
-                  <p style={{
-                    color: '#dc2626',
-                    fontSize: '14px',
-                    margin: '8px 0 0 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <AlertCircle size={16} />
-                    {passwordError}
-                  </p>
-                )}
-              </div>
-
-              {/* Remember Me & Forgot Password */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '8px'
-              }}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  color: '#374151'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{
-                      width: '16px',
-                      height: '16px',
-                      accentColor: '#3b82f6'
-                    }}
-                  />
-                  Remember me
-                </label>
-                <Link href="/forgot-password" style={{
-                  color: '#3b82f6',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}>
-                  Forgot password?
-                </Link>
-              </div>
-
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
               {/* Error Message */}
               {error && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '16px',
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '12px',
-                  marginBottom: '8px'
-                }}>
-                  <AlertCircle size={20} color="#dc2626" />
-                  <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>{error}</p>
+                <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <AlertCircle size={20} className="text-destructive" />
+                  <p className="text-destructive text-sm">{error}</p>
                 </div>
               )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoading || isValidating}
-                style={{
-                  width: '100%',
-                  padding: '16px 24px',
-                  background: isLoading || isValidating 
-                    ? '#9ca3af' 
-                    : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: isLoading || isValidating ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: isLoading || isValidating 
-                    ? 'none' 
-                    : '0 4px 14px 0 rgba(59, 130, 246, 0.3)',
-                  transform: isLoading || isValidating ? 'none' : 'translateY(0)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isLoading && !isValidating) {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 6px 20px 0 rgba(59, 130, 246, 0.4)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isLoading && !isValidating) {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 4px 14px 0 rgba(59, 130, 246, 0.3)'
-                  }
-                }}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
-                    Signing In...
-                  </>
-                ) : isValidating ? (
-                  <>
-                    <CheckCircle size={20} />
-                    Success! Redirecting...
-                  </>
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRight size={20} />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Footer */}
-            <div style={{
-              marginTop: '32px',
-              textAlign: 'center'
-            }}>
-              <p style={{
-                fontSize: '14px',
-                color: '#64748b',
-                margin: '0 0 16px 0'
-              }}>
-                Don't have an account?{' '}
-                <Link href="/register" style={{
-                  color: '#3b82f6',
-                  textDecoration: 'none',
-                  fontWeight: '600'
-                }}>
-                  Sign up here
-                </Link>
-              </p>
-              
-              {/* Social Login Options - Temporarily disabled until OAuth setup */}
-              {/* <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                marginTop: '20px'
-              }}>
-                <div style={{
-                  position: 'relative',
-                  textAlign: 'center',
-                  margin: '16px 0'
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: 0,
-                    right: 0,
-                    height: '1px',
-                    background: '#e5e7eb'
-                  }}></div>
-                  <span style={{
-                    background: 'white',
-                    padding: '0 16px',
-                    color: '#9ca3af',
-                    fontSize: '14px'
-                  }}>
-                    Or continue with
-                  </span>
+              {/* Login Form */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={handleEmailChange}
+                      className={`pl-10 ${emailError ? 'border-destructive' : email ? 'border-green-500' : ''}`}
+                      placeholder="Enter your email"
+                    />
+                    {email && !emailError && (
+                      <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  {emailError && (
+                    <p className="flex items-center gap-2 text-destructive text-sm">
+                      <AlertCircle size={16} />
+                      {emailError}
+                    </p>
+                  )}
                 </div>
+
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={handlePasswordChange}
+                      className={`pl-10 pr-10 ${passwordError ? 'border-destructive' : password ? 'border-green-500' : ''}`}
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <p className="flex items-center gap-2 text-destructive text-sm">
+                      <AlertCircle size={16} />
+                      {passwordError}
+                    </p>
+                  )}
+                </div>
+
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={setRememberMe}
+                    />
+                    <Label htmlFor="remember" className="text-sm">Remember me</Label>
+                  </div>
+                  <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading || isValidating}
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing In...
+                    </>
+                  ) : isValidating ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Success! Redirecting...
+                    </>
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              {/* Footer */}
+              <div className="text-center space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{' '}
+                  <Link href="/register" className="text-primary hover:underline font-medium">
+                    Sign up here
+                  </Link>
+                </p>
                 
-                <GoogleSignInButton 
-                  text="Continue with Google"
-                  onSuccess={() => {
-                    console.log('Google sign-in successful')
-                  }}
-                  onError={(error) => {
-                    console.error('Google sign-in error:', error)
-                  }}
-                />
-                
-                <FacebookSignInButton 
-                  text="Continue with Facebook"
-                  onSuccess={() => {
-                    console.log('Facebook sign-in successful')
-                  }}
-                  onError={(error) => {
-                    console.error('Facebook sign-in error:', error)
-                  }}
-                />
-              </div> */}
-            </div>
-          </div>
+                {/* Features */}
+                <div className="grid grid-cols-1 gap-3 pt-4 border-t border-border">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Zap className="h-4 w-4 text-secondary" />
+                    <span>Instant downloads with commercial licensing</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Shield className="h-4 w-4 text-secondary" />
+                    <span>Secure, encrypted transactions</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4 text-secondary" />
+                    <span>Join 10,000+ satisfied creators</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>

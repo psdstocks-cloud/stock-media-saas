@@ -1,70 +1,81 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Zap, Shield, Clock, CheckCircle, Star, ShoppingCart } from 'lucide-react';
+import { Zap, Shield, Clock, CheckCircle, Star, ShoppingCart, ArrowRight, Crown, Users, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import type { PointPack } from '@/lib/types';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 
-interface PricingPlan {
+interface SubscriptionPlan {
   id: string;
   name: string;
-  points: number;
-  price: number;
+  description: string;
+  monthlyPrice: number;
+  annualPrice: number;
   features: string[];
   popular?: boolean;
+  icon: any;
 }
 
-const pricingPlans: PricingPlan[] = [
+const subscriptionPlans: SubscriptionPlan[] = [
   {
     id: 'starter',
-    name: 'Starter Pack',
-    points: 100,
-    price: 9.99,
+    name: 'Starter',
+    description: 'Perfect for individual creators and small projects',
+    monthlyPrice: 19,
+    annualPrice: 15,
     features: [
-      '100 download credits',
-      'All stock sites included',
+      '100 downloads per month',
       'HD quality downloads',
       'Commercial license included',
-      'Lifetime access to downloads'
-    ]
-  },
-  {
-    id: 'pro',
-    name: 'Pro Pack',
-    points: 500,
-    price: 39.99,
-    features: [
-      '500 download credits',
-      'All stock sites included',
-      '4K quality downloads',
-      'Commercial license included',
-      'Priority support',
-      'Lifetime access to downloads'
+      'Basic support',
+      'All stock sites access'
     ],
-    popular: true
+    icon: Star
   },
   {
-    id: 'business',
-    name: 'Business Pack',
-    points: 1000,
-    price: 69.99,
+    id: 'professional',
+    name: 'Professional',
+    description: 'Ideal for growing creative teams and agencies',
+    monthlyPrice: 49,
+    annualPrice: 39,
     features: [
-      '1000 download credits',
-      'All stock sites included',
+      '500 downloads per month',
       '4K quality downloads',
       'Extended commercial license',
       'Priority support',
-      'Team collaboration features',
-      'Lifetime access to downloads'
-    ]
+      'Team collaboration tools',
+      'Advanced analytics',
+      'API access'
+    ],
+    popular: true,
+    icon: Crown
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    description: 'Built for large organizations with custom needs',
+    monthlyPrice: 99,
+    annualPrice: 79,
+    features: [
+      'Unlimited downloads',
+      '8K quality downloads',
+      'Extended commercial license',
+      '24/7 dedicated support',
+      'Advanced team management',
+      'Custom integrations',
+      'White-label options',
+      'SLA guarantee'
+    ],
+    icon: Users
   }
 ];
 
@@ -72,6 +83,7 @@ export default function PricingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
+  const [isAnnual, setIsAnnual] = useState(false);
 
   // Fetch point packs for authenticated users
   const { data: pointPacks, isLoading: isLoadingPacks } = useQuery<PointPack[]>({
@@ -100,105 +112,220 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Simple, Transparent Pricing
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-6">
+            <Sparkles size={16} className="text-primary" />
+            <span className="text-sm font-medium text-primary">Flexible Pricing Options</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Choose Your Perfect
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"> Plan</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Pay only for what you use. No subscriptions, no hidden fees. 
-            Get instant access to millions of stock photos, videos, and audio files.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Scale your creative workflow with our flexible subscription plans or pay-as-you-go point packs. 
+            No hidden fees, cancel anytime.
           </p>
         </div>
 
-        {/* Pricing Plans */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto mb-16">
-          {pricingPlans.map((plan) => (
-            <Card key={plan.id} className="relative flex flex-col hover:shadow-xl transition-shadow">
-              {plan.popular && (
-                <Badge variant="default" className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1">
-                  Most Popular
+        {/* Pricing Tabs */}
+        <Tabs defaultValue="subscriptions" className="w-full max-w-7xl mx-auto">
+          <TabsList className="grid w-full grid-cols-2 mb-12">
+            <TabsTrigger value="subscriptions" className="text-lg">Monthly Plans</TabsTrigger>
+            <TabsTrigger value="point-packs" className="text-lg">Point Packs</TabsTrigger>
+          </TabsList>
+
+          {/* Subscription Plans */}
+          <TabsContent value="subscriptions" className="space-y-12">
+            {/* Annual/Monthly Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <span className={`text-lg font-medium ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Monthly
+              </span>
+              <Switch
+                checked={isAnnual}
+                onCheckedChange={setIsAnnual}
+                className="data-[state=checked]:bg-primary"
+              />
+              <span className={`text-lg font-medium ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Annual
+              </span>
+              {isAnnual && (
+                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700">
+                  Save 20%
                 </Badge>
               )}
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                <div className="space-y-2">
-                  <div className="text-4xl font-bold text-blue-600">
-                    ${plan.price}
-                  </div>
-                  <div className="text-lg text-gray-600">
-                    {plan.points} credits
-                  </div>
-                </div>
-              </CardHeader>
+            </div>
 
-              <CardContent className="space-y-4 flex-grow">
-                <div className="space-y-2">
-                  {plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
+            {/* Subscription Cards */}
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {subscriptionPlans.map((plan) => {
+                const price = isAnnual ? plan.annualPrice : plan.monthlyPrice;
+                const Icon = plan.icon;
+                
+                return (
+                  <Card key={plan.id} className={`relative flex flex-col hover:shadow-xl transition-all hover:-translate-y-1 ${
+                    plan.popular ? 'border-secondary shadow-lg scale-105' : 'border-border'
+                  }`}>
+                    {plan.popular && (
+                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground px-4 py-1">
+                        Recommended
+                      </Badge>
+                    )}
+                    
+                    <CardHeader className="text-center pb-6">
+                      <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <Icon size={32} className="text-primary-foreground" />
+                      </div>
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                      <CardDescription className="text-base">{plan.description}</CardDescription>
+                      
+                      <div className="space-y-2 mt-6">
+                        <div className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                          ${price}
+                          <span className="text-lg text-muted-foreground font-normal">/month</span>
+                        </div>
+                        {isAnnual && (
+                          <p className="text-sm text-muted-foreground">
+                            Billed annually (${price * 12}/year)
+                          </p>
+                        )}
+                      </div>
+                    </CardHeader>
 
-              <CardFooter>
-                <Button 
-                  className="w-full" 
-                  variant={plan.popular ? "default" : "outline"}
-                  onClick={() => {
-                    router.push('/register');
-                  }}
-                >
-                  <Zap className="h-4 w-4 mr-2" />
-                  Get Started
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                    <CardContent className="space-y-4 flex-grow">
+                      <div className="space-y-3">
+                        {plan.features.map((feature, index) => (
+                          <div key={index} className="flex items-center gap-3 text-sm">
+                            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+
+                    <CardFooter>
+                      <Button 
+                        className="w-full" 
+                        variant={plan.popular ? "secondary" : "outline"}
+                        size="lg"
+                        onClick={() => router.push('/register')}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Choose {plan.name}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* Point Packs */}
+          <TabsContent value="point-packs" className="space-y-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">Pay-As-You-Go Point Packs</h2>
+              <p className="text-lg text-muted-foreground">
+                Perfect for occasional users. Buy points once, use them anytime. Never expire.
+              </p>
+            </div>
+
+            {isLoadingPacks ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2 text-muted-foreground">Loading point packs...</p>
+              </div>
+            ) : pointPacks && pointPacks.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {pointPacks.map((pack) => (
+                  <Card key={pack.id} className="flex flex-col hover:shadow-lg transition-all hover:-translate-y-1">
+                    <CardHeader className="text-center pb-4">
+                      <CardTitle className="text-xl">{pack.name}</CardTitle>
+                      {pack.description && (
+                        <CardDescription>{pack.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-4 flex-grow">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+                          ${pack.price}
+                        </div>
+                        <div className="text-lg text-muted-foreground">
+                          {pack.points} points
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          ${(pack.price / pack.points).toFixed(2)} per point
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter>
+                      <Button 
+                        className="w-full" 
+                        variant="secondary"
+                        size="lg"
+                        onClick={() => {
+                          toast({
+                            title: 'Redirecting to purchase...',
+                            description: `You'll be redirected to complete your ${pack.name} purchase.`,
+                          });
+                          router.push('/register');
+                        }}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Buy Points
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Point packs will be available soon.</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* Features Section */}
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-white/80 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto mt-20">
+          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
             <CardContent className="p-8">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  Why Choose Our Service?
-                </h2>
-                <p className="text-gray-600">
+                <h2 className="text-3xl font-bold mb-4">Why Choose StockMedia Pro?</h2>
+                <p className="text-muted-foreground">
                   Experience the best in stock media with unparalleled benefits.
                 </p>
               </div>
               <div className="grid gap-8 md:grid-cols-3">
                 <div className="flex flex-col items-center text-center">
-                  <div className="bg-blue-100 text-blue-600 p-4 rounded-full mb-4">
-                    <Zap className="h-6 w-6" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center mb-4">
+                    <Zap className="h-8 w-8 text-primary-foreground" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Instant Access</h3>
-                  <p className="text-gray-600">
-                    Download your files immediately after purchase.
+                  <p className="text-muted-foreground">
+                    Download your files immediately after purchase with our global CDN.
                   </p>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                  <div className="bg-green-100 text-green-600 p-4 rounded-full mb-4">
-                    <Shield className="h-6 w-6" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4">
+                    <Shield className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Secure & Licensed</h3>
-                  <p className="text-gray-600">
-                    All downloads come with commercial licenses.
+                  <p className="text-muted-foreground">
+                    All downloads come with commercial licenses and enterprise-grade security.
                   </p>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                  <div className="bg-purple-100 text-purple-600 p-4 rounded-full mb-4">
-                    <Clock className="h-6 w-6" />
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-4">
+                    <Clock className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Lifetime Access</h3>
-                  <p className="text-gray-600">
-                    Keep your downloads forever, no expiration.
+                  <p className="text-muted-foreground">
+                    Keep your downloads forever with no expiration dates or usage limits.
                   </p>
                 </div>
               </div>
@@ -207,16 +334,14 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
+        <div className="text-center mt-20">
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-lg text-muted-foreground mb-8">
             Join thousands of creators who trust our platform for their stock media needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => router.push('/register')}>
-              <Star className="h-5 w-5 mr-2" />
+            <Button size="lg" variant="secondary" onClick={() => router.push('/register')}>
+              <ArrowRight className="h-5 w-5 mr-2" />
               Create Account
             </Button>
             <Button size="lg" variant="outline" onClick={() => router.push('/login')}>
