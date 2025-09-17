@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
