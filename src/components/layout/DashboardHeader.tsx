@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { Bell, LogOut, User } from 'lucide-react';
+import { Bell, LogOut, User, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,16 +21,23 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-white px-6 dark:bg-gray-900">
+    <header className="flex h-16 items-center justify-between border-b border-border bg-background px-6">
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold">StockMedia SaaS</h1>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+            <Sparkles size={20} className="text-primary-foreground" />
+          </div>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            StockMedia Pro
+          </h1>
+        </div>
       </div>
       
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative hover:bg-muted">
           <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 text-xs text-white"></span>
+          <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-secondary text-xs text-secondary-foreground"></span>
         </Button>
 
         {/* User Menu */}

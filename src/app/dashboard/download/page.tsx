@@ -9,11 +9,11 @@ import {
   CreditCard, 
   Clock, 
   CheckCircle, 
-  XCircle, 
   Loader2,
-  ExternalLink,
   AlertCircle
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ComprehensiveUrlParser } from '../../../lib/comprehensive-url-parser'
 import { ModernLoadingBar } from '../../../components/ui/ModernLoadingBar'
 
@@ -56,10 +56,6 @@ export default function DownloadPage() {
   const [isLoadingPoints, setIsLoadingPoints] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [supportedSites, setSupportedSites] = useState<any[]>([])
-  const [isLoadingSites, setIsLoadingSites] = useState(true)
   
   // Loading bar state
   const [showLoadingBar, setShowLoadingBar] = useState(false)
@@ -74,13 +70,7 @@ export default function DownloadPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [session, setSession] = useState<any>(null)
 
-  // Filter sites based on search query
-  const filteredSites = supportedSites.filter(site => 
-    site.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    site.url.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  // Check authentication on mount
+  // Check authentication and URL parameters on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -127,27 +117,16 @@ export default function DownloadPage() {
     checkAuth()
   }, [router])
 
-  // Load supported sites from API
+  // Handle URL parameter from main dashboard
   useEffect(() => {
-    const loadSupportedSites = async () => {
-      try {
-        setIsLoadingSites(true)
-        const response = await fetch('/api/supported-sites')
-        const data = await response.json()
-        
-        if (data.success && data.sites) {
-          setSupportedSites(data.sites)
-        } else {
-          console.error('Failed to load supported sites:', data)
-      }
-    } catch (error) {
-        console.error('Error loading supported sites:', error)
-      } finally {
-        setIsLoadingSites(false)
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlParam = urlParams.get('url')
+    
+    if (urlParam) {
+      console.log('URL parameter found:', urlParam)
+      setInputUrl(urlParam)
+      handleUrlChange(urlParam)
     }
-  }
-
-    loadSupportedSites()
   }, [])
 
   // Cleanup debounce timer on unmount
@@ -328,56 +307,6 @@ export default function DownloadPage() {
       setIsLoading(false)
     }
   }, [])
-
-  // Handle paste event - immediate processing
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    console.log('=== PASTE EVENT START ===')
-    const pastedText = e.clipboardData.getData('text')
-    console.log('Paste event:', pastedText)
-    console.log('Pasted text length:', pastedText.length)
-    setInputUrl(pastedText)
-    
-    // Clear existing timer
-    if (debounceTimer) {
-      console.log('Clearing existing debounce timer')
-      clearTimeout(debounceTimer)
-    }
-    
-    // Process immediately for paste events
-    if (pastedText.match(/^https?:\/\//)) {
-      console.log('Processing paste immediately for:', pastedText)
-      console.log('Calling handleUrlChange...')
-      handleUrlChange(pastedText)
-    } else {
-      console.log('Pasted text does not match URL pattern')
-    }
-    console.log('=== PASTE EVENT END ===')
-  }, [handleUrlChange, debounceTimer])
-
-  // Handle URL input change - with debounce
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value
-    console.log('Input change:', url)
-    setInputUrl(url)
-    
-    // Clear existing timer
-    if (debounceTimer) {
-      clearTimeout(debounceTimer)
-    }
-    
-    // Debounce only for typing, not paste
-    if (url.trim() && url.match(/^https?:\/\//)) {
-      const timer = setTimeout(() => {
-        console.log('Debounced input handling for:', url)
-        handleUrlChange(url)
-      }, 1500) // 1.5 second debounce for typing
-      setDebounceTimer(timer)
-    } else if (!url.trim()) {
-      // Clear immediately if empty
-      setFileInfo(null)
-      setError(null)
-    }
-  }, [handleUrlChange, debounceTimer])
 
   // Direct download function - deduct points and get download link
   const handleDirectDownload = useCallback(async () => {
@@ -586,32 +515,13 @@ export default function DownloadPage() {
   // Show loading state
   if (!isInitialized) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <Loader2 style={{ 
-            width: '3rem', 
-            height: '3rem', 
-            color: 'white', 
-            margin: '0 auto 1rem',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <h2 style={{
-            fontSize: '1.5rem',
-            fontWeight: '700',
-            color: 'white',
-            margin: 0
-          }}>Checking authentication...</h2>
-          <p style={{
-            color: 'rgba(255, 255, 255, 0.8)',
-            fontSize: '0.875rem',
-            margin: '0.5rem 0 0 0'
-          }}>Please wait while we verify your session</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Checking authentication...</h2>
+          <p className="text-muted-foreground">
+            Please wait while we verify your session
+          </p>
         </div>
       </div>
     )
@@ -639,981 +549,227 @@ export default function DownloadPage() {
         }}
       />
       
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
-      }}>
+      <div className="space-y-8">
       {/* Header */}
-      <div style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: '0 1rem'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '2rem 0',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.5rem'
-          }}>
-            <button
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => router.back()}
-              style={{
-                padding: '0.75rem',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: '1rem',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                e.currentTarget.style.transform = 'scale(1.05)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
+              className="h-10 w-10"
             >
-              <ArrowLeft style={{ width: '1.5rem', height: '1.5rem' }} />
-            </button>
-            <div style={{ flex: 1 }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                marginBottom: '0.75rem'
-              }}>
-                <div style={{
-                  width: '3rem',
-                  height: '3rem',
-                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                  borderRadius: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                }}>
-                  <Download style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
-                </div>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
                 <div>
-                  <h1 style={{
-                    fontSize: '2.25rem',
-                    fontWeight: '700',
-                    background: 'linear-gradient(135deg, #ffffff, #e0e7ff, #f3e8ff)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    margin: 0
-                  }}>
-                    Download Center V2.0
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Download Center
                 </h1>
-                  <p style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    fontSize: '1.25rem',
-                    margin: '0.5rem 0 0 0'
-                  }}>
-                    Access premium stock content instantly
+              <p className="text-muted-foreground">
+                Process and download your stock media files
                   </p>
               </div>
             </div>
-          </div>
-        </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '1rem',
-              padding: '1rem',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'white'
-              }}>
-                <CreditCard style={{ width: '1.25rem', height: '1.25rem' }} />
+          
+          <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+            <CreditCard className="h-4 w-4" />
                 {isLoadingPoints ? (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    <Loader2 style={{ 
-                      width: '1rem', 
-                      height: '1rem', 
-                      animation: 'spin 1s linear infinite' 
-                    }} />
-                    <span style={{ fontWeight: '600' }}>Loading...</span>
-                  </div>
-                ) : (
-                  <span style={{ fontWeight: '600' }}>{userPoints} Points</span>
-                )}
-                </div>
-              </div>
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <span className="font-medium">{userPoints} Points</span>
+            )}
             </div>
           </div>
 
         {/* Main Content */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '2rem'
-        }}>
-          {/* URL Input Section */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '1.5rem',
-              padding: '2rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '700',
-                color: 'white',
-                marginBottom: '1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem'
-              }}>
-                <Search style={{ width: '1.5rem', height: '1.5rem' }} />
-                Paste Stock URL
-              </h2>
-              
-              <div style={{ marginBottom: '1rem', position: 'relative' }}>
-                <input
-                  type="url"
-                  value={inputUrl}
-                  onChange={handleInputChange}
-                  onPaste={handlePaste}
-                  placeholder="Paste your stock media URL - preview will appear automatically"
-                  disabled={isLoading}
-                  style={{
-                    width: '100%',
-                    padding: '1rem',
-                    paddingRight: isLoading ? '3rem' : '1rem',
-                    borderRadius: '0.75rem',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    background: isLoading ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)',
-                    color: 'white',
-                    fontSize: '1rem',
-                    backdropFilter: 'blur(8px)',
-                    opacity: isLoading ? 0.7 : 1
-                  }}
-                  onFocus={(e) => {
-                    if (!isLoading) {
-                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.5)'
-                      e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                    }
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                    e.target.style.boxShadow = 'none'
-                  }}
-                />
-                {isLoading && (
-                  <div style={{
-                    position: 'absolute',
-                    right: '1rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '0.875rem'
-                  }}>
-                    <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
-                    Getting preview...
-                      </div>
-                )}
-                  </div>
-
-              {/* File Preview Section - Redesigned for Better UX */}
-              {fileInfo && (
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                  borderRadius: '1.5rem',
-                  padding: '2rem',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  margin: '1.5rem 0',
-                  backdropFilter: 'blur(20px)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-                }}>
-                  {/* Header with Status */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1.5rem'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem'
-                    }}>
-                      <div style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        background: fileInfo.isAvailable ? '#10b981' : '#ef4444',
-                        boxShadow: `0 0 10px ${fileInfo.isAvailable ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`
-                      }} />
-                      <span style={{
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        fontSize: '0.875rem',
-                        fontWeight: '500'
-                      }}>
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* File Preview Section */}
+          <div className="lg:col-span-2">
+            {fileInfo ? (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${fileInfo.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
+                      <span className="text-sm text-muted-foreground">
                         {fileInfo.isAvailable ? 'Ready to Download' : 'Unavailable'}
                       </span>
                     </div>
-                    
-                    {/* Points Badge - Redesigned */}
-                    <div style={{
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '2rem',
-                      fontSize: '0.875rem',
-                      fontWeight: '700',
-                      boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)'
-                    }}>
-                      💎 {fileInfo.cost} Points
+                    <div className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                      {fileInfo.cost} Points
                     </div>
                   </div>
-
-                  {/* Main Content Grid */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '200px 1fr auto',
-                    gap: '2rem',
-                    alignItems: 'center'
-                  }}>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
                     {/* Preview Image */}
-                    <div style={{
-                      position: 'relative',
-                      borderRadius: '1rem',
-                      overflow: 'hidden',
-                      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
-                    }}>
-                      <div style={{
-                        width: '200px',
-                        height: '150px',
-                        background: `url(${fileInfo.image || fileInfo.previewUrl}) center/cover`,
-                        borderRadius: '1rem'
-                      }} />
-                      <div style={{
-                        position: 'absolute',
-                        top: '0.5rem',
-                        right: '0.5rem',
-                        background: 'rgba(0, 0, 0, 0.7)',
-                        color: 'white',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '0.5rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '600'
-                      }}>
+                    <div className="relative">
+                      <div 
+                        className="w-full h-48 rounded-lg bg-muted bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(${fileInfo.image || fileInfo.previewUrl})`
+                        }}
+                      />
+                      <div className="absolute top-2 right-2 bg-background/80 text-foreground px-2 py-1 rounded text-xs font-medium">
                         {fileInfo.format || 'Unknown'}
                       </div>
                     </div>
 
                     {/* File Details */}
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        color: 'white',
-                        fontSize: '1.5rem',
-                        fontWeight: '700',
-                        margin: '0 0 0.5rem 0',
-                        lineHeight: '1.2'
-                      }}>
-                        {fileInfo.title}
-                      </h3>
-                      
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '1rem',
-                        marginBottom: '1rem'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          color: 'rgba(255, 255, 255, 0.8)',
-                          fontSize: '0.875rem'
-                        }}>
-                          <div style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: '#3b82f6'
-                          }} />
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2">{fileInfo.title}</h3>
+                        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-primary rounded-full" />
                           {fileInfo.site}
                         </div>
-                        
                         {fileInfo.size && (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            fontSize: '0.875rem'
-                          }}>
-                            <div style={{
-                              width: '8px',
-                              height: '8px',
-                              borderRadius: '50%',
-                              background: '#8b5cf6'
-                            }} />
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-secondary rounded-full" />
                             {fileInfo.size}
                           </div>
                         )}
-                        
                         {fileInfo.author && (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            fontSize: '0.875rem'
-                          }}>
-                            <div style={{
-                              width: '8px',
-                              height: '8px',
-                              borderRadius: '50%',
-                              background: '#f59e0b'
-                            }} />
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-orange-500 rounded-full" />
                             {fileInfo.author}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Download Button - Redesigned */}
-                    <div style={{ textAlign: 'center' }}>
-                      <button
+                      {/* Download Button */}
+                      <Button
                         onClick={handleDirectDownload}
                         disabled={isOrdering || !fileInfo.isAvailable}
-                        style={{
-                          background: fileInfo.isAvailable 
-                            ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                            : 'rgba(107, 114, 128, 0.5)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '1rem',
-                          padding: '1rem 2rem',
-                          fontSize: '1rem',
-                          fontWeight: '700',
-                          cursor: fileInfo.isAvailable ? 'pointer' : 'not-allowed',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          minWidth: '140px',
-                          boxShadow: fileInfo.isAvailable 
-                            ? '0 10px 25px rgba(16, 185, 129, 0.4)' 
-                            : 'none'
-                        }}
-                        onMouseOver={(e) => {
-                          if (fileInfo.isAvailable) {
-                            e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
-                            e.currentTarget.style.boxShadow = '0 15px 35px rgba(16, 185, 129, 0.6)'
-                          }
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0) scale(1)'
-                          e.currentTarget.style.boxShadow = fileInfo.isAvailable 
-                            ? '0 10px 25px rgba(16, 185, 129, 0.4)' 
-                            : 'none'
-                        }}
+                        className="w-full h-12 bg-secondary text-secondary-foreground hover:bg-secondary/90"
                       >
                         {isOrdering ? (
                           <>
-                            <Loader2 style={{ width: '1.5rem', height: '1.5rem', animation: 'spin 1s linear infinite' }} />
-                            <span>Processing...</span>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
                           </>
                         ) : (
                           <>
-                            <Download style={{ width: '1.5rem', height: '1.5rem' }} />
-                            <span>Download Now</span>
+                            <Download className="mr-2 h-4 w-4" />
+                            Download Now
                           </>
                         )}
-                      </button>
-                    </div>
-                  </div>
+                      </Button>
                   
                   {fileInfo.error && (
-                    <div style={{
-                      padding: '1rem',
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.3)',
-                      borderRadius: '0.75rem',
-                      color: '#fca5a5',
-                      fontSize: '0.875rem',
-                      marginTop: '1.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <AlertCircle style={{ width: '1rem', height: '1rem' }} />
+                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
                       {fileInfo.error}
                     </div>
                   )}
                 </div>
-              )}
-
-              {/* Supported Sites - 2025 Trendy Design */}
-              <div style={{ marginBottom: '2rem' }}>
-                {/* Header Section */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '1.5rem',
-                  padding: '1.5rem',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                  borderRadius: '1rem',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(20px)'
-                }}>
-                          <div>
-                    <h3 style={{
-                      color: 'white',
-                      fontSize: '1.5rem',
-                      fontWeight: '700',
-                      margin: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      <ExternalLink style={{ width: '1.5rem', height: '1.5rem', color: '#10b981' }} />
-                      Supported Stock Sites
-                            </h3>
-                    <p style={{
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      fontSize: '0.875rem',
-                      margin: '0.5rem 0 0 0'
-                    }}>
-                      Access premium stock media from 30+ trusted platforms
-                    </p>
                   </div>
-
-                  {/* View Mode Toggle */}
-                  <div style={{
-                    display: 'flex',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '0.75rem',
-                    padding: '0.25rem',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)'
-                  }}>
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      style={{
-                        padding: '0.75rem 1.25rem',
-                        background: viewMode === 'grid' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: '600',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        boxShadow: viewMode === 'grid' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'
-                      }}
-                    >
-                      Grid
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      style={{
-                        padding: '0.75rem 1.25rem',
-                        background: viewMode === 'list' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: '600',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        boxShadow: viewMode === 'list' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'
-                      }}
-                    >
-                      List
-                    </button>
+                </CardContent>
+              </Card>
+            ) : inputUrl ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                           </div>
-                        </div>
-                        
-                {/* Search Section */}
-                <div style={{
-                  marginBottom: '1.5rem',
-                  position: 'relative'
-                }}>
-                  <input
-                    type="text"
-                    placeholder="Search sites by name or URL..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '1rem 1.25rem 1rem 3rem',
-                      borderRadius: '1rem',
-                      border: '2px solid rgba(255, 255, 255, 0.2)',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'white',
-                      fontSize: '1rem',
-                      backdropFilter: 'blur(20px)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      outline: 'none'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'rgba(16, 185, 129, 0.5)'
-                      e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'
-                      e.target.style.background = 'rgba(255, 255, 255, 0.15)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-                      e.target.style.boxShadow = 'none'
-                      e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-                    }}
-                  />
-                  <Search style={{
-                    position: 'absolute',
-                    left: '1rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: '1.25rem',
-                    height: '1.25rem',
-                    color: 'rgba(255, 255, 255, 0.6)'
-                  }} />
-                          </div>
-
-                {/* Results Count */}
-                <div style={{
-                  marginBottom: '1.5rem',
-                  fontSize: '1rem',
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  fontWeight: '500'
-                }}>
-                  {isLoadingSites ? 'Loading sites...' : 
-                   searchQuery ? `Found ${filteredSites.length} sites` : 
-                   `Showing all ${supportedSites.length} supported sites`}
+                  <h3 className="text-lg font-medium mb-2">Analyzing URL</h3>
+                  <p className="text-muted-foreground">
+                    Getting file information and preview...
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      
-                {/* Loading State */}
-                {isLoadingSites ? (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '4rem',
-                    color: 'rgba(255, 255, 255, 0.6)'
-                  }}>
-                    <div style={{
-                      width: '3rem',
-                      height: '3rem',
-                      border: '3px solid rgba(255, 255, 255, 0.2)',
-                      borderTop: '3px solid #10b981',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }} />
-                    <span style={{ marginLeft: '1rem', fontSize: '1.125rem' }}>Loading supported sites...</span>
-                              </div>
-                ) : (
-                  <>
-                    {/* Sites Container - 2025 Trendy Scrolling */}
-                    <div 
-                      style={{
-                        display: viewMode === 'grid' ? 'grid' : 'flex',
-                        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fit, minmax(320px, 1fr))' : 'none',
-                        flexDirection: viewMode === 'list' ? 'column' : 'row',
-                        gap: '1rem',
-                        marginBottom: '2rem',
-                        ...(viewMode === 'list' && {
-                          maxHeight: '500px',
-                          overflowY: 'auto',
-                          paddingRight: '0.5rem',
-                          scrollbarWidth: 'thin',
-                          scrollbarColor: 'rgba(16, 185, 129, 0.3) transparent'
-                        })
-                      }}
-                    >
-                      {filteredSites.map((site, index) => (
-                        <a
-                          key={site.name}
-                          href={site.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: viewMode === 'list' ? '1rem 1.25rem' : '1.25rem',
-                            background: viewMode === 'list' 
-                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                            borderRadius: viewMode === 'list' ? '0.75rem' : '1rem',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            textDecoration: 'none',
-                            color: 'white',
-                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            overflow: 'hidden',
-                            backdropFilter: 'blur(20px)',
-                            ...(viewMode === 'list' && {
-                              marginBottom: '0.75rem'
-                            })
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = viewMode === 'list' 
-                              ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%)'
-                              : 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)'
-                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'
-                            e.currentTarget.style.boxShadow = '0 12px 40px rgba(16, 185, 129, 0.2)'
-                            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = viewMode === 'list'
-                              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)'
-                            e.currentTarget.style.transform = 'translateY(0) scale(1)'
-                            e.currentTarget.style.boxShadow = 'none'
-                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-                          }}
-                        >
-                          {/* 2025 Gradient Accent */}
-                          <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            height: '3px',
-                            background: 'linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6, #f59e0b)',
-                            opacity: 0,
-                            transition: 'opacity 0.3s ease'
-                          }} />
-                          
-                          <div style={{ flex: 1, zIndex: 1, display: 'flex', alignItems: 'center' }}>
-                            {/* Site Icon */}
-                            {site.icon && (
-                              <div style={{
-                                width: viewMode === 'list' ? '40px' : '48px',
-                                height: viewMode === 'list' ? '40px' : '48px',
-                                marginRight: '1rem',
-                                borderRadius: '12px',
-                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                border: '2px solid rgba(255, 255, 255, 0.3)',
-                                backdropFilter: 'blur(20px)',
-                                flexShrink: 0,
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                              }}>
-                                <img 
-                                  src={`/assets/icons/${site.icon?.replace('.png', '.svg')}`}
-                                  alt={`${site.displayName} icon`}
-                                  style={{
-                                    width: viewMode === 'list' ? '24px' : '28px',
-                                    height: viewMode === 'list' ? '24px' : '28px',
-                                    objectFit: 'contain'
-                                  }}
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                    const parent = e.currentTarget.parentElement
-                                    if (parent) {
-                                      parent.innerHTML = '<div style="color: rgba(255, 255, 255, 0.8); font-size: 16px; font-weight: bold;">📁</div>'
-                                    }
-                                  }}
-                                />
-                      </div>
-                    )}
-
-                            {/* Site Info */}
-                            <div style={{ flex: 1 }}>
-                              <div style={{
-                                fontSize: viewMode === 'list' ? '1rem' : '1.125rem',
-                                fontWeight: '700',
-                                marginBottom: '0.5rem',
-                                background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
-                                backgroundClip: 'text',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent'
-                              }}>
-                                {site.displayName}
-                  </div>
-                              <div style={{
-                                fontSize: viewMode === 'list' ? '0.875rem' : '0.9rem',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                wordBreak: 'break-all',
-                                opacity: 0.9
-                              }}>
-                                {site.url}
-                </div>
-              </div>
-            </div>
-                        
-                          {/* Points Badge */}
-                          <div style={{
-                            textAlign: 'right',
-                            marginLeft: '1rem',
-                            zIndex: 1
-                          }}>
-                            <div style={{
-                              fontSize: viewMode === 'list' ? '0.875rem' : '1rem',
-                              fontWeight: '800',
-                              color: '#ffffff',
-                              background: 'linear-gradient(135deg, #10b981, #059669)',
-                              padding: '0.5rem 1rem',
-                              borderRadius: '0.75rem',
-                              marginBottom: '0.5rem',
-                              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                              border: '1px solid rgba(255, 255, 255, 0.2)'
-                            }}>
-                              {site.cost} pts
-                    </div>
-                            <ExternalLink style={{
-                              width: viewMode === 'list' ? '1rem' : '1.125rem',
-                              height: viewMode === 'list' ? '1rem' : '1.125rem',
-                              color: 'rgba(255, 255, 255, 0.6)',
-                              transition: 'color 0.3s ease'
-                            }} />
-                  </div>
-                        </a>
-                  ))}
-                </div>
-                  </>
-                )}
-
-                {/* No Results */}
-                {!isLoadingSites && filteredSites.length === 0 && searchQuery && (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '3rem',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    borderRadius: '1rem',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
-                  }}>
-                    <Search style={{ width: '3rem', height: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
-                    <div style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-                      No sites found matching "{searchQuery}"
-                  </div>
-                    <div style={{ fontSize: '0.875rem' }}>
-                      Try searching by site name or URL
-                </div>
-              </div>
-                )}
-
-                {/* Pricing Note */}
-                <div style={{
-                  marginTop: '2rem',
-                  padding: '1.5rem',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
-                  border: '2px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  backdropFilter: 'blur(20px)'
-                }}>
-                  <CheckCircle style={{ width: '1.5rem', height: '1.5rem', color: '#10b981', flexShrink: 0 }} />
-                  <div>
-                    <div style={{
-                      fontSize: '1.125rem',
-                      fontWeight: '700',
-                      color: '#10b981',
-                      marginBottom: '0.5rem'
-                    }}>
-                      All sites included in your subscription
-                    </div>
-                    <div style={{
-                      fontSize: '0.875rem',
-                      color: 'rgba(16, 185, 129, 0.9)',
-                      lineHeight: '1.5'
-                    }}>
-                      No additional fees - just use your points to download from any supported site. Each download costs exactly 10 points regardless of the original site's pricing.
-                  </div>
-              </div>
-            </div>
-          </div>
-
-              {/* Error/Success Messages */}
-              {error && (
-                <div style={{
-                  padding: '1rem',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  borderRadius: '0.75rem',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  color: '#fca5a5'
-                }}>
-                  <AlertCircle style={{ width: '1rem', height: '1rem' }} />
-                  {error}
-                  </div>
-          )}
-
-              {success && (
-                <div style={{
-                  padding: '1rem',
-                  background: 'rgba(34, 197, 94, 0.1)',
-                  border: '1px solid rgba(34, 197, 94, 0.3)',
-                  borderRadius: '0.75rem',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  color: '#86efac'
-                }}>
-                  <CheckCircle style={{ width: '1rem', height: '1rem' }} />
-                  {success}
-                </div>
-              )}
-            </div>
+                  <h3 className="text-lg font-medium mb-2">No URL provided</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Please paste a stock media URL on the main dashboard to get started
+                  </p>
+                  <Button onClick={() => router.push('/dashboard')} variant="outline">
+                    Go to Dashboard
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Recent Orders Sidebar */}
           <div>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '1.5rem',
-              padding: '1.5rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                color: 'white',
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <Clock style={{ width: '1.25rem', height: '1.25rem' }} />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
                 Recent Orders
-              </h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 {recentOrders.length === 0 ? (
-                  <p style={{
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    fontSize: '0.875rem',
-                    textAlign: 'center',
-                    padding: '2rem 0'
-                  }}>
+                  <p className="text-muted-foreground text-center py-8">
                     No recent orders
                   </p>
                 ) : (
-                  recentOrders.map((order) => (
+                  <div className="space-y-3">
+                    {recentOrders.map((order) => (
                     <div
                       key={order.id}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        borderRadius: '0.75rem',
-                        padding: '1rem',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '0.5rem'
-                      }}>
-                        <div>
-                          <h4 style={{
-                            fontSize: '0.875rem',
-                            fontWeight: '600',
-                            color: 'white',
-                            margin: '0 0 0.25rem 0'
-                          }}>
-                            {order.title}
-                          </h4>
-                          <p style={{
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            fontSize: '0.75rem',
-                            margin: 0
-                          }}>
+                        className="p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm truncate">{order.title}</h4>
+                            <p className="text-xs text-muted-foreground">
                             {order.stockSite.displayName} • {order.cost} points
                   </p>
                 </div>
-                        <span style={{
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
-                          color: order.status === 'COMPLETED' ? '#86efac' : '#fbbf24',
-                          textTransform: 'uppercase'
-                        }}>
+                          <span className={`text-xs font-medium px-2 py-1 rounded ${
+                            order.status === 'COMPLETED' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {order.status}
                         </span>
                   </div>
                       
                       {order.status === 'COMPLETED' && (
-                        <button
+                          <Button
                           onClick={() => handleDownload(order)}
-                          style={{
-                            width: '100%',
-                            padding: '0.5rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            color: 'white',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            borderRadius: '0.5rem',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            fontWeight: '500',
-                            transition: 'all 0.3s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.25rem'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                          }}
-                        >
-                          <Download style={{ width: '0.75rem', height: '0.75rem' }} />
+                            size="sm"
+                            variant="outline"
+                            className="w-full h-8 text-xs"
+                          >
+                            <Download className="mr-1 h-3 w-3" />
                           Download
-                        </button>
+                          </Button>
                       )}
                 </div>
-                  ))
+                    ))}
+                  </div>
                 )}
+              </CardContent>
+            </Card>
               </div>
             </div>
+
+        {/* Error/Success Messages */}
+        {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            {error}
           </div>
+        )}
+
+        {success && (
+          <div className="p-4 bg-green-100 border border-green-200 rounded-lg text-green-800 flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            {success}
         </div>
-      </div>
+        )}
     </div>
     </>
-  );
+  )
 }
