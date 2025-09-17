@@ -39,8 +39,18 @@ commit_and_push() {
     # Add all changes
     git add .
     
-    # Commit with timestamp
-    COMMIT_MSG="🔧 Development Update: $(date '+%Y-%m-%d %H:%M:%S')"
+    # Get descriptive commit message from user or use default
+    echo ""
+    echo "📝 Enter a descriptive commit message:"
+    echo "   (Leave empty to use auto-generated message)"
+    read -r USER_COMMIT_MSG
+    
+    if [ -z "$USER_COMMIT_MSG" ]; then
+        COMMIT_MSG="🔧 Development Update: $(date '+%Y-%m-%d %H:%M:%S')"
+    else
+        COMMIT_MSG="🔧 $USER_COMMIT_MSG"
+    fi
+    
     git commit -m "$COMMIT_MSG"
     
     # Push to origin
