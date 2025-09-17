@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Poppins, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import AuthSessionProvider from "@/components/providers/session-provider";
 import QueryProvider from "@/components/providers/QueryProvider";
 import GlobalLayout from "@/components/layout/GlobalLayout";
@@ -104,17 +106,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <AuthSessionProvider>
-            <GlobalLayout>
-              {children}
-            </GlobalLayout>
-          </AuthSessionProvider>
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <AuthSessionProvider>
+              <GlobalLayout>
+                {children}
+              </GlobalLayout>
+            </AuthSessionProvider>
+          </QueryProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
