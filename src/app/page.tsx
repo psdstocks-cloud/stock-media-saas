@@ -332,6 +332,19 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Temporary Brand Color Test Blocks */}
+        <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
+          <div className="flex gap-4">
+            <div className="w-1/2 p-8 bg-primary text-primary-foreground rounded-lg">
+              Primary Color (Purple)
+            </div>
+            <div className="w-1/2 p-8 bg-secondary text-secondary-foreground rounded-lg">
+              Secondary Color (Orange)
+            </div>
+          </div>
+        </section>
+        {/* End of temporary test blocks */}
+
         {/* Stats Section */}
         <section style={{ 
           padding: '4rem 1rem', 
