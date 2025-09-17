@@ -11,6 +11,7 @@
     "lint": "next lint",
     "test": "npm run lint",
     "deploy": "vercel --prod",
+    "deploy:git": "./scripts/deploy-with-git.sh",
     "auto-deploy": "./scripts/auto-deploy.sh",
     "commit-and-deploy": "git add . && git commit -m '🔧 Auto-commit: $(date)' && git push origin main && vercel --prod",
     "status": "git status && echo '---' && git log --oneline -5",
