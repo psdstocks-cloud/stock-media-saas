@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendDownloadReadyEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -213,12 +214,23 @@ async function refundOrderPoints(userId: string, points: number) {
  * Notify user when download is ready
  */
 async function notifyUserDownloadReady(userEmail: string, orderId: string, downloadUrl: string) {
-  // TODO: Implement email notification
-  console.log(`Download ready for user ${userEmail}, order ${orderId}`)
-  console.log(`Download URL: ${downloadUrl}`)
-  
-  // You can integrate with your email service here
-  // await sendEmail(userEmail, 'Download Ready', `Your download is ready: ${downloadUrl}`)
+  try {
+    // Get order details for email
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { title: true }
+    });
+
+    if (order) {
+      await sendDownloadReadyEmail(
+        { email: userEmail },
+        { title: order.title, downloadUrl }
+      );
+      console.log(`Download ready email sent to ${userEmail} for order ${orderId}`);
+    }
+  } catch (error) {
+    console.error(`Failed to send download ready email to ${userEmail}:`, error);
+  }
 }
 
 /**

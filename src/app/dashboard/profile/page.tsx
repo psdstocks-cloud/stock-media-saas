@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UpdateProfileForm } from '@/components/dashboard/profile/UpdateProfileForm';
 import { SubscriptionCard } from '@/components/dashboard/profile/SubscriptionCard';
 import { PointsHistoryTable } from '@/components/dashboard/profile/PointsHistoryTable';
+import { TeamSettings } from '@/components/dashboard/profile/TeamSettings';
 import { AlertCircle } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -36,10 +37,11 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="history">Points History</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-4">
           <UpdateProfileForm user={{ name: profile.name }} />
@@ -49,6 +51,9 @@ export default function ProfilePage() {
         </TabsContent>
         <TabsContent value="history" className="mt-4">
           <PointsHistoryTable />
+        </TabsContent>
+        <TabsContent value="team" className="mt-4">
+          <TeamSettings />
         </TabsContent>
       </Tabs>
     </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { checkRegistrationRateLimit } from '@/lib/rate-limit'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -170,6 +171,14 @@ export async function POST(request: NextRequest) {
     })
 
     const result = { user, subscription, plan }
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail({ email: user.email, name: user.name })
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError)
+      // Don't fail registration if email fails
+    }
 
     return NextResponse.json({ 
       success: true, 

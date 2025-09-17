@@ -45,6 +45,8 @@ model User {
   messageStatuses MessageStatus[]
   adminAuditLogs AdminAuditLog[]
   rolloverRecords RolloverRecord[]
+  ownedTeams       Team[]             @relation("OwnedTeams")
+  teamMemberships  TeamMembership[]   @relation("TeamMemberships")
 
   @@map("users")
 }
@@ -124,7 +126,8 @@ model Subscription {
 // Points management
 model PointsBalance {
   id              String   @id @default(cuid())
-  userId          String   @unique
+  userId          String?  @unique
+  teamId          String?  @unique
   currentPoints   Int      @default(0)
   totalPurchased  Int      @default(0) // Total points ever purchased
   totalUsed       Int      @default(0) // Total points ever used
@@ -133,7 +136,8 @@ model PointsBalance {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team? @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@map("points_balances")
 }
@@ -475,5 +479,34 @@ model RolloverRecord {
   @@index([userId])
   @@index([expiresAt])
   @@map("rollover_records")
+}
+
+// Teams functionality for B2B customers
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner    User              @relation("OwnedTeams", fields: [ownerId], references: [id])
+  members  TeamMembership[]
+  pointsBalance PointsBalance?
+  
+  @@map("teams")
+}
+
+model TeamMembership {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  role      String   @default("MEMBER") // e.g., ADMIN, MEMBER
+  createdAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation("TeamMemberships", fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@map("team_memberships")
 }
 

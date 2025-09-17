@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
+import { sendPurchaseReceiptEmail } from '@/lib/email'
 import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -54,6 +55,22 @@ export async function POST(request: NextRequest) {
             description: `Purchased point pack.`
           }
         });
+
+        // Send purchase receipt email
+        try {
+          const user = await prisma.user.findUnique({ where: { id: userId } });
+          if (user) {
+            await sendPurchaseReceiptEmail(
+              { email: user.email },
+              {
+                amount: session.amount_total ? session.amount_total / 100 : 0,
+                description: `Point Pack - ${pointsAmount} points`
+              }
+            );
+          }
+        } catch (emailError) {
+          console.error('Failed to send purchase receipt email:', emailError);
+        }
 
       } else if (planId) {
         // Handle successful subscription creation (legacy)

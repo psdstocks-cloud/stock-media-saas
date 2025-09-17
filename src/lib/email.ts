@@ -1,137 +1,43 @@
-// Email service for sending password reset emails
-// This is a mock implementation - in production, you would use a real email service like SendGrid, AWS SES, etc.
+import { Resend } from 'resend';
+import { User } from '@prisma/client';
 
-export async function sendPasswordResetEmail(
-  email: string, 
-  resetToken: string, 
-  userName: string
-): Promise<void> {
-  try {
-    // In production, replace this with actual email service
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
-    
-    // For now, we'll just log the email details
-    // In production, you would send the actual email here
-    console.log('='.repeat(80))
-    console.log('📧 PASSWORD RESET EMAIL')
-    console.log('='.repeat(80))
-    console.log(`To: ${email}`)
-    console.log(`Subject: Reset Your Password - StockMedia Pro`)
-    console.log('')
-    console.log(`Hi ${userName},`)
-    console.log('')
-    console.log('You requested to reset your password for your StockMedia Pro account.')
-    console.log('')
-    console.log('Click the link below to reset your password:')
-    console.log('')
-    console.log(`🔗 ${resetUrl}`)
-    console.log('')
-    console.log('This link will expire in 1 hour for security reasons.')
-    console.log('')
-    console.log('If you didn\'t request this password reset, please ignore this email.')
-    console.log('')
-    console.log('Best regards,')
-    console.log('The StockMedia Pro Team')
-    console.log('='.repeat(80))
-    
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // In production, you would use a real email service like:
-    // - SendGrid: await sgMail.send(mail)
-    // - AWS SES: await ses.sendEmail(params).promise()
-    // - Nodemailer: await transporter.sendMail(mailOptions)
-    
-  } catch (error) {
-    console.error('Failed to send password reset email:', error)
-    throw new Error('Failed to send password reset email')
-  }
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Example implementation with SendGrid (uncomment and configure for production)
-/*
-import sgMail from '@sendgrid/mail'
+const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!)
+export const sendWelcomeEmail = async (user: { email: string; name?: string | null }) => {
+  await resend.emails.send({
+    from: fromEmail,
+    to: user.email,
+    subject: 'Welcome to StockMedia Pro!',
+    html: `<h1>Hi ${user.name || ''},</h1><p>Welcome to StockMedia Pro. We're excited to have you on board!</p>`,
+  });
+};
 
-export async function sendPasswordResetEmail(
-  email: string, 
-  resetToken: string, 
-  userName: string
-): Promise<void> {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`
-  
-  const msg = {
-    to: email,
-    from: process.env.SENDGRID_FROM_EMAIL!,
-    subject: 'Reset Your Password - StockMedia Pro',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Reset Your Password</h2>
-        <p>Hi ${userName},</p>
-        <p>You requested to reset your password for your StockMedia Pro account.</p>
-        <p>Click the button below to reset your password:</p>
-        <a href="${resetUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-          Reset Password
-        </a>
-        <p>This link will expire in 1 hour for security reasons.</p>
-        <p>If you didn't request this password reset, please ignore this email.</p>
-        <p>Best regards,<br>The StockMedia Pro Team</p>
-      </div>
-    `
-  }
-  
-  await sgMail.send(msg)
-}
-*/
+export const sendPurchaseReceiptEmail = async (user: { email: string }, transactionDetails: { amount: number, description: string }) => {
+  await resend.emails.send({
+    from: fromEmail,
+    to: user.email,
+    subject: 'Your Purchase Receipt from StockMedia Pro',
+    html: `<p>Thank you for your purchase of ${transactionDetails.description}. Total amount: $${transactionDetails.amount.toFixed(2)}.</p>`,
+  });
+};
 
-// Example implementation with AWS SES (uncomment and configure for production)
-/*
-import AWS from 'aws-sdk'
+export const sendDownloadReadyEmail = async (user: { email: string }, order: { title: string, downloadUrl?: string | null }) => {
+  if (!order.downloadUrl) return;
+  await resend.emails.send({
+    from: fromEmail,
+    to: user.email,
+    subject: `Your download is ready: ${order.title}`,
+    html: `<p>Your download for "${order.title}" is now ready. You can access it here: <a href="${order.downloadUrl}">Download Now</a></p>`,
+  });
+};
 
-const ses = new AWS.SES({
-  region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-})
-
-export async function sendPasswordResetEmail(
-  email: string, 
-  resetToken: string, 
-  userName: string
-): Promise<void> {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`
-  
-  const params = {
-    Destination: {
-      ToAddresses: [email]
-    },
-    Message: {
-      Body: {
-        Html: {
-          Data: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #333;">Reset Your Password</h2>
-              <p>Hi ${userName},</p>
-              <p>You requested to reset your password for your StockMedia Pro account.</p>
-              <p>Click the button below to reset your password:</p>
-              <a href="${resetUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Reset Password
-              </a>
-              <p>This link will expire in 1 hour for security reasons.</p>
-              <p>If you didn't request this password reset, please ignore this email.</p>
-              <p>Best regards,<br>The StockMedia Pro Team</p>
-            </div>
-          `
-        }
-      },
-      Subject: {
-        Data: 'Reset Your Password - StockMedia Pro'
-      }
-    },
-    Source: process.env.AWS_SES_FROM_EMAIL!
-  }
-  
-  await ses.sendEmail(params).promise()
-}
-*/
+export const sendTeamInviteEmail = async (user: { email: string }, inviteDetails: { teamName: string, inviterName: string }) => {
+  await resend.emails.send({
+    from: fromEmail,
+    to: user.email,
+    subject: `You're invited to join ${inviteDetails.teamName} on StockMedia Pro`,
+    html: `<h1>Team Invitation</h1><p>Hi there!</p><p>${inviteDetails.inviterName} has invited you to join the "${inviteDetails.teamName}" team on StockMedia Pro.</p><p>Join your team to start downloading premium stock media together!</p><p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://your-app.com'}/register">Sign up to join the team</a></p>`,
+  });
+};
