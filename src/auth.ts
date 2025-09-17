@@ -7,6 +7,9 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
+// Define the base URL dynamically
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -75,4 +78,7 @@ export const {
     signIn: '/login',
     error: '/login', // Redirect all auth errors to the main login page
   },
+  // Use the dynamic URL for NextAuth
+  basePath: '/api/auth',
+  trustHost: true, // Required for Vercel deployment
 });
