@@ -235,6 +235,17 @@ export class PointsManager {
               email: true,
             },
           },
+          team: {
+            select: {
+              name: true,
+              owner: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
         },
       })
     }
