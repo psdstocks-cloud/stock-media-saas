@@ -162,13 +162,13 @@ export default function DashboardPage() {
                       <div className="flex-1 space-y-2">
                         <div className="h-4 bg-muted rounded w-3/4"></div>
                         <div className="h-3 bg-muted rounded w-1/2"></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
-              ) : recentOrders && recentOrders.length > 0 ? (
+              ) : Array.isArray(recentOrders) && recentOrders.length > 0 ? (
                 <div className="space-y-4">
-                  {recentOrders.map((order: any) => (
+                  {(recentOrders || []).map((order: any) => (
                     <div key={order.id} className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
                         {order.imageUrl ? (
