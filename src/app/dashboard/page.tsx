@@ -53,12 +53,12 @@ export default function DashboardPage() {
     try {
       // Redirect to download page with URL
       router.push(`/dashboard/download?url=${encodeURIComponent(url)}`)
-      } catch (error) {
+    } catch (error) {
       console.error('Error processing URL:', error)
-      } finally {
+    } finally {
       setIsProcessing(false)
-      }
     }
+  }
 
   if (status === 'loading') {
   return (

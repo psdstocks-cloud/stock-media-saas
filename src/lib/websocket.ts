@@ -64,17 +64,21 @@ class ChatWebSocket {
       this.isConnecting = true
 
       try {
-        // Disable WebSocket in production if no URL is provided
-        if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_SOCKET_URL) {
-          console.log('WebSocket disabled in production - no NEXT_PUBLIC_SOCKET_URL provided');
+        // Disable WebSocket in production if no URL is provided or URL is invalid
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+        const isInvalidUrl = socketUrl && (socketUrl.includes('ws://https://') || socketUrl.includes('wss://https://'));
+        
+        // For now, disable WebSocket in production since we don't have a server
+        if (process.env.NODE_ENV === 'production') {
+          console.log('WebSocket disabled in production - no WebSocket server implemented');
           this.isConnecting = false;
           resolve();
           return;
         }
         
-        // Also disable if we're on Vercel and no socket URL is provided
-        if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app') && !process.env.NEXT_PUBLIC_SOCKET_URL) {
-          console.log('WebSocket disabled on Vercel - no NEXT_PUBLIC_SOCKET_URL provided');
+        // Check for invalid URL patterns
+        if (socketUrl && isInvalidUrl) {
+          console.warn('Invalid WebSocket URL detected:', socketUrl);
           this.isConnecting = false;
           resolve();
           return;
