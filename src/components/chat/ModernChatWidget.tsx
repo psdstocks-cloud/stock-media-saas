@@ -113,14 +113,14 @@ export default function ModernChatWidget({
     const handleUserTyping = (typingUser: TypingUser) => {
       if (typingUser.userId !== session?.user?.id) {
         setTypingUsers(prev => {
-          const filtered = prev.filter(u => u.userId !== typingUser.userId)
+          const filtered = (prev || []).filter(u => u.userId !== typingUser.userId)
           return [...filtered, typingUser]
         })
       }
     }
 
     const handleUserStoppedTyping = (typingUser: TypingUser) => {
-      setTypingUsers(prev => prev.filter(u => u.userId !== typingUser.userId))
+      setTypingUsers(prev => (prev || []).filter(u => u.userId !== typingUser.userId))
     }
 
     const handleError = (error: string) => {
@@ -156,7 +156,7 @@ export default function ModernChatWidget({
       const response = await fetch('/api/chat/rooms?type=SUPPORT')
       const data = await response.json()
       
-      if (data.success && data.rooms.length > 0) {
+      if (data.success && data.rooms && data.rooms.length > 0) {
         const room = data.rooms[0]
         setCurrentRoom(room.id)
         await loadMessages(room.id)
@@ -537,7 +537,7 @@ export default function ModernChatWidget({
                         animation: 'spin 1s linear infinite'
                       }} />
                     </div>
-                  ) : messages.length === 0 ? (
+                  ) : (messages || []).length === 0 ? (
                     <div style={{
                       textAlign: 'center',
                       color: '#6b7280',
@@ -553,7 +553,7 @@ export default function ModernChatWidget({
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {messages.map((message) => {
+                      {(messages || []).map((message) => {
                         const isCurrentUserMessage = isCurrentUser(message.userId)
                         const isAdminMessage = isAdmin(message.userRole)
                         
@@ -621,7 +621,7 @@ export default function ModernChatWidget({
                       })}
                       
                       {/* Typing Indicators */}
-                      {typingUsers.length > 0 && (
+                      {(typingUsers || []).length > 0 && (
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',

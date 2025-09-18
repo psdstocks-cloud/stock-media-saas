@@ -3,11 +3,11 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    // These paths were missing and are the cause of the issue
+    // These paths are now comprehensive and will fix the issue
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/**/*.{js,ts,jsx,tsx,mdx}', // This is the most important line
+    './src/**/*.{js,ts,jsx,tsx,mdx}', 
 	],
   theme: {
     container: {
