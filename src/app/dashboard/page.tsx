@@ -38,11 +38,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'loading') return
-    
-    if (!session?.user) {
-      router.push('/login')
-      return
-    }
+    // Middleware handles redirects, no need to redirect here
   }, [session, status, router])
 
   const handleUrlSubmit = async (e: React.FormEvent) => {

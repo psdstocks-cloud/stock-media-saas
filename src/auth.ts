@@ -19,6 +19,8 @@ export const {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
+  // Add NEXTAUTH_URL for proper redirects
+  ...(process.env.NEXTAUTH_URL && { url: process.env.NEXTAUTH_URL }),
   providers: [
     // Temporarily disabled OAuth providers until environment variables are set up
     // GoogleProvider({
