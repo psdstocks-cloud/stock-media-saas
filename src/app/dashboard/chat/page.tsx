@@ -1,6 +1,6 @@
 'use client';
 
-import { ModernChatWidget } from '@/components/chat/ModernChatWidget';
+import ModernChatWidget from '@/components/chat/ModernChatWidget';
 import { useSession } from 'next-auth/react';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 
