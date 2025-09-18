@@ -15,6 +15,6 @@ export default function ChatPage() {
     return <div>Please log in to use the chat.</div>;
   }
 
-  // Pass the user object, ensuring it's not null
-  return <ModernChatWidget user={session.user} />;
+  // ModernChatWidget uses useSession internally
+  return <ModernChatWidget />;
 }
