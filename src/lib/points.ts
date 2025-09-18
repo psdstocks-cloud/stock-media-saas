@@ -12,21 +12,32 @@ export class PointsManager {
     orderId?: string
   ) {
     const transaction = await prisma.$transaction(async (tx) => {
-      // Update points balance
-      const balance = await tx.pointsBalance.upsert({
+      // Find or create points balance for user
+      let balance = await tx.pointsBalance.findUnique({
         where: { userId },
-        update: {
-          currentPoints: { increment: amount },
-          totalPurchased: type === 'PURCHASE' || type === 'SUBSCRIPTION' 
-            ? { increment: amount } 
-            : undefined,
-        },
-        create: {
-          userId,
-          currentPoints: amount,
-          totalPurchased: type === 'PURCHASE' || type === 'SUBSCRIPTION' ? amount : 0,
-        },
       })
+
+      if (!balance) {
+        // Create new balance for user
+        balance = await tx.pointsBalance.create({
+          data: {
+            userId,
+            currentPoints: amount,
+            totalPurchased: type === 'PURCHASE' || type === 'SUBSCRIPTION' ? amount : 0,
+          },
+        })
+      } else {
+        // Update existing balance
+        balance = await tx.pointsBalance.update({
+          where: { userId },
+          data: {
+            currentPoints: { increment: amount },
+            totalPurchased: type === 'PURCHASE' || type === 'SUBSCRIPTION' 
+              ? { increment: amount } 
+              : undefined,
+          },
+        })
+      }
 
       // Create points history entry
       await tx.pointsHistory.create({
@@ -180,8 +191,13 @@ export class PointsManager {
    * Get user's current points balance
    */
   static async getBalance(userId: string) {
-    return await prisma.pointsBalance.findUnique({
-      where: { userId },
+    let balance = await prisma.pointsBalance.findFirst({
+      where: { 
+        OR: [
+          { userId },
+          { team: { members: { some: { userId } } } }
+        ]
+      },
       include: {
         user: {
           select: {
@@ -189,8 +205,41 @@ export class PointsManager {
             email: true,
           },
         },
+        team: {
+          select: {
+            name: true,
+            owner: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     })
+
+    // If no balance exists, create one
+    if (!balance) {
+      balance = await prisma.pointsBalance.create({
+        data: {
+          userId,
+          currentPoints: 0,
+          totalPurchased: 0,
+          totalUsed: 0,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      })
+    }
+
+    return balance
   }
 
   /**
