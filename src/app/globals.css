@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode Colors - Brand Identity */
+    --primary: 275 100% 25%;        /* Dark Purple */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 24 100% 50%;       /* Vibrant Orange */
+    --secondary-foreground: 210 40% 98%;
+    --background: 0 0% 100%;        /* White */
+    --foreground: 222.2 84% 4.9%;   /* Dark Gray */
+    --card: 0 0% 100%;              /* White */
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;           /* White */
+    --popover-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;           /* Light Gray */
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;          /* Light Gray */
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;   /* Red */
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;    /* Light Gray */
+    --input: 214.3 31.8% 91.4%;     /* Light Gray */
+    --ring: 275 100% 25%;           /* Purple Ring */
+    --radius: 0.5rem;               /* Border Radius */
+  }
+
+  .dark {
+    /* Dark Mode Colors - Brand Identity */
+    --primary: 275 100% 45%;        /* Lighter Purple */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 24 100% 60%;       /* Lighter Orange */
+    --secondary-foreground: 222.2 84% 4.9%;
+    --background: 222.2 84% 4.9%;   /* Dark Background */
+    --foreground: 210 40% 98%;      /* Light Text */
+    --card: 222.2 84% 4.9%;         /* Dark Card */
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;      /* Dark Popover */
+    --popover-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;     /* Dark Muted */
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;    /* Dark Accent */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;   /* Dark Red */
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;    /* Dark Border */
+    --input: 217.2 32.6% 17.5%;     /* Dark Input */
+    --ring: 275 100% 45%;           /* Lighter Purple Ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Brand Styles */
+@layer components {
+  .brand-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary;
+  }
+  
+  .brand-text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+  
+  .brand-shadow {
+    @apply shadow-lg shadow-primary/25;
+  }
+  
+  .brand-border {
+    @apply border-2 border-primary/20;
+  }
+}
+
+/* Animation Utilities */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
