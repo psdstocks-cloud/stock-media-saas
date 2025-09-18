@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-echo "🚀 Starting production redeployment..."
+echo "🚀 Starting a fresh production redeployment (no cache)..."
 
 # 1. Ensure Vercel CLI is installed
 if ! command -v vercel &> /dev/null
@@ -12,7 +12,7 @@ then
     exit 1
 fi
 
-# 2. Authenticate with Vercel (this will prompt you to log in in the browser if you haven't already)
+# 2. Authenticate with Vercel
 echo "🔑 Checking Vercel authentication..."
 vercel whoami
 
@@ -21,10 +21,9 @@ echo "🔄 Syncing with the latest changes from Git..."
 git checkout main
 git pull origin main
 
-# 4. Trigger a new production deployment
-# The 'vercel --prod' command builds and deploys the current local code to production.
-# This creates a brand new build and bypasses any potentially stale build caches on Vercel for this commit.
-echo "🚢 Deploying to Vercel Production..."
-vercel --prod
+# 4. Trigger a new, clean production deployment
+# The '--force' flag tells Vercel to ignore the build cache for this deployment.
+echo "🚢 Deploying to Vercel Production without cache..."
+vercel --prod --force
 
-echo "✅ Deployment triggered successfully! Monitor the build progress in your Vercel dashboard."
+echo "✅ Fresh deployment triggered successfully! Monitor the build progress in your Vercel dashboard."
