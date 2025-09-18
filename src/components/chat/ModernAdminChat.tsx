@@ -154,14 +154,14 @@ export default function ModernAdminChat({ onRoomSelect }: ModernAdminChatProps) 
     const handleUserTyping = (typingUser: TypingUser) => {
       if (typingUser.userId !== session?.user?.id) {
         setTypingUsers(prev => {
-          const filtered = prev.filter(u => u.userId !== typingUser.userId)
+          const filtered = (prev || []).filter(u => u.userId !== typingUser.userId)
           return [...filtered, typingUser]
         })
       }
     }
 
     const handleUserStoppedTyping = (typingUser: TypingUser) => {
-      setTypingUsers(prev => prev.filter(u => u.userId !== typingUser.userId))
+      setTypingUsers(prev => (prev || []).filter(u => u.userId !== typingUser.userId))
     }
 
     const handleError = (error: string) => {
@@ -380,7 +380,7 @@ export default function ModernAdminChat({ onRoomSelect }: ModernAdminChatProps) 
     }
   }
 
-  const filteredRooms = rooms.filter(room => {
+  const filteredRooms = (rooms || []).filter(room => {
     const matchesSearch = room.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          room.participants.some(p => p.user.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesStatus = statusFilter === 'ALL' || room.status === statusFilter
@@ -573,13 +573,13 @@ export default function ModernAdminChat({ onRoomSelect }: ModernAdminChatProps) 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '12px', color: '#6b7280' }}>Active Chats</span>
             <span style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937' }}>
-              {rooms.filter(r => r.status === 'ACTIVE').length}
+              {(rooms || []).filter(r => r.status === 'ACTIVE').length}
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '12px', color: '#6b7280' }}>Urgent</span>
             <span style={{ fontSize: '12px', fontWeight: '600', color: '#ef4444' }}>
-              {rooms.filter(r => r.priority === 'URGENT').length}
+              {(rooms || []).filter(r => r.priority === 'URGENT').length}
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
