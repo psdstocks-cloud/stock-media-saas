@@ -8,12 +8,6 @@ import QueryProvider from "@/components/providers/QueryProvider";
 import GlobalLayout from "@/components/layout/GlobalLayout";
 import { headers } from 'next/headers';
 
-// Debug logging for CSS loading
-if (typeof window === 'undefined') {
-  console.log('🔍 Server-side layout rendering');
-  console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
-  console.log('🔍 VERCEL_ENV:', process.env.VERCEL_ENV);
-}
 
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic'
@@ -114,22 +108,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              console.log('🔍 Client-side layout rendering');
-              console.log('🔍 CSS Variables Test:', {
-                primary: getComputedStyle(document.documentElement).getPropertyValue('--primary'),
-                secondary: getComputedStyle(document.documentElement).getPropertyValue('--secondary'),
-                background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
-                foreground: getComputedStyle(document.documentElement).getPropertyValue('--foreground'),
-              });
-              console.log('🔍 Stylesheets loaded:', document.styleSheets.length);
-            `,
-          }}
-        />
-      </head>
       <body
         className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable} antialiased`}
       >
