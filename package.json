@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "npm run lint",
     "deploy": "vercel --prod",
     "deploy:git": "./scripts/deploy-with-git.sh",
@@ -60,6 +60,7 @@
     "@tanstack/table-core": "^8.21.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",

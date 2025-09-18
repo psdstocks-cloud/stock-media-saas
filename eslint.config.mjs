@@ -10,6 +10,21 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      ".vercel/**",
+      "docs/**",
+      "**/*.js",
+      "public/**",
+      "prisma/**",
+      "scripts/**",
+    ]
+  },
   ...compat.extends("next/core-web-vitals"),
   {
     rules: {
@@ -20,17 +35,7 @@ const eslintConfig = [
       "react/no-find-dom-node": "off",
       "@typescript-eslint/no-useless-constructor": "off",
     },
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-      ".vercel/**",
-      "docs/**",
-      "**/*.js",
-    ],
-  },
+  }
 ];
 
 export default eslintConfig;
