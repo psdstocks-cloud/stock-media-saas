@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Download, ListOrdered, Gem, User, LifeBuoy } from 'lucide-react';
+import { Home, Download, ListOrdered, Gem, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -11,7 +11,6 @@ const navItems = [
   { href: '/dashboard/orders', label: 'My Orders', icon: ListOrdered },
   { href: '/dashboard/pricing', label: 'Pricing', icon: Gem },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
-  { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
 ];
 
 export function DashboardSidebar() {
