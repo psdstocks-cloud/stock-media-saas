@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginNext from "@next/eslint-plugin-next";
@@ -52,6 +53,7 @@ const eslintConfig = [
       "react": pluginReact,
       "react-hooks": pluginReactHooks,
       "@next/next": pluginNext,
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
       "react/no-unescaped-entities": "off",
@@ -110,6 +112,9 @@ const eslintConfig = [
         global: "readonly",
         require: "readonly",
       },
+    },
+    plugins: {
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
       "no-console": "off",
