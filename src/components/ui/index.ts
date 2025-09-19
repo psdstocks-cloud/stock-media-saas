@@ -16,6 +16,9 @@ export { Typography, typographyVariants } from "./typography"
 export { PurchaseConfirmationModal } from "../purchase/PurchaseConfirmationModal"
 export { PurchaseConfirmationModalStore } from "../purchase/PurchaseConfirmationModalStore"
 
+// Modal Components
+export { OrderConfirmationModal } from "../modals/OrderConfirmationModal"
+
 // Re-export types
 export type { BadgeProps } from "./badge"
 export type { ButtonProps } from "./button"

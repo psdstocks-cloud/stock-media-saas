@@ -8,7 +8,7 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Typo
 import { SearchBar } from '@/components/search/SearchBar'
 import { SearchFilters, SearchFilters as SearchFiltersType } from '@/components/search/SearchFilters'
 import { MediaCard, MediaItem } from '@/components/search/MediaCard'
-import { PurchaseConfirmationModalStore } from '@/components/purchase/PurchaseConfirmationModalStore'
+import { OrderConfirmationModal } from '@/components/modals/OrderConfirmationModal'
 import { cn } from '@/lib/utils'
 
 interface SearchResults {
@@ -459,8 +459,8 @@ function BrowseContent({ user }: BrowseClientProps) {
         </div>
       </div>
 
-      {/* Purchase Confirmation Modal */}
-      <PurchaseConfirmationModalStore />
+      {/* Order Confirmation Modal */}
+      <OrderConfirmationModal />
     </div>
   )
 }
