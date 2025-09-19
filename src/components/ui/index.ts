@@ -20,6 +20,12 @@ export { PurchaseConfirmationModalStore } from "../purchase/PurchaseConfirmation
 // Modal Components
 export { OrderConfirmationModal } from "../modals/OrderConfirmationModal"
 
+// Landing Components
+export { HeroSection } from "../landing/HeroSection"
+export { FeatureSection } from "../landing/FeatureSection"
+export { PricingSection } from "../landing/PricingSection"
+export { CTASection } from "../landing/CTASection"
+
 // Re-export types
 export type { BadgeProps } from "./badge"
 export type { ButtonProps } from "./button"
