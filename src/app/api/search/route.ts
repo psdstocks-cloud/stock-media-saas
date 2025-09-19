@@ -19,6 +19,107 @@ const SearchRequestSchema = z.object({
   limit: z.number().min(1).max(50).default(20)
 })
 
+export async function GET(request: NextRequest) {
+  try {
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRateLimit(identifier, 'search')
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: rateLimitResult.headers
+        }
+      )
+    }
+
+    const { searchParams } = new URL(request.url)
+    const query = searchParams.get('q') || ''
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const sort = searchParams.get('sort') || 'relevance'
+    
+    // Parse filters from query parameters
+    const filters = {
+      type: searchParams.get('type')?.split(',').filter(Boolean) || [],
+      category: searchParams.get('category')?.split(',').filter(Boolean) || [],
+      license: searchParams.get('license')?.split(',').filter(Boolean) || [],
+      orientation: searchParams.get('orientation')?.split(',').filter(Boolean) || [],
+      color: searchParams.get('color')?.split(',').filter(Boolean) || [],
+      size: searchParams.get('size')?.split(',').filter(Boolean) || [],
+      duration: searchParams.get('duration')?.split(',').filter(Boolean) || [],
+      priceRange: searchParams.get('priceRange')?.split(',').filter(Boolean) || [],
+      dateRange: searchParams.get('dateRange')?.split(',').filter(Boolean) || []
+    }
+    
+    // Check cache first
+    const cachedResults = await StockMediaCache.getSearchResults(query, filters)
+    if (cachedResults) {
+      console.log('Returning cached search results for:', query)
+      return NextResponse.json(cachedResults)
+    }
+    
+    // Mock search results for now
+    const mockResults = {
+      items: [
+        {
+          id: '1',
+          title: 'Beautiful Sunset Landscape',
+          description: 'Stunning sunset over mountains with vibrant colors',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          type: 'photo',
+          category: 'nature',
+          license: 'royalty-free',
+          price: 15,
+          points: 50,
+          size: '2.5MB',
+          dimensions: { width: 1920, height: 1080 },
+          author: { id: '1', name: 'John Doe', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face' },
+          tags: ['sunset', 'landscape', 'nature', 'mountains'],
+          createdAt: '2024-01-15T10:00:00Z',
+          rating: 4.8,
+          downloadCount: 1250
+        },
+        {
+          id: '2',
+          title: 'Modern Office Space',
+          description: 'Clean and modern office interior design',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=400&fit=crop',
+          type: 'photo',
+          category: 'business',
+          license: 'royalty-free',
+          price: 20,
+          points: 75,
+          size: '3.2MB',
+          dimensions: { width: 2560, height: 1440 },
+          author: { id: '2', name: 'Jane Smith', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=32&h=32&fit=crop&crop=face' },
+          tags: ['office', 'business', 'modern', 'interior'],
+          createdAt: '2024-01-14T14:30:00Z',
+          rating: 4.6,
+          downloadCount: 890
+        }
+      ],
+      total: 2,
+      page: page,
+      totalPages: 1,
+      hasMore: false
+    }
+
+    // Cache the results
+    await StockMediaCache.setSearchResults(query, filters, mockResults)
+    
+    return NextResponse.json(mockResults)
+  } catch (error) {
+    console.error('Search error:', error)
+    return NextResponse.json({ error: 'Search failed' }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
@@ -40,13 +141,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { query, filters = {}, page, limit } = SearchRequestSchema.parse(body)
-    
-    // Check cache first
-    const cachedResults = await StockMediaCache.getSearchResults(query, filters)
-    if (cachedResults) {
-      console.log('Returning cached search results for:', query)
-      return NextResponse.json(cachedResults)
-    }
     
     // Mock search results for now
     const mockResults = generateMockSearchResults(query, filters, page, limit)

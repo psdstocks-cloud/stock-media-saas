@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigationItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/dashboard/search', label: 'Search', icon: Search },
+    { href: '/dashboard/browse', label: 'Browse Media', icon: Search },
     { href: '/dashboard/downloads', label: 'Downloads', icon: Download },
     { href: '/dashboard/profile', label: 'Profile', icon: User },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },

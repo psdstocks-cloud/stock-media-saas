@@ -1,66 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
-import { StockMediaCache } from '@/lib/cache'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const query = searchParams.get('q')
+    const query = searchParams.get('q') || ''
 
-    if (!query || query.length < 2) {
+    if (!query.trim()) {
       return NextResponse.json({ suggestions: [] })
     }
 
-    // Check cache first
-    const cachedSuggestions = await StockMediaCache.getSearchSuggestions(query)
-    if (cachedSuggestions) {
-      return NextResponse.json(cachedSuggestions)
-    }
+    // Mock suggestions - in production, this would come from your database
+    const mockSuggestions = [
+      // Recent searches (would be stored per user)
+      { id: 'recent-1', text: 'business photos', type: 'recent', category: 'Business' },
+      { id: 'recent-2', text: 'nature landscape', type: 'recent', category: 'Nature' },
+      { id: 'recent-3', text: 'technology', type: 'recent', category: 'Technology' },
+      
+      // Trending searches
+      { id: 'trending-1', text: 'AI technology', type: 'trending', category: 'Technology' },
+      { id: 'trending-2', text: 'sustainable living', type: 'trending', category: 'Lifestyle' },
+      { id: 'trending-3', text: 'remote work', type: 'trending', category: 'Business' },
+      
+      // Query suggestions based on input
+      { id: 'query-1', text: `${query} photos`, type: 'query', category: 'Photos' },
+      { id: 'query-2', text: `${query} videos`, type: 'query', category: 'Videos' },
+      { id: 'query-3', text: `${query} illustrations`, type: 'query', category: 'Illustrations' },
+      { id: 'query-4', text: `${query} vectors`, type: 'query', category: 'Vector Graphics' },
+    ]
 
-    // Mock suggestions based on query
-    const suggestions = generateSuggestions(query)
-    
-    const result = {
-      success: true,
-      suggestions
-    }
+    // Filter suggestions based on query
+    const filteredSuggestions = mockSuggestions.filter(suggestion =>
+      suggestion.text.toLowerCase().includes(query.toLowerCase())
+    )
 
-    // Cache the result
-    await StockMediaCache.setSearchSuggestions(query, result)
-    
-    return NextResponse.json(result)
+    // Limit to 8 suggestions
+    const suggestions = filteredSuggestions.slice(0, 8)
+
+    return NextResponse.json({ suggestions })
   } catch (error) {
-    console.error('Search suggestions error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error fetching search suggestions:', error)
+    return NextResponse.json({ error: 'Failed to fetch suggestions' }, { status: 500 })
   }
-}
-
-function generateSuggestions(query: string) {
-  const allSuggestions = [
-    'nature landscape',
-    'business meeting',
-    'technology background',
-    'abstract design',
-    'people working',
-    'city skyline',
-    'food photography',
-    'medical equipment',
-    'education classroom',
-    'sports action',
-    'travel destination',
-    'fashion model',
-    'architecture building',
-    'science laboratory',
-    'art creative'
-  ]
-
-  return allSuggestions
-    .filter(suggestion => 
-      suggestion.toLowerCase().includes(query.toLowerCase())
-    )
-    .slice(0, 5)
 }
