@@ -171,6 +171,7 @@ export default function DownloadsClient({
   const [sortBy, setSortBy] = useState<SortBy>('newest')
   const [filterBy, setFilterBy] = useState<FilterBy>('all')
   const [selectedOrders, setSelectedOrders] = useState<string[]>([])
+  const [isPolling, setIsPolling] = useState(false)
 
   // Filtered and sorted orders
   const filteredOrders = useMemo(() => {
@@ -209,6 +210,103 @@ export default function DownloadsClient({
 
     return filtered
   }, [orders, searchQuery, sortBy, filterBy])
+
+  // Real-time polling for pending orders
+  useEffect(() => {
+    // Check if there are any pending or processing orders
+    const hasPendingOrders = orders.some(order => 
+      order.status === 'PENDING' || order.status === 'PROCESSING'
+    )
+
+    if (!hasPendingOrders) {
+      setIsPolling(false)
+      return
+    }
+
+    setIsPolling(true)
+
+    // Polling function to check order status
+    const pollOrderStatus = async () => {
+      const pendingOrders = orders.filter(order => 
+        order.status === 'PENDING' || order.status === 'PROCESSING'
+      )
+
+      if (pendingOrders.length === 0) {
+        setIsPolling(false)
+        return
+      }
+
+      try {
+        // Check status for each pending order
+        const statusChecks = await Promise.allSettled(
+          pendingOrders.map(async (order) => {
+            const response = await fetch(`/api/orders/${order.id}/status`)
+            if (!response.ok) {
+              throw new Error(`Failed to check status for order ${order.id}`)
+            }
+            const data = await response.json()
+            return { orderId: order.id, statusData: data }
+          })
+        )
+
+        // Update orders with new status
+        let hasUpdates = false
+        setOrders(currentOrders => {
+          const updatedOrders = currentOrders.map(order => {
+            const statusCheck = statusChecks.find(
+              (check, index) => 
+                check.status === 'fulfilled' && 
+                check.value.orderId === order.id
+            )
+
+            if (statusCheck && statusCheck.status === 'fulfilled') {
+              const { statusData } = statusCheck.value
+              if (statusData.success && statusData.order) {
+                const newStatus = statusData.order.status
+                const newDownloadUrl = statusData.order.downloadUrl
+                
+                // Check if status or download URL has changed
+                if (order.status !== newStatus || order.downloadUrl !== newDownloadUrl) {
+                  hasUpdates = true
+                  console.log(`Order ${order.id} status updated: ${order.status} -> ${newStatus}`)
+                  
+                  return {
+                    ...order,
+                    status: newStatus,
+                    downloadUrl: newDownloadUrl,
+                    fileName: statusData.order.fileName || order.fileName,
+                    title: statusData.order.title || order.title
+                  }
+                }
+              }
+            }
+            return order
+          })
+          return updatedOrders
+        })
+
+        // If no updates were made, we can stop polling
+        if (!hasUpdates) {
+          console.log('No status updates found, continuing to poll...')
+        }
+
+      } catch (error) {
+        console.error('Error polling order status:', error)
+      }
+    }
+
+    // Start polling immediately
+    pollOrderStatus()
+
+    // Set up interval for polling (every 5 seconds)
+    const pollInterval = setInterval(pollOrderStatus, 5000)
+
+    // Cleanup function
+    return () => {
+      clearInterval(pollInterval)
+      setIsPolling(false)
+    }
+  }, [orders]) // Re-run when orders change
 
   // Handle download
   const handleDownload = async (order: OrderWithDetails) => {
@@ -335,8 +433,20 @@ export default function DownloadsClient({
             </div>
           </div>
 
+          {/* Polling Status Indicator */}
+          {isPolling && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />
+                <Typography variant="body-sm" className="text-blue-600">
+                  Checking for updates on pending orders...
+                </Typography>
+              </div>
+            </div>
+          )}
+
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
@@ -385,6 +495,24 @@ export default function DownloadsClient({
                     </Typography>
                     <Typography variant="h3" className="font-semibold">
                       {stats.currentPoints.toLocaleString()}
+                    </Typography>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Clock className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <Typography variant="body-sm" color="muted">
+                      Pending Orders
+                    </Typography>
+                    <Typography variant="h3" className="font-semibold">
+                      {orders.filter(order => order.status === 'PENDING' || order.status === 'PROCESSING').length}
                     </Typography>
                   </div>
                 </div>
