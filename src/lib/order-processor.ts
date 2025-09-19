@@ -12,7 +12,7 @@ export interface OrderStatusUpdate {
 }
 
 export class OrderProcessor {
-  private static processingOrders = new Map<string, NodeJS.Timeout>()
+  private static processingOrders = new Map<string, ReturnType<typeof setTimeout>>()
   private static statusCallbacks = new Map<string, (update: OrderStatusUpdate) => void>()
 
   /**

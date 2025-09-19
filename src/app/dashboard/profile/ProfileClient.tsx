@@ -49,7 +49,7 @@ interface Session {
   userAgent: string
 }
 
-interface User {
+interface ProfileUser {
   id: string
   name?: string | null
   email?: string | null
@@ -57,11 +57,10 @@ interface User {
 }
 
 interface ProfileClientProps {
-  user: User
+  user: ProfileUser
 }
 
-export default function ProfileClient({ user }: ProfileClientProps) {
-  const router = useRouter()
+export default function ProfileClient({ user: _user }: ProfileClientProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -144,11 +143,12 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         }))
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to update profile')
+        console.error('Failed to update profile:', error.error || 'Unknown error')
+        // TODO: Add proper error toast notification
       }
     } catch (error) {
       console.error('Error updating profile:', error)
-      alert('Failed to update profile')
+      // TODO: Add proper error toast notification
     } finally {
       setIsSaving(false)
     }
@@ -156,7 +156,8 @@ export default function ProfileClient({ user }: ProfileClientProps) {
 
   const handleDeleteSession = async (sessionId: string) => {
     if (sessionId === 'current-session') {
-      alert('Cannot terminate current session. Please log out instead.')
+      console.warn('Cannot terminate current session. Please log out instead.')
+      // TODO: Add proper error toast notification
       return
     }
 
@@ -170,11 +171,12 @@ export default function ProfileClient({ user }: ProfileClientProps) {
         setSessions(prev => prev.filter(session => session.id !== sessionId))
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to terminate session')
+        console.error('Failed to terminate session:', error.error || 'Unknown error')
+        // TODO: Add proper error toast notification
       }
     } catch (error) {
       console.error('Error deleting session:', error)
-      alert('Failed to terminate session')
+      // TODO: Add proper error toast notification
     } finally {
       setIsDeletingSession(null)
     }
