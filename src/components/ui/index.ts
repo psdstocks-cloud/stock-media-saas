@@ -5,7 +5,7 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 export { Input } from "./input"
 export { Label } from "./label"
 export { LoadingSpinner } from "./loading-spinner"
-export { Modal } from "./modal"
+export { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription } from "./modal"
 export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator, SelectScrollUpButton, SelectScrollDownButton } from "./select"
 export { Separator } from "./separator"
 export { Skeleton } from "./skeleton"

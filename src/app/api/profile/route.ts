@@ -20,6 +20,11 @@ export async function GET() {
         name: true,
         email: true,
         image: true,
+        role: true,
+        emailVerified: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
         subscriptions: {
           where: { status: 'ACTIVE' },
           include: { plan: true },
@@ -38,11 +43,12 @@ export async function GET() {
     const profile = {
         ...user,
         activeSubscription: user.subscriptions[0] || null,
+        onboardingCompleted: false, // Default value until migration is run
+        onboardingCompletedAt: null,
     }
     delete (profile as any).subscriptions;
 
-
-    return NextResponse.json(profile);
+    return NextResponse.json({ user: profile });
   } catch (error) {
     console.error('[PROFILE_GET]', error);
     return new NextResponse('Internal Server Error', { status: 500 });
@@ -58,19 +64,36 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json();
-    const { name, password } = body;
+    const { name, email, currentPassword, newPassword } = body;
 
-    const dataToUpdate: { name?: string; password?: string } = {};
+    const dataToUpdate: { name?: string; email?: string; password?: string } = {};
 
     if (name) {
       dataToUpdate.name = name;
     }
 
-    if (password) {
-      if (password.length < 6) {
+    if (email) {
+      dataToUpdate.email = email;
+    }
+
+    if (newPassword) {
+      if (newPassword.length < 6) {
         return NextResponse.json({ message: 'Password must be at least 6 characters long.' }, { status: 400 });
       }
-      dataToUpdate.password = await bcrypt.hash(password, 10);
+      
+      // If changing password, verify current password
+      if (currentPassword) {
+        const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { password: true }
+        });
+        
+        if (!user?.password || !await bcrypt.compare(currentPassword, user.password)) {
+          return NextResponse.json({ message: 'Current password is incorrect.' }, { status: 400 });
+        }
+      }
+      
+      dataToUpdate.password = await bcrypt.hash(newPassword, 10);
     }
     
     if (Object.keys(dataToUpdate).length === 0) {
@@ -80,9 +103,20 @@ export async function PATCH(req: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: dataToUpdate,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        emailVerified: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+      }
     });
 
-    return NextResponse.json({ name: updatedUser.name, message: "Profile updated successfully!" });
+    return NextResponse.json({ user: updatedUser, message: "Profile updated successfully!" });
   } catch (error) {
     console.error('[PROFILE_PATCH]', error);
     return new NextResponse('Internal Server Error', { status: 500 });

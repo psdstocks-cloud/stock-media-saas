@@ -13,6 +13,26 @@ interface ModalProps {
   showCloseButton?: boolean
 }
 
+interface ModalContentProps {
+  children: React.ReactNode
+  className?: string
+}
+
+interface ModalHeaderProps {
+  children: React.ReactNode
+  className?: string
+}
+
+interface ModalTitleProps {
+  children: React.ReactNode
+  className?: string
+}
+
+interface ModalDescriptionProps {
+  children: React.ReactNode
+  className?: string
+}
+
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
   ({ 
     isOpen, 
@@ -102,4 +122,56 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 )
 Modal.displayName = "Modal"
 
-export { Modal }
+const ModalContent = React.forwardRef<HTMLDivElement, ModalContentProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("relative z-50 w-full max-w-lg mx-4 bg-card border rounded-lg shadow-lg animate-slide-up", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+)
+ModalContent.displayName = "ModalContent"
+
+const ModalHeader = React.forwardRef<HTMLDivElement, ModalHeaderProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("flex items-center justify-between p-6 border-b", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+)
+ModalHeader.displayName = "ModalHeader"
+
+const ModalTitle = React.forwardRef<HTMLHeadingElement, ModalTitleProps>(
+  ({ className, children, ...props }, ref) => (
+    <h2
+      ref={ref}
+      className={cn("text-xl font-semibold text-card-foreground", className)}
+      {...props}
+    >
+      {children}
+    </h2>
+  )
+)
+ModalTitle.displayName = "ModalTitle"
+
+const ModalDescription = React.forwardRef<HTMLParagraphElement, ModalDescriptionProps>(
+  ({ className, children, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn("text-sm text-muted-foreground mt-1", className)}
+      {...props}
+    >
+      {children}
+    </p>
+  )
+)
+ModalDescription.displayName = "ModalDescription"
+
+export { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription }
