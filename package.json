@@ -51,6 +51,7 @@
     "nodemailer": "^6.10.1",
     "pg": "^8.16.3",
     "postcss": "^8.5.6",
+    "recharts": "^3.2.1",
     "resend": "^6.0.3",
     "stripe": "^14.0.0",
     "tailwind-merge": "^2.6.0",
