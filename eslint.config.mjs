@@ -19,6 +19,7 @@ const compat = new FlatCompat({
 const eslintConfig = [
   js.configs.recommended,
 
+  // Main application files
   {
     ...compat.extends("next/core-web-vitals")[0],
     files: ["src/**/*.{ts,tsx}"],
@@ -27,6 +28,24 @@ const eslintConfig = [
       parserOptions: {
         project: ["./tsconfig.json"],
         tsconfigRootDir: __dirname,
+      },
+      globals: {
+        // Node.js globals
+        process: "readonly",
+        Buffer: "readonly",
+        console: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        // Browser globals
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        localStorage: "readonly",
+        fetch: "readonly",
+        // React globals
+        React: "readonly",
       },
     },
     plugins: {
@@ -41,6 +60,65 @@ const eslintConfig = [
       "@next/next/no-assign-module-variable": "off",
       "react/no-find-dom-node": "off",
       "@typescript-eslint/no-useless-constructor": "off",
+      "no-console": "off", // Allow console statements
+      "no-unused-vars": "off", // Let TypeScript handle this
+      "@typescript-eslint/no-unused-vars": ["warn", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true 
+      }],
+      "no-useless-escape": "off", // Allow escape characters in regex
+      "no-case-declarations": "off", // Allow declarations in case blocks
+    },
+  },
+
+  // Test files
+  {
+    files: ["**/*.test.{ts,tsx}", "**/__tests__/**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: ["./tsconfig.json"],
+        tsconfigRootDir: __dirname,
+      },
+      globals: {
+        // Jest globals
+        jest: "readonly",
+        describe: "readonly",
+        it: "readonly",
+        test: "readonly",
+        expect: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+        // Node.js globals
+        process: "readonly",
+        Buffer: "readonly",
+        console: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        // Browser globals
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        localStorage: "readonly",
+        fetch: "readonly",
+        // Other globals
+        global: "readonly",
+        require: "readonly",
+      },
+    },
+    rules: {
+      "no-console": "off",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["warn", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true 
+      }],
     },
   },
 
