@@ -43,6 +43,7 @@ import {
   AlertDescription
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { OrderRow } from '@/components/downloads/OrderRow'
 
 interface OrderWithDetails {
   id: string
@@ -498,6 +499,20 @@ export default function DownloadsClient({
               : "grid-cols-1"
           )}>
             {filteredOrders.map((order) => {
+              if (viewMode === 'list') {
+                return (
+                  <OrderRow
+                    key={order.id}
+                    order={order}
+                    onDownload={handleDownload}
+                    onSelect={toggleOrderSelection}
+                    isSelected={selectedOrders.includes(order.id)}
+                    showSelection={selectedOrders.length > 0 || true}
+                  />
+                )
+              }
+
+              // Grid view (existing card implementation)
               const statusConfig = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.FAILED
               const StatusIcon = statusConfig.icon
               const FileIcon = getFileTypeIcon(order.fileName)
