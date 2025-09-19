@@ -14,12 +14,11 @@ import {
   Edit, 
   Trash2, 
   RefreshCw,
-  MoreHorizontal,
   Shield,
   User
 } from 'lucide-react'
 
-interface User {
+interface UserData {
   id: string
   email: string
   name: string | null
@@ -31,7 +30,7 @@ interface User {
 }
 
 export default function UserManagementClient() {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<UserData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
@@ -86,7 +85,9 @@ export default function UserManagementClient() {
   }
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    // TODO: Add proper confirmation modal instead of browser confirm
+    const shouldDelete = window.confirm('Are you sure you want to delete this user? This action cannot be undone.')
+    if (!shouldDelete) {
       return
     }
 
