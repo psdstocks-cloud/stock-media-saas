@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react'
 import { Filter, X, ChevronDown } from 'lucide-react'
-import { Button, Card, CardContent, CardHeader, CardTitle, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Typography, Badge } from '@/components/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle, Typography, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
-export interface SearchFilters {
+export interface SearchFiltersType {
   type: string[]
   category: string[]
   license: string[]
@@ -18,8 +18,8 @@ export interface SearchFilters {
 }
 
 interface SearchFiltersProps {
-  filters: SearchFilters
-  onFiltersChange: (filters: SearchFilters) => void
+  filters: SearchFiltersType
+  onFiltersChange: (filters: SearchFiltersType) => void
   onClearFilters: () => void
   className?: string
 }
@@ -100,9 +100,9 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
   className
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [_activeFilter, _setActiveFilter] = useState<string | null>(null)
 
-  const handleFilterChange = (filterType: keyof SearchFilters, value: string) => {
+  const handleFilterChange = (filterType: keyof SearchFiltersType, value: string) => {
     const currentValues = filters[filterType]
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
@@ -120,7 +120,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
 
   const hasActiveFilters = getActiveFiltersCount() > 0
 
-  const renderFilterSection = (filterType: keyof SearchFilters, title: string) => {
+  const renderFilterSection = (filterType: keyof SearchFiltersType, title: string) => {
     const options = FILTER_OPTIONS[filterType]
     const selectedValues = filters[filterType]
 

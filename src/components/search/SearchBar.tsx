@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, X, Clock, TrendingUp } from 'lucide-react'
-import { Button, Input, Card, CardContent, Typography, Skeleton } from '@/components/ui'
+import { Button, Input, Typography, Skeleton } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 interface SearchSuggestion {

@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { User } from 'next-auth'
-import { Search, Grid, List, SlidersHorizontal, SortAsc, SortDesc } from 'lucide-react'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Typography, Skeleton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { Search, Grid, List, SlidersHorizontal } from 'lucide-react'
+import { Button, Card, CardContent, Typography, Skeleton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { SearchBar } from '@/components/search/SearchBar'
-import { SearchFilters, SearchFilters as SearchFiltersType } from '@/components/search/SearchFilters'
+import { SearchFilters, SearchFiltersType } from '@/components/search/SearchFilters'
 import { MediaCard, MediaItem } from '@/components/search/MediaCard'
 import { OrderConfirmationModal } from '@/components/modals/OrderConfirmationModal'
 import { cn } from '@/lib/utils'
@@ -34,7 +34,7 @@ const SORT_OPTIONS = [
   { value: 'points-high', label: 'Points: High to Low' }
 ]
 
-function BrowseContent({ user }: BrowseClientProps) {
+function BrowseContent({ user: _user }: BrowseClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   

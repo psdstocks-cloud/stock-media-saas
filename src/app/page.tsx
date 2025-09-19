@@ -21,14 +21,10 @@ import {
 import { 
   Search, 
   Download, 
-  Star, 
   Heart, 
   Share2, 
   Settings,
-  User,
-  Mail,
-  Phone,
-  MapPin
+  User
 } from "lucide-react"
 
 export default function HomePage() {

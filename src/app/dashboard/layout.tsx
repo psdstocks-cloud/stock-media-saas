@@ -10,9 +10,6 @@ import {
   Button, 
   Card, 
   CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle,
   Typography,
   Separator
 } from '@/components/ui'

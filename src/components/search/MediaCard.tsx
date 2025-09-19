@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Heart, Download, Eye, Clock, User, Star, MoreVertical, ShoppingCart } from 'lucide-react'
-import { Button, Card, CardContent, Typography, Badge, Skeleton } from '@/components/ui'
+import { Button, Card, CardContent, Typography, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { useOrderStore } from '@/stores/orderStore'
 
