@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Heart, Download, Eye, Clock, User, Star, MoreVertical, ShoppingCart } from 'lucide-react'
 import { Button, Card, CardContent, Typography, Badge, Skeleton } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import { usePurchase } from '@/contexts/PurchaseContext'
+import { useOrderStore } from '@/stores/orderStore'
 
 export interface MediaItem {
   id: string
@@ -59,7 +59,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
-  const { selectMedia, userPoints } = usePurchase()
+  const { openConfirmationModal } = useOrderStore()
 
   const handleDownload = async () => {
     if (!onDownload) return
@@ -85,7 +85,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   }
 
   const handlePurchase = () => {
-    selectMedia(media)
+    openConfirmationModal(media)
   }
 
   const getTypeIcon = (type: string) => {

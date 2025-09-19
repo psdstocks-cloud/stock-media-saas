@@ -8,8 +8,7 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Typo
 import { SearchBar } from '@/components/search/SearchBar'
 import { SearchFilters, SearchFilters as SearchFiltersType } from '@/components/search/SearchFilters'
 import { MediaCard, MediaItem } from '@/components/search/MediaCard'
-import { PurchaseProvider, usePurchase } from '@/contexts/PurchaseContext'
-import { PurchaseConfirmationModal } from '@/components/purchase/PurchaseConfirmationModal'
+import { PurchaseConfirmationModalStore } from '@/components/purchase/PurchaseConfirmationModalStore'
 import { cn } from '@/lib/utils'
 
 interface SearchResults {
@@ -59,8 +58,7 @@ function BrowseContent({ user }: BrowseClientProps) {
     dateRange: []
   })
 
-  // Purchase context
-  const { selectedMedia, isModalOpen, userPoints, closeModal, confirmPurchase, updateUserPoints } = usePurchase()
+  // No need for purchase context anymore - using Zustand store
 
   // Initialize from URL params
   useEffect(() => {
@@ -462,21 +460,11 @@ function BrowseContent({ user }: BrowseClientProps) {
       </div>
 
       {/* Purchase Confirmation Modal */}
-      <PurchaseConfirmationModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onConfirm={confirmPurchase}
-        media={selectedMedia}
-        userPoints={userPoints}
-      />
+      <PurchaseConfirmationModalStore />
     </div>
   )
 }
 
 export default function BrowseClient({ user }: BrowseClientProps) {
-  return (
-    <PurchaseProvider initialPoints={500}>
-      <BrowseContent user={user} />
-    </PurchaseProvider>
-  )
+  return <BrowseContent user={user} />
 }
