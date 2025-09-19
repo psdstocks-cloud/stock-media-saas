@@ -1,127 +1,164 @@
-export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from "@/auth"
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { PointsManager } from '@/lib/points'
-import { OrderManager } from '@/lib/nehtw-api'
-
-export async function POST(request: NextRequest) {
-  try {
-    // Get user session
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { stockSiteId, stockItemId, stockItemUrl, title } = await request.json()
-    const userId = session.user.id
-
-    // Get stock site info
-    const stockSite = await prisma.stockSite.findUnique({
-      where: { id: stockSiteId },
-    })
-
-    if (!stockSite) {
-      return NextResponse.json({ error: 'Stock site not found' }, { status: 404 })
-    }
-
-    // Check if user has enough points
-    const balance = await prisma.pointsBalance.findUnique({
-      where: { userId },
-    })
-
-    if (!balance || balance.currentPoints < stockSite.cost) {
-      return NextResponse.json({ error: 'Insufficient points' }, { status: 400 })
-    }
-
-    // Create order
-    const order = await OrderManager.createOrder(
-      userId,
-      stockSiteId,
-      stockItemId,
-      stockItemUrl,
-      title,
-      stockSite.cost
-    )
-
-    // Deduct points
-    await PointsManager.deductPoints(
-      userId,
-      stockSite.cost,
-      `Order for ${stockSite.displayName} #${stockItemId}`,
-      order.id
-    )
-
-    // Process order with nehtw.com API (this would need the user's API key)
-    // For now, we'll just mark it as processing
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { status: 'PROCESSING' },
-    })
-
-    return NextResponse.json({ success: true, order })
-  } catch (error) {
-    console.error('Error creating order:', error)
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
-  }
-}
+import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user session
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRateLimit(identifier, 'general')
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429 }
+      )
+    }
+
+    // Authentication
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Add rate limiting headers
-    const response = new NextResponse()
-    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
-    response.headers.set('X-RateLimit-Limit', '10')
-    response.headers.set('X-RateLimit-Remaining', '9')
-
     const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
     const status = searchParams.get('status')
-    const userId = session.user.id
+    const search = searchParams.get('search')
 
-    console.log('Fetching orders for userId:', userId, 'status:', status)
-
-    const orders = await prisma.order.findMany({
-      where: {
-        userId,
-        ...(status && { status: status as any }),
-      },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        stockSite: true,
-      },
-    })
-
-    console.log('Found orders:', orders.length, 'orders for user:', userId)
-    console.log('Orders data:', orders.map(o => ({ id: o.id, status: o.status, taskId: o.taskId })))
-
-    const data = { 
-      success: true, 
-      orders: orders.map(order => ({
-        id: order.id,
-        status: order.status,
-        title: order.title,
-        cost: order.cost,
-        createdAt: order.createdAt,
-        downloadUrl: order.downloadUrl,
-        fileName: order.fileName,
-        imageUrl: order.imageUrl,
-        stockSite: order.stockSite
-      }))
+    // Build where clause
+    const where: any = {
+      userId: session.user.id
     }
 
-    return NextResponse.json(data, { 
-      status: 200,
-      headers: response.headers
+    if (status && status !== 'all') {
+      where.status = status.toUpperCase()
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { stockSite: { displayName: { contains: search, mode: 'insensitive' } } }
+      ]
+    }
+
+    // Fetch orders with pagination
+    const [orders, totalCount] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          stockSite: {
+            select: {
+              id: true,
+              name: true,
+              displayName: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.order.count({ where })
+    ])
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalCount / limit)
+    const hasMore = page < totalPages
+
+    return NextResponse.json({
+      success: true,
+      orders,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasMore
+      }
     })
+
   } catch (error) {
-    console.error('Error fetching orders:', error)
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
+    console.error('Orders API error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch orders' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Rate limiting
+    const identifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRateLimit(identifier, 'general')
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429 }
+      )
+    }
+
+    // Authentication
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { action, orderIds } = body
+
+    if (action === 'bulk_download') {
+      // Handle bulk download request
+      if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        return NextResponse.json(
+          { error: 'Invalid order IDs' },
+          { status: 400 }
+        )
+      }
+
+      // Fetch the requested orders
+      const orders = await prisma.order.findMany({
+        where: {
+          id: { in: orderIds },
+          userId: session.user.id,
+          status: 'COMPLETED',
+          downloadUrl: { not: null }
+        },
+        select: {
+          id: true,
+          title: true,
+          downloadUrl: true,
+          fileName: true
+        }
+      })
+
+      return NextResponse.json({
+        success: true,
+        orders: orders.map(order => ({
+          id: order.id,
+          title: order.title,
+          downloadUrl: order.downloadUrl,
+          fileName: order.fileName
+        }))
+      })
+    }
+
+    return NextResponse.json(
+      { error: 'Invalid action' },
+      { status: 400 }
+    )
+
+  } catch (error) {
+    console.error('Orders API error:', error)
+    return NextResponse.json(
+      { error: 'Failed to process request' },
+      { status: 500 }
+    )
   }
 }
