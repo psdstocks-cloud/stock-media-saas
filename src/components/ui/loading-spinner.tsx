@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 
-interface LoadingSpinnerProps {
+export interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg" | "xl"
   className?: string
   text?: string

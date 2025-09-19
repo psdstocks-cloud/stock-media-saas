@@ -5,10 +5,11 @@ import { checkRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('Order status API called for order:', params.id)
+    const { id: orderId } = await params
+    console.log('Order status API called for order:', orderId)
     
     // Rate limiting
     const clientIdentifier = getClientIdentifier(request)
@@ -29,8 +30,6 @@ export async function GET(
       console.log('Unauthorized access to order status')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { id: orderId } = params
     console.log('Looking for order:', orderId, 'for user:', session.user.id)
 
     const order = await prisma.order.findFirst({

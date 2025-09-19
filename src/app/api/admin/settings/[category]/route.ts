@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { category: string } }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
     const session = await auth()
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { category } = params
+    const { category } = await params
 
     const settings = await prisma.adminSetting.findMany({
       where: {
@@ -51,7 +51,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { category: string } }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
     const session = await auth()
@@ -60,7 +60,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { category } = params
+    const { category } = await params
     const { settings } = await request.json()
 
     if (!Array.isArray(settings)) {
@@ -68,7 +68,7 @@ export async function PUT(
     }
 
     const results = []
-    const clientIP = request.headers.get('x-forwarded-for') || request.ip || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown' || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     for (const setting of settings) {

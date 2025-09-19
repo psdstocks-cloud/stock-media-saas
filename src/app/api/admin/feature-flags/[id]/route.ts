@@ -7,10 +7,11 @@ import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit-log'
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; // Use Node.js runtime for Prisma and other Node.js APIs
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -18,8 +19,12 @@ export async function GET(
     if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-
-    const { id } = params
+    
+    // Ensure id exists and is a string
+    const { id } = await params;
+    if (!id) {
+        return NextResponse.json({ error: 'ID parameter is missing' }, { status: 400 });
+    }
 
     const featureFlag = await prisma.featureFlag.findUnique({
       where: { id }
@@ -38,7 +43,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -47,7 +52,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { id } = params
+    const { id } = await params;
+    if (!id) {
+        return NextResponse.json({ error: 'ID parameter is missing' }, { status: 400 });
+    }
     const { name, description, isEnabled, rolloutPercentage, targetUsers, conditions } = await request.json()
 
     // Get current feature flag for audit log
@@ -84,7 +92,7 @@ export async function PUT(
     })
 
     // Create audit log
-    const clientIP = request.headers.get('x-forwarded-for') || request.ip || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown' || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     await createAuditLog({
@@ -115,7 +123,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -124,7 +132,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { id } = params
+    const { id } = await params;
+    if (!id) {
+        return NextResponse.json({ error: 'ID parameter is missing' }, { status: 400 });
+    }
 
     // Get current feature flag for audit log
     const currentFeatureFlag = await prisma.featureFlag.findUnique({
@@ -140,7 +151,7 @@ export async function DELETE(
     })
 
     // Create audit log
-    const clientIP = request.headers.get('x-forwarded-for') || request.ip || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown' || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     await createAuditLog({

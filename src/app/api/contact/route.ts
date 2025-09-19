@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       subject: sanitizedData.subject,
       message: sanitizedData.message,
       timestamp: new Date().toISOString(),
-      ip: request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+      ip: request.headers.get('x-forwarded-for') || 'unknown'
     })
     
     // In production, you would:

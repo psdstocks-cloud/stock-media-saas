@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Create audit log
-    const clientIP = request.headers.get('x-forwarded-for') || request.ip || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown' || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     await createAuditLog({

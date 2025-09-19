@@ -5,7 +5,7 @@ import { OrderManager } from '@/lib/nehtw-api'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user session
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const orderId = params.id
+    const { id: orderId } = await params
 
     // Get the order
     const order = await prisma.order.findFirst({

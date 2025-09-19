@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Registration API called')
     const { name, email, password, planId } = await request.json()
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
     console.log('Registration attempt:', { name, email, planId })
 

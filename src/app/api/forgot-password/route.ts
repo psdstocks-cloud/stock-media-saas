@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check rate limit
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await checkPasswordResetRateLimit(clientIP)
     
     if (!rateLimitResult.success) {

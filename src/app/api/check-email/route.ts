@@ -5,7 +5,7 @@ import { checkEmailVerificationRateLimit } from '@/lib/rate-limit'
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json()
-    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
