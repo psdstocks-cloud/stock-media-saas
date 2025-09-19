@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Heart, Download, Eye, Clock, User, Star, MoreVertical } from 'lucide-react'
+import { Heart, Download, Eye, Clock, User, Star, MoreVertical, ShoppingCart } from 'lucide-react'
 import { Button, Card, CardContent, Typography, Badge, Skeleton } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { usePurchase } from '@/contexts/PurchaseContext'
 
 export interface MediaItem {
   id: string
@@ -43,6 +44,7 @@ interface MediaCardProps {
   onAuthorClick?: (authorId: string) => void
   className?: string
   showActions?: boolean
+  showPurchaseButton?: boolean
 }
 
 export const MediaCard: React.FC<MediaCardProps> = ({
@@ -52,10 +54,12 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   onPreview,
   onAuthorClick,
   className,
-  showActions = true
+  showActions = true,
+  showPurchaseButton = true
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const { selectMedia, userPoints } = usePurchase()
 
   const handleDownload = async () => {
     if (!onDownload) return
@@ -78,6 +82,10 @@ export const MediaCard: React.FC<MediaCardProps> = ({
     if (onPreview) {
       onPreview(media)
     }
+  }
+
+  const handlePurchase = () => {
+    selectMedia(media)
   }
 
   const getTypeIcon = (type: string) => {
@@ -187,16 +195,28 @@ export const MediaCard: React.FC<MediaCardProps> = ({
                 <Eye className="h-4 w-4 mr-1" />
                 Preview
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleDownload}
-                disabled={isLoading}
-                className="flex-1"
-              >
-                <Download className="h-4 w-4 mr-1" />
-                {isLoading ? 'Downloading...' : 'Download'}
-              </Button>
+              {showPurchaseButton ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handlePurchase}
+                  className="flex-1"
+                >
+                  <ShoppingCart className="h-4 w-4 mr-1" />
+                  Get
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleDownload}
+                  disabled={isLoading}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  {isLoading ? 'Downloading...' : 'Download'}
+                </Button>
+              )}
             </div>
           )}
         </div>

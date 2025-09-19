@@ -12,6 +12,9 @@ export { Skeleton } from "./skeleton"
 export { Textarea } from "./textarea"
 export { Typography, typographyVariants } from "./typography"
 
+// Purchase Components
+export { PurchaseConfirmationModal } from "../purchase/PurchaseConfirmationModal"
+
 // Re-export types
 export type { BadgeProps } from "./badge"
 export type { ButtonProps } from "./button"

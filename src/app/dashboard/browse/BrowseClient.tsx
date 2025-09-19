@@ -8,6 +8,8 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Typo
 import { SearchBar } from '@/components/search/SearchBar'
 import { SearchFilters, SearchFilters as SearchFiltersType } from '@/components/search/SearchFilters'
 import { MediaCard, MediaItem } from '@/components/search/MediaCard'
+import { PurchaseProvider, usePurchase } from '@/contexts/PurchaseContext'
+import { PurchaseConfirmationModal } from '@/components/purchase/PurchaseConfirmationModal'
 import { cn } from '@/lib/utils'
 
 interface SearchResults {
@@ -33,7 +35,7 @@ const SORT_OPTIONS = [
   { value: 'points-high', label: 'Points: High to Low' }
 ]
 
-export default function BrowseClient({ user }: BrowseClientProps) {
+function BrowseContent({ user }: BrowseClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -56,6 +58,9 @@ export default function BrowseClient({ user }: BrowseClientProps) {
     priceRange: [],
     dateRange: []
   })
+
+  // Purchase context
+  const { selectedMedia, isModalOpen, userPoints, closeModal, confirmPurchase, updateUserPoints } = usePurchase()
 
   // Initialize from URL params
   useEffect(() => {
@@ -455,6 +460,23 @@ export default function BrowseClient({ user }: BrowseClientProps) {
           </div>
         </div>
       </div>
+
+      {/* Purchase Confirmation Modal */}
+      <PurchaseConfirmationModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onConfirm={confirmPurchase}
+        media={selectedMedia}
+        userPoints={userPoints}
+      />
     </div>
+  )
+}
+
+export default function BrowseClient({ user }: BrowseClientProps) {
+  return (
+    <PurchaseProvider initialPoints={500}>
+      <BrowseContent user={user} />
+    </PurchaseProvider>
   )
 }
