@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { Download, Calendar, Clock, CheckCircle, XCircle, AlertCircle, ExternalLink, FileText, Image, Video, Music, Archive } from 'lucide-react'
+import React, { useState } from 'react'
+import { Download, Calendar, Clock, CheckCircle, XCircle, AlertCircle, ExternalLink, FileText, Image, Video, Music, Archive, Loader2 } from 'lucide-react'
 import { Button, Card, CardContent, Typography, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
@@ -136,6 +136,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   showSelection = false,
   className
 }) => {
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+  
   const statusConfig = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.FAILED
   const StatusIcon = statusConfig.icon
   const FileIcon = getFileTypeIcon(order.fileName)
@@ -143,12 +146,49 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   const isDownloadable = order.status === 'COMPLETED' || order.status === 'READY'
   const hasDownloadUrl = order.downloadUrl !== null
 
-  const handleDownload = () => {
-    if (onDownload && isDownloadable && hasDownloadUrl) {
-      onDownload(order)
-    } else if (hasDownloadUrl) {
-      // Fallback: open download URL directly
-      window.open(order.downloadUrl!, '_blank')
+  const handleDownload = async () => {
+    if (isDownloading) return // Prevent multiple simultaneous downloads
+    
+    setIsDownloading(true)
+    setDownloadError(null)
+    
+    try {
+      // If we have a direct download URL, use it
+      if (hasDownloadUrl && order.downloadUrl) {
+        window.open(order.downloadUrl, '_blank')
+        return
+      }
+      
+      // Otherwise, regenerate the download URL
+      const response = await fetch(`/api/orders/${order.id}/regenerate-download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate download link')
+      }
+      
+      if (data.success && data.downloadUrl) {
+        // Open the fresh download URL
+        window.open(data.downloadUrl, '_blank')
+        
+        // Show warning if there was a fallback
+        if (data.warning) {
+          console.warn('Download warning:', data.warning)
+        }
+      } else {
+        throw new Error('No download URL received')
+      }
+    } catch (error) {
+      console.error('Download failed:', error)
+      setDownloadError(error instanceof Error ? error.message : 'Download failed')
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -248,14 +288,24 @@ export const OrderRow: React.FC<OrderRowProps> = ({
 
                 {/* Action Buttons */}
                 <div className="flex items-center space-x-2">
-                  {isDownloadable && hasDownloadUrl ? (
+                  {isDownloadable ? (
                     <Button
                       size="sm"
                       onClick={handleDownload}
+                      disabled={isDownloading}
                       className="flex items-center space-x-1"
                     >
-                      <Download className="h-4 w-4" />
-                      <span>Download</span>
+                      {isDownloading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4" />
+                          <span>Download</span>
+                        </>
+                      )}
                     </Button>
                   ) : order.status === 'PROCESSING' || order.status === 'PENDING' ? (
                     <Button size="sm" disabled className="flex items-center space-x-1">
@@ -270,7 +320,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                   )}
 
                   {/* External Link */}
-                  {hasDownloadUrl && (
+                  {hasDownloadUrl && !isDownloading && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -284,6 +334,26 @@ export const OrderRow: React.FC<OrderRowProps> = ({
               </div>
             </div>
           </div>
+          
+          {/* Error Display */}
+          {downloadError && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <Typography variant="body-sm" className="text-red-600">
+                  {downloadError}
+                </Typography>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDownloadError(null)}
+                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                >
+                  <XCircle className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

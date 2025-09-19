@@ -212,16 +212,41 @@ export default function DownloadsClient({
 
   // Handle download
   const handleDownload = async (order: OrderWithDetails) => {
-    if (!order.downloadUrl) {
-      console.error('No download URL available')
-      return
-    }
-
     try {
-      // Open download in new tab
-      window.open(order.downloadUrl, '_blank')
+      // If we have a direct download URL, use it
+      if (order.downloadUrl) {
+        window.open(order.downloadUrl, '_blank')
+        return
+      }
+      
+      // Otherwise, regenerate the download URL
+      const response = await fetch(`/api/orders/${order.id}/regenerate-download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate download link')
+      }
+      
+      if (data.success && data.downloadUrl) {
+        // Open the fresh download URL
+        window.open(data.downloadUrl, '_blank')
+        
+        // Show warning if there was a fallback
+        if (data.warning) {
+          console.warn('Download warning:', data.warning)
+        }
+      } else {
+        throw new Error('No download URL received')
+      }
     } catch (error) {
       console.error('Download failed:', error)
+      // TODO: Show error toast notification
     }
   }
 
