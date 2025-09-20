@@ -45,6 +45,7 @@ function LoginForm() {
     const verified = searchParams.get('verified')
     const verificationError = searchParams.get('error')
     const requestVerification = searchParams.get('requestVerification')
+    const message = searchParams.get('message')
 
     if (verified === 'true') {
       setVerificationMessage('Email verified successfully! You can now log in.')
@@ -52,6 +53,8 @@ function LoginForm() {
       setError(decodeURIComponent(verificationError))
     } else if (requestVerification === 'true') {
       setVerificationMessage('Please check your email for a verification link.')
+    } else if (message) {
+      setVerificationMessage(decodeURIComponent(message))
     }
   }, [searchParams])
 
@@ -80,7 +83,18 @@ function LoginForm() {
       console.log('Test login response data:', testData)
 
       if (!testResponse.ok) {
-        setError(testData.error || 'Login failed')
+        // Provide more specific error messages
+        if (testData.error === 'User not found') {
+          setError('No account found with this email address. Please check your email or create a new account.')
+        } else if (testData.error === 'Invalid password') {
+          setError('Incorrect password. Please check your password and try again.')
+        } else if (testData.error === 'Account locked') {
+          setError('Account temporarily locked due to multiple failed attempts. Please try again later.')
+        } else if (testData.error === 'Email not verified') {
+          setError('Please verify your email address before logging in. Check your inbox for a verification link.')
+        } else {
+          setError(testData.error || 'Login failed. Please check your credentials and try again.')
+        }
         return
       }
 
@@ -250,6 +264,15 @@ function LoginForm() {
                 </Alert>
               )}
 
+              {/* Helpful Info */}
+              {!error && !verificationMessage && (
+                <Alert className="bg-blue-500/10 border-blue-500/30">
+                  <AlertDescription className="text-blue-200 text-sm">
+                    🔐 Secure login with email verification and account protection
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white/90 font-medium">Email</Label>
@@ -290,6 +313,10 @@ function LoginForm() {
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
+                </div>
+                {/* Helpful guidance */}
+                <div className="text-xs text-white/50">
+                  💡 Having trouble? Try the demo account below or contact support
                 </div>
               </div>
 

@@ -123,7 +123,7 @@ export default function RegisterForm() {
 
       if (response.ok) {
         // Redirect to login page with success message
-        router.push('/login?message=Registration successful! Please sign in.')
+        router.push('/login?message=Registration successful! Please check your email to verify your account and then sign in.')
       } else {
         if (responseData.field) {
           setError(responseData.field as keyof FormData, {

@@ -53,10 +53,10 @@ function VerifyEmailForm() {
           details: data.alreadyVerified ? 'Your email was already verified.' : undefined
         })
         
-        // Auto-redirect to login after 3 seconds
+        // Auto-redirect to login after 5 seconds (give user more time to read)
         setTimeout(() => {
           router.push('/login?verified=true')
-        }, 3000)
+        }, 5000)
       } else {
         setVerificationState({
           status: 'error',
@@ -136,7 +136,7 @@ function VerifyEmailForm() {
                     </div>
                   )}
                   <div className="mt-2 text-sm text-green-300">
-                    Redirecting to login page in 3 seconds...
+                    Redirecting to login page in 5 seconds...
                   </div>
                 </AlertDescription>
               </Alert>
@@ -179,12 +179,17 @@ function VerifyEmailForm() {
             {/* Action Buttons */}
             <div className="flex flex-col space-y-3">
               {verificationState.status === 'success' && (
-                <Button
-                  onClick={handleGoToLogin}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                >
-                  Go to Login
-                </Button>
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleGoToLogin}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 text-lg"
+                  >
+                    ✅ Proceed to Login
+                  </Button>
+                  <div className="text-center text-sm text-white/60">
+                    You can also wait to be redirected automatically
+                  </div>
+                </div>
               )}
 
               {verificationState.status === 'error' && (
@@ -192,15 +197,15 @@ function VerifyEmailForm() {
                   <Button
                     onClick={handleRequestNewVerification}
                     variant="outline"
-                    className="w-full border-white/30 text-white hover:bg-white/10"
+                    className="w-full border-white/30 text-white hover:bg-white/10 font-semibold py-3"
                   >
-                    Request New Verification Email
+                    📧 Request New Verification Email
                   </Button>
                   <Button
                     onClick={handleGoToLogin}
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 font-semibold py-3"
                   >
-                    Go to Login
+                    🔐 Go to Login
                   </Button>
                 </>
               )}
@@ -208,9 +213,9 @@ function VerifyEmailForm() {
               {verificationState.status === 'idle' && !token && (
                 <Button
                   onClick={handleGoToLogin}
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 font-semibold py-3"
                 >
-                  Go to Login
+                  🔐 Go to Login
                 </Button>
               )}
             </div>

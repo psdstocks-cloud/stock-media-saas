@@ -31,7 +31,14 @@ export default function AdminLoginClient() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password')
+        // Provide more specific error messages based on the error type
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email or password. Please check your credentials and try again.')
+        } else if (result.error === 'CallbackRouteError') {
+          setError('Authentication failed. Please try again.')
+        } else {
+          setError(`Login failed: ${result.error}`)
+        }
       } else if (result?.ok) {
         // Check if user has admin role by making a quick API call
         const response = await fetch('/api/auth/verify-token')
@@ -40,10 +47,12 @@ export default function AdminLoginClient() {
         if (data?.user?.role === 'admin' || data?.user?.role === 'ADMIN' || data?.user?.role === 'SUPER_ADMIN') {
           router.push('/admin/dashboard')
         } else {
-          setError('Access denied. Admin privileges required.')
+          setError('Access denied. Admin privileges required. Please contact your administrator if you believe this is an error.')
           // Sign out the user since they don't have admin privileges
           await signIn('credentials', { redirect: false, callbackUrl: '/login' })
         }
+      } else {
+        setError('An unexpected error occurred. Please try again.')
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -115,7 +124,7 @@ export default function AdminLoginClient() {
               </div>
 
               {error && (
-                <Alert className="bg-red-500/10 border-red-500/30">
+                <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
                   <AlertDescription className="text-red-200">
                     {error}
                   </AlertDescription>
