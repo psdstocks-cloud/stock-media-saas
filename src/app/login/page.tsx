@@ -12,14 +12,21 @@ import {
   CardTitle,
   Input,
   Label,
-  Typography
+  Typography,
+  Alert,
+  AlertDescription
 } from '@/components/ui'
 import { 
   Mail, 
   Lock, 
   Eye, 
   EyeOff,
-  Loader2
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  LogIn,
+  User,
+  Shield
 } from 'lucide-react'
 
 export default function LoginPage() {
@@ -48,6 +55,39 @@ export default function LoginPage() {
         // Check if user has completed onboarding
         const session = await getSession()
         if (session?.user) {
+          // Redirect admin users to admin dashboard
+          if (session.user.role === 'admin') {
+            router.push('/admin/dashboard')
+          } else {
+            router.push('/dashboard')
+          }
+        }
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setEmail('demo@example.com')
+    setPassword('demo123')
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const result = await signIn('credentials', {
+        email: 'demo@example.com',
+        password: 'demo123',
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Demo account login failed')
+      } else {
+        const session = await getSession()
+        if (session?.user) {
           router.push('/dashboard')
         }
       }
@@ -59,125 +99,199 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center">
-          <div className="h-12 w-12 brand-gradient rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-lg">SM</span>
+        <div className="text-center mb-8">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-4 shadow-2xl">
+            <span className="text-white font-bold text-xl">SM</span>
           </div>
-          <Typography variant="h2" className="brand-text-gradient mb-2">
+          <Typography variant="h1" className="text-3xl font-bold text-white mb-2">
             Welcome Back
           </Typography>
-          <Typography variant="body" color="muted">
+          <Typography variant="body" className="text-white/70">
             Sign in to your Stock Media SaaS account
           </Typography>
         </div>
 
         {/* Login Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
+        <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+          <CardHeader className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+              <LogIn className="h-6 w-6 text-white" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-white">Sign In</CardTitle>
+            <CardDescription className="text-white/70">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Alert */}
               {error && (
-                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                  <Typography variant="body-sm" className="text-destructive">
-                    {error}
-                  </Typography>
-                </div>
+                <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <AlertDescription className="text-red-200">{error}</AlertDescription>
+                </Alert>
               )}
 
+              {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white/90 font-medium">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10"
+                    disabled={isLoading}
                     required
                   />
                 </div>
               </div>
 
+              {/* Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-white/90 font-medium">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10"
+                    disabled={isLoading}
                     required
                   />
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
+              {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full brand-shadow"
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Signing In...
-                  </>
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Signing In...</span>
+                  </div>
                 ) : (
                   'Sign In'
                 )}
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <Typography variant="body-sm" color="muted">
+            {/* Links */}
+            <div className="mt-6 space-y-4">
+              <div className="text-center text-sm text-white/70">
                 Don't have an account?{' '}
-                <Button
-                  variant="link"
-                  className="p-0 h-auto font-normal"
-                  onClick={() => router.push('/register')}
+                <a 
+                  href="/register" 
+                  className="text-orange-400 hover:text-orange-300 font-medium transition-colors"
                 >
                   Sign up
-                </Button>
-              </Typography>
+                </a>
+              </div>
+              
+              <div className="text-center text-sm text-white/70">
+                Forgot your password?{' '}
+                <a 
+                  href="/forgot-password" 
+                  className="text-orange-400 hover:text-orange-300 font-medium transition-colors"
+                >
+                  Reset it here
+                </a>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Demo Credentials */}
-        <Card className="bg-muted/30">
-          <CardContent className="pt-6">
-            <Typography variant="h6" className="mb-2">Demo Account</Typography>
-            <Typography variant="body-sm" color="muted" className="mb-2">
-              Use these credentials to test the platform:
-            </Typography>
-            <div className="space-y-1 text-sm">
-              <div><strong>Email:</strong> demo@example.com</div>
-              <div><strong>Password:</strong> demo123</div>
+        {/* Demo Credentials Card */}
+        <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl mt-6">
+          <CardHeader className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
+              <User className="h-6 w-6 text-blue-400" />
+            </div>
+            <CardTitle className="text-xl font-bold text-white">Demo Account</CardTitle>
+            <CardDescription className="text-white/70">
+              Use these credentials to test the platform
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="bg-white/10 rounded-lg p-4 space-y-2">
+              <div className="flex items-center space-x-2 text-white">
+                <Mail className="h-4 w-4 text-white/70" />
+                <span className="font-medium">Email:</span>
+                <span className="text-orange-400">demo@example.com</span>
+              </div>
+              <div className="flex items-center space-x-2 text-white">
+                <Lock className="h-4 w-4 text-white/70" />
+                <span className="font-medium">Password:</span>
+                <span className="text-orange-400">demo123</span>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleDemoLogin}
+              variant="outline"
+              className="w-full border-white/30 text-white hover:bg-white/10"
+              disabled={isLoading}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Login as Demo User
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Admin Login Card */}
+        <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl mt-6">
+          <CardHeader className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
+              <Shield className="h-6 w-6 text-purple-400" />
+            </div>
+            <CardTitle className="text-xl font-bold text-white">Admin Access</CardTitle>
+            <CardDescription className="text-white/70">
+              Administrative credentials for platform management
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="bg-white/10 rounded-lg p-4 space-y-2">
+              <div className="flex items-center space-x-2 text-white">
+                <Mail className="h-4 w-4 text-white/70" />
+                <span className="font-medium">Email:</span>
+                <span className="text-purple-400">admin@stockmedia.com</span>
+              </div>
+              <div className="flex items-center space-x-2 text-white">
+                <Lock className="h-4 w-4 text-white/70" />
+                <span className="font-medium">Password:</span>
+                <span className="text-purple-400">admin123</span>
+              </div>
+            </div>
+
+            <div className="text-center text-xs text-white/50">
+              <p className="mb-2">
+                <strong>Note:</strong> Please change the password after first login for security.
+              </p>
+              <p>
+                Admin access provides full platform management capabilities.
+              </p>
             </div>
           </CardContent>
         </Card>

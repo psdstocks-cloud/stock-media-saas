@@ -127,3 +127,7 @@ export async function checkEmailVerificationRateLimit(identifier: string) {
 export async function checkPasswordResetRateLimit(identifier: string) {
   return checkRateLimit(identifier, 'auth')
 }
+
+export async function checkLoginRateLimit(identifier: string) {
+  return checkRateLimit(identifier, 'auth')
+}
