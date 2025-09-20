@@ -7,10 +7,13 @@ import { sendWelcomeEmail } from '@/lib/email'
 export async function POST(request: NextRequest) {
   try {
     console.log('Registration API called')
-    const { name, email, password, planId, website } = await request.json()
+    const body = await request.json()
+    console.log('Request body:', body)
+    
+    const { name, email, password, planId, website } = body
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
-    console.log('Registration attempt:', { name, email, planId })
+    console.log('Registration attempt:', { name, email, planId, website })
 
     // Honeypot validation - if website field is filled, it's likely a bot
     if (website && website.trim() !== '') {
@@ -144,6 +147,8 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user and subscription sequentially
+    console.log('Creating subscription plan:', planInfo.name)
+    
     // Create or get subscription plan
     const plan = await prisma.subscriptionPlan.upsert({
       where: { name: planInfo.name },
@@ -157,8 +162,12 @@ export async function POST(request: NextRequest) {
         isActive: true
       }
     })
+    
+    console.log('Plan created/retrieved:', plan.id)
 
     // Create user with email normalization
+    console.log('Creating user:', { name: name.trim(), email: email.toLowerCase().trim() })
+    
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
@@ -166,8 +175,12 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
       }
     })
+    
+    console.log('User created:', user.id)
 
     // Create subscription
+    console.log('Creating subscription for user:', user.id)
+    
     const subscription = await prisma.subscription.create({
       data: {
         userId: user.id,
@@ -177,8 +190,12 @@ export async function POST(request: NextRequest) {
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       }
     })
+    
+    console.log('Subscription created:', subscription.id)
 
     // Initialize points balance with subscription points
+    console.log('Creating points balance:', plan.points)
+    
     const pointsBalance = await prisma.pointsBalance.create({
       data: {
         userId: user.id,
@@ -186,8 +203,12 @@ export async function POST(request: NextRequest) {
         totalPurchased: plan.points,
       }
     })
+    
+    console.log('Points balance created:', pointsBalance.id)
 
     // Create points history entry
+    console.log('Creating points history entry')
+    
     await prisma.pointsHistory.create({
       data: {
         userId: user.id,
@@ -196,6 +217,8 @@ export async function POST(request: NextRequest) {
         description: `Initial subscription points for ${plan.name} plan`,
       }
     })
+    
+    console.log('Points history entry created')
 
     const result = { user, subscription, plan }
 
@@ -229,9 +252,14 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    
+    // Return more detailed error information for debugging
     return NextResponse.json({ 
       error: 'Registration failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      type: 'REGISTRATION_ERROR',
+      timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }
