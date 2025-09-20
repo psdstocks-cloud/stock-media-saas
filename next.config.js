@@ -9,6 +9,12 @@ const nextConfig = {
     // Keep TypeScript checking enabled
     ignoreBuildErrors: false,
   },
+  // Optimize CSS loading to prevent preload warnings
+  // experimental: {
+  //   optimizeCss: true, // Disabled due to critters dependency issue
+  // },
+  // Improve client-side hydration
+  reactStrictMode: true,
   async headers() {
     return [
       {

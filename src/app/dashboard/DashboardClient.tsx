@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   Card, 
   CardContent, 
@@ -42,6 +43,7 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user }: DashboardClientProps) {
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalDownloads: 0,
     pointsRemaining: 0,
@@ -228,7 +230,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                         key={action.title}
                         variant="outline"
                         className="h-auto p-4 justify-start"
-                        onClick={() => window.location.href = action.href}
+                        onClick={() => router.push(action.href)}
                       >
                         <div className="flex items-center space-x-3">
                           <Icon className={`h-5 w-5 ${action.color}`} />

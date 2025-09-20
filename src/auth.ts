@@ -21,6 +21,8 @@ export const {
   session: { strategy: 'jwt' },
   // Add NEXTAUTH_URL for proper redirects
   ...(process.env.NEXTAUTH_URL && { url: process.env.NEXTAUTH_URL }),
+  // Improve client-side stability
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     // Temporarily disabled OAuth providers until environment variables are set up
     // GoogleProvider({
