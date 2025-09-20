@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import PasswordStrengthIndicator from './PasswordStrengthIndicator'
 import WeakPasswordModal from '../modals/WeakPasswordModal'
+import { useEmailValidation } from '@/hooks/useEmailValidation'
 import type { z } from 'zod'
 
 type FormData = z.infer<typeof userRegistrationSchema>
@@ -34,6 +35,9 @@ export default function RegisterForm() {
   const [isWeakPasswordModalOpen, setIsWeakPasswordModalOpen] = useState(false)
   const [pendingFormData, setPendingFormData] = useState<FormData | null>(null)
   const router = useRouter()
+
+  // Email validation hook
+  const { checkEmail, isChecking: isEmailChecking, result: emailResult, isValid: isEmailValid, isInvalid: isEmailInvalid, message: emailMessage } = useEmailValidation()
 
   const {
     register,
@@ -222,21 +226,56 @@ export default function RegisterForm() {
               <Input
                 id="email"
                 type="email"
-                {...register('email')}
+                {...register('email', {
+                  onChange: (e) => {
+                    // Trigger real-time email validation
+                    checkEmail(e.target.value)
+                  }
+                })}
                 placeholder="Enter your email address"
-                className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 ${errors.email ? 'border-red-500' : ''}`}
+                className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${
+                  errors.email || isEmailInvalid ? 'border-red-500' : 
+                  isEmailValid ? 'border-green-500' : ''
+                }`}
                 disabled={isLoading}
               />
-              {errors.email && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              {/* Real-time validation indicator */}
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                {isEmailChecking ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white/50" />
+                ) : isEmailValid ? (
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                ) : isEmailInvalid ? (
                   <AlertCircle className="h-4 w-4 text-red-400" />
-                </div>
-              )}
+                ) : errors.email ? (
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                ) : null}
+              </div>
             </div>
+            
+            {/* Email validation messages */}
             {errors.email && (
               <p className="text-sm text-red-400 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.email.message}
+              </p>
+            )}
+            
+            {/* Real-time email availability message */}
+            {emailMessage && !errors.email && (
+              <p className={`text-sm flex items-center gap-1 ${
+                isEmailValid ? 'text-green-400' : 
+                isEmailInvalid ? 'text-red-400' : 
+                'text-yellow-400'
+              }`}>
+                {isEmailValid ? (
+                  <CheckCircle className="h-3 w-3" />
+                ) : isEmailInvalid ? (
+                  <AlertCircle className="h-3 w-3" />
+                ) : (
+                  <AlertCircle className="h-3 w-3" />
+                )}
+                {emailMessage}
               </p>
             )}
           </div>
@@ -323,7 +362,7 @@ export default function RegisterForm() {
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading || !isValid || !isDirty}
+            disabled={isLoading || !isValid || !isDirty || isEmailChecking || isEmailInvalid}
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
