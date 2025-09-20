@@ -43,27 +43,52 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      // Use our custom login API for better error handling
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
       })
 
-      if (result?.error) {
-        setError('Invalid email or password')
-      } else {
-        // Check if user has completed onboarding
-        const session = await getSession()
-        if (session?.user) {
-          // Redirect admin users to admin dashboard
-          if (session.user.role === 'admin') {
+      const data = await response.json()
+
+      if (response.ok) {
+        // Login successful, now use NextAuth to create session
+        const result = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        })
+
+        if (result?.error) {
+          setError('Session creation failed. Please try again.')
+        } else {
+          // Redirect based on user role
+          if (data.user.role === 'admin') {
             router.push('/admin/dashboard')
           } else {
             router.push('/dashboard')
           }
         }
+      } else {
+        // Handle different error types
+        if (data.type === 'ACCOUNT_LOCKED') {
+          setError('Account is temporarily locked. Please try again later.')
+        } else if (data.type === 'RATE_LIMIT_EXCEEDED') {
+          setError('Too many login attempts. Please try again later.')
+        } else if (data.type === 'OAUTH_ONLY_ACCOUNT') {
+          setError('This account uses social login. Please use the appropriate login method.')
+        } else {
+          setError(data.error || 'Invalid email or password')
+        }
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -77,21 +102,38 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email: 'demo@example.com',
-        password: 'demo123',
-        redirect: false,
+      // Use our custom login API for better error handling
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'demo@example.com',
+          password: 'demo123',
+        }),
       })
 
-      if (result?.error) {
-        setError('Demo account login failed')
-      } else {
-        const session = await getSession()
-        if (session?.user) {
+      const data = await response.json()
+
+      if (response.ok) {
+        // Login successful, now use NextAuth to create session
+        const result = await signIn('credentials', {
+          email: 'demo@example.com',
+          password: 'demo123',
+          redirect: false,
+        })
+
+        if (result?.error) {
+          setError('Demo account session creation failed')
+        } else {
           router.push('/dashboard')
         }
+      } else {
+        setError(data.error || 'Demo account login failed')
       }
     } catch (error) {
+      console.error('Demo login error:', error)
       setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
