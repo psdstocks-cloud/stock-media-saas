@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/components/ui'
 import { User, LogOut, Shield, Settings, Download, Search } from 'lucide-react'
 
-interface User {
+interface DashboardUser {
   id: string
   email: string
   name: string
@@ -13,7 +13,7 @@ interface User {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<DashboardUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
