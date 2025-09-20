@@ -102,6 +102,16 @@ try {
   });
 }
 
+// Create a safe auth function that handles errors gracefully
+export const safeAuth = async () => {
+  try {
+    return await nextAuthInstance.auth();
+  } catch (error) {
+    console.error('Auth function error:', error);
+    return null;
+  }
+};
+
 export const {
   handlers: { GET, POST },
   auth,

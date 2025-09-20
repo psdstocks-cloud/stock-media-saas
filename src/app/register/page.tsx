@@ -1,20 +1,30 @@
 import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { safeAuth } from '@/auth'
 import RegisterClient from './RegisterClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function RegisterPage() {
-  const session = await auth()
+  try {
+    const session = await safeAuth()
 
-  // Redirect if already authenticated
-  if (session?.user) {
-    redirect('/dashboard')
+    // Only redirect if we have a valid session with a user
+    if (session && session.user && session.user.id) {
+      redirect('/dashboard')
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <RegisterClient />
+      </div>
+    )
+  } catch (error) {
+    console.error('Register page auth error:', error)
+    // If there's an auth error, still show the register page
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <RegisterClient />
+      </div>
+    )
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <RegisterClient />
-    </div>
-  )
 }

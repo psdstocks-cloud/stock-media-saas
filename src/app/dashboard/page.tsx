@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { safeAuth } from '@/auth'
 import DashboardClient from './DashboardClient'
 import { Suspense } from 'react'
 
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   try {
-    const session = await auth()
+    const session = await safeAuth()
     
     // Check if session exists and has user property
     if (!session || !session.user) {
