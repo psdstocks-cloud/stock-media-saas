@@ -20,6 +20,7 @@ import {
   Loader2,
   CheckCircle
 } from 'lucide-react'
+import PasswordStrengthIndicator from './PasswordStrengthIndicator'
 import type { z } from 'zod'
 
 type FormData = z.infer<typeof userRegistrationSchema>
@@ -192,13 +193,12 @@ export default function RegisterForm() {
                 {errors.password.message}
               </p>
             )}
-            {/* Password strength indicator */}
-            {password && !errors.password && (
-              <div className="flex items-center gap-1 text-xs text-green-400">
-                <CheckCircle className="h-3 w-3" />
-                <span>Password meets requirements</span>
-              </div>
-            )}
+            
+            {/* Dynamic Password Strength Indicator */}
+            <PasswordStrengthIndicator 
+              password={password} 
+              className="mt-3"
+            />
           </div>
 
           {/* Confirm Password Field */}
