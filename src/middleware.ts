@@ -1,6 +1,6 @@
 // src/middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyJWT } from '@/lib/jwt-auth';
+import { verifyJWTSync } from '@/lib/jwt-edge';
 
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -11,7 +11,7 @@ export default function middleware(req: NextRequest) {
   
   if (token) {
     try {
-      user = verifyJWT(token);
+      user = verifyJWTSync(token);
     } catch (error) {
       // Invalid token, treat as not authenticated
       user = null;
