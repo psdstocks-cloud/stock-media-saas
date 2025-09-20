@@ -46,7 +46,7 @@ export default async function ResetPasswordPage({ params }: ResetPasswordPagePro
           </div>
 
           {/* Error Card */}
-          <div className="backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg shadow-2xl p-8 text-center">
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg shadow-2xl p-8 text-center">
             <div className="space-y-4">
               <div className="text-red-400 text-sm">
                 <p className="mb-2">
@@ -97,9 +97,7 @@ export default async function ResetPasswordPage({ params }: ResetPasswordPagePro
         </div>
 
         {/* Reset Password Form */}
-        <div className="backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg shadow-2xl">
-          <ResetPasswordForm token={token} />
-        </div>
+        <ResetPasswordForm token={token} />
       </div>
     </div>
   )

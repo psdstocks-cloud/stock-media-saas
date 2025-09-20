@@ -142,7 +142,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   // Loading state while validating token
   if (isValidatingToken) {
     return (
-      <Card className="w-full bg-transparent border-0 shadow-none">
+      <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardContent className="p-8 text-center">
           <div className="mx-auto w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
             <Loader2 className="h-6 w-6 text-orange-400 animate-spin" />
@@ -161,7 +161,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   // Token invalid state
   if (!isTokenValid || !token) {
     return (
-      <Card className="w-full bg-transparent border-0 shadow-none">
+      <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
             <AlertCircle className="h-6 w-6 text-red-400" />
@@ -218,7 +218,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   // Success state
   if (isSuccess) {
     return (
-      <Card className="w-full bg-transparent border-0 shadow-none">
+      <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
             <CheckCircle className="h-6 w-6 text-green-400" />
@@ -259,7 +259,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   // Form state
   return (
-    <Card className="w-full bg-transparent border-0 shadow-none">
+    <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
       <CardHeader className="text-center space-y-2">
         <div className="mx-auto w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
           <Shield className="h-6 w-6 text-white" />

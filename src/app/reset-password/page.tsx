@@ -27,9 +27,7 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
         </div>
 
         {/* Reset Password Form */}
-        <div className="backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg shadow-2xl">
-          <ResetPasswordForm token={token} />
-        </div>
+        <ResetPasswordForm token={token} />
       </div>
     </div>
   )

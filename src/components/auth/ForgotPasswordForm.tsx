@@ -90,7 +90,7 @@ export default function ForgotPasswordForm() {
   // Success state
   if (isSuccess) {
     return (
-      <Card className="w-full bg-transparent border-0 shadow-none">
+      <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
             <CheckCircle className="h-6 w-6 text-green-400" />
@@ -149,7 +149,7 @@ export default function ForgotPasswordForm() {
 
   // Form state
   return (
-    <Card className="w-full bg-transparent border-0 shadow-none">
+    <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
       <CardHeader className="text-center space-y-2">
         <div className="mx-auto w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
           <Mail className="h-6 w-6 text-white" />

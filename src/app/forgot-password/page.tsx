@@ -19,9 +19,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Forgot Password Form */}
-        <div className="backdrop-blur-sm bg-white/10 border border-white/20 rounded-lg shadow-2xl">
-          <ForgotPasswordForm />
-        </div>
+        <ForgotPasswordForm />
       </div>
     </div>
   )
