@@ -6,7 +6,6 @@ import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
-import pluginNext from "@next/eslint-plugin-next";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,7 +13,6 @@ const __dirname = dirname(__filename);
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
 });
 
 const eslintConfig = [
@@ -22,13 +20,15 @@ const eslintConfig = [
 
   // Main application files
   {
-    ...compat.extends("next/core-web-vitals")[0],
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ["./tsconfig.json"],
-        tsconfigRootDir: __dirname,
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
       globals: {
         // Node.js globals
@@ -52,25 +52,33 @@ const eslintConfig = [
     plugins: {
       "react": pluginReact,
       "react-hooks": pluginReactHooks,
-      "@next/next": pluginNext,
       "@typescript-eslint": tsPlugin,
     },
     rules: {
+      // React rules
+      "react/react-in-jsx-scope": "off",
       "react/no-unescaped-entities": "off",
-      "@next/next/no-img-element": "off",
       "react-hooks/exhaustive-deps": "off",
-      "@next/next/no-assign-module-variable": "off",
       "react/no-find-dom-node": "off",
+      
+      // TypeScript rules
       "@typescript-eslint/no-useless-constructor": "off",
-      "no-console": "off", // Allow console statements
-      "no-unused-vars": "off", // Let TypeScript handle this
       "@typescript-eslint/no-unused-vars": ["warn", { 
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
         "ignoreRestSiblings": true 
       }],
-      "no-useless-escape": "off", // Allow escape characters in regex
-      "no-case-declarations": "off", // Allow declarations in case blocks
+      
+      // General rules
+      "no-console": "off",
+      "no-unused-vars": "off",
+      "no-useless-escape": "off",
+      "no-case-declarations": "off",
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
     },
   },
 
@@ -80,8 +88,11 @@ const eslintConfig = [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ["./tsconfig.json"],
-        tsconfigRootDir: __dirname,
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
       globals: {
         // Jest globals
