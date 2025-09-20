@@ -44,8 +44,30 @@ export default function LoginPage() {
     setError('')
 
     try {
-      console.log('Making login request to /api/auth/direct-login')
-      // Use direct login API that creates JWT token
+      // First test with simple login API
+      console.log('Making test login request to /api/test-login')
+      const testResponse = await fetch('/api/test-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+      })
+
+      console.log('Test login response status:', testResponse.status)
+      const testData = await testResponse.json()
+      console.log('Test login response data:', testData)
+
+      if (!testResponse.ok) {
+        setError(testData.error || 'Login failed')
+        return
+      }
+
+      // If test login works, try the full login
+      console.log('Test login successful, trying full login')
       const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
         headers: {
@@ -57,12 +79,12 @@ export default function LoginPage() {
         }),
       })
 
-      console.log('Login response status:', response.status)
+      console.log('Full login response status:', response.status)
       const data = await response.json()
-      console.log('Login response data:', data)
+      console.log('Full login response data:', data)
 
       if (response.ok) {
-        console.log('Login successful, redirecting to:', data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard')
+        console.log('Full login successful, redirecting to:', data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard')
         // Login successful, redirect based on user role
         if (data.user.role === 'admin') {
           router.push('/admin/dashboard')
@@ -70,7 +92,7 @@ export default function LoginPage() {
           router.push('/dashboard')
         }
       } else {
-        console.log('Login failed:', data)
+        console.log('Full login failed:', data)
         // Handle different error types
         if (data.type === 'ACCOUNT_LOCKED') {
           setError('Account is temporarily locked. Please try again later.')
