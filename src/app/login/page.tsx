@@ -43,8 +43,8 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Use our custom login API for better error handling
-      const response = await fetch('/api/auth/login', {
+      // Use direct login API that creates JWT token
+      const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,22 +58,11 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        // Login successful, now use NextAuth to create session
-        const result = await signIn('credentials', {
-          email,
-          password,
-          redirect: false,
-        })
-
-        if (result?.error) {
-          setError('Session creation failed. Please try again.')
+        // Login successful, redirect based on user role
+        if (data.user.role === 'admin') {
+          router.push('/admin/dashboard')
         } else {
-          // Redirect based on user role
-          if (data.user.role === 'admin') {
-            router.push('/admin/dashboard')
-          } else {
-            router.push('/dashboard')
-          }
+          router.push('/dashboard')
         }
       } else {
         // Handle different error types
@@ -102,8 +91,8 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Use our custom login API for better error handling
-      const response = await fetch('/api/auth/login', {
+      // Use direct login API that creates JWT token
+      const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,18 +106,8 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        // Login successful, now use NextAuth to create session
-        const result = await signIn('credentials', {
-          email: 'demo@example.com',
-          password: 'demo123',
-          redirect: false,
-        })
-
-        if (result?.error) {
-          setError('Demo account session creation failed')
-        } else {
-          router.push('/dashboard')
-        }
+        // Login successful, redirect to dashboard
+        router.push('/dashboard')
       } else {
         setError(data.error || 'Demo account login failed')
       }

@@ -102,6 +102,17 @@ try {
   });
 }
 
+// Ensure the instance has the required properties
+if (!nextAuthInstance || typeof nextAuthInstance !== 'object') {
+  console.error('NextAuth instance is invalid, creating fallback');
+  nextAuthInstance = {
+    handlers: { GET: () => new Response('Auth not available'), POST: () => new Response('Auth not available') },
+    auth: async () => null,
+    signIn: async () => ({ error: 'Authentication not available' }),
+    signOut: async () => ({ url: '/login' })
+  };
+}
+
 // Create a safe auth function that handles errors gracefully
 export const safeAuth = async () => {
   try {
@@ -112,9 +123,16 @@ export const safeAuth = async () => {
   }
 };
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = nextAuthInstance;
+// Safely destructure NextAuth instance with fallbacks
+const {
+  handlers = { GET: () => new Response('Auth not available'), POST: () => new Response('Auth not available') },
+  auth = async () => null,
+  signIn = async () => ({ error: 'Authentication not available' }),
+  signOut = async () => ({ url: '/login' }),
+} = nextAuthInstance || {};
+
+export { handlers, auth, signIn, signOut };
+
+// Export GET and POST for NextAuth routes
+export const GET = handlers.GET;
+export const POST = handlers.POST;

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { safeAuth } from '@/auth'
+import { headers } from 'next/headers'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 import DashboardClient from './DashboardClient'
 import { Suspense } from 'react'
 
@@ -7,11 +8,29 @@ export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   try {
-    const session = await safeAuth()
+    // Get user from JWT token
+    const headersList = await headers()
+    const request = new Request('http://localhost', { headers: headersList })
+    const user = getUserFromRequest(request)
     
-    // Check if session exists and has user property
-    if (!session || !session.user) {
+    // Check if user exists
+    if (!user || !user.id) {
+      console.log('No valid user found, redirecting to login')
       redirect('/login')
+    }
+
+    console.log('Dashboard page - valid user found:', { 
+      userId: user.id, 
+      email: user.email,
+      role: user.role 
+    })
+
+    // Convert JWT user to session-like object
+    const sessionUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
     }
 
     return (
@@ -27,7 +46,7 @@ export default async function DashboardPage() {
           </div>
         </div>
       }>
-        <DashboardClient user={session.user} />
+        <DashboardClient user={sessionUser} />
       </Suspense>
     )
   } catch (error) {
