@@ -6,6 +6,113 @@ const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Token is required')
 })
 
+// Common verification logic
+async function verifyEmailToken(token: string) {
+  // Find the verification token
+  const verificationToken = await prisma.emailVerificationToken.findUnique({
+    where: { token },
+    include: { user: true }
+  })
+
+  if (!verificationToken) {
+    console.warn('Email verification attempt with invalid token:', { token })
+    return {
+      success: false,
+      error: 'Invalid or expired verification token'
+    }
+  }
+
+  // Check if token is already used
+  if (verificationToken.used) {
+    console.warn('Email verification attempt with used token:', { 
+      token, 
+      userId: verificationToken.userId,
+      email: verificationToken.email 
+    })
+    return {
+      success: false,
+      error: 'This verification link has already been used'
+    }
+  }
+
+  // Check if token is expired
+  if (verificationToken.expiresAt < new Date()) {
+    console.warn('Email verification attempt with expired token:', { 
+      token, 
+      userId: verificationToken.userId,
+      email: verificationToken.email,
+      expiresAt: verificationToken.expiresAt
+    })
+    
+    // Clean up expired token
+    await prisma.emailVerificationToken.delete({
+      where: { id: verificationToken.id }
+    })
+    
+    return {
+      success: false,
+      error: 'Verification token has expired. Please request a new verification email.'
+    }
+  }
+
+  // Check if user is already verified
+  if (verificationToken.user.emailVerified) {
+    console.log('Email verification attempt for already verified user:', { 
+      userId: verificationToken.userId,
+      email: verificationToken.email 
+    })
+    
+    // Clean up the token since user is already verified
+    await prisma.emailVerificationToken.delete({
+      where: { id: verificationToken.id }
+    })
+    
+    return {
+      success: true,
+      message: 'Email is already verified',
+      alreadyVerified: true
+    }
+  }
+
+  // Verify the user's email
+  await prisma.$transaction(async (tx) => {
+    // Update user's email verification status
+    await tx.user.update({
+      where: { id: verificationToken.userId },
+      data: { 
+        emailVerified: new Date(),
+        updatedAt: new Date()
+      }
+    })
+
+    // Mark the token as used
+    await tx.emailVerificationToken.update({
+      where: { id: verificationToken.id },
+      data: { 
+        used: true,
+        updatedAt: new Date()
+      }
+    })
+  })
+
+  console.log('Email verification successful:', {
+    userId: verificationToken.userId,
+    email: verificationToken.email,
+    timestamp: new Date().toISOString()
+  })
+
+  return {
+    success: true,
+    message: 'Email verified successfully! You can now log in to your account.',
+    user: {
+      id: verificationToken.user.id,
+      email: verificationToken.user.email,
+      name: verificationToken.user.name,
+      emailVerified: new Date().toISOString()
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log('Email verification API called')
@@ -23,109 +130,14 @@ export async function POST(request: NextRequest) {
 
     const { token } = validation.data
 
-    // Find the verification token
-    const verificationToken = await prisma.emailVerificationToken.findUnique({
-      where: { token },
-      include: { user: true }
-    })
+    // Use common verification logic
+    const result = await verifyEmailToken(token)
 
-    if (!verificationToken) {
-      console.warn('Email verification attempt with invalid token:', { token })
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid or expired verification token'
-      }, { status: 400 })
+    if (!result.success) {
+      return NextResponse.json(result, { status: 400 })
     }
 
-    // Check if token is already used
-    if (verificationToken.used) {
-      console.warn('Email verification attempt with used token:', { 
-        token, 
-        userId: verificationToken.userId,
-        email: verificationToken.email 
-      })
-      return NextResponse.json({
-        success: false,
-        error: 'This verification link has already been used'
-      }, { status: 400 })
-    }
-
-    // Check if token is expired
-    if (verificationToken.expiresAt < new Date()) {
-      console.warn('Email verification attempt with expired token:', { 
-        token, 
-        userId: verificationToken.userId,
-        email: verificationToken.email,
-        expiresAt: verificationToken.expiresAt
-      })
-      
-      // Clean up expired token
-      await prisma.emailVerificationToken.delete({
-        where: { id: verificationToken.id }
-      })
-      
-      return NextResponse.json({
-        success: false,
-        error: 'Verification token has expired. Please request a new verification email.'
-      }, { status: 400 })
-    }
-
-    // Check if user is already verified
-    if (verificationToken.user.emailVerified) {
-      console.log('Email verification attempt for already verified user:', { 
-        userId: verificationToken.userId,
-        email: verificationToken.email 
-      })
-      
-      // Clean up the token since user is already verified
-      await prisma.emailVerificationToken.delete({
-        where: { id: verificationToken.id }
-      })
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Email is already verified',
-        alreadyVerified: true
-      })
-    }
-
-    // Verify the user's email
-    await prisma.$transaction(async (tx) => {
-      // Update user's email verification status
-      await tx.user.update({
-        where: { id: verificationToken.userId },
-        data: { 
-          emailVerified: new Date(),
-          updatedAt: new Date()
-        }
-      })
-
-      // Mark the token as used
-      await tx.emailVerificationToken.update({
-        where: { id: verificationToken.id },
-        data: { 
-          used: true,
-          updatedAt: new Date()
-        }
-      })
-    })
-
-    console.log('Email verification successful:', {
-      userId: verificationToken.userId,
-      email: verificationToken.email,
-      timestamp: new Date().toISOString()
-    })
-
-    return NextResponse.json({
-      success: true,
-      message: 'Email verified successfully! You can now log in to your account.',
-      user: {
-        id: verificationToken.user.id,
-        email: verificationToken.user.email,
-        name: verificationToken.user.name,
-        emailVerified: new Date().toISOString()
-      }
-    })
+    return NextResponse.json(result)
 
   } catch (error) {
     console.error('Email verification API error:', error)
@@ -143,22 +155,18 @@ export async function GET(request: NextRequest) {
     const token = searchParams.get('token')
 
     if (!token) {
-      return NextResponse.json({
-        success: false,
-        error: 'Verification token is required'
-      }, { status: 400 })
+      return NextResponse.redirect(new URL('/login?error=Verification token is required', request.url))
     }
 
-    // Use the same logic as POST but return a redirect response for GET
-    const response = await POST(request.clone())
-    const data = await response.json()
+    // Use common verification logic
+    const result = await verifyEmailToken(token)
 
-    if (data.success) {
+    if (result.success) {
       // Redirect to login page with success message
       return NextResponse.redirect(new URL('/login?verified=true', request.url))
     } else {
       // Redirect to login page with error message
-      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(data.error)}`, request.url))
+      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(result.error)}`, request.url))
     }
 
   } catch (error) {
