@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,43 +23,41 @@ export default function AdminLoginClient() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      // Use direct login API for admin authentication
+      const response = await fetch('/api/auth/direct-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       })
 
-      if (result?.error) {
-        // Provide more specific error messages based on the error type
-        if (result.error === 'CredentialsSignin') {
-          setError('Invalid email or password. Please check your credentials and try again.')
-        } else if (result.error === 'CallbackRouteError') {
-          setError('Authentication failed. Please try again.')
-        } else if (result.error === 'EmailNotVerified') {
-          setError('Email not verified. Please check your inbox for a verification link or contact your administrator.')
-        } else if (result.error === 'AccountLocked') {
-          setError('Account temporarily locked due to multiple failed attempts. Please try again later.')
-        } else if (result.error === 'RateLimitExceeded') {
-          setError('Too many login attempts. Please wait a few minutes before trying again.')
-        } else if (result.error === 'EMAIL_NOT_VERIFIED') {
-          setError('Email not verified. Please check your inbox for a verification link or contact your administrator.')
-        } else {
-          setError(`Login failed: ${result.error}`)
-        }
-      } else if (result?.ok) {
-        // Check if user has admin role by making a quick API call
-        const response = await fetch('/api/auth/verify-token')
-        const data = await response.json()
-        
-        if (data?.user?.role === 'admin' || data?.user?.role === 'ADMIN' || data?.user?.role === 'SUPER_ADMIN') {
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Check if user has admin role
+        if (data.user.role === 'admin' || data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
+          // Redirect to admin dashboard
           router.push('/admin/dashboard')
         } else {
           setError('Access denied. Admin privileges required. Please contact your administrator if you believe this is an error.')
-          // Sign out the user since they don't have admin privileges
-          await signIn('credentials', { redirect: false, callbackUrl: '/login' })
         }
       } else {
-        setError('An unexpected error occurred. Please try again.')
+        // Handle specific error types
+        if (data.type === 'EMAIL_NOT_VERIFIED') {
+          setError('Email not verified. Please check your inbox for a verification link or contact your administrator.')
+        } else if (data.type === 'ACCOUNT_LOCKED') {
+          setError('Account temporarily locked due to multiple failed attempts. Please try again later.')
+        } else if (data.type === 'RATE_LIMIT_EXCEEDED') {
+          setError('Too many login attempts. Please wait a few minutes before trying again.')
+        } else if (data.type === 'INVALID_CREDENTIALS') {
+          setError('Invalid email or password. Please check your credentials and try again.')
+        } else {
+          setError(data.error || 'Login failed. Please try again.')
+        }
       }
     } catch (error) {
       setError('An error occurred. Please try again.')

@@ -1,10 +1,24 @@
 // src/middleware.ts
-import { auth } from '@/auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyJWT } from '@/lib/jwt-auth';
 
-export default auth((req) => {
+export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isLoggedIn = !!req.auth;
+  
+  // Get the auth token from cookies
+  const token = req.cookies.get('auth-token')?.value;
+  let user = null;
+  
+  if (token) {
+    try {
+      user = verifyJWT(token);
+    } catch (error) {
+      // Invalid token, treat as not authenticated
+      user = null;
+    }
+  }
+
+  const isLoggedIn = !!user;
 
   // Allow access to admin login page without authentication
   if (pathname === '/admin/login') {
@@ -17,9 +31,11 @@ export default auth((req) => {
   }
 
   // Protect admin routes (except login)
-  if (pathname.startsWith('/admin') && (!isLoggedIn || (req.auth?.user.role !== 'admin' && req.auth?.user.role !== 'ADMIN' && req.auth?.user.role !== 'SUPER_ADMIN'))) {
-    const loginUrl = new URL('/admin/login', req.url);
-    return NextResponse.redirect(loginUrl);
+  if (pathname.startsWith('/admin')) {
+    if (!isLoggedIn || (user?.role !== 'admin' && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN')) {
+      const loginUrl = new URL('/admin/login', req.url);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   // Protect dashboard routes
@@ -29,7 +45,7 @@ export default auth((req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ['/admin/:path*', '/dashboard/:path*'],

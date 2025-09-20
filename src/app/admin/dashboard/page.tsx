@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { cookies } from 'next/headers'
+import { verifyJWT } from '@/lib/jwt-auth'
 import { prisma } from '@/lib/prisma'
 import AdminDashboardClient from './AdminDashboardClient'
 
@@ -75,10 +76,22 @@ async function getAdminData() {
 }
 
 export default async function AdminDashboardPage() {
-  const session = await auth()
+  const cookieStore = await cookies()
+  const token = cookieStore.get('auth-token')?.value
+  
+  if (!token) {
+    redirect('/admin/login')
+  }
+
+  let user = null
+  try {
+    user = verifyJWT(token)
+  } catch (error) {
+    redirect('/admin/login')
+  }
 
   // Redirect if not authenticated or not admin
-  if (!session?.user || (session.user.role !== 'admin' && session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
     redirect('/admin/login')
   }
 
