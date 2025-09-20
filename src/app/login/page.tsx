@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Button, 
   Card, 
@@ -31,11 +31,29 @@ import {
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [verificationMessage, setVerificationMessage] = useState('')
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
+
+  // Handle URL parameters for verification status
+  useEffect(() => {
+    const verified = searchParams.get('verified')
+    const verificationError = searchParams.get('error')
+    const requestVerification = searchParams.get('requestVerification')
+
+    if (verified === 'true') {
+      setVerificationMessage('Email verified successfully! You can now log in.')
+    } else if (verificationError) {
+      setError(decodeURIComponent(verificationError))
+    } else if (requestVerification === 'true') {
+      setVerificationMessage('Please check your email for a verification link.')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -153,6 +171,39 @@ export default function LoginPage() {
     }
   }
 
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError('Please enter your email address first')
+      return
+    }
+
+    setIsResendingVerification(true)
+    setError('')
+    setVerificationMessage('')
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setVerificationMessage('Verification email sent! Please check your inbox and spam folder.')
+      } else {
+        setError(data.error || 'Failed to resend verification email')
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.')
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -188,6 +239,14 @@ export default function LoginPage() {
                 <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
                   <AlertCircle className="h-4 w-4 text-red-400" />
                   <AlertDescription className="text-red-200">{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Verification Message */}
+              {verificationMessage && (
+                <Alert className="bg-green-500/10 border-green-500/30">
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                  <AlertDescription className="text-green-200">{verificationMessage}</AlertDescription>
                 </Alert>
               )}
 
@@ -271,6 +330,18 @@ export default function LoginPage() {
                 >
                   Reset it here
                 </a>
+              </div>
+
+              <div className="text-center text-sm text-white/70">
+                Need to verify your email?{' '}
+                <button 
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isResendingVerification}
+                  className="text-orange-400 hover:text-orange-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isResendingVerification ? 'Sending...' : 'Resend verification'}
+                </button>
               </div>
             </div>
           </CardContent>

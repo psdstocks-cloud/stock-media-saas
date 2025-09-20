@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { checkRegistrationRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 import { sendWelcomeEmail } from '@/lib/email'
+import { sendVerificationEmail } from '@/lib/verification-tokens'
 
 export async function POST(request: NextRequest) {
   try {
@@ -232,9 +233,29 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
 
-    // Send welcome email
+    // Send welcome email and verification email
     try {
       await sendWelcomeEmail({ email: user.email, name: user.name })
+      
+      // Send email verification
+      const verificationSent = await sendVerificationEmail(
+        user.id,
+        user.email,
+        user.name || undefined
+      )
+      
+      if (verificationSent) {
+        console.log('Email verification sent successfully:', {
+          userId: user.id,
+          email: user.email,
+          timestamp: new Date().toISOString()
+        })
+      } else {
+        console.warn('Failed to send email verification:', {
+          userId: user.id,
+          email: user.email
+        })
+      }
     } catch (emailError) {
       console.error('Failed to send welcome email:', emailError)
       // Don't fail registration if email fails
