@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { userRegistrationSchema } from '@/lib/validation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,91 +17,40 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  Loader2
+  Loader2,
+  CheckCircle
 } from 'lucide-react'
+import type { z } from 'zod'
 
-interface FormData {
-  name: string
-  email: string
-  password: string
-  confirmPassword: string
-}
-
-interface FormErrors {
-  name?: string
-  email?: string
-  password?: string
-  confirmPassword?: string
-  general?: string
-}
+type FormData = z.infer<typeof userRegistrationSchema>
 
 export default function RegisterForm() {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  })
-  const [errors, setErrors] = useState<FormErrors>({})
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [generalError, setGeneralError] = useState('')
   const router = useRouter()
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters'
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isDirty },
+    watch,
+    setError
+  } = useForm<FormData>({
+    resolver: zodResolver(userRegistrationSchema),
+    mode: 'onChange', // Enable real-time validation
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
     }
+  })
 
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-    }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) {
-      return
-    }
-
+  const onSubmit = async (data: FormData) => {
     setIsLoading(true)
-    setErrors({})
+    setGeneralError('')
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -107,30 +59,36 @@ export default function RegisterForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
+          name: data.name.trim(),
+          email: data.email.trim().toLowerCase(),
+          password: data.password,
         }),
       })
 
-      const data = await response.json()
+      const responseData = await response.json()
 
       if (response.ok) {
         // Redirect to login page with success message
         router.push('/login?message=Registration successful! Please sign in.')
       } else {
-        if (data.field) {
-          setErrors({ [data.field]: data.message })
+        if (responseData.field) {
+          setError(responseData.field as keyof FormData, {
+            type: 'manual',
+            message: responseData.message
+          })
         } else {
-          setErrors({ general: data.message || 'Registration failed. Please try again.' })
+          setGeneralError(responseData.message || 'Registration failed. Please try again.')
         }
       }
     } catch (error) {
-      setErrors({ general: 'An error occurred. Please try again.' })
+      setGeneralError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
+
+  // Watch password for real-time confirm password validation
+  const password = watch('password')
 
   return (
     <Card className="w-full bg-transparent border-0 shadow-none">
@@ -145,29 +103,38 @@ export default function RegisterForm() {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* General Error */}
-          {errors.general && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{errors.general}</AlertDescription>
+          {generalError && (
+            <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-200">{generalError}</AlertDescription>
             </Alert>
           )}
 
           {/* Name Field */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-white/90 font-medium">Name</Label>
-            <Input
-              id="name"
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Enter your full name"
-              disabled={isLoading}
-              className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-red-500' : ''}`}
-            />
+            <div className="relative">
+              <Input
+                id="name"
+                type="text"
+                {...register('name')}
+                placeholder="Enter your full name"
+                disabled={isLoading}
+                className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 ${errors.name ? 'border-red-500' : ''}`}
+              />
+              {errors.name && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                </div>
+              )}
+            </div>
             {errors.name && (
-              <p className="text-sm text-red-400">{errors.name}</p>
+              <p className="text-sm text-red-400 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.name.message}
+              </p>
             )}
           </div>
 
@@ -179,15 +146,22 @@ export default function RegisterForm() {
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                {...register('email')}
                 placeholder="Enter your email address"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 ${errors.email ? 'border-red-500' : ''}`}
                 disabled={isLoading}
               />
+              {errors.email && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                </div>
+              )}
             </div>
             {errors.email && (
-              <p className="text-sm text-red-400">{errors.email}</p>
+              <p className="text-sm text-red-400 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -199,8 +173,7 @@ export default function RegisterForm() {
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
+                {...register('password')}
                 placeholder="Create a strong password"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
                 disabled={isLoading}
@@ -214,7 +187,17 @@ export default function RegisterForm() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-400">{errors.password}</p>
+              <p className="text-sm text-red-400 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.password.message}
+              </p>
+            )}
+            {/* Password strength indicator */}
+            {password && !errors.password && (
+              <div className="flex items-center gap-1 text-xs text-green-400">
+                <CheckCircle className="h-3 w-3" />
+                <span>Password meets requirements</span>
+              </div>
             )}
           </div>
 
@@ -226,8 +209,7 @@ export default function RegisterForm() {
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                {...register('confirmPassword')}
                 placeholder="Confirm your password"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 disabled={isLoading}
@@ -241,15 +223,18 @@ export default function RegisterForm() {
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-red-400">{errors.confirmPassword}</p>
+              <p className="text-sm text-red-400 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !isValid || !isDirty}
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
