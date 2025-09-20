@@ -1,19 +1,19 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+// import { dirname } from "path";
+// import { fileURLToPath } from "url";
+// import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+// const compat = new FlatCompat({
+//   baseDirectory: __dirname,
+//   recommendedConfig: js.configs.recommended,
+// });
 
 const eslintConfig = [
   js.configs.recommended,
@@ -39,12 +39,49 @@ const eslintConfig = [
         clearTimeout: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",
+        global: "readonly",
+        require: "readonly",
+        
         // Browser globals
         window: "readonly",
         document: "readonly",
         navigator: "readonly",
         localStorage: "readonly",
+        sessionStorage: "readonly",
         fetch: "readonly",
+        
+        // DOM globals
+        HTMLElement: "readonly",
+        HTMLDivElement: "readonly",
+        HTMLInputElement: "readonly",
+        HTMLButtonElement: "readonly",
+        HTMLTextAreaElement: "readonly",
+        HTMLParagraphElement: "readonly",
+        HTMLHeadingElement: "readonly",
+        
+        // Web APIs
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        FormData: "readonly",
+        Request: "readonly",
+        Response: "readonly",
+        Headers: "readonly",
+        AbortController: "readonly",
+        ReadableStream: "readonly",
+        
+        // Events
+        Event: "readonly",
+        CustomEvent: "readonly",
+        KeyboardEvent: "readonly",
+        MouseEvent: "readonly",
+        
+        // Audio/Media
+        AudioContext: "readonly",
+        OscillatorType: "readonly",
+        
+        // Notifications
+        Notification: "readonly",
+        
         // React globals
         React: "readonly",
       },
@@ -74,6 +111,7 @@ const eslintConfig = [
       "no-unused-vars": "off",
       "no-useless-escape": "off",
       "no-case-declarations": "off",
+      "no-undef": "off", // Let TypeScript handle undefined variables
     },
     settings: {
       react: {
@@ -105,6 +143,7 @@ const eslintConfig = [
         afterAll: "readonly",
         beforeEach: "readonly",
         afterEach: "readonly",
+        
         // Node.js globals
         process: "readonly",
         Buffer: "readonly",
@@ -113,15 +152,48 @@ const eslintConfig = [
         clearTimeout: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",
+        global: "readonly",
+        require: "readonly",
+        
         // Browser globals
         window: "readonly",
         document: "readonly",
         navigator: "readonly",
         localStorage: "readonly",
+        sessionStorage: "readonly",
         fetch: "readonly",
-        // Other globals
-        global: "readonly",
-        require: "readonly",
+        
+        // DOM globals
+        HTMLElement: "readonly",
+        HTMLDivElement: "readonly",
+        HTMLInputElement: "readonly",
+        HTMLButtonElement: "readonly",
+        HTMLTextAreaElement: "readonly",
+        HTMLParagraphElement: "readonly",
+        HTMLHeadingElement: "readonly",
+        
+        // Web APIs
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        FormData: "readonly",
+        Request: "readonly",
+        Response: "readonly",
+        Headers: "readonly",
+        AbortController: "readonly",
+        ReadableStream: "readonly",
+        
+        // Events
+        Event: "readonly",
+        CustomEvent: "readonly",
+        KeyboardEvent: "readonly",
+        MouseEvent: "readonly",
+        
+        // Audio/Media
+        AudioContext: "readonly",
+        OscillatorType: "readonly",
+        
+        // Notifications
+        Notification: "readonly",
       },
     },
     plugins: {
@@ -130,6 +202,7 @@ const eslintConfig = [
     rules: {
       "no-console": "off",
       "no-unused-vars": "off",
+      "no-undef": "off",
       "@typescript-eslint/no-unused-vars": ["warn", { 
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",

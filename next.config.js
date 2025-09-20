@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    // Temporarily disable ESLint during builds to avoid the deprecated options error in Next.js 15.5.3
+    // Disable ESLint during builds due to Next.js 15.5.3 compatibility issues
+    // Use separate lint script for CI/CD: npm run lint
     ignoreDuringBuilds: true,
   },
   typescript: {
