@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { verifyJWT } from '@/lib/jwt-auth'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
+    // Get admin token from cookies
+    const adminToken = request.cookies.get('admin-token')?.value;
+    if (!adminToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Verify JWT token
+    const user = verifyJWT(adminToken);
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url)
@@ -100,10 +106,16 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth()
+    // Get admin token from cookies
+    const adminToken = request.cookies.get('admin-token')?.value;
+    if (!adminToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Verify JWT token
+    const user = verifyJWT(adminToken);
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { userId, role, isActive } = await request.json()
