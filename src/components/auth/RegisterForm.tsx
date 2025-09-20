@@ -21,6 +21,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import PasswordStrengthIndicator from './PasswordStrengthIndicator'
+import WeakPasswordModal from '../modals/WeakPasswordModal'
 import type { z } from 'zod'
 
 type FormData = z.infer<typeof userRegistrationSchema>
@@ -30,6 +31,8 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [generalError, setGeneralError] = useState('')
+  const [isWeakPasswordModalOpen, setIsWeakPasswordModalOpen] = useState(false)
+  const [pendingFormData, setPendingFormData] = useState<FormData | null>(null)
   const router = useRouter()
 
   const {
@@ -49,7 +52,48 @@ export default function RegisterForm() {
     }
   })
 
-  const onSubmit = async (data: FormData) => {
+  // Function to check if password is weak (meets minimum but below threshold)
+  const isPasswordWeak = (password: string): boolean => {
+    if (!password) return false
+    
+    const requirements = [
+      password.length >= 8,           // Length
+      /[A-Z]/.test(password),         // Uppercase
+      /[a-z]/.test(password),         // Lowercase
+      /\d/.test(password),            // Number
+      /[^A-Za-z0-9]/.test(password)   // Special character
+    ]
+    
+    const metCount = requirements.filter(Boolean).length
+    const totalCount = requirements.length
+    const strengthPercentage = (metCount / totalCount) * 100
+    
+    // Consider password weak if it meets minimum requirements (all 5) but has low complexity
+    // This catches passwords like "Password123" or "Abc123!@" that meet requirements but are predictable
+    if (metCount === totalCount) {
+      // Check for common weak patterns even when all requirements are met
+      const weakPatterns = [
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,  // All requirements met
+      ]
+      
+      // If password is exactly minimum length and follows common patterns, consider it weak
+      if (password.length <= 12 && 
+          (/Password/i.test(password) || /123/i.test(password) || /abc/i.test(password))) {
+        return true
+      }
+      
+      // If password is very short (8-10 chars) even with all requirements, consider weak
+      if (password.length <= 10) {
+        return true
+      }
+    }
+    
+    // If strength is below 80%, consider it weak
+    return strengthPercentage < 80
+  }
+
+  // Function to actually submit the form (called from modal or direct submission)
+  const submitRegistration = async (data: FormData) => {
     setIsLoading(true)
     setGeneralError('')
 
@@ -86,6 +130,32 @@ export default function RegisterForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const onSubmit = async (data: FormData) => {
+    // Check if password is weak before submitting
+    if (isPasswordWeak(data.password)) {
+      setPendingFormData(data)
+      setIsWeakPasswordModalOpen(true)
+      return
+    }
+
+    // If password is strong enough, submit directly
+    await submitRegistration(data)
+  }
+
+  // Handle proceeding with weak password from modal
+  const handleWeakPasswordProceed = async () => {
+    if (pendingFormData) {
+      await submitRegistration(pendingFormData)
+      setPendingFormData(null)
+    }
+  }
+
+  // Handle canceling weak password modal
+  const handleWeakPasswordCancel = () => {
+    setIsWeakPasswordModalOpen(false)
+    setPendingFormData(null)
   }
 
   // Watch password for real-time confirm password validation
@@ -270,6 +340,14 @@ export default function RegisterForm() {
           </a>
         </div>
       </CardFooter>
+
+      {/* Weak Password Confirmation Modal */}
+      <WeakPasswordModal
+        isOpen={isWeakPasswordModalOpen}
+        onClose={handleWeakPasswordCancel}
+        onProceed={handleWeakPasswordProceed}
+        password={pendingFormData?.password || ''}
+      />
     </Card>
   )
 }
