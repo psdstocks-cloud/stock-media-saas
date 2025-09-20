@@ -110,6 +110,21 @@ export async function POST(request: NextRequest) {
       }, { status: 401 })
     }
 
+    // Check if email is verified
+    if (!user.emailVerified) {
+      console.warn('Direct login attempt with unverified email:', {
+        userId: user.id,
+        email: user.email,
+        clientIP,
+        timestamp: new Date().toISOString()
+      })
+      
+      return NextResponse.json({
+        error: 'Please verify your email address before logging in. Check your inbox for a verification link.',
+        type: 'EMAIL_NOT_VERIFIED'
+      }, { status: 403 })
+    }
+
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password)
 

@@ -36,6 +36,14 @@ export default function AdminLoginClient() {
           setError('Invalid email or password. Please check your credentials and try again.')
         } else if (result.error === 'CallbackRouteError') {
           setError('Authentication failed. Please try again.')
+        } else if (result.error === 'EmailNotVerified') {
+          setError('Email not verified. Please check your inbox for a verification link or contact your administrator.')
+        } else if (result.error === 'AccountLocked') {
+          setError('Account temporarily locked due to multiple failed attempts. Please try again later.')
+        } else if (result.error === 'RateLimitExceeded') {
+          setError('Too many login attempts. Please wait a few minutes before trying again.')
+        } else if (result.error === 'EMAIL_NOT_VERIFIED') {
+          setError('Email not verified. Please check your inbox for a verification link or contact your administrator.')
         } else {
           setError(`Login failed: ${result.error}`)
         }
