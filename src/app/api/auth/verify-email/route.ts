@@ -167,7 +167,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/login?verified=true', request.url))
     } else {
       // Redirect to login page with error message
-      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(result.error)}`, request.url))
+      const errorMessage = result.error || 'Verification failed'
+      return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorMessage)}`, request.url))
     }
 
   } catch (error) {

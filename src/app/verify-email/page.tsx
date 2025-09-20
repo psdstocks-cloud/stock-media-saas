@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Button, Alert, AlertDescription } from '@/components/ui'
 import { CheckCircle, XCircle, Loader2, Mail, AlertCircle } from 'lucide-react'
@@ -11,7 +11,7 @@ interface VerificationState {
   details?: string
 }
 
-export default function VerifyEmailPage() {
+function VerifyEmailForm() {
   const [verificationState, setVerificationState] = useState<VerificationState>({
     status: 'idle',
     message: ''
@@ -223,5 +223,20 @@ export default function VerifyEmailPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <Typography variant="body" className="text-white/70">Loading...</Typography>
+        </div>
+      </div>
+    }>
+      <VerifyEmailForm />
+    </Suspense>
   )
 }
