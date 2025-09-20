@@ -1,26 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { checkRegistrationRateLimit } from '@/lib/rate-limit'
+import { checkRegistrationRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
     console.log('Registration API called')
-    const { name, email, password, planId } = await request.json()
+    const { name, email, password, planId, website } = await request.json()
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
     console.log('Registration attempt:', { name, email, planId })
 
-    // Apply rate limiting
-    const rateLimitResult = await checkRegistrationRateLimit(clientIP)
+    // Honeypot validation - if website field is filled, it's likely a bot
+    if (website && website.trim() !== '') {
+      console.log('Bot detected via honeypot field:', { 
+        clientIP, 
+        honeypotValue: website,
+        timestamp: new Date().toISOString()
+      })
+      
+      // Return a successful response to avoid alerting the bot
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Registration successful' 
+      }, { status: 200 })
+    }
+
+    // Apply rate limiting with proper client identification
+    const clientIdentifier = getClientIdentifier(request)
+    const rateLimitResult = await checkRegistrationRateLimit(clientIdentifier)
     if (!rateLimitResult.success) {
+      console.warn('Rate limit exceeded for registration:', {
+        clientIdentifier,
+        clientIP,
+        remaining: rateLimitResult.remaining,
+        resetTime: new Date(rateLimitResult.reset).toISOString(),
+        timestamp: new Date().toISOString()
+      })
+      
       return NextResponse.json({
         error: 'Too many registration attempts. Please try again later.',
         type: 'RATE_LIMIT_EXCEEDED',
         remaining: rateLimitResult.remaining,
         resetTime: new Date(rateLimitResult.reset).toISOString()
-      }, { status: 429 })
+      }, { 
+        status: 429,
+        headers: rateLimitResult.headers
+      })
     }
 
     // Validate required fields
@@ -172,6 +199,16 @@ export async function POST(request: NextRequest) {
 
     const result = { user, subscription, plan }
 
+    // Log successful registration for security monitoring
+    console.log('Successful registration:', {
+      userId: user.id,
+      email: user.email,
+      planId: plan.name,
+      clientIP,
+      clientIdentifier,
+      timestamp: new Date().toISOString()
+    })
+
     // Send welcome email
     try {
       await sendWelcomeEmail({ email: user.email, name: user.name })
@@ -187,6 +224,8 @@ export async function POST(request: NextRequest) {
         name: result.user.name, 
         email: result.user.email 
       } 
+    }, {
+      headers: rateLimitResult.headers
     })
   } catch (error) {
     console.error('Registration error:', error)

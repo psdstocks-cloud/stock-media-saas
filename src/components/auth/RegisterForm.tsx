@@ -98,6 +98,9 @@ export default function RegisterForm() {
     setGeneralError('')
 
     try {
+      // Get the honeypot field value
+      const honeypotValue = (document.getElementById('website') as HTMLInputElement)?.value || ''
+      
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -107,6 +110,8 @@ export default function RegisterForm() {
           name: data.name.trim(),
           email: data.email.trim().toLowerCase(),
           password: data.password,
+          website: honeypotValue, // Include honeypot field
+          planId: 'starter', // Default plan for now
         }),
       })
 
@@ -298,6 +303,20 @@ export default function RegisterForm() {
                 {errors.confirmPassword.message}
               </p>
             )}
+          </div>
+
+          {/* Honeypot Field - Hidden from users but visible to bots */}
+          <div className="absolute left-[-9999px] opacity-0 pointer-events-none">
+            <Label htmlFor="website" className="sr-only">Website</Label>
+            <Input
+              id="website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              placeholder="Leave this field empty"
+              className="bg-transparent border-0 text-transparent"
+            />
           </div>
 
           {/* Submit Button */}
