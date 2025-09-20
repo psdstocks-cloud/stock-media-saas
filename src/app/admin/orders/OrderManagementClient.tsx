@@ -33,6 +33,7 @@ interface Order {
   assetTitle: string | null
   createdAt: string
   updatedAt: string
+  notes?: string
 }
 
 export default function OrderManagementClient() {
@@ -101,7 +102,7 @@ export default function OrderManagementClient() {
       header: 'Order ID',
       cell: ({ row }) => (
         <Typography variant="body" className="font-mono text-sm">
-          {row.getValue('id').toString().slice(0, 8)}...
+          {(row.getValue('id') as string).slice(0, 8)}...
         </Typography>
       ),
     },

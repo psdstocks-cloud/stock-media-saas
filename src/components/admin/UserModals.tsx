@@ -25,7 +25,9 @@ import {
   DollarSign, 
   AlertTriangle,
   CheckCircle,
-  X
+  X,
+  Edit,
+  Eye
 } from 'lucide-react'
 
 interface UserData {

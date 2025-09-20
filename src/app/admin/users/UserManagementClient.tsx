@@ -32,6 +32,7 @@ interface UserData {
   currentPoints: number
   totalUsed: number
   role: string
+  emailVerified: boolean
   createdAt: string
   lastLoginAt: string | null
 }
