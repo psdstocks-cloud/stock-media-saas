@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,65 +7,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Note: SQLite doesn't support enums, using String types instead
-
-// User model for authentication and profile
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  image         String?
-  password      String?   // Add password field
-  role          String    @default("USER")
-  emailVerified DateTime? // Email verification timestamp
-  loginAttempts Int       @default(0)
-  lockedUntil   DateTime?
-  lastLoginAt   DateTime?
-  onboardingCompleted Boolean @default(false)
+  id                    String               @id @default(cuid())
+  email                 String               @unique
+  name                  String?
+  image                 String?
+  password              String?
+  role                  String               @default("USER")
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  lastLoginAt           DateTime?
+  lockedUntil           DateTime?
+  loginAttempts         Int                  @default(0)
+  emailVerified         DateTime?
+  onboardingCompleted   Boolean              @default(false)
   onboardingCompletedAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // OAuth fields
-  accounts  Account[]
-  sessions  Session[]
-
-  // Relations
-  subscriptions Subscription[]
-  orders        Order[]
-  pointsHistory PointsHistory[]
-  apiKeys       ApiKey[]
-  pointsBalance PointsBalance?
-  passwordResetTokens PasswordResetToken[]
-  reviews       Review[]
-  supportTickets SupportTicket[]
-  chatParticipants ChatParticipant[]
-  messages      Message[]
-  messageStatuses MessageStatus[]
-  adminAuditLogs AdminAuditLog[]
-  rolloverRecords RolloverRecord[]
-  ownedTeams       Team[]             @relation("OwnedTeams")
-  teamMemberships  TeamMembership[]   @relation("TeamMemberships")
+  accounts              Account[]
+  adminAuditLogs        AdminAuditLog[]
+  apiKeys               ApiKey[]
+  chatParticipants      ChatParticipant[]
+  messageStatuses       MessageStatus[]
+  messages              Message[]
+  orders                Order[]
+  passwordResetTokens   PasswordResetToken[]
+  pointsBalance         PointsBalance?
+  pointsHistory         PointsHistory[]
+  reviews               Review[]
+  rolloverRecords       RolloverRecord[]
+  sessions              Session[]
+  subscriptions         Subscription[]
+  supportTickets        SupportTicket[]
+  teamMemberships       TeamMembership[]     @relation("TeamMemberships")
+  ownedTeams            Team[]               @relation("OwnedTeams")
 
   @@map("users")
 }
 
-// NextAuth.js OAuth models
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -84,227 +72,197 @@ model Session {
   @@map("sessions")
 }
 
-
-// Subscription plans
 model SubscriptionPlan {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  description String?
-  price       Float   // Monthly price in USD
-  points      Int     // Points included per month
-  rolloverLimit Int   // Maximum points that can rollover (percentage of monthly points)
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
+  id            String         @id @default(cuid())
+  name          String         @unique
+  description   String?
+  price         Float
+  points        Int
+  rolloverLimit Int
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   subscriptions Subscription[]
 
   @@map("subscription_plans")
 }
 
-// User subscriptions
 model Subscription {
-  id                String             @id @default(cuid())
-  userId            String
-  planId            String
-  stripeCustomerId  String?            @unique
-  stripeSubscriptionId String?         @unique
-  status            String @default("ACTIVE")
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  cancelAtPeriodEnd Boolean            @default(false)
-  canceledAt        DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  // Relations
-  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+  id                   String           @id @default(cuid())
+  userId               String
+  planId               String
+  stripeCustomerId     String?          @unique
+  stripeSubscriptionId String?          @unique
+  status               String           @default("ACTIVE")
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean          @default(false)
+  canceledAt           DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  plan                 SubscriptionPlan @relation(fields: [planId], references: [id])
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }
 
-// Points management
 model PointsBalance {
-  id              String   @id @default(cuid())
-  userId          String?  @unique
-  teamId          String?  @unique
-  currentPoints   Int      @default(0)
-  totalPurchased  Int      @default(0) // Total points ever purchased
-  totalUsed       Int      @default(0) // Total points ever used
-  lastRollover    DateTime? // Last time points were rolled over
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relations
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team Team? @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  id             String    @id @default(cuid())
+  userId         String?   @unique
+  currentPoints  Int       @default(0)
+  totalPurchased Int       @default(0)
+  totalUsed      Int       @default(0)
+  lastRollover   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  teamId         String?   @unique
+  team           Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("points_balances")
 }
 
-// Points transaction history
 model PointsHistory {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
   type        String
-  amount      Int           // Positive for additions, negative for deductions
+  amount      Int
   description String?
-  orderId     String?       // Reference to order if applicable
-  createdAt   DateTime      @default(now())
-
-  // Relations
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order Order? @relation(fields: [orderId], references: [id])
+  orderId     String?
+  createdAt   DateTime @default(now())
+  order       Order?   @relation(fields: [orderId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("points_history")
 }
 
-// Stock sites configuration
 model StockSite {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
   displayName String
-  cost        Float   // Cost in points
-  isActive    Boolean @default(true)
-  category    String? // e.g., "photos", "videos", "music"
-  icon        String? // Icon filename for the site
+  cost        Float
+  isActive    Boolean  @default(true)
+  category    String?
+  icon        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
-  orders Order[]
+  orders      Order[]
 
   @@map("stock_sites")
 }
 
-// Orders for stock media downloads
 model Order {
-  id              String      @id @default(cuid())
-  userId          String
-  stockSiteId     String
-  stockItemId     String      // ID from the stock site
-  stockItemUrl    String?     // Original URL if provided
-  imageUrl        String?     // Preview image URL from API
-  title           String?
-  cost            Float       // Points cost
-  status          String @default("PENDING")
-  taskId          String?     // Task ID from nehtw.com API
-  downloadUrl     String?     // Final download URL
-  fileName        String?
-  fileSize        Int?        // File size in bytes
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  // Relations
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stockSite StockSite  @relation(fields: [stockSiteId], references: [id])
+  id            String          @id @default(cuid())
+  userId        String
+  stockSiteId   String
+  stockItemId   String
+  stockItemUrl  String?
+  imageUrl      String?
+  title         String?
+  cost          Float
+  status        String          @default("PENDING")
+  taskId        String?
+  downloadUrl   String?
+  fileName      String?
+  fileSize      Int?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  stockSite     StockSite       @relation(fields: [stockSiteId], references: [id])
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   pointsHistory PointsHistory[]
 
   @@map("orders")
 }
 
-// API keys for nehtw.com integration
 model ApiKey {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  key       String   @unique
-  isActive  Boolean  @default(true)
+  key       String    @unique
+  isActive  Boolean   @default(true)
   lastUsed  DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
 }
 
-// System settings
 model SystemSetting {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String
-  type  String @default("string")
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
 }
 
-// Enhanced admin settings with categories
 model AdminSetting {
   id          String   @id @default(cuid())
-  category    String   // general, security, payment, email, etc.
+  category    String
   key         String   @unique
   value       String
-  type        String   @default("string") // string, number, boolean, json, password
+  type        String   @default("string")
   description String?
   isEncrypted Boolean  @default(false)
   isRequired  Boolean  @default(false)
-  validation  String?  // JSON validation rules
-  options     String?  // JSON options for select/radio inputs
+  validation  String?
+  options     String?
   order       Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@map("admin_settings")
   @@index([category])
+  @@map("admin_settings")
 }
 
-// Admin audit logs for tracking all changes
 model AdminAuditLog {
   id           String   @id @default(cuid())
   adminId      String
-  action       String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
-  resourceType String?  // setting, user, order, etc.
+  action       String
+  resourceType String?
   resourceId   String?
-  oldValues    String?  // JSON
-  newValues    String?  // JSON
+  oldValues    String?
+  newValues    String?
   ipAddress    String?
   userAgent    String?
   createdAt    DateTime @default(now())
+  admin        User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
-  // Relations
-  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
-
-  @@map("admin_audit_logs")
   @@index([adminId])
   @@index([createdAt])
+  @@map("admin_audit_logs")
 }
 
-// Feature flags for gradual rollouts
 model FeatureFlag {
   id                String   @id @default(cuid())
   name              String   @unique
   description       String?
   isEnabled         Boolean  @default(false)
-  rolloutPercentage Int      @default(0) // 0-100
-  targetUsers       String?  // JSON array of user IDs or conditions
-  conditions        String?  // JSON conditions for enabling
+  rolloutPercentage Int      @default(0)
+  targetUsers       String?
+  conditions        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@map("feature_flags")
 }
 
-// System health monitoring
 model SystemHealth {
   id          String   @id @default(cuid())
-  service     String   @unique // database, api, payment, email, etc.
-  status      String   // healthy, warning, critical, down
+  service     String   @unique
+  status      String
   message     String?
-  metrics     String?  // JSON metrics data
+  metrics     String?
   lastChecked DateTime @default(now())
   createdAt   DateTime @default(now())
 
-  @@map("system_health")
   @@index([lastChecked])
+  @@map("system_health")
 }
 
-// Password reset tokens for secure password recovery
 model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
@@ -314,27 +272,22 @@ model PasswordResetToken {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
 }
 
-// Email resend timers for rate limiting
 model EmailResendTimer {
-  id        String   @id @default(cuid())
-  email     String
-  lastSentAt DateTime
+  id            String   @id @default(cuid())
+  email         String   @unique
+  lastSentAt    DateTime
   nextAllowedAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([email])
   @@map("email_resend_timers")
 }
 
-// Customer reviews for social proof
 model Review {
   id           String   @id @default(cuid())
   userId       String
@@ -351,150 +304,133 @@ model Review {
   helpfulCount Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
 }
 
-// Support tickets for customer service
 model SupportTicket {
   id           String   @id @default(cuid())
   ticketNumber String   @unique
   subject      String
   category     String
-  message      String   @db.Text
-  priority     String   // LOW, MEDIUM, HIGH, URGENT
-  status       String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  message      String
+  priority     String
+  status       String   @default("OPEN")
   userId       String
   userEmail    String
   assignedTo   String?
-  response     String?  @db.Text
+  response     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("support_tickets")
 }
 
-// Chat system models
 model ChatRoom {
-  id          String   @id @default(cuid())
-  name        String?
-  type        String   @default("SUPPORT") // SUPPORT, GENERAL, ADMIN
-  status      String   @default("ACTIVE") // ACTIVE, ARCHIVED, CLOSED
-  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  id            String            @id @default(cuid())
+  name          String?
+  type          String            @default("SUPPORT")
+  status        String            @default("ACTIVE")
+  priority      String            @default("MEDIUM")
   lastMessageAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  participants ChatParticipant[]
-  messages     Message[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  participants  ChatParticipant[]
+  messages      Message[]
 
   @@map("chat_rooms")
 }
 
 model ChatParticipant {
-  id        String   @id @default(cuid())
-  roomId    String
-  userId    String
-  role      String   @default("MEMBER") // MEMBER, ADMIN, MODERATOR
-  joinedAt  DateTime @default(now())
+  id         String    @id @default(cuid())
+  roomId     String
+  userId     String
+  role       String    @default("MEMBER")
+  joinedAt   DateTime  @default(now())
   lastReadAt DateTime?
-
-  // Relations
-  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room       ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
   @@map("chat_participants")
 }
 
 model Message {
-  id          String   @id @default(cuid())
-  roomId      String
-  userId      String
-  content     String?  @db.Text
-  type        String   @default("TEXT") // TEXT, IMAGE, FILE, SYSTEM
-  fileUrl     String?
-  fileName    String?
-  fileSize    Int?
-  replyToId   String?
-  isEdited    Boolean  @default(false)
-  editedAt    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  room        ChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  replyTo     Message?     @relation("MessageReply", fields: [replyToId], references: [id])
-  replies     Message[]    @relation("MessageReply")
-  statuses    MessageStatus[]
+  id        String          @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String?
+  type      String          @default("TEXT")
+  fileUrl   String?
+  fileName  String?
+  fileSize  Int?
+  replyToId String?
+  isEdited  Boolean         @default(false)
+  editedAt  DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  statuses  MessageStatus[]
+  replyTo   Message?        @relation("MessageReply", fields: [replyToId], references: [id])
+  replies   Message[]       @relation("MessageReply")
+  room      ChatRoom        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
 
 model MessageStatus {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   messageId String
   userId    String
-  status    String   @default("SENT") // SENT, DELIVERED, READ
+  status    String    @default("SENT")
   readAt    DateTime?
-  createdAt DateTime @default(now())
-
-  // Relations
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@map("message_statuses")
 }
 
-// Point packs for one-time purchases
 model PointPack {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  price       Float    // Price in USD
-  points      Int      // Number of points included
-  stripePriceId String @unique // The Price ID from your Stripe account
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String   @unique
+  description   String?
+  price         Float
+  points        Int
+  stripePriceId String   @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("point_packs")
 }
 
-// Stores records of points that have been rolled over for a user.
 model RolloverRecord {
   id        String   @id @default(cuid())
   userId    String
   amount    Int
-  expiresAt DateTime // The date when these specific points expire
+  expiresAt DateTime
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
   @@map("rollover_records")
 }
 
-// Teams functionality for B2B customers
 model Team {
-  id        String   @id @default(cuid())
-  name      String
-  ownerId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  owner    User              @relation("OwnedTeams", fields: [ownerId], references: [id])
-  members  TeamMembership[]
+  id            String           @id @default(cuid())
+  name          String
+  ownerId       String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
   pointsBalance PointsBalance?
-  
+  members       TeamMembership[]
+  owner         User             @relation("OwnedTeams", fields: [ownerId], references: [id])
+
   @@map("teams")
 }
 
@@ -502,13 +438,11 @@ model TeamMembership {
   id        String   @id @default(cuid())
   teamId    String
   userId    String
-  role      String   @default("MEMBER") // e.g., ADMIN, MEMBER
+  role      String   @default("MEMBER")
   createdAt DateTime @default(now())
-
-  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user User @relation("TeamMemberships", fields: [userId], references: [id])
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation("TeamMemberships", fields: [userId], references: [id])
 
   @@unique([teamId, userId])
   @@map("team_memberships")
 }
-
