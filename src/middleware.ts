@@ -6,8 +6,8 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  if (pathname.startsWith('/admin') && (!isLoggedIn || (req.auth?.user.role !== 'ADMIN' && req.auth?.user.role !== 'SUPER_ADMIN'))) {
-    const loginUrl = new URL('/login', req.url);
+  if (pathname.startsWith('/admin') && (!isLoggedIn || (req.auth?.user.role !== 'admin' && req.auth?.user.role !== 'ADMIN' && req.auth?.user.role !== 'SUPER_ADMIN'))) {
+    const loginUrl = new URL('/admin/login', req.url);
     return NextResponse.redirect(loginUrl);
   }
 

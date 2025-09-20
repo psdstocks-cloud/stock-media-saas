@@ -2,14 +2,16 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Typography } from '@/components/ui/typography'
-import { Lock, Eye, EyeOff } from 'lucide-react'
+import { Lock, Eye, EyeOff, Mail } from 'lucide-react'
 
 export default function AdminLoginClient() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -22,20 +24,26 @@ export default function AdminLoginClient() {
     setError('')
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        router.push('/admin/dashboard')
-      } else {
-        setError(data.message || 'Invalid admin password')
+      if (result?.error) {
+        setError('Invalid email or password')
+      } else if (result?.ok) {
+        // Check if user has admin role by making a quick API call
+        const response = await fetch('/api/auth/verify-token')
+        const data = await response.json()
+        
+        if (data?.user?.role === 'admin' || data?.user?.role === 'ADMIN' || data?.user?.role === 'SUPER_ADMIN') {
+          router.push('/admin/dashboard')
+        } else {
+          setError('Access denied. Admin privileges required.')
+          // Sign out the user since they don't have admin privileges
+          await signIn('credentials', { redirect: false, callbackUrl: '/login' })
+        }
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -57,13 +65,31 @@ export default function AdminLoginClient() {
                 Admin Access
               </CardTitle>
               <CardDescription className="text-white/70 mt-2">
-                Enter your admin password to access the dashboard
+                Enter your admin email and password to access the dashboard
               </CardDescription>
             </div>
           </CardHeader>
           
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Typography variant="body" className="text-white/90 font-medium">
+                  Admin Email
+                </Typography>
+                <div className="relative">
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter admin email"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500"
+                    required
+                    disabled={isLoading}
+                  />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Typography variant="body" className="text-white/90 font-medium">
                   Admin Password
@@ -99,7 +125,7 @@ export default function AdminLoginClient() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-2.5"
-                disabled={isLoading || !password}
+                disabled={isLoading || !email || !password}
               >
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
