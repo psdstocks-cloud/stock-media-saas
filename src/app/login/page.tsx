@@ -39,10 +39,12 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted with:', { email, password: password ? '***' : 'empty' })
     setIsLoading(true)
     setError('')
 
     try {
+      console.log('Making login request to /api/auth/direct-login')
       // Use direct login API that creates JWT token
       const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
@@ -55,9 +57,12 @@ export default function LoginPage() {
         }),
       })
 
+      console.log('Login response status:', response.status)
       const data = await response.json()
+      console.log('Login response data:', data)
 
       if (response.ok) {
+        console.log('Login successful, redirecting to:', data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard')
         // Login successful, redirect based on user role
         if (data.user.role === 'admin') {
           router.push('/admin/dashboard')
@@ -65,6 +70,7 @@ export default function LoginPage() {
           router.push('/dashboard')
         }
       } else {
+        console.log('Login failed:', data)
         // Handle different error types
         if (data.type === 'ACCOUNT_LOCKED') {
           setError('Account is temporarily locked. Please try again later.')
@@ -85,12 +91,14 @@ export default function LoginPage() {
   }
 
   const handleDemoLogin = async () => {
+    console.log('Demo login clicked')
     setEmail('demo@example.com')
     setPassword('demo123')
     setIsLoading(true)
     setError('')
 
     try {
+      console.log('Making demo login request to /api/auth/direct-login')
       // Use direct login API that creates JWT token
       const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
@@ -103,12 +111,16 @@ export default function LoginPage() {
         }),
       })
 
+      console.log('Demo login response status:', response.status)
       const data = await response.json()
+      console.log('Demo login response data:', data)
 
       if (response.ok) {
+        console.log('Demo login successful, redirecting to dashboard')
         // Login successful, redirect to dashboard
         router.push('/dashboard')
       } else {
+        console.log('Demo login failed:', data)
         setError(data.error || 'Demo account login failed')
       }
     } catch (error) {

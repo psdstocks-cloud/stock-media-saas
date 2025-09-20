@@ -8,6 +8,7 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'fallback-secret'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Direct login API called')
     const { email, password } = await request.json()
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
