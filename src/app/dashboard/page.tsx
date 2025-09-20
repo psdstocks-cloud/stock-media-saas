@@ -9,7 +9,8 @@ export default async function DashboardPage() {
   try {
     const session = await auth()
     
-    if (!session?.user) {
+    // Check if session exists and has user property
+    if (!session || !session.user) {
       redirect('/login')
     }
 

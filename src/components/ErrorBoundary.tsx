@@ -27,6 +27,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    
+    // Log additional error details for debugging
+    if (error.message.includes('Right side of assignment cannot be destructured')) {
+      console.error('Destructuring error detected - likely NextAuth initialization issue')
+    }
   }
 
   resetError = () => {

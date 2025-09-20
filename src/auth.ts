@@ -10,15 +10,11 @@ import bcrypt from 'bcryptjs';
 // Define the base URL dynamically
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+// Initialize NextAuth with error handling
+const nextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt' as const },
   // Add NEXTAUTH_URL for proper redirects
   ...(process.env.NEXTAUTH_URL && { url: process.env.NEXTAUTH_URL }),
   // Improve client-side stability
@@ -63,14 +59,14 @@ export const {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: any; user: any }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any }) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
@@ -85,4 +81,30 @@ export const {
   // Use the dynamic URL for NextAuth
   basePath: '/api/auth',
   trustHost: true, // Required for Vercel deployment
-});
+};
+
+// Initialize NextAuth with proper error handling
+let nextAuthInstance;
+try {
+  nextAuthInstance = NextAuth(nextAuthConfig);
+} catch (error) {
+  console.error('NextAuth initialization error:', error);
+  // Fallback configuration for production
+  nextAuthInstance = NextAuth({
+    secret: process.env.NEXTAUTH_SECRET || 'fallback-secret',
+    session: { strategy: 'jwt' as const },
+    providers: [],
+    pages: {
+      signIn: '/login',
+      error: '/login',
+    },
+    trustHost: true,
+  });
+}
+
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = nextAuthInstance;
