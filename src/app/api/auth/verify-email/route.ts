@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET endpoint for direct link verification (from email links)
+// Fixed TypeScript error - using common verification logic
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
