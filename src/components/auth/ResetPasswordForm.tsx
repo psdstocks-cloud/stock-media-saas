@@ -48,32 +48,15 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
 
-  // Validate token on component mount
+  // Token is already validated on the server side, so we can skip client-side validation
   useEffect(() => {
-    const validateToken = async () => {
-      if (!token) {
-        setErrors({ general: 'Invalid or missing reset token' })
-        setIsValidatingToken(false)
-        return
-      }
-
-      try {
-        const response = await fetch(`/api/validate-reset-token?token=${encodeURIComponent(token)}`)
-        const data = await response.json()
-
-        if (response.ok && data.valid) {
-          setIsTokenValid(true)
-        } else {
-          setErrors({ general: 'Invalid or expired reset token. Please request a new password reset.' })
-        }
-      } catch (error) {
-        setErrors({ general: 'Failed to validate reset token. Please try again.' })
-      } finally {
-        setIsValidatingToken(false)
-      }
+    if (token) {
+      setIsTokenValid(true)
+      setIsValidatingToken(false)
+    } else {
+      setErrors({ general: 'Invalid or missing reset token' })
+      setIsValidatingToken(false)
     }
-
-    validateToken()
   }, [token])
 
   const validateForm = (): boolean => {

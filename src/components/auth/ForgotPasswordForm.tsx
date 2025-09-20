@@ -105,7 +105,7 @@ export default function ForgotPasswordForm() {
           <Alert className="bg-green-500/10 border-green-500/30">
             <CheckCircle className="h-4 w-4 text-green-400" />
             <AlertDescription className="text-green-200">
-              A password reset link has been sent to <strong>{email}</strong>
+              If an account with this email exists, we've sent a password reset link.
             </AlertDescription>
           </Alert>
 
