@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -283,12 +284,15 @@ export function EditOrderModal({ isOpen, onClose, order, onSuccess }: EditOrderM
         const updatedOrder = await response.json()
         onSuccess(updatedOrder)
         onClose()
+        toast.success('Order updated successfully!')
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Failed to update order')
+        toast.error(errorData.error || 'Failed to update order')
       }
     } catch (error) {
       setError('An error occurred while updating order')
+      toast.error('An error occurred while updating order')
     } finally {
       setIsLoading(false)
     }

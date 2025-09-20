@@ -16,9 +16,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Typography } from '@/components/ui/typography'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -30,8 +33,16 @@ import {
   RefreshCw,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  X,
+  SlidersHorizontal
 } from 'lucide-react'
+
+interface FilterOption {
+  key: string
+  label: string
+  options: { value: string; label: string; count?: number }[]
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -42,6 +53,7 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string
   showSearch?: boolean
   showFilters?: boolean
+  filterOptions?: FilterOption[]
   showBulkActions?: boolean
   showPagination?: boolean
   pageSize?: number
@@ -53,6 +65,7 @@ interface DataTableProps<TData, TValue> {
   selectedRowIds?: string[]
   onSelectionChange?: (selectedIds: string[]) => void
   enableRowSelection?: boolean
+  onFilterChange?: (filters: Record<string, string>) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -64,6 +77,7 @@ export function DataTable<TData, TValue>({
   searchKey = "name",
   showSearch = true,
   showFilters = false,
+  filterOptions = [],
   showBulkActions = false,
   showPagination = true,
   pageSize = 10,
@@ -75,12 +89,15 @@ export function DataTable<TData, TValue>({
   selectedRowIds = [],
   onSelectionChange,
   enableRowSelection = false,
+  onFilterChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [globalFilter, setGlobalFilter] = useState('')
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
+  const [showFilterPanel, setShowFilterPanel] = useState(false)
 
   // Add selection column if enabled
   const tableColumns = React.useMemo(() => {
@@ -137,6 +154,40 @@ export function DataTable<TData, TValue>({
       },
     },
   })
+
+  // Handle filter changes
+  const handleFilterChange = (filterKey: string, value: string) => {
+    const newFilters = { ...activeFilters }
+    if (value === 'all' || value === '') {
+      delete newFilters[filterKey]
+    } else {
+      newFilters[filterKey] = value
+    }
+    setActiveFilters(newFilters)
+    
+    // Apply filter to table
+    const newColumnFilters = Object.entries(newFilters).map(([key, val]) => ({
+      id: key,
+      value: val
+    }))
+    setColumnFilters(newColumnFilters)
+    
+    if (onFilterChange) {
+      onFilterChange(newFilters)
+    }
+  }
+
+  const clearAllFilters = () => {
+    setActiveFilters({})
+    setColumnFilters([])
+    if (onFilterChange) {
+      onFilterChange({})
+    }
+  }
+
+  const getActiveFilterCount = () => {
+    return Object.keys(activeFilters).length
+  }
 
   // Handle row selection changes
   React.useEffect(() => {
@@ -208,24 +259,131 @@ export function DataTable<TData, TValue>({
         </div>
         
         {(showSearch || showFilters) && (
-          <div className="flex items-center space-x-4 mt-4">
-            {showSearch && (
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={searchPlaceholder}
-                  value={globalFilter ?? ''}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="pl-10 w-64"
-                />
-              </div>
-            )}
-            {showFilters && (
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Typography variant="caption" color="muted">
-                  Filters coming soon
-                </Typography>
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center space-x-4">
+              {showSearch && (
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={globalFilter ?? ''}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              )}
+              
+              {showFilters && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilterPanel(!showFilterPanel)}
+                  className="relative"
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filters
+                  {getActiveFilterCount() > 0 && (
+                    <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 text-xs">
+                      {getActiveFilterCount()}
+                    </Badge>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* Filter Panel */}
+            {showFilterPanel && showFilters && filterOptions.length > 0 && (
+              <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Typography variant="body" className="font-medium">
+                    Filters
+                  </Typography>
+                  <div className="flex items-center space-x-2">
+                    {getActiveFilterCount() > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="text-muted-foreground"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Clear All
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFilterPanel(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filterOptions.map((filter) => (
+                    <div key={filter.key} className="space-y-2">
+                      <Label className="text-sm font-medium">{filter.label}</Label>
+                      <Select
+                        value={activeFilters[filter.key] || 'all'}
+                        onValueChange={(value) => handleFilterChange(filter.key, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={`All ${filter.label}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            All {filter.label}
+                          </SelectItem>
+                          {filter.options.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{option.label}</span>
+                                {option.count !== undefined && (
+                                  <Badge variant="secondary" className="ml-2 text-xs">
+                                    {option.count}
+                                  </Badge>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Active Filters */}
+                {getActiveFilterCount() > 0 && (
+                  <div className="space-y-2">
+                    <Typography variant="caption" className="text-muted-foreground">
+                      Active Filters:
+                    </Typography>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(activeFilters).map(([key, value]) => {
+                        const filter = filterOptions.find(f => f.key === key)
+                        const option = filter?.options.find(o => o.value === value)
+                        return (
+                          <Badge
+                            key={key}
+                            variant="secondary"
+                            className="flex items-center space-x-1"
+                          >
+                            <span>{filter?.label}: {option?.label}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-3 w-3 p-0 hover:bg-transparent"
+                              onClick={() => handleFilterChange(key, 'all')}
+                            >
+                              <X className="h-2 w-2" />
+                            </Button>
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
@@ -244,6 +245,31 @@ export default function OrderManagementClient() {
     console.log('Export all orders')
   }
 
+  const handleFilterChange = (filters: Record<string, string>) => {
+    console.log('Filter changed:', filters)
+  }
+
+  // Generate filter options based on current data
+  const filterOptions = useMemo(() => {
+    const statusCounts = orders.reduce((acc, order) => {
+      acc[order.status] = (acc[order.status] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    return [
+      {
+        key: 'status',
+        label: 'Status',
+        options: [
+          { value: 'PENDING', label: 'Pending', count: statusCounts.PENDING || 0 },
+          { value: 'PROCESSING', label: 'Processing', count: statusCounts.PROCESSING || 0 },
+          { value: 'COMPLETED', label: 'Completed', count: statusCounts.COMPLETED || 0 },
+          { value: 'FAILED', label: 'Failed', count: statusCounts.FAILED || 0 },
+        ]
+      }
+    ]
+  }, [orders])
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
@@ -276,8 +302,10 @@ export default function OrderManagementClient() {
         data={orders}
         isLoading={isLoading}
         error={error}
-        searchPlaceholder="Search orders..."
+        searchPlaceholder="Search orders by user, email, or asset..."
         showSearch={true}
+        showFilters={true}
+        filterOptions={filterOptions}
         showBulkActions={true}
         showPagination={true}
         pageSize={20}
@@ -286,6 +314,7 @@ export default function OrderManagementClient() {
         onRefresh={fetchOrders}
         onExport={handleExport}
         onBulkAction={handleBulkAction}
+        onFilterChange={handleFilterChange}
         selectedRowIds={selectedOrders}
         onSelectionChange={setSelectedOrders}
         enableRowSelection={true}

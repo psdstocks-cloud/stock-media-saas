@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -95,12 +96,15 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
         onSuccess(newUser)
         onClose()
         setFormData({ email: '', name: '', password: '', role: 'user', points: 0 })
+        toast.success('User created successfully!')
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Failed to create user')
+        toast.error(errorData.error || 'Failed to create user')
       }
     } catch (error) {
       setError('An error occurred while creating user')
+      toast.error('An error occurred while creating user')
     } finally {
       setIsLoading(false)
     }
@@ -251,12 +255,15 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
         const updatedUser = await response.json()
         onSuccess(updatedUser)
         onClose()
+        toast.success('User updated successfully!')
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Failed to update user')
+        toast.error(errorData.error || 'Failed to update user')
       }
     } catch (error) {
       setError('An error occurred while updating user')
+      toast.error('An error occurred while updating user')
     } finally {
       setIsLoading(false)
     }

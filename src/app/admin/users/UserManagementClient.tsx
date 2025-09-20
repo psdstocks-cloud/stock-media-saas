@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
@@ -225,11 +226,14 @@ export default function UserManagementClient() {
         setSelectedUsers(prev => prev.filter(id => id !== selectedUser.id))
         setDeleteModalOpen(false)
         setSelectedUser(null)
+        toast.success('User deleted successfully!')
       } else {
         setError('Failed to delete user')
+        toast.error('Failed to delete user')
       }
     } catch (error) {
       setError('An error occurred while deleting user')
+      toast.error('An error occurred while deleting user')
     }
   }
 
@@ -247,6 +251,30 @@ export default function UserManagementClient() {
     // TODO: Implement export functionality
     console.log('Export all users')
   }
+
+  const handleFilterChange = (filters: Record<string, string>) => {
+    console.log('Filter changed:', filters)
+  }
+
+  // Generate filter options based on current data
+  const filterOptions = useMemo(() => {
+    const roleCounts = users.reduce((acc, user) => {
+      acc[user.role] = (acc[user.role] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    return [
+      {
+        key: 'role',
+        label: 'Role',
+        options: [
+          { value: 'user', label: 'User', count: roleCounts.user || 0 },
+          { value: 'admin', label: 'Admin', count: roleCounts.admin || 0 },
+          { value: 'SUPER_ADMIN', label: 'Super Admin', count: roleCounts.SUPER_ADMIN || 0 },
+        ]
+      }
+    ]
+  }, [users])
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
@@ -284,8 +312,10 @@ export default function UserManagementClient() {
         data={users}
         isLoading={isLoading}
         error={error}
-        searchPlaceholder="Search users..."
+        searchPlaceholder="Search users by name or email..."
         showSearch={true}
+        showFilters={true}
+        filterOptions={filterOptions}
         showBulkActions={true}
         showPagination={true}
         pageSize={20}
@@ -294,6 +324,7 @@ export default function UserManagementClient() {
         onRefresh={fetchUsers}
         onExport={handleExport}
         onBulkAction={handleBulkAction}
+        onFilterChange={handleFilterChange}
         selectedRowIds={selectedUsers}
         onSelectionChange={setSelectedUsers}
         enableRowSelection={true}
