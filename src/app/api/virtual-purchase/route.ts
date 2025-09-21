@@ -6,11 +6,16 @@ const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Virtual purchase endpoint called')
+    
     // Get authenticated user
     const user = getUserFromRequest(request)
     if (!user) {
+      console.log('Virtual purchase: No authenticated user')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    
+    console.log('Virtual purchase: User authenticated:', user.id)
 
     const { pointPackageId } = await request.json()
     
