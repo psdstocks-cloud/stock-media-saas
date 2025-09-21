@@ -83,16 +83,14 @@ export default function SupportedSites({
     }
   }
 
-  const getCostBadgeVariant = (cost: number) => {
-    if (cost <= 50) return 'default'
-    if (cost <= 100) return 'secondary'
-    return 'destructive'
+  const getCostBadgeVariant = (cost: number): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "brand" => {
+    // Unified 10-point system - all sites use the same pricing
+    return 'success' // Use success variant for the unified 10-point system
   }
 
   const getCostBadgeColor = (cost: number) => {
-    if (cost <= 50) return 'bg-green-500/20 text-green-400 border-green-500/30'
-    if (cost <= 100) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-    return 'bg-red-500/20 text-red-400 border-red-500/30'
+    // Unified 10-point system - consistent green styling for all sites
+    return 'bg-green-500/20 text-green-400 border-green-500/30'
   }
 
   if (isLoading) {
@@ -167,8 +165,8 @@ export default function SupportedSites({
         </CardTitle>
         <CardDescription className="text-gray-300">
           {showDetails 
-            ? 'Browse and order from these major stock media platforms'
-            : `${sites.length} supported platforms available`
+            ? 'Browse and order from these major stock media platforms - All downloads cost 10 points'
+            : `${sites.length} supported platforms available - 10 points each`
           }
         </CardDescription>
       </CardHeader>

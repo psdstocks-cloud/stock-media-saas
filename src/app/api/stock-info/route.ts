@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
             title: `Mock ${source.charAt(0).toUpperCase() + source.slice(1)} Asset`,
             id: assetId,
             source: source,
-            cost: stockSite.cost,
+            cost: 10, // Unified cost for mock data
             ext: 'jpg',
             name: `mock-${assetId}.jpg`,
             author: 'Mock Author',
@@ -94,31 +94,31 @@ export async function GET(request: NextRequest) {
       }
       
       if (info.data) {
-        stockInfo = {
-          id: info.data.id,
-          title: info.data.title,
-          description: 'High-quality stock media asset',
-          thumbnailUrl: info.data.image,
-          previewUrl: info.data.image,
-          type: 'photo', // Default type - would be determined from API response
-          category: 'general',
-          license: 'royalty-free',
-          price: stockSite.cost,
-          points: stockSite.cost * 10, // Convert to points (example conversion)
-          size: '2.5MB', // Would come from API
-          dimensions: { width: 1920, height: 1080 }, // Would come from API
-          author: {
-            id: '1',
-            name: info.data.author || 'Unknown Author',
-            avatar: undefined
-          },
-          tags: ['stock', 'media'],
-          createdAt: new Date().toISOString(),
-          rating: 4.5,
-          downloadCount: 0,
-          isAvailable: true,
-          downloadUrl: url
-        };
+      stockInfo = {
+        id: info.data.id,
+        title: info.data.title,
+        description: 'High-quality stock media asset',
+        thumbnailUrl: info.data.image,
+        previewUrl: info.data.image,
+        type: 'photo', // Default type - would be determined from API response
+        category: 'general',
+        license: 'royalty-free',
+        price: stockSite.cost, // Keep original price for reference
+        points: 10, // Unified 10 points system for all downloads
+        size: '2.5MB', // Would come from API
+        dimensions: { width: 1920, height: 1080 }, // Would come from API
+        author: {
+          id: '1',
+          name: info.data.author || 'Unknown Author',
+          avatar: undefined
+        },
+        tags: ['stock', 'media'],
+        createdAt: new Date().toISOString(),
+        rating: 4.5,
+        downloadCount: 0,
+        isAvailable: true,
+        downloadUrl: url
+      };
       } else {
         throw new Error('No data received from API');
       }
@@ -185,21 +185,21 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       console.warn('NEHTW_API_KEY is not configured. Using mock data for development/testing.');
-      // Provide mock data when API key is not configured
-      stockInfo = {
-        success: true,
-        data: {
-          image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-          title: `Mock ${source.charAt(0).toUpperCase() + source.slice(1)} Asset`,
-          id: assetId,
-          source: source,
-          cost: stockSite.cost,
-          ext: 'jpg',
-          name: `mock-${assetId}.jpg`,
-          author: 'Mock Author',
-          sizeInBytes: 2500000
-        }
-      };
+        // Provide mock data when API key is not configured
+        stockInfo = {
+          success: true,
+          data: {
+            image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+            title: `Mock ${source.charAt(0).toUpperCase() + source.slice(1)} Asset`,
+            id: assetId,
+            source: source,
+            cost: 10, // Unified cost for mock data
+            ext: 'jpg',
+            name: `mock-${assetId}.jpg`,
+            author: 'Mock Author',
+            sizeInBytes: 2500000
+          }
+        };
     } else {
       const api = new NehtwAPI(apiKey);
       stockInfo = await api.getStockInfo(source, assetId, url);
@@ -240,8 +240,8 @@ export async function POST(request: NextRequest) {
         type: 'photo',
         category: 'general',
         license: 'royalty-free',
-        price: stockSite.cost,
-        points: stockSite.cost * 10,
+        price: stockSite.cost, // Keep original price for reference
+        points: 10, // Unified 10 points system for all downloads
         size: '2.5MB',
         dimensions: { width: 1920, height: 1080 },
         author: {
