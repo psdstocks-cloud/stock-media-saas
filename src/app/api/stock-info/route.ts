@@ -175,7 +175,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse the URL using our advanced parser
+    console.log('Parsing URL:', url);
     const parseResult = parseStockMediaUrl(url);
+    console.log('Parse result:', parseResult);
     
     if (!parseResult.success || !parseResult.data) {
       return NextResponse.json({
@@ -198,9 +200,11 @@ export async function POST(request: NextRequest) {
     const { source, id: assetId } = parseResult.data;
 
     // Check if the source site is supported in our database
+    console.log('Looking up stock site:', source);
     const stockSite = await prisma.stockSite.findUnique({
       where: { name: source },
     });
+    console.log('Stock site found:', stockSite);
 
     if (!stockSite) {
       return NextResponse.json({
@@ -235,6 +239,10 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.NEHTW_API_KEY;
     let stockInfo;
 
+    // Check API key and mock data settings
+    console.log('API Key present:', !!apiKey);
+    console.log('FORCE_MOCK_DATA:', process.env.FORCE_MOCK_DATA);
+    
     // Temporarily force mock data mode until API key is properly configured
     if (!apiKey || process.env.FORCE_MOCK_DATA === 'true') {
       console.warn('Using mock data mode for testing. Set NEHTW_API_KEY and FORCE_MOCK_DATA=false for production.');

@@ -135,7 +135,7 @@ export default function OrderClient() {
 
           if (!response.ok) {
             const errorData = await response.json()
-            throw new Error(errorData.error || 'Failed to fetch stock info')
+            throw new Error(errorData.message || errorData.error || 'Failed to fetch stock info')
           }
 
           const data = await response.json()
