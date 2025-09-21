@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import OrderProgress from '@/components/dashboard/OrderProgress'
 
 // Types
 interface PreOrderItem {
@@ -67,6 +68,7 @@ interface ConfirmedOrder {
   canDownload?: boolean
   createdAt?: string
   updatedAt?: string
+  error?: string
 }
 
 type OrderStep = 'input' | 'confirmation' | 'progress'
@@ -271,7 +273,80 @@ export default function OrderClient() {
     }
   }
 
-  const confirmOrder = async () => {
+  // Function to place an order for a single item
+  const handlePlaceSingleOrder = async (item: PreOrderItem) => {
+    if (!item.success || !item.stockInfo) {
+      toast.error('Invalid item for ordering')
+      return
+    }
+
+    const itemPoints = item.stockInfo.points || 10
+    if (userPoints < itemPoints) {
+      toast.error(`Insufficient points. You need ${itemPoints} points but only have ${userPoints}`)
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const orderData = {
+        url: item.url,
+        site: item.parsedData?.source,
+        id: item.parsedData?.id,
+        title: item.stockInfo.title,
+        cost: itemPoints,
+        imageUrl: item.stockInfo.image
+      }
+      
+      console.log('Debug - Placing single order with data:', JSON.stringify(orderData, null, 2))
+      
+      const response = await fetch('/api/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to place order')
+      }
+
+      const data = await response.json()
+      console.log('Debug - Single order placement response:', JSON.stringify(data, null, 2))
+      
+      // Convert to confirmed order format
+      const newOrder: ConfirmedOrder = {
+        id: data.order.id,
+        title: data.order.title || item.stockInfo.title,
+        source: item.parsedData?.source || 'Unknown',
+        status: 'PENDING' as const,
+        points: data.order.cost || itemPoints,
+        estimatedTime: '2-5 minutes',
+        isProcessing: true,
+        canDownload: false,
+        createdAt: data.order.createdAt || new Date().toISOString()
+      }
+
+      // Add to existing confirmed orders
+      setConfirmedOrders(prev => [...prev, newOrder])
+      setStep('progress')
+      
+      // Start tracking order progress for all orders
+      startOrderTracking([...confirmedOrders, newOrder])
+      
+      // Update user points
+      await fetchUserPoints()
+      
+      toast.success(`Order placed successfully! ${item.stockInfo.title} is being processed.`)
+    } catch (error) {
+      console.error('Single order error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to place order')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Function to place orders for all items
+  const handlePlaceAllOrders = async () => {
     const successfulItems = preOrderItems.filter(item => item.success)
     if (successfulItems.length === 0) {
       toast.error('No valid items to order')
@@ -286,42 +361,45 @@ export default function OrderClient() {
 
     setIsProcessing(true)
     try {
-      const orderData = {
-        url: successfulItems[0].url,
-        site: successfulItems[0].parsedData?.source,
-        id: successfulItems[0].parsedData?.id,
-        title: successfulItems[0].stockInfo?.title,
-        cost: successfulItems[0].stockInfo?.points || 10,
-        imageUrl: successfulItems[0].stockInfo?.image
-      }
+      // Prepare all items for bulk order
+      const orderItems = successfulItems.map(item => ({
+        url: item.url,
+        site: item.parsedData?.source,
+        id: item.parsedData?.id,
+        title: item.stockInfo?.title,
+        cost: item.stockInfo?.points || 10,
+        imageUrl: item.stockInfo?.image
+      }))
       
-      console.log('Debug - Placing order with data:', JSON.stringify(orderData, null, 2))
+      console.log('Debug - Placing bulk order with data:', JSON.stringify(orderItems, null, 2))
       
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(orderItems)
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to place order')
+        throw new Error(errorData.error || 'Failed to place orders')
       }
 
       const data = await response.json()
-      console.log('Debug - Order placement response:', JSON.stringify(data, null, 2))
+      console.log('Debug - Bulk order placement response:', JSON.stringify(data, null, 2))
       
       // Convert to confirmed orders format
-      const orders: ConfirmedOrder[] = data.order ? [{
-        id: data.order.id,
-        title: data.order.title || 'Unknown File',
-        source: successfulItems[0].parsedData?.source || 'Unknown',
-        status: 'PENDING' as const,
-        points: data.order.cost || 10,
+      const orders: ConfirmedOrder[] = data.orders ? data.orders.map((order: any) => ({
+        id: order.id,
+        title: order.title || 'Unknown File',
+        source: order.stockSite?.name || 'Unknown',
+        status: order.status || 'PENDING',
+        points: order.cost || 10,
         estimatedTime: '2-5 minutes',
-        isProcessing: true,
-        canDownload: false
-      }] : []
+        isProcessing: order.status === 'PENDING',
+        canDownload: order.status === 'READY' || order.status === 'COMPLETED',
+        createdAt: order.createdAt || new Date().toISOString(),
+        downloadUrl: order.downloadUrl
+      })) : []
 
       setConfirmedOrders(orders)
       setStep('progress')
@@ -332,13 +410,18 @@ export default function OrderClient() {
       // Update user points
       await fetchUserPoints()
       
-      toast.success(`Order placed successfully! ${orders.length} items are being processed.`)
+      toast.success(`Orders placed successfully! ${orders.length} items are being processed.`)
     } catch (error) {
-      console.error('Order error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to place order')
+      console.error('Bulk order error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to place orders')
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const confirmOrder = async () => {
+    // Legacy function - redirect to bulk order
+    await handlePlaceAllOrders()
   }
 
   const pollOrderStatus = async () => {
@@ -586,10 +669,29 @@ export default function OrderClient() {
                     </Typography>
                   </div>
                   
-                  <div className="text-right">
+                  <div className="flex items-center space-x-3">
                     <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
                       {item.stockInfo?.points || 10} points
                     </Badge>
+                    
+                    <Button
+                      size="sm"
+                      onClick={() => handlePlaceSingleOrder(item)}
+                      disabled={isProcessing || userPoints < (item.stockInfo?.points || 10)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Confirm & Order
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -676,23 +778,45 @@ export default function OrderClient() {
                 Back to URLs
               </Button>
               
-              <Button
-                onClick={confirmOrder}
-                disabled={!canPlaceOrder || isProcessing}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm & Place Order
-                  </>
+              <div className="flex items-center space-x-3">
+                {preOrderItems.filter(item => item.success).length > 1 && (
+                  <Button
+                    onClick={handlePlaceAllOrders}
+                    disabled={!canPlaceOrder || isProcessing}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Order All ({preOrderItems.filter(item => item.success).length} items)
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
+                
+                <Button
+                  onClick={confirmOrder}
+                  disabled={!canPlaceOrder || isProcessing}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Place All Orders
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -714,55 +838,24 @@ export default function OrderClient() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {confirmedOrders.map((order, index) => (
-              <div key={order.id} className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
-                <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
-                  <FileImage className="h-8 w-8 text-white/60" />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <Typography variant="body" className="text-white font-medium truncate">
-                    {order.title}
-                  </Typography>
-                  <Typography variant="caption" className="text-white/60">
-                    {order.source} • {order.points} points
-                  </Typography>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  {getStatusBadge(order.status)}
-                  
-                  {/* Real-time progress indicator */}
-                  {order.isProcessing && (
-                    <div className="flex items-center space-x-2 text-blue-400">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">
-                        {order.estimatedTime && `~${order.estimatedTime}`}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Download button when ready */}
-                  {order.canDownload && order.downloadUrl && (
-                    <Button
-                      size="sm"
-                      onClick={() => window.open(order.downloadUrl, '_blank')}
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Download
-                    </Button>
-                  )}
-                  
-                  {/* Completed indicator */}
-                  {order.status === 'COMPLETED' && !order.downloadUrl && (
-                    <div className="flex items-center space-x-2 text-green-400">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-sm">Processing complete</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {confirmedOrders.map((order) => (
+              <OrderProgress
+                key={order.id}
+                order={order}
+                onStatusUpdate={(orderId, status, downloadUrl, error) => {
+                  setConfirmedOrders(prev => prev.map(o => 
+                    o.id === orderId 
+                      ? { 
+                          ...o, 
+                          status: status as any, 
+                          downloadUrl: downloadUrl || o.downloadUrl,
+                          error: error || o.error,
+                          updatedAt: new Date().toISOString()
+                        }
+                      : o
+                  ))
+                }}
+              />
             ))}
 
             {/* Progress Info */}

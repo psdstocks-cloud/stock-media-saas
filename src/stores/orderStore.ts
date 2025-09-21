@@ -66,6 +66,8 @@ export interface ConfirmedOrder {
   estimatedTime?: string
   createdAt: string
   updatedAt?: string
+  isProcessing?: boolean
+  canDownload?: boolean
 }
 
 interface OrderState {
@@ -103,6 +105,7 @@ interface OrderState {
   setConfirmedOrders: (orders: ConfirmedOrder[]) => void
   addConfirmedOrder: (order: ConfirmedOrder) => void
   updateOrderStatus: (orderId: string, status: string, downloadUrl?: string, error?: string) => void
+  updateOrderProgress: (orderId: string, orderData: Partial<ConfirmedOrder>) => void
   
   setUserPoints: (points: number) => void
   setTrackingProgress: (tracking: boolean) => void
@@ -183,6 +186,18 @@ export const useOrderStore = create<OrderState>()(
             ...state.orderStatuses,
             [orderId]: status
           }
+        })),
+
+        updateOrderProgress: (orderId, orderData) => set((state) => ({
+          confirmedOrders: state.confirmedOrders.map(order => 
+            order.id === orderId 
+              ? { 
+                  ...order, 
+                  ...orderData,
+                  updatedAt: new Date().toISOString()
+                }
+              : order
+          )
         })),
 
         // Complex actions
