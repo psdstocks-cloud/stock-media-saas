@@ -50,16 +50,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        id: assetId,
-        source: source,
-        title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-        points: 10,
-        price: 10,
+        parsedData: {
+          source: source,
+          id: assetId,
+          url: url || `https://example.com/item/${assetId}`
+        },
         stockSite: {
           name: source,
           displayName: source.charAt(0).toUpperCase() + source.slice(1),
           cost: 10
+        },
+        stockInfo: {
+          id: assetId,
+          source: source,
+          title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
+          image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          points: 10,
+          price: 10
         }
       }
     });
@@ -106,16 +113,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        id: id,
-        source: source,
-        title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-        points: 10, // Unified pricing
-        price: 10,
+        parsedData: {
+          source: source,
+          id: id,
+          url: url
+        },
         stockSite: {
           name: source,
           displayName: source.charAt(0).toUpperCase() + source.slice(1),
           cost: 10
+        },
+        stockInfo: {
+          id: id,
+          source: source,
+          title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
+          image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          points: 10, // Unified pricing
+          price: 10
         }
       }
     });
