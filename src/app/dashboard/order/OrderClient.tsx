@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,10 +19,12 @@ import {
   ExternalLink,
   FileImage,
   FileVideo,
-  FileMusic
+  FileMusic,
+  Clock
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useOrderStore } from '@/stores/orderStore'
+import SupportedSites from '@/components/dashboard/SupportedSites'
 
 export default function OrderClient() {
   const {
@@ -31,6 +33,7 @@ export default function OrderClient() {
     preOrderItems,
     isConfirming,
     userPoints,
+    confirmedOrders,
     setUrls,
     parseUrls,
     confirmOrder,
@@ -42,6 +45,11 @@ export default function OrderClient() {
     canPlaceOrder,
     setUserPoints
   } = useOrderStore()
+
+  // Live progress tracking state
+  const [isTrackingProgress, setIsTrackingProgress] = useState(false)
+  const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({})
+  const [orderDetails, setOrderDetails] = useState<Record<string, any>>({})
 
   // Fetch user points on component mount
   useEffect(() => {
@@ -59,6 +67,52 @@ export default function OrderClient() {
 
     fetchUserPoints()
   }, [setUserPoints])
+
+  // Real-time status polling
+  useEffect(() => {
+    if (!isTrackingProgress || confirmedOrders.length === 0) return
+
+    const pollInterval = setInterval(async () => {
+      const pendingOrders = confirmedOrders.filter(order => 
+        orderStatuses[order.id] === 'PENDING' || orderStatuses[order.id] === 'PROCESSING'
+      )
+
+      if (pendingOrders.length === 0) {
+        setIsTrackingProgress(false)
+        clearInterval(pollInterval)
+        return
+      }
+
+      // Poll each pending order
+      for (const order of pendingOrders) {
+        try {
+          const response = await fetch(`/api/orders/${order.id}/status`)
+          if (response.ok) {
+            const data = await response.json()
+            setOrderStatuses(prev => ({
+              ...prev,
+              [order.id]: data.status
+            }))
+            setOrderDetails(prev => ({
+              ...prev,
+              [order.id]: data
+            }))
+
+            // Show toast for status changes
+            if (data.status === 'READY' || data.status === 'COMPLETED') {
+              toast.success(`${order.title} is ready for download!`)
+            } else if (data.status === 'FAILED') {
+              toast.error(`${order.title} failed to process`)
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to poll status for order ${order.id}:`, error)
+        }
+      }
+    }, 3000) // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [isTrackingProgress, confirmedOrders, orderStatuses])
 
   const handleGetFileInfo = async () => {
     try {
@@ -82,10 +136,18 @@ export default function OrderClient() {
       const orders = await confirmOrder()
       toast.success(`Successfully placed ${orders.length} order${orders.length !== 1 ? 's' : ''}!`)
       
-      // Redirect to orders page after a delay
+      // Initialize order statuses and start tracking
+      const initialStatuses: Record<string, string> = {}
+      orders.forEach(order => {
+        initialStatuses[order.id] = 'PENDING'
+      })
+      setOrderStatuses(initialStatuses)
+      setIsTrackingProgress(true)
+      
+      // Redirect to orders page after a longer delay to allow progress tracking
       setTimeout(() => {
         window.location.href = '/dashboard?tab=orders'
-      }, 2000)
+      }, 5000)
     } catch (error) {
       console.error('Error placing order:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
@@ -418,25 +480,104 @@ export default function OrderClient() {
         </Card>
       )}
 
-      {/* Supported Sites Info */}
-      {preOrderItems.length === 0 && (
-        <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+      {/* Step 3: Live Progress View */}
+      {confirmedOrders.length > 0 && isTrackingProgress && (
+        <Card className="bg-white/5 backdrop-blur-sm border-white/10 mb-6">
           <CardHeader>
-            <CardTitle className="text-white">Supported Sites</CardTitle>
+            <CardTitle className="text-white flex items-center">
+              <Clock className="h-5 w-5 mr-2" />
+              Live Order Progress
+            </CardTitle>
             <CardDescription className="text-gray-300">
-              We support URLs from these major stock media platforms
+              Real-time tracking of your orders
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {['Shutterstock', 'Getty Images', 'Adobe Stock', 'Unsplash', 'Pexels', 'Pixabay', '123RF', 'Dreamstime', 'iStock', 'Freepik', 'Pond5', 'Storyblocks', 'Envato Elements', 'Canva', 'Vecteezy', 'Bigstock'].map((site) => (
-                <span key={site} className="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm border border-white/20">
-                  {site}
-                </span>
-              ))}
+            <div className="space-y-4">
+              {confirmedOrders.map((order) => {
+                const currentStatus = orderStatuses[order.id] || 'PENDING'
+                const statusDetails = orderDetails[order.id]
+                
+                return (
+                  <div key={order.id} className="border border-white/10 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={order.thumbnailUrl}
+                          alt={order.title}
+                          className="w-12 h-12 object-cover rounded-lg bg-gray-800"
+                        />
+                        <div>
+                          <Typography variant="h5" className="text-white">
+                            {order.title}
+                          </Typography>
+                          <Typography variant="caption" className="text-gray-400">
+                            {order.source} • {order.points} points
+                          </Typography>
+                        </div>
+                      </div>
+                      
+                      <Badge 
+                        variant={
+                          currentStatus === 'READY' || currentStatus === 'COMPLETED' ? 'default' :
+                          currentStatus === 'PROCESSING' ? 'secondary' :
+                          currentStatus === 'FAILED' ? 'destructive' : 'outline'
+                        }
+                        className={
+                          currentStatus === 'READY' || currentStatus === 'COMPLETED' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                          currentStatus === 'PROCESSING' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+                          currentStatus === 'FAILED' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                          'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                        }
+                      >
+                        {currentStatus === 'PROCESSING' && <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>}
+                        {currentStatus}
+                      </Badge>
+                    </div>
+
+                    {/* Progress Details */}
+                    {statusDetails && (
+                      <div className="bg-white/5 rounded-lg p-3">
+                        {statusDetails.estimatedTime && (
+                          <Typography variant="caption" className="text-gray-300">
+                            Estimated time: {statusDetails.estimatedTime}
+                          </Typography>
+                        )}
+                        {statusDetails.downloadUrl && currentStatus === 'READY' && (
+                          <div className="mt-2">
+                            <Button
+                              size="sm"
+                              onClick={() => window.open(statusDetails.downloadUrl, '_blank')}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Download Now
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                <Typography variant="caption" className="text-blue-300">
+                  💡 Orders are being processed in real-time. You'll be notified when they're ready for download.
+                </Typography>
+              </div>
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Supported Sites Info */}
+      {preOrderItems.length === 0 && !isTrackingProgress && (
+        <SupportedSites 
+          showDetails={true}
+          limit={12}
+          className="mb-6"
+        />
       )}
     </div>
   )
