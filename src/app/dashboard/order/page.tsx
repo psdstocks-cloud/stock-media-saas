@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/jwt-auth'
 import OrderClient from './OrderClient'
+import { PointsHub } from '@/components/dashboard/PointsHub'
+import { SupportedSitesSidebar } from '@/components/dashboard/SupportedSitesSidebar'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +29,29 @@ export default async function OrderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <OrderClient />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">Order Stock Media</h1>
+          <p className="text-white/70 text-lg">
+            Paste URLs from supported stock media sites to download high-quality content
+          </p>
+        </div>
+
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content area (70% width on large screens) */}
+          <div className="lg:col-span-2">
+            <OrderClient />
+          </div>
+
+          {/* Sidebar (30% width on large screens) */}
+          <div className="space-y-6">
+            <PointsHub />
+            <SupportedSitesSidebar />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
