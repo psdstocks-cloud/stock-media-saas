@@ -69,6 +69,9 @@ export interface ConfirmedOrder {
 }
 
 interface OrderState {
+  // Step management
+  step: 'input' | 'confirmation' | 'progress'
+  
   // URLs and parsing state
   urls: string
   isLoading: boolean
@@ -85,7 +88,11 @@ interface OrderState {
   // User balance
   userPoints: number
   
+  // Error handling
+  error: string | null
+  
   // Actions
+  setStep: (step: 'input' | 'confirmation' | 'progress') => void
   setUrls: (urls: string) => void
   setLoading: (loading: boolean) => void
   setPreOrderItems: (items: PreOrderItem[]) => void
@@ -100,6 +107,7 @@ interface OrderState {
   setUserPoints: (points: number) => void
   setTrackingProgress: (tracking: boolean) => void
   setOrderStatuses: (statuses: Record<string, string>) => void
+  setError: (error: string | null) => void
   
   // Complex actions
   parseUrls: () => Promise<{ successCount: number; errorCount: number }>
@@ -123,6 +131,7 @@ export const useOrderStore = create<OrderState>()(
     persist(
       (set, get) => ({
         // Initial state
+        step: 'input',
         urls: '',
         isLoading: false,
         preOrderItems: [],
@@ -131,8 +140,10 @@ export const useOrderStore = create<OrderState>()(
         isTrackingProgress: false,
         orderStatuses: {},
         userPoints: 0,
+        error: null,
 
         // Basic setters
+        setStep: (step) => set({ step }),
         setUrls: (urls) => set({ urls }),
         setLoading: (loading) => set({ isLoading: loading }),
         setPreOrderItems: (items) => set({ preOrderItems: items }),
@@ -141,6 +152,7 @@ export const useOrderStore = create<OrderState>()(
         setUserPoints: (points) => set({ userPoints: points }),
         setTrackingProgress: (tracking) => set({ isTrackingProgress: tracking }),
         setOrderStatuses: (statuses) => set({ orderStatuses: statuses }),
+        setError: (error) => set({ error }),
 
         // Item management
         addPreOrderItem: (item) => set((state) => ({
@@ -180,7 +192,7 @@ export const useOrderStore = create<OrderState>()(
             throw new Error('Please enter at least one URL')
           }
 
-          set({ isLoading: true, preOrderItems: [] })
+          set({ isLoading: true, preOrderItems: [], error: null })
 
           try {
             // Split URLs by line and filter out empty lines
@@ -229,14 +241,18 @@ export const useOrderStore = create<OrderState>()(
             const results = await Promise.all(promises)
             set({ preOrderItems: results, isLoading: false })
 
-            // Return summary for toast notifications
+            // Move to confirmation step if we have successful items
             const successCount = results.filter(r => r.success).length
+            if (successCount > 0) {
+              set({ step: 'confirmation' })
+            }
+
+            // Return summary for toast notifications
             const errorCount = results.length - successCount
-            
             return { successCount, errorCount }
 
           } catch (error) {
-            set({ isLoading: false })
+            set({ isLoading: false, error: error instanceof Error ? error.message : 'Unknown error' })
             throw error
           }
         },
@@ -259,7 +275,7 @@ export const useOrderStore = create<OrderState>()(
             throw new Error(`Insufficient points. You need ${totalPoints.toLocaleString()} points but only have ${userPoints.toLocaleString()}`)
           }
 
-          set({ isConfirming: true })
+          set({ isConfirming: true, error: null })
 
           try {
             // Create orders for each successful item
@@ -308,25 +324,28 @@ export const useOrderStore = create<OrderState>()(
             set({ 
               confirmedOrders,
               isConfirming: false,
-              userPoints: userPoints - totalPoints // Deduct points
+              userPoints: userPoints - totalPoints, // Deduct points
+              step: 'progress' // Move to progress step
             })
 
             return confirmedOrders
 
           } catch (error) {
-            set({ isConfirming: false })
+            set({ isConfirming: false, error: error instanceof Error ? error.message : 'Unknown error' })
             throw error
           }
         },
 
         clearOrder: () => set({
+          step: 'input',
           urls: '',
           preOrderItems: [],
           confirmedOrders: [],
           isLoading: false,
           isConfirming: false,
           isTrackingProgress: false,
-          orderStatuses: {}
+          orderStatuses: {},
+          error: null
         }),
 
         startProgressTracking: () => {

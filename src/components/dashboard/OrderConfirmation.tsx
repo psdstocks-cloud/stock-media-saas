@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { Coins, Download, ExternalLink, AlertCircle, CheckCircle, Clock, X } from 'lucide-react'
 import { useOrderStore, PreOrderItem, ConfirmedOrder } from '@/stores/orderStore'
 import { toast } from 'react-hot-toast'
+import ConfirmationItem from './ConfirmationItem'
 
 interface OrderConfirmationProps {
   onConfirm: () => void
@@ -39,21 +40,6 @@ export default function OrderConfirmation({ onConfirm, onCancel, isLoading = fal
     toast.success('Item removed from order')
   }
 
-  const getStatusBadge = (item: PreOrderItem) => {
-    if (item.success) {
-      return <Badge variant="success" className="bg-green-100 text-green-800">Ready</Badge>
-    } else {
-      return <Badge variant="destructive" className="bg-red-100 text-red-800">Failed</Badge>
-    }
-  }
-
-  const getStatusIcon = (item: PreOrderItem) => {
-    if (item.success) {
-      return <CheckCircle className="h-4 w-4 text-green-600" />
-    } else {
-      return <X className="h-4 w-4 text-red-600" />
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -133,91 +119,12 @@ export default function OrderConfirmation({ onConfirm, onCancel, isLoading = fal
         
         <div className="space-y-3">
           {preOrderItems.map((item, index) => (
-            <Card key={index} className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* Thumbnail */}
-                  <div className="flex-shrink-0">
-                    {item.success && item.stockInfo ? (
-                      <img
-                        src={item.stockInfo.thumbnailUrl}
-                        alt={item.stockInfo.title}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
-                        <ExternalLink className="h-6 w-6 text-white/50" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <Typography variant="h5" className="text-white truncate">
-                          {item.success && item.stockInfo ? item.stockInfo.title : 'Unknown Title'}
-                        </Typography>
-                        <Typography variant="caption" className="text-white/60">
-                          {item.success && item.parsedData ? item.parsedData.source : 'Unknown Source'}
-                        </Typography>
-                        {item.success && item.stockInfo && (
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {item.stockInfo.type}
-                            </Badge>
-                            <Typography variant="caption" className="text-white/60">
-                              {item.stockInfo.dimensions?.width} × {item.stockInfo.dimensions?.height}
-                            </Typography>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(item)}
-                        {getStatusBadge(item)}
-                      </div>
-                    </div>
-
-                    {/* Error Message */}
-                    {!item.success && item.error && (
-                      <Alert className="mt-2 border-red-500/50 bg-red-500/10">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription className="text-red-200 text-sm">
-                          {item.error}
-                        </AlertDescription>
-                      </Alert>
-                    )}
-
-                    {/* Price */}
-                    {item.success && item.stockInfo && (
-                      <div className="flex items-center justify-between mt-2">
-                        <Typography variant="body" className="text-white/80">
-                          Cost
-                        </Typography>
-                        <div className="flex items-center gap-1">
-                          <Coins className="h-4 w-4 text-yellow-400" />
-                          <Typography variant="h5" className="text-yellow-400 font-semibold">
-                            {item.stockInfo.points} points
-                          </Typography>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Remove Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveItem(index)}
-                      className="mt-2 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ConfirmationItem
+              key={index}
+              item={item}
+              index={index}
+              onRemove={handleRemoveItem}
+            />
           ))}
         </div>
       </div>

@@ -30,12 +30,15 @@ import OrderProgress from '@/components/dashboard/OrderProgress'
 
 export default function OrderClient() {
   const {
+    step,
     urls,
     isLoading,
     preOrderItems,
     isConfirming,
     userPoints,
     confirmedOrders,
+    error,
+    setStep,
     setUrls,
     parseUrls,
     confirmOrder,
@@ -45,15 +48,15 @@ export default function OrderClient() {
     getSuccessfulItems,
     getFailedItems,
     canPlaceOrder,
-    setUserPoints
+    setUserPoints,
+    setError
   } = useOrderStore()
 
   // Live progress tracking state
   const [isTrackingProgress, setIsTrackingProgress] = useState(false)
   const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({})
   
-  // Current view state
-  const [currentView, setCurrentView] = useState<'input' | 'confirmation' | 'progress'>('input')
+  // Remove local currentView state since we're using store step management
   const [orderDetails, setOrderDetails] = useState<Record<string, any>>({})
 
   // Fetch user points on component mount
@@ -126,8 +129,6 @@ export default function OrderClient() {
       // Show summary toast
       if (result.successCount > 0) {
         toast.success(`Successfully parsed ${result.successCount} URL${result.successCount !== 1 ? 's' : ''}`)
-        // Transition to confirmation view if we have successful items
-        setCurrentView('confirmation')
       }
       if (result.errorCount > 0) {
         toast.error(`Failed to parse ${result.errorCount} URL${result.errorCount !== 1 ? 's' : ''}`)
@@ -150,9 +151,6 @@ export default function OrderClient() {
       })
       setOrderStatuses(initialStatuses)
       setIsTrackingProgress(true)
-      
-      // Transition to progress view
-      setCurrentView('progress')
     } catch (error) {
       console.error('Error placing order:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
@@ -160,11 +158,11 @@ export default function OrderClient() {
   }
 
   const handleCancelConfirmation = () => {
-    setCurrentView('input')
+    setStep('input')
   }
 
   const handleBackToOrder = () => {
-    setCurrentView('input')
+    setStep('input')
   }
 
   const getTypeIcon = (type: string) => {
@@ -182,8 +180,8 @@ export default function OrderClient() {
     }
   }
 
-  // Render different views based on current state
-  if (currentView === 'confirmation') {
+  // Render different views based on store step
+  if (step === 'confirmation') {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <OrderConfirmation
@@ -195,7 +193,7 @@ export default function OrderClient() {
     )
   }
 
-  if (currentView === 'progress') {
+  if (step === 'progress') {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <OrderProgress onBack={handleBackToOrder} />
