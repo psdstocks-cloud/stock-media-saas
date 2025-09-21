@@ -375,6 +375,11 @@ export default function OrderClient() {
     .filter(item => item.success)
     .reduce((sum, item) => sum + (item.stockInfo?.points || 0), 0)
 
+  // Debug logging
+  console.log('Debug - preOrderItems:', preOrderItems)
+  console.log('Debug - successful items:', preOrderItems.filter(item => item.success))
+  console.log('Debug - totalPoints:', totalPoints)
+
   const canPlaceOrder = userPoints >= totalPoints && totalPoints > 0
 
   return (
