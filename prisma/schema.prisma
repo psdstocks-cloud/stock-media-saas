@@ -25,6 +25,7 @@ model User {
   accounts                  Account[]
   adminAuditLogs            AdminAuditLog[]
   apiKeys                   ApiKey[]
+  billingHistory            BillingHistory[]
   chatParticipants          ChatParticipant[]
   emailVerificationTokens   EmailVerificationToken[]
   messageStatuses           MessageStatus[]
@@ -78,8 +79,10 @@ model SubscriptionPlan {
   name          String         @unique
   description   String?
   price         Float
+  currency      String         @default("USD")
   points        Int
   rolloverLimit Int
+  billingCycle  String         @default("MONTHLY") // MONTHLY, YEARLY
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -94,17 +97,38 @@ model Subscription {
   planId               String
   stripeCustomerId     String?          @unique
   stripeSubscriptionId String?          @unique
-  status               String           @default("ACTIVE")
+  status               String           @default("ACTIVE") // ACTIVE, CANCELED, PAST_DUE, INCOMPLETE
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
+  nextBillingDate      DateTime?
   cancelAtPeriodEnd    Boolean          @default(false)
   canceledAt           DateTime?
+  trialEndsAt          DateTime?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   plan                 SubscriptionPlan @relation(fields: [planId], references: [id])
   user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingHistory       BillingHistory[]
 
   @@map("subscriptions")
+}
+
+model BillingHistory {
+  id                String    @id @default(cuid())
+  userId            String
+  subscriptionId    String?
+  amount            Float
+  currency          String    @default("USD")
+  status            String    // SUCCESS, FAILED, PENDING, REFUNDED
+  description       String?
+  stripeInvoiceId   String?
+  stripePaymentId   String?
+  billingDate       DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@map("billing_history")
 }
 
 model PointsBalance {

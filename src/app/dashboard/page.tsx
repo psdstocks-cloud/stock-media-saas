@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PointsOverview from '@/components/dashboard/PointsOverview'
 import OrdersManagement from '@/components/dashboard/OrdersManagement'
-import SubscriptionManagement from '@/components/dashboard/SubscriptionManagement'
+import SubscriptionManager from '@/components/dashboard/SubscriptionManager'
 import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
 import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="subscription" className="mt-6">
-            <SubscriptionManagement />
+            <SubscriptionManager />
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
