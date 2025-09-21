@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/jwt-auth'
-import OrderPageClient from './OrderPageClient'
+import OrderClient from './OrderClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +27,7 @@ export default async function OrderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <OrderPageClient />
+      <OrderClient />
     </div>
   )
 }
