@@ -48,16 +48,11 @@ export class NehtwAPI {
    * Per documentation, the 'url' param is optional but can help with accuracy.
    */
   async getStockInfo(site: string, id: string, url?: string): Promise<NehtwStockInfo> {
-    const params = new URLSearchParams({
-      site,
-      id,
-    });
-    // ALWAYS pass the full URL if available, as it can help the API.
-    if (url) {
-      params.append('url', encodeURIComponent(url));
-    }
-
-    const response = await fetch(`${this.baseUrl}/stockinfo/${site}/${id}?${params}`, {
+    // The API endpoint already contains all the information needed: site and id
+    // Removing the url parameter to avoid validation errors
+    const requestUrl = `${this.baseUrl}/stockinfo/${site}/${id}`;
+    
+    const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {
         'X-Api-Key': this.apiKey,
@@ -69,18 +64,12 @@ export class NehtwAPI {
 
   /**
    * Place an order
-   * According to the documentation, the 'url' parameter is REQUIRED for specific sites.
+   * The url parameter in the query string is redundant and may be causing validation errors.
    */
   async placeOrder(site: string, id: string, url?: string): Promise<NehtwOrderResponse> {
-    const params = new URLSearchParams();
-    
-    // Per the documentation, some sites require the original URL to place an order.
-    // We should always include it if we have it to be safe.
-    if (url) {
-      params.append('url', encodeURIComponent(url));
-    }
-
-    const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}?${params}`;
+    // The API endpoint already contains all the information needed: site and id
+    // Removing the url parameter to avoid validation errors
+    const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
     console.log('Nehtw placeOrder request:', {
       site,
       id,
