@@ -286,17 +286,21 @@ export default function OrderClient() {
 
     setIsProcessing(true)
     try {
+      const orderData = {
+        url: successfulItems[0].url,
+        site: successfulItems[0].parsedData?.source,
+        id: successfulItems[0].parsedData?.id,
+        title: successfulItems[0].stockInfo?.title,
+        cost: successfulItems[0].stockInfo?.points || 10,
+        imageUrl: successfulItems[0].stockInfo?.image
+      }
+      
+      console.log('Debug - Placing order with data:', JSON.stringify(orderData, null, 2))
+      
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: successfulItems[0].url,
-          site: successfulItems[0].parsedData?.source,
-          id: successfulItems[0].parsedData?.id,
-          title: successfulItems[0].stockInfo?.title,
-          cost: successfulItems[0].stockInfo?.points || 10,
-          imageUrl: successfulItems[0].stockInfo?.image
-        })
+        body: JSON.stringify(orderData)
       })
 
       if (!response.ok) {
@@ -305,18 +309,19 @@ export default function OrderClient() {
       }
 
       const data = await response.json()
+      console.log('Debug - Order placement response:', JSON.stringify(data, null, 2))
       
       // Convert to confirmed orders format
-      const orders: ConfirmedOrder[] = data.orders?.map((order: any) => ({
-        id: order.id,
-        title: order.fileName || 'Unknown File',
-        source: order.stockSite?.name || 'Unknown',
-        status: 'PENDING',
-        points: order.cost || 10,
+      const orders: ConfirmedOrder[] = data.order ? [{
+        id: data.order.id,
+        title: data.order.title || 'Unknown File',
+        source: successfulItems[0].parsedData?.source || 'Unknown',
+        status: 'PENDING' as const,
+        points: data.order.cost || 10,
         estimatedTime: '2-5 minutes',
         isProcessing: true,
         canDownload: false
-      })) || []
+      }] : []
 
       setConfirmedOrders(orders)
       setStep('progress')
