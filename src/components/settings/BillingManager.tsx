@@ -103,6 +103,7 @@ export function BillingManager() {
   }
 
   const getStatusBadge = (status: string) => {
+    if (!status) return <Badge variant="outline">Unknown</Badge>
     switch (status.toLowerCase()) {
       case 'active':
         return <Badge className="bg-green-500">Active</Badge>

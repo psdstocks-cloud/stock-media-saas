@@ -122,9 +122,11 @@ export const SubscriptionPlansSection: React.FC = () => {
   }
 
   const getPlanIcon = (planName: string) => {
-    if (planName.toLowerCase().includes('pro')) return Crown
-    if (planName.toLowerCase().includes('team')) return Star
-    if (planName.toLowerCase().includes('enterprise')) return Zap
+    if (!planName) return Zap
+    const name = planName.toLowerCase()
+    if (name.includes('pro')) return Crown
+    if (name.includes('team')) return Star
+    if (name.includes('enterprise')) return Zap
     return Zap
   }
 
@@ -136,7 +138,9 @@ export const SubscriptionPlansSection: React.FC = () => {
   }
 
   const getBillingCycleText = (cycle: string) => {
-    return cycle.toLowerCase() === 'monthly' ? 'month' : cycle.toLowerCase()
+    if (!cycle) return 'month'
+    const cycleLower = cycle.toLowerCase()
+    return cycleLower === 'monthly' ? 'month' : cycleLower
   }
 
   if (isLoading) {
@@ -189,7 +193,7 @@ export const SubscriptionPlansSection: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {subscriptionPlans.map((plan) => {
           const IconComponent = getPlanIcon(plan.name)
-          const isPopular = plan.name.toLowerCase().includes('pro')
+          const isPopular = plan.name?.toLowerCase().includes('pro') || false
           
           return (
             <Card

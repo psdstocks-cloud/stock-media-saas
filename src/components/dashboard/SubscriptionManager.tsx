@@ -154,8 +154,10 @@ export default function SubscriptionManager() {
   }
 
   const getPlanIcon = (planName: string) => {
-    if (planName.toLowerCase().includes('pro')) return Crown
-    if (planName.toLowerCase().includes('team')) return Star
+    if (!planName) return Zap
+    const name = planName.toLowerCase()
+    if (name.includes('pro')) return Crown
+    if (name.includes('team')) return Star
     return Zap
   }
 
@@ -370,7 +372,7 @@ export default function SubscriptionManager() {
                 <div className="space-y-1 mt-2">
                   {billingSummary.statusBreakdown.map((item) => (
                     <div key={item.status} className="flex justify-between text-sm">
-                      <span className="text-white/80 capitalize">{item.status.toLowerCase()}</span>
+                      <span className="text-white/80 capitalize">{item.status?.toLowerCase() || 'unknown'}</span>
                       <span className="text-white">{item._count.id}</span>
                     </div>
                   ))}

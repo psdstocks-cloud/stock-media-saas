@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   ExternalLink,
   FileImage,
+  FileText,
   FileVideo,
   FileMusic,
   Clock
@@ -183,6 +184,7 @@ export default function OrderClient() {
   }
 
   const getTypeIcon = (type: string) => {
+    if (!type) return <FileText className="h-4 w-4" />
     switch (type.toLowerCase()) {
       case 'photo':
       case 'image':

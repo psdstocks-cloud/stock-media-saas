@@ -171,6 +171,7 @@ export function StockMediaSearch({ className }: StockMediaSearchProps) {
   }
 
   const getTypeIcon = (type: string) => {
+    if (!type) return <Image className="h-4 w-4" />
     switch (type.toLowerCase()) {
       case 'image':
       case 'photo':
