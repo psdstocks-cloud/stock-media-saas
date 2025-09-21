@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromRequest } from '@/lib/jwt-auth'
-import { auth } from '@/lib/auth'
+import { auth } from '@/auth'
 
 export async function GET(
   request: NextRequest,
