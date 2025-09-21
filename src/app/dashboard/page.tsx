@@ -9,7 +9,7 @@ import OrdersManagement from '@/components/dashboard/OrdersManagement'
 import SubscriptionManagement from '@/components/dashboard/SubscriptionManagement'
 import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
-import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch } from 'lucide-react'
+import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
 
 interface DashboardUser {
   id: string
@@ -191,6 +191,13 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    onClick={() => router.push('/dashboard/order')}
+                  >
+                    <Link className="h-4 w-4 mr-2" />
+                    Order from URL
+                  </Button>
                   <Button 
                     className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
                     onClick={() => setActiveTab('search')}
