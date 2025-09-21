@@ -38,6 +38,7 @@ export default function OrderClient() {
     userPoints,
     confirmedOrders,
     error,
+    isTrackingProgress,
     setStep,
     setUrls,
     parseUrls,
@@ -49,15 +50,16 @@ export default function OrderClient() {
     getFailedItems,
     canPlaceOrder,
     setUserPoints,
-    setError
+    setError,
+    pollAllOrders,
+    getPendingOrders,
+    getCompletedOrders,
+    getFailedOrders
   } = useOrderStore()
 
-  // Live progress tracking state
-  const [isTrackingProgress, setIsTrackingProgress] = useState(false)
-  const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({})
-  
-  // Remove local currentView state since we're using store step management
-  const [orderDetails, setOrderDetails] = useState<Record<string, any>>({})
+  // Local state for UI-specific features
+  const [previousCompletedCount, setPreviousCompletedCount] = useState(0)
+  const [previousFailedCount, setPreviousFailedCount] = useState(0)
 
   // Fetch user points on component mount
   useEffect(() => {
@@ -76,84 +78,99 @@ export default function OrderClient() {
     fetchUserPoints()
   }, [setUserPoints])
 
-  // Real-time status polling
+  // Enhanced real-time progress tracking with notifications
   useEffect(() => {
-    if (!isTrackingProgress || confirmedOrders.length === 0) return
+    if (step !== 'progress' || !isTrackingProgress) {
+      return
+    }
 
     const pollInterval = setInterval(async () => {
-      const pendingOrders = confirmedOrders.filter(order => 
-        orderStatuses[order.id] === 'PENDING' || orderStatuses[order.id] === 'PROCESSING'
-      )
-
-      if (pendingOrders.length === 0) {
-        setIsTrackingProgress(false)
-        clearInterval(pollInterval)
-        return
-      }
-
-      // Poll each pending order
-      for (const order of pendingOrders) {
-        try {
-          const response = await fetch(`/api/orders/${order.id}/status`)
-          if (response.ok) {
-            const data = await response.json()
-            setOrderStatuses(prev => ({
-              ...prev,
-              [order.id]: data.status
-            }))
-            setOrderDetails(prev => ({
-              ...prev,
-              [order.id]: data
-            }))
-
-            // Show toast for status changes
-            if (data.status === 'READY' || data.status === 'COMPLETED') {
-              toast.success(`${order.title} is ready for download!`)
-            } else if (data.status === 'FAILED') {
-              toast.error(`${order.title} failed to process`)
-            }
-          }
-        } catch (error) {
-          console.error(`Failed to poll status for order ${order.id}:`, error)
+      try {
+        await pollAllOrders()
+        
+        // Check for status changes and show notifications
+        const completedOrders = getCompletedOrders()
+        const failedOrders = getFailedOrders()
+        
+        // Notify about new completed orders
+        if (completedOrders.length > previousCompletedCount) {
+          const newCompleted = completedOrders.slice(previousCompletedCount)
+          newCompleted.forEach(order => {
+            toast.success(`🎉 Order ready: ${order.title}`, {
+              duration: 4000,
+              icon: '✅'
+            })
+          })
+          setPreviousCompletedCount(completedOrders.length)
         }
+        
+        // Notify about new failed orders
+        if (failedOrders.length > previousFailedCount) {
+          const newFailed = failedOrders.slice(previousFailedCount)
+          newFailed.forEach(order => {
+            toast.error(`❌ Order failed: ${order.title}`, {
+              duration: 5000,
+              icon: '⚠️'
+            })
+          })
+          setPreviousFailedCount(failedOrders.length)
+        }
+        
+      } catch (error) {
+        console.error('Error polling orders:', error)
+        toast.error('Failed to check order status', {
+          duration: 3000
+        })
       }
     }, 3000) // Poll every 3 seconds
 
     return () => clearInterval(pollInterval)
-  }, [isTrackingProgress, confirmedOrders, orderStatuses])
+  }, [step, isTrackingProgress, pollAllOrders, getCompletedOrders, getFailedOrders, previousCompletedCount, previousFailedCount])
 
   const handleGetFileInfo = async () => {
     try {
       const result = await parseUrls()
       
-      // Show summary toast
+      // Show summary toast with enhanced styling
       if (result.successCount > 0) {
-        toast.success(`Successfully parsed ${result.successCount} URL${result.successCount !== 1 ? 's' : ''}`)
+        toast.success(`✅ Successfully parsed ${result.successCount} URL${result.successCount !== 1 ? 's' : ''}`, {
+          duration: 3000,
+          icon: '🔍'
+        })
       }
       if (result.errorCount > 0) {
-        toast.error(`Failed to parse ${result.errorCount} URL${result.errorCount !== 1 ? 's' : ''}`)
+        toast.error(`⚠️ Failed to parse ${result.errorCount} URL${result.errorCount !== 1 ? 's' : ''}`, {
+          duration: 4000,
+          icon: '❌'
+        })
       }
     } catch (error) {
       console.error('Error processing URLs:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to process URLs. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to process URLs. Please try again.', {
+        duration: 5000,
+        icon: '❌'
+      })
     }
   }
 
   const handleConfirmOrder = async () => {
     try {
       const orders = await confirmOrder()
-      toast.success(`Successfully placed ${orders.length} order${orders.length !== 1 ? 's' : ''}!`)
       
-      // Initialize order statuses and start tracking
-      const initialStatuses: Record<string, string> = {}
-      orders.forEach(order => {
-        initialStatuses[order.id] = 'PENDING'
+      // Reset notification counters
+      setPreviousCompletedCount(0)
+      setPreviousFailedCount(0)
+      
+      toast.success(`🎉 Successfully placed ${orders.length} order${orders.length !== 1 ? 's' : ''}!`, {
+        duration: 4000,
+        icon: '✅'
       })
-      setOrderStatuses(initialStatuses)
-      setIsTrackingProgress(true)
     } catch (error) {
       console.error('Error placing order:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to place order. Please try again.', {
+        duration: 5000,
+        icon: '❌'
+      })
     }
   }
 
@@ -221,6 +238,24 @@ export default function OrderClient() {
           </Badge>
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <Alert variant="destructive" className="mb-6 border-red-500/50 bg-red-500/10">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-red-200">
+            {error}
+          </AlertDescription>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setError(null)}
+            className="ml-auto text-red-400 hover:text-red-300"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </Alert>
+      )}
 
       {/* Step 1: URL Input */}
       {preOrderItems.length === 0 && (
@@ -527,8 +562,7 @@ export default function OrderClient() {
           <CardContent>
             <div className="space-y-4">
               {confirmedOrders.map((order) => {
-                const currentStatus = orderStatuses[order.id] || 'PENDING'
-                const statusDetails = orderDetails[order.id]
+                const currentStatus = order.status
                 
                 return (
                   <div key={order.id} className="border border-white/10 rounded-lg p-4">
@@ -568,27 +602,30 @@ export default function OrderClient() {
                     </div>
 
                     {/* Progress Details */}
-                    {statusDetails && (
-                      <div className="bg-white/5 rounded-lg p-3">
-                        {statusDetails.estimatedTime && (
-                          <Typography variant="caption" className="text-gray-300">
-                            Estimated time: {statusDetails.estimatedTime}
-                          </Typography>
-                        )}
-                        {statusDetails.downloadUrl && currentStatus === 'READY' && (
-                          <div className="mt-2">
-                            <Button
-                              size="sm"
-                              onClick={() => window.open(statusDetails.downloadUrl, '_blank')}
-                              className="bg-green-500 hover:bg-green-600"
-                            >
-                              <Download className="h-4 w-4 mr-2" />
-                              Download Now
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <div className="bg-white/5 rounded-lg p-3">
+                      {currentStatus === 'PROCESSING' && (
+                        <Typography variant="caption" className="text-gray-300">
+                          Processing your order...
+                        </Typography>
+                      )}
+                      {order.downloadUrl && (currentStatus === 'READY' || currentStatus === 'COMPLETED') && (
+                        <div className="mt-2">
+                          <Button
+                            size="sm"
+                            onClick={() => window.open(order.downloadUrl, '_blank')}
+                            className="bg-green-500 hover:bg-green-600"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Now
+                          </Button>
+                        </div>
+                      )}
+                      {order.error && currentStatus === 'FAILED' && (
+                        <Typography variant="caption" className="text-red-300">
+                          Error: {order.error}
+                        </Typography>
+                      )}
+                    </div>
                   </div>
                 )
               })}

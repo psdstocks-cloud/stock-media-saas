@@ -115,6 +115,8 @@ interface OrderState {
   clearOrder: () => void
   startProgressTracking: () => void
   stopProgressTracking: () => void
+  pollOrderStatus: (orderId: string) => Promise<void>
+  pollAllOrders: () => Promise<void>
   
   // Computed values
   getTotalPoints: () => number
@@ -360,6 +362,63 @@ export const useOrderStore = create<OrderState>()(
         },
 
         stopProgressTracking: () => set({ isTrackingProgress: false }),
+
+        pollOrderStatus: async (orderId: string) => {
+          try {
+            const response = await fetch(`/api/orders/${orderId}/status`)
+            const data = await response.json()
+            
+            if (data.success && data.order) {
+              const { status, downloadUrl, error } = data.order
+              
+              // Update the order in confirmedOrders
+              set((state) => ({
+                confirmedOrders: state.confirmedOrders.map(order => 
+                  order.id === orderId 
+                    ? { 
+                        ...order, 
+                        status: status as any, 
+                        downloadUrl: downloadUrl || order.downloadUrl,
+                        error: error || order.error,
+                        updatedAt: new Date().toISOString()
+                      }
+                    : order
+                ),
+                orderStatuses: {
+                  ...state.orderStatuses,
+                  [orderId]: status
+                }
+              }))
+            }
+          } catch (error) {
+            console.error(`Failed to poll order ${orderId}:`, error)
+          }
+        },
+
+        pollAllOrders: async () => {
+          const state = get()
+          const pendingOrders = state.confirmedOrders.filter(order => 
+            order.status === 'PENDING' || order.status === 'PROCESSING'
+          )
+          
+          if (pendingOrders.length === 0) {
+            set({ isTrackingProgress: false })
+            return
+          }
+
+          // Poll each pending order
+          const promises = pendingOrders.map(order => get().pollOrderStatus(order.id))
+          await Promise.all(promises)
+          
+          // Check if any orders are still pending after polling
+          const stillPending = get().confirmedOrders.filter(order => 
+            order.status === 'PENDING' || order.status === 'PROCESSING'
+          )
+          
+          if (stillPending.length === 0) {
+            set({ isTrackingProgress: false })
+          }
+        },
 
         // Computed values
         getTotalPoints: () => {

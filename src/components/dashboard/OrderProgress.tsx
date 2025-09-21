@@ -33,7 +33,7 @@ export default function OrderProgress({ onBack }: OrderProgressProps) {
     getPendingOrders,
     getCompletedOrders,
     getFailedOrders,
-    updateOrderStatus,
+    pollAllOrders,
     stopProgressTracking
   } = useOrderStore()
 
@@ -43,7 +43,7 @@ export default function OrderProgress({ onBack }: OrderProgressProps) {
   const completedOrders = getCompletedOrders()
   const failedOrders = getFailedOrders()
 
-  // Poll for order status updates
+  // Enhanced polling with better error handling
   useEffect(() => {
     if (!isTrackingProgress || pendingOrders.length === 0) {
       return
@@ -53,50 +53,31 @@ export default function OrderProgress({ onBack }: OrderProgressProps) {
       setIsPolling(true)
       
       try {
-        // Poll each pending order
-        const promises = pendingOrders.map(async (order) => {
-          try {
-            const response = await fetch(`/api/orders/${order.id}/status`)
-            const data = await response.json()
-            
-            if (data.success && data.order) {
-              const { status, downloadUrl, error } = data.order
-              
-              // Update order status if it changed
-              if (status !== order.status) {
-                updateOrderStatus(order.id, status, downloadUrl, error)
-                
-                // Show toast notifications for status changes
-                if (status === 'READY' || status === 'COMPLETED') {
-                  toast.success(`Order ready: ${order.title}`)
-                } else if (status === 'FAILED') {
-                  toast.error(`Order failed: ${order.title}`)
-                }
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to poll order ${order.id}:`, error)
-          }
-        })
-
-        await Promise.all(promises)
+        await pollAllOrders()
         
-        // Check if all orders are no longer pending
+        // Check if all orders are completed
         const stillPending = getPendingOrders()
         if (stillPending.length === 0) {
           stopProgressTracking()
-          toast.success('All orders completed!')
+          toast.success('🎉 All orders completed!', {
+            duration: 4000,
+            icon: '✅'
+          })
         }
         
       } catch (error) {
         console.error('Error polling orders:', error)
+        toast.error('Failed to check order status', {
+          duration: 3000,
+          icon: '⚠️'
+        })
       } finally {
         setIsPolling(false)
       }
     }, 3000) // Poll every 3 seconds
 
     return () => clearInterval(pollInterval)
-  }, [isTrackingProgress, pendingOrders, updateOrderStatus, stopProgressTracking])
+  }, [isTrackingProgress, pendingOrders, pollAllOrders, stopProgressTracking, getPendingOrders])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -140,17 +121,8 @@ export default function OrderProgress({ onBack }: OrderProgressProps) {
   }
 
   const handleRefresh = () => {
-    // Force refresh all pending orders
-    pendingOrders.forEach(order => {
-      fetch(`/api/orders/${order.id}/status`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.order) {
-            updateOrderStatus(order.id, data.order.status, data.order.downloadUrl, data.order.error)
-          }
-        })
-        .catch(console.error)
-    })
+    // Force refresh all pending orders using store method
+    pollAllOrders()
   }
 
   const formatTime = (dateString: string) => {
