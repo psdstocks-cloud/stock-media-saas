@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/components/ui'
-import { User, LogOut, Shield, Settings, Download, Search } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import PointsOverview from '@/components/dashboard/PointsOverview'
+import OrdersManagement from '@/components/dashboard/OrdersManagement'
+import SubscriptionManagement from '@/components/dashboard/SubscriptionManagement'
+import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
+import ProfileSettings from '@/components/dashboard/ProfileSettings'
+import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch } from 'lucide-react'
 
 interface DashboardUser {
   id: string
@@ -15,6 +21,7 @@ interface DashboardUser {
 export default function DashboardPage() {
   const [user, setUser] = useState<DashboardUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
 
   useEffect(() => {
@@ -122,6 +129,17 @@ export default function DashboardPage() {
                 <User className="h-4 w-4" />
                 <span className="text-sm">{user.role}</span>
               </div>
+              {user.role === 'admin' || user.role === 'SUPER_ADMIN' ? (
+                <Button
+                  onClick={() => router.push('/admin/dashboard')}
+                  variant="outline"
+                  size="sm"
+                  className="border-white/30 text-white hover:bg-white/10"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Admin Panel
+                </Button>
+              ) : null}
               <Button
                 onClick={handleLogout}
                 variant="outline"
@@ -138,109 +156,85 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Search className="h-5 w-5 mr-2" />
-                Quick Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                onClick={() => alert('Search functionality coming soon!')}
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Search Stock Media
-              </Button>
-              <Button 
-                variant="outline"
-                className="w-full border-white/30 text-white hover:bg-white/10"
-                onClick={() => alert('Downloads coming soon!')}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                View Downloads
-              </Button>
-            </CardContent>
-          </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 bg-white/10 backdrop-blur-sm border-white/20">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 text-white">
+              <Coins className="h-4 w-4 mr-2" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="search" className="data-[state=active]:bg-white/20 text-white">
+              <FileSearch className="h-4 w-4 mr-2" />
+              Search
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="data-[state=active]:bg-white/20 text-white">
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Orders
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="data-[state=active]:bg-white/20 text-white">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Subscription
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="data-[state=active]:bg-white/20 text-white">
+              <Settings className="h-4 w-4 mr-2" />
+              Profile
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Account Info */}
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <User className="h-5 w-5 mr-2" />
-                Account Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-white/70">
-                <div className="flex justify-between">
-                  <span>Email:</span>
-                  <span className="text-white">{user.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Name:</span>
-                  <span className="text-white">{user.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Role:</span>
-                  <span className="text-orange-400 capitalize">{user.role.toLowerCase()}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Admin Panel */}
-          {user.role === 'admin' || user.role === 'SUPER_ADMIN' ? (
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <Shield className="h-5 w-5 mr-2" />
-                  Admin Panel
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
-                  onClick={() => router.push('/admin/dashboard')}
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  Admin Dashboard
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="w-full border-white/30 text-white hover:bg-white/10"
-                  onClick={() => alert('Settings coming soon!')}
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  System Settings
-                </Button>
-              </CardContent>
-            </Card>
-          ) : null}
-        </div>
-
-        {/* Welcome Message */}
-        <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl mt-8">
-          <CardHeader>
-            <CardTitle className="text-white">Welcome to Stock Media SaaS!</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Typography variant="body" className="text-white/70">
-              You have successfully logged in to your Stock Media SaaS account. 
-              The full dashboard functionality is being restored. In the meantime, 
-              you can access your account information and basic features above.
-            </Typography>
-            <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-              <Typography variant="body" className="text-orange-200 text-sm">
-                <strong>Note:</strong> The full dashboard features are temporarily disabled while we resolve 
-                some technical issues. We're working to restore all functionality as quickly as possible.
-              </Typography>
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PointsOverview />
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <User className="h-5 w-5 mr-2" />
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                    onClick={() => setActiveTab('search')}
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Search Stock Media
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-white/30 text-white hover:bg-white/10"
+                    onClick={() => setActiveTab('orders')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    View Downloads
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-white/30 text-white hover:bg-white/10"
+                    onClick={() => setActiveTab('subscription')}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Manage Subscription
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          <TabsContent value="search" className="mt-6">
+            <StockMediaSearch />
+          </TabsContent>
+
+          <TabsContent value="orders" className="mt-6">
+            <OrdersManagement />
+          </TabsContent>
+
+          <TabsContent value="subscription" className="mt-6">
+            <SubscriptionManagement />
+          </TabsContent>
+
+          <TabsContent value="profile" className="mt-6">
+            <ProfileSettings />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
