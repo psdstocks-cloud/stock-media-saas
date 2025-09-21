@@ -170,7 +170,18 @@ export async function POST(request: NextRequest) {
     if (!parseResult.success || !parseResult.data) {
       return NextResponse.json({
         success: false,
-        message: parseResult.error || 'Unable to parse URL'
+        message: 'Invalid or unsupported URL. Please check the link and try again.',
+        error: parseResult.error || 'Unable to parse URL',
+        supportedSites: [
+          'Shutterstock', 'Getty Images', 'Adobe Stock', 'Unsplash', 'Pexels', 
+          'Pixabay', 'Depositphotos', '123RF', 'Dreamstime', 'iStock', 
+          'Freepik', 'Pond5', 'Storyblocks', 'Envato Elements', 'Canva', 
+          'Vecteezy', 'Bigstock', 'Alamy', 'Rawpixel', 'Flaticon', 
+          'IconScout', 'Motion Array', 'Videoblocks', 'Epidemic Sound', 
+          'Soundstripe', 'Artlist', 'Creative Fabrica', 'Craftwork', 
+          'UI8', 'Pixeden', 'Pixel Buddha', 'Pixelsquid', 'Footage Crate', 
+          'Yellow Images'
+        ]
       }, { status: 400 });
     }
 
@@ -184,16 +195,29 @@ export async function POST(request: NextRequest) {
     if (!stockSite) {
       return NextResponse.json({
         success: false,
-        message: `Source site '${source}' is not supported`,
-        parsedData: parseResult.data
+        message: `Sorry, we don't currently support downloads from '${source}'. Please try a different stock media site.`,
+        error: `Source site '${source}' is not supported`,
+        parsedData: parseResult.data,
+        supportedSites: [
+          'Shutterstock', 'Getty Images', 'Adobe Stock', 'Unsplash', 'Pexels', 
+          'Pixabay', 'Depositphotos', '123RF', 'Dreamstime', 'iStock', 
+          'Freepik', 'Pond5', 'Storyblocks', 'Envato Elements', 'Canva', 
+          'Vecteezy', 'Bigstock', 'Alamy', 'Rawpixel', 'Flaticon', 
+          'IconScout', 'Motion Array', 'Videoblocks', 'Epidemic Sound', 
+          'Soundstripe', 'Artlist', 'Creative Fabrica', 'Craftwork', 
+          'UI8', 'Pixeden', 'Pixel Buddha', 'Pixelsquid', 'Footage Crate', 
+          'Yellow Images'
+        ]
       }, { status: 400 });
     }
 
     if (!stockSite.isActive) {
       return NextResponse.json({
         success: false,
-        message: `Downloads from '${source}' are temporarily disabled`,
-        parsedData: parseResult.data
+        message: `Downloads from '${source}' are temporarily disabled. Please try a different stock media site.`,
+        error: `Source site '${source}' is temporarily disabled`,
+        parsedData: parseResult.data,
+        suggestion: 'This site may be under maintenance. Please try again later or use a different stock media platform.'
       }, { status: 400 });
     }
 
@@ -226,8 +250,10 @@ export async function POST(request: NextRequest) {
       if (!stockInfo.success || !stockInfo.data) {
         return NextResponse.json({
           success: false,
-          message: stockInfo.message || 'Could not retrieve stock information',
-          parsedData: parseResult.data
+          message: 'Unable to retrieve file information. The URL may be invalid or the content may not be available.',
+          error: stockInfo.message || 'Could not retrieve stock information',
+          parsedData: parseResult.data,
+          suggestion: 'Please verify the URL is correct and try again. If the problem persists, the content may not be available for download.'
         }, { status: 502 });
       }
     }

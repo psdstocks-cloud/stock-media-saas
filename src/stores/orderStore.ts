@@ -60,9 +60,12 @@ export interface ConfirmedOrder {
   points: number
   type: string
   thumbnailUrl: string
-  status: string
+  status: 'PENDING' | 'PROCESSING' | 'READY' | 'COMPLETED' | 'FAILED'
   downloadUrl?: string
+  error?: string
+  estimatedTime?: string
   createdAt: string
+  updatedAt?: string
 }
 
 interface OrderState {
@@ -74,6 +77,10 @@ interface OrderState {
   // Confirmation state
   isConfirming: boolean
   confirmedOrders: ConfirmedOrder[]
+  
+  // Progress tracking
+  isTrackingProgress: boolean
+  orderStatuses: Record<string, string>
   
   // User balance
   userPoints: number
@@ -88,19 +95,27 @@ interface OrderState {
   setConfirming: (confirming: boolean) => void
   setConfirmedOrders: (orders: ConfirmedOrder[]) => void
   addConfirmedOrder: (order: ConfirmedOrder) => void
+  updateOrderStatus: (orderId: string, status: string, downloadUrl?: string, error?: string) => void
   
   setUserPoints: (points: number) => void
+  setTrackingProgress: (tracking: boolean) => void
+  setOrderStatuses: (statuses: Record<string, string>) => void
   
   // Complex actions
   parseUrls: () => Promise<{ successCount: number; errorCount: number }>
   confirmOrder: () => Promise<ConfirmedOrder[]>
   clearOrder: () => void
+  startProgressTracking: () => void
+  stopProgressTracking: () => void
   
   // Computed values
   getTotalPoints: () => number
   getSuccessfulItems: () => PreOrderItem[]
   getFailedItems: () => PreOrderItem[]
   canPlaceOrder: () => boolean
+  getPendingOrders: () => ConfirmedOrder[]
+  getCompletedOrders: () => ConfirmedOrder[]
+  getFailedOrders: () => ConfirmedOrder[]
 }
 
 export const useOrderStore = create<OrderState>()(
@@ -113,6 +128,8 @@ export const useOrderStore = create<OrderState>()(
         preOrderItems: [],
         isConfirming: false,
         confirmedOrders: [],
+        isTrackingProgress: false,
+        orderStatuses: {},
         userPoints: 0,
 
         // Basic setters
@@ -122,6 +139,8 @@ export const useOrderStore = create<OrderState>()(
         setConfirming: (confirming) => set({ isConfirming: confirming }),
         setConfirmedOrders: (orders) => set({ confirmedOrders: orders }),
         setUserPoints: (points) => set({ userPoints: points }),
+        setTrackingProgress: (tracking) => set({ isTrackingProgress: tracking }),
+        setOrderStatuses: (statuses) => set({ orderStatuses: statuses }),
 
         // Item management
         addPreOrderItem: (item) => set((state) => ({
@@ -132,6 +151,24 @@ export const useOrderStore = create<OrderState>()(
         })),
         addConfirmedOrder: (order) => set((state) => ({
           confirmedOrders: [...state.confirmedOrders, order]
+        })),
+
+        updateOrderStatus: (orderId, status, downloadUrl, error) => set((state) => ({
+          confirmedOrders: state.confirmedOrders.map(order => 
+            order.id === orderId 
+              ? { 
+                  ...order, 
+                  status: status as any, 
+                  downloadUrl: downloadUrl || order.downloadUrl,
+                  error: error || order.error,
+                  updatedAt: new Date().toISOString()
+                }
+              : order
+          ),
+          orderStatuses: {
+            ...state.orderStatuses,
+            [orderId]: status
+          }
         })),
 
         // Complex actions
@@ -287,8 +324,23 @@ export const useOrderStore = create<OrderState>()(
           preOrderItems: [],
           confirmedOrders: [],
           isLoading: false,
-          isConfirming: false
+          isConfirming: false,
+          isTrackingProgress: false,
+          orderStatuses: {}
         }),
+
+        startProgressTracking: () => {
+          const state = get()
+          const pendingOrders = state.confirmedOrders.filter(order => 
+            order.status === 'PENDING' || order.status === 'PROCESSING'
+          )
+          
+          if (pendingOrders.length > 0) {
+            set({ isTrackingProgress: true })
+          }
+        },
+
+        stopProgressTracking: () => set({ isTrackingProgress: false }),
 
         // Computed values
         getTotalPoints: () => {
@@ -314,6 +366,25 @@ export const useOrderStore = create<OrderState>()(
           const totalPoints = state.getTotalPoints()
           
           return successfulItems.length > 0 && state.userPoints >= totalPoints
+        },
+
+        getPendingOrders: () => {
+          const state = get()
+          return state.confirmedOrders.filter(order => 
+            order.status === 'PENDING' || order.status === 'PROCESSING'
+          )
+        },
+
+        getCompletedOrders: () => {
+          const state = get()
+          return state.confirmedOrders.filter(order => 
+            order.status === 'READY' || order.status === 'COMPLETED'
+          )
+        },
+
+        getFailedOrders: () => {
+          const state = get()
+          return state.confirmedOrders.filter(order => order.status === 'FAILED')
         }
       }),
       {
