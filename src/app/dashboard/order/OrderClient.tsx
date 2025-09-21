@@ -142,7 +142,8 @@ export default function OrderClient() {
           }
 
           const data = await response.json()
-          console.log('Debug - API response for URL:', url, data)
+          console.log('Debug - API response for URL:', url)
+          console.log('Debug - API response data:', JSON.stringify(data, null, 2))
           return { index, data }
         } catch (error) {
           return { index, error: error instanceof Error ? error.message : 'Unknown error' }
@@ -169,7 +170,12 @@ export default function OrderClient() {
             error
           }
         } else {
-          updatedItems[index] = {
+          console.log(`Debug - Creating item ${index} with data:`, JSON.stringify(data, null, 2))
+          console.log(`Debug - data.parsedData:`, data.parsedData)
+          console.log(`Debug - data.stockSite:`, data.stockSite)
+          console.log(`Debug - data.stockInfo:`, data.stockInfo)
+          
+          const newItem = {
             ...updatedItems[index],
             parsedData: data.parsedData,
             stockSite: data.stockSite,
@@ -179,6 +185,9 @@ export default function OrderClient() {
             },
             success: true
           }
+          
+          console.log(`Debug - Created item ${index}:`, JSON.stringify(newItem, null, 2))
+          updatedItems[index] = newItem
         }
       } else {
         console.log(`Debug - Result ${index} rejected:`, result.reason)
@@ -190,7 +199,7 @@ export default function OrderClient() {
       }
     })
 
-    console.log('Debug - Final updatedItems:', updatedItems)
+    console.log('Debug - Final updatedItems:', JSON.stringify(updatedItems, null, 2))
     setPreOrderItems(updatedItems)
     setIsLoading(false)
 
