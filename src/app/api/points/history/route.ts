@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
 import { rateLimiters } from '@/lib/rate-limiter'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -19,10 +20,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Authentication
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Try JWT authentication first (for dashboard)
+    const jwtUser = getUserFromRequest(request)
+    let userId = jwtUser?.id
+    
+    // Fallback to NextAuth session if no JWT user
+    if (!userId) {
+      const session = await auth()
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      userId = session.user.id
     }
 
     const { searchParams } = new URL(request.url)
@@ -42,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const whereClause: any = {
-      userId: session.user.id
+      userId: userId
     }
 
     // Add type filter
@@ -137,7 +145,7 @@ export async function GET(request: NextRequest) {
     // Get summary statistics
     const summary = await prisma.pointsHistory.aggregate({
       where: {
-        userId: session.user.id,
+        userId: userId,
         ...(startDate || endDate ? {
           createdAt: {
             ...(startDate && { gte: new Date(startDate) }),
@@ -157,7 +165,7 @@ export async function GET(request: NextRequest) {
     const typeBreakdown = await prisma.pointsHistory.groupBy({
       by: ['type'],
       where: {
-        userId: session.user.id,
+        userId: userId,
         ...(startDate || endDate ? {
           createdAt: {
             ...(startDate && { gte: new Date(startDate) }),

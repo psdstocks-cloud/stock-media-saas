@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { getUserFromRequest } from '@/lib/jwt-auth';
 import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
 // GET user profile with subscription and points
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return new NextResponse('Unauthorized', { status: 401 });
+export async function GET(request: NextRequest) {
+  // Try JWT authentication first (for dashboard)
+  const jwtUser = getUserFromRequest(request)
+  let userId = jwtUser?.id
+  
+  // Fallback to NextAuth session if no JWT user
+  if (!userId) {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+    userId = session.user.id
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: {
         id: true,
         name: true,

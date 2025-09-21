@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { PointsManager } from '@/lib/points'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +10,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
     
-    // Get user ID from session if not provided in query params
-    let finalUserId = userId
+    // Try JWT authentication first (for dashboard)
+    const jwtUser = getUserFromRequest(request)
+    let finalUserId = userId || jwtUser?.id
+    
+    // Fallback to NextAuth session if no JWT user
     if (!finalUserId) {
       const session = await auth()
       if (!session?.user?.id) {
