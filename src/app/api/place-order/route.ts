@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
-import { NehtwAPI, OrderManager } from '@/lib/nehtw-api'
 import { OrderProcessor } from '@/lib/order-processor'
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
@@ -27,198 +26,173 @@ export async function POST(request: NextRequest) {
       userId = session.user.id
     }
 
-    const { url, site, id, title, cost, imageUrl } = await request.json()
-    console.log('Request data:', { url, site, id, title, cost, imageUrl })
+    const requestData = await request.json()
+    console.log('Request data:', requestData)
 
-    if (!url || !site || !id || !cost) {
-      console.log('Missing required fields:', { url: !!url, site: !!site, id: !!id, cost: !!cost })
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    // Handle both single item and array of items
+    const items = Array.isArray(requestData) ? requestData : [requestData]
+    console.log('Processing items:', items.length)
+
+    // Validate each item
+    for (const item of items) {
+      if (!item.url || !item.site || !item.id || !item.cost) {
+        console.log('Missing required fields in item:', { 
+          url: !!item.url, 
+          site: !!item.site, 
+          id: !!item.id, 
+          cost: !!item.cost 
+        })
+        return NextResponse.json({ error: 'Missing required fields in item' }, { status: 400 })
+      }
     }
 
-    // Check if this item was already ordered (free download)
-    console.log('Checking for existing order...')
-    const existingOrder = await prisma.order.findFirst({
-      where: {
-        userId: userId,
-        stockItemId: id,
-        status: { in: ['READY', 'COMPLETED'] }
-      },
-      include: { stockSite: true }
-    })
+    // Process each item individually
+    const orders: any[] = []
+    let totalCost = 0
+    
+    for (const item of items) {
+      console.log(`Processing item: ${item.title}`)
+      
+      // Check if this item was already ordered (free download)
+      const existingOrder = await prisma.order.findFirst({
+        where: {
+          userId: userId,
+          stockItemId: item.id,
+          status: { in: ['READY', 'COMPLETED'] }
+        },
+        include: { stockSite: true }
+      })
 
-    if (existingOrder) {
-      console.log('Existing order found - providing free download')
-      return NextResponse.json({
-        success: true,
-        existingOrder: true,
-        order: {
+      if (existingOrder) {
+        console.log('Existing order found - providing free download')
+        orders.push({
           id: existingOrder.id,
           status: existingOrder.status,
           title: existingOrder.title,
-          cost: existingOrder.cost,
+          cost: 0, // Free download
           createdAt: existingOrder.createdAt,
           downloadUrl: existingOrder.downloadUrl,
-          stockSite: existingOrder.stockSite
-        },
-        message: 'You have already ordered this item. Download is free!'
-      })
-    }
-
-    // Check user balance for new orders
-    console.log('Checking user balance for new order...')
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { pointsBalance: true }
-    })
-    console.log('User found:', { user: !!user, pointsBalance: !!user?.pointsBalance })
-
-    if (!user || !user.pointsBalance) {
-      console.log('User not found or no points balance')
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    console.log('User points:', { current: user.pointsBalance.currentPoints, required: cost })
-    if (user.pointsBalance.currentPoints < cost) {
-      return NextResponse.json({ 
-        error: 'Insufficient points', 
-        currentPoints: user.pointsBalance.currentPoints,
-        requiredPoints: cost
-      }, { status: 400 })
-    }
-
-    // Find or create stock site
-    console.log('Finding or creating stock site for:', site)
-    let stockSite
-    try {
-      console.log('Attempting to find stock site with name:', site)
-      stockSite = await prisma.stockSite.findFirst({
-        where: { name: site }
-      })
-      console.log('Stock site found:', { found: !!stockSite, id: stockSite?.id, name: stockSite?.name })
-
-      if (!stockSite) {
-        console.log('Creating new stock site with data:', {
-          name: site,
-          displayName: site.charAt(0).toUpperCase() + site.slice(1),
-          cost: cost,
-          category: 'images',
-          isActive: true
+          stockSite: existingOrder.stockSite,
+          isRedownload: true
         })
-        // Create stock site if it doesn't exist
-        stockSite = await prisma.stockSite.create({
+        continue // Skip to next item
+      }
+      
+      // Add to total cost for new items
+      totalCost += item.cost
+    }
+
+    // Check user balance for new orders (only if we have new items to purchase)
+    if (totalCost > 0) {
+      console.log('Checking user balance for new orders...')
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { pointsBalance: true }
+      })
+      console.log('User found:', { user: !!user, pointsBalance: !!user?.pointsBalance })
+
+      if (!user || !user.pointsBalance) {
+        console.log('User not found or no points balance')
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      console.log('User points:', { current: user.pointsBalance.currentPoints, required: totalCost })
+      if (user.pointsBalance.currentPoints < totalCost) {
+        return NextResponse.json({ 
+          error: 'Insufficient points', 
+          currentPoints: user.pointsBalance.currentPoints,
+          requiredPoints: totalCost
+        }, { status: 400 })
+      }
+    }
+
+    // Process new items (create orders and deduct points)
+    const newItems = items.filter(item => {
+      return !orders.some(order => order.stockSite?.name === item.site && order.title === item.title)
+    })
+    
+    if (newItems.length > 0) {
+      console.log(`Creating ${newItems.length} new orders...`)
+      
+      // Deduct points for all new items at once
+      if (totalCost > 0) {
+        console.log(`Deducting ${totalCost} points from user balance...`)
+        await PointsManager.deductPoints(userId, totalCost, 'Order purchase', `Purchased ${newItems.length} items`)
+        console.log('Points deducted successfully using PointsManager')
+      }
+      
+      // Create orders for new items
+      for (const item of newItems) {
+        console.log(`Creating order for: ${item.title}`)
+        
+        // Find or create stock site for this item
+        let stockSite = await prisma.stockSite.findFirst({
+          where: { name: item.site }
+        })
+
+        if (!stockSite) {
+          console.log(`Creating new stock site: ${item.site}`)
+          stockSite = await prisma.stockSite.create({
+            data: {
+              name: item.site,
+              displayName: item.site.charAt(0).toUpperCase() + item.site.slice(1),
+              cost: item.cost,
+              category: 'images',
+              isActive: true
+            }
+          })
+        }
+        
+        // Create the order
+        const order = await prisma.order.create({
           data: {
-            name: site,
-            displayName: site.charAt(0).toUpperCase() + site.slice(1),
-            cost: cost,
-            category: 'images',
-            isActive: true
+            userId: userId,
+            stockSiteId: stockSite.id,
+            stockItemId: item.id,
+            title: item.title,
+            cost: item.cost,
+            status: 'PENDING',
+            imageUrl: item.imageUrl
           }
         })
-        console.log('Stock site created successfully:', { id: stockSite.id, name: stockSite.name })
+        
+        orders.push({
+          id: order.id,
+          status: order.status,
+          title: order.title,
+          cost: order.cost,
+          createdAt: order.createdAt,
+          stockSite: stockSite,
+          isRedownload: false
+        })
+        
+        console.log(`Order created: ${order.id}`)
       }
-    } catch (error) {
-      console.error('Error with stock site operations:', error)
-      console.error('Stock site error details:', {
-        site,
-        cost,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined
-      })
-      throw error
-    }
-
-    // Validate all parameters before creating order
-    if (!userId) {
-      console.log('ERROR: session.user.id is null or undefined')
-      return NextResponse.json({ error: 'Invalid user session' }, { status: 401 })
     }
     
-    if (!stockSite.id) {
-      console.log('ERROR: stockSite.id is null or undefined')
-      return NextResponse.json({ error: 'Invalid stock site' }, { status: 400 })
-    }
-    
-    if (!id) {
-      console.log('ERROR: id is null or undefined')
-      return NextResponse.json({ error: 'Invalid stock item ID' }, { status: 400 })
-    }
+    // TODO: Start processing for new orders
+    // This will be implemented in the next step with proper OrderProcessor integration
 
-    // Create order in database
-    console.log('Creating order in database...')
-    console.log('OrderManager.createOrder parameters:', {
-      userId: userId,
-      userIdLength: userId?.length,
-      userIdType: typeof userId,
-      stockSiteId: stockSite.id,
-      stockSiteIdLength: stockSite.id?.length,
-      stockSiteIdType: typeof stockSite.id,
-      stockItemId: id,
-      stockItemIdLength: id?.length,
-      stockItemIdType: typeof id,
-      stockItemUrl: url,
-      stockItemUrlLength: url?.length,
-      stockItemUrlType: typeof url,
-      title: title || 'Untitled',
-      titleLength: (title || 'Untitled')?.length,
-      titleType: typeof (title || 'Untitled'),
-      cost: cost,
-      costType: typeof cost
-    })
-    
-    console.log('🔍 DEBUG: Stock Item ID from API:', {
-      id,
-      idType: typeof id,
-      idLength: id?.length,
-      idValue: JSON.stringify(id)
-    })
-    
-    const order = await OrderManager.createOrder(
-      userId,
-      stockSite.id,
-      id,
-      url,
-      title || 'Untitled',
-      cost,
-      imageUrl || null
-    )
-    console.log('Order created:', { id: order.id, status: order.status })
-
-    // Deduct points using PointsManager (proper transaction handling)
-    console.log('Deducting points using PointsManager...')
-    await PointsManager.deductPoints(
-      userId,
-      cost,
-      `Download: ${title || 'Untitled'} from ${site}`,
-      order.id
-    )
-    console.log('Points deducted successfully using PointsManager')
-
-    // Start real-time order processing
-    const apiKey = process.env.NEHTW_API_KEY
-    if (!apiKey) {
-      console.log('NEHTW_API_KEY not configured')
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-    }
-
-    console.log('Starting real-time order processing for order:', order.id, 'with site:', site, 'id:', id)
-
-    // Start processing in background (don't await)
-    OrderProcessor.startProcessing(order.id, apiKey, site, id, url).catch(error => {
-      console.error('Background order processing failed:', error)
-    })
-
-    return NextResponse.json({
+    // Return all orders (both new and redownloads)
+    const response = {
       success: true,
-      order: {
-        id: order.id,
-        status: order.status,
-        title: order.title,
-        cost: order.cost,
-        createdAt: order.createdAt
+      orders: orders,
+      summary: {
+        total: orders.length,
+        new: orders.filter(o => !o.isRedownload).length,
+        redownloads: orders.filter(o => o.isRedownload).length,
+        totalCost: totalCost
       }
-    })
+    }
+    
+    console.log('Order processing completed:', response.summary)
+    return NextResponse.json(response)
+
   } catch (error) {
     console.error('Place order error:', error)
-    return NextResponse.json({ error: 'Failed to place order' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to place order',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
