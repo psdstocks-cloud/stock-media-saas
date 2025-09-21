@@ -181,7 +181,8 @@ export const PricingSection: React.FC = () => {
   const handleVirtualPurchaseSuccess = () => {
     setShowVirtualModal(false)
     setSelectedPack(null)
-    // Optionally refresh user data or show success message
+    // Redirect to order page to use the newly purchased points
+    router.push('/dashboard/order')
   }
 
   const getPackIcon = (pack: PointPack) => {
