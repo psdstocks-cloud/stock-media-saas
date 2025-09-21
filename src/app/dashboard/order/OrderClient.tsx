@@ -63,6 +63,10 @@ interface ConfirmedOrder {
   downloadUrl?: string
   estimatedTime?: string
   points: number
+  isProcessing?: boolean
+  canDownload?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 type OrderStep = 'input' | 'confirmation' | 'progress'
@@ -76,6 +80,7 @@ export default function OrderClient() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [userPoints, setUserPoints] = useState(0)
   const [isTrackingProgress, setIsTrackingProgress] = useState(false)
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
   // Fetch user points on mount
@@ -83,20 +88,71 @@ export default function OrderClient() {
     fetchUserPoints()
   }, [])
 
-  // Poll order status when in progress step
+  // Cleanup polling on unmount
   useEffect(() => {
-    if (step === 'progress' && confirmedOrders.length > 0) {
-      setIsTrackingProgress(true)
-      const interval = setInterval(() => {
-        pollOrderStatus()
-      }, 5000) // Poll every 5 seconds
-
-      return () => {
-        clearInterval(interval)
-        setIsTrackingProgress(false)
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
       }
     }
-  }, [step, confirmedOrders])
+  }, [pollingInterval])
+
+  // Track order status
+  const trackOrderStatus = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}/status`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch order status')
+      }
+      
+      const data = await response.json()
+      return data.order
+    } catch (error) {
+      console.error('Error tracking order:', error)
+      return null
+    }
+  }
+
+  // Start polling for order updates
+  const startOrderTracking = (orders: ConfirmedOrder[]) => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+    }
+
+    const interval = setInterval(async () => {
+      let allCompleted = true
+      const updatedOrders = await Promise.all(
+        orders.map(async (order) => {
+          const orderStatus = await trackOrderStatus(order.id)
+          if (orderStatus) {
+            allCompleted = allCompleted && !orderStatus.isProcessing
+            return {
+              ...order,
+              status: orderStatus.status,
+              downloadUrl: orderStatus.downloadUrl,
+              estimatedTime: orderStatus.estimatedTime,
+              isProcessing: orderStatus.isProcessing,
+              canDownload: orderStatus.canDownload,
+              updatedAt: orderStatus.updatedAt
+            }
+          }
+          return order
+        })
+      )
+
+      setConfirmedOrders(updatedOrders)
+
+      // Stop polling when all orders are completed
+      if (allCompleted) {
+        clearInterval(interval)
+        setPollingInterval(null)
+        setIsTrackingProgress(false)
+      }
+    }, 3000) // Poll every 3 seconds
+
+    setPollingInterval(interval)
+  }
+
 
   const fetchUserPoints = async () => {
     try {
@@ -257,11 +313,16 @@ export default function OrderClient() {
         source: order.stockSite?.name || 'Unknown',
         status: 'PENDING',
         points: order.cost || 10,
-        estimatedTime: '2-5 minutes'
+        estimatedTime: '2-5 minutes',
+        isProcessing: true,
+        canDownload: false
       })) || []
 
       setConfirmedOrders(orders)
       setStep('progress')
+      
+      // Start tracking order progress
+      startOrderTracking(orders)
       
       // Update user points
       await fetchUserPoints()
@@ -666,7 +727,18 @@ export default function OrderClient() {
                 <div className="flex items-center space-x-3">
                   {getStatusBadge(order.status)}
                   
-                  {order.status === 'READY' && order.downloadUrl && (
+                  {/* Real-time progress indicator */}
+                  {order.isProcessing && (
+                    <div className="flex items-center space-x-2 text-blue-400">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">
+                        {order.estimatedTime && `~${order.estimatedTime}`}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Download button when ready */}
+                  {order.canDownload && order.downloadUrl && (
                     <Button
                       size="sm"
                       onClick={() => window.open(order.downloadUrl, '_blank')}
@@ -676,20 +748,48 @@ export default function OrderClient() {
                       Download
                     </Button>
                   )}
+                  
+                  {/* Completed indicator */}
+                  {order.status === 'COMPLETED' && !order.downloadUrl && (
+                    <div className="flex items-center space-x-2 text-green-400">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm">Processing complete</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
 
             {/* Progress Info */}
             <div className="bg-white/5 rounded-lg p-4">
-              <div className="flex items-center text-white/80 text-sm">
-                <Clock className="h-4 w-4 mr-2" />
-                <span>
-                  {isTrackingProgress 
-                    ? 'Orders are being processed. This page will update automatically.'
-                    : 'All orders have been completed.'
-                  }
-                </span>
+              <div className="space-y-3">
+                <div className="flex items-center text-white/80 text-sm">
+                  <Clock className="h-4 w-4 mr-2" />
+                  <span>
+                    {isTrackingProgress 
+                      ? 'Orders are being processed. This page will update automatically every 3 seconds.'
+                      : 'All orders have been completed.'
+                    }
+                  </span>
+                </div>
+                
+                {/* Processing stats */}
+                {confirmedOrders.length > 0 && (
+                  <div className="flex items-center space-x-4 text-sm">
+                    <div className="flex items-center text-blue-400">
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      <span>
+                        {confirmedOrders.filter(o => o.isProcessing).length} processing
+                      </span>
+                    </div>
+                    <div className="flex items-center text-green-400">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <span>
+                        {confirmedOrders.filter(o => o.canDownload).length} ready to download
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
