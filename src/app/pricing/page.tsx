@@ -1,8 +1,14 @@
+'use client'
+
+import { useState } from 'react'
 import { Typography, Button } from "@/components/ui"
-import { Check, Star, Users, Zap, Crown } from "lucide-react"
+import { Check, Star, Users, Zap, Crown, CreditCard, Calendar } from "lucide-react"
 import { PricingSection } from "@/components/landing/PricingSection"
+import { SubscriptionPlansSection } from "@/components/landing/SubscriptionPlansSection"
 
 export default function PricingPage() {
+  const [pricingMode, setPricingMode] = useState<'pay-as-you-go' | 'subscriptions'>('pay-as-you-go')
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -33,18 +39,64 @@ export default function PricingPage() {
             Simple, <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Transparent</span> Pricing
           </Typography>
           <Typography variant="h3" className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Pay only for what you use. No subscriptions, no hidden fees, just straightforward pricing that scales with your needs.
+            Choose the pricing model that works best for you. Pay as you go or subscribe for monthly savings.
           </Typography>
-          <div className="inline-flex items-center px-4 py-2 bg-orange-50 border border-orange-200 rounded-full">
-            <Star className="h-4 w-4 text-orange-500 mr-2" />
-            <Typography variant="body-sm" className="text-orange-700 font-medium">
-              Most Popular: Professional Pack
-            </Typography>
+          
+          {/* Pricing Mode Toggle */}
+          <div className="flex justify-center mb-8">
+            <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+              <Button
+                variant={pricingMode === 'pay-as-you-go' ? 'default' : 'ghost'}
+                onClick={() => setPricingMode('pay-as-you-go')}
+                className={`px-6 py-2 rounded-md transition-all duration-200 ${
+                  pricingMode === 'pay-as-you-go'
+                    ? 'bg-white shadow-sm text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Pay As You Go
+              </Button>
+              <Button
+                variant={pricingMode === 'subscriptions' ? 'default' : 'ghost'}
+                onClick={() => setPricingMode('subscriptions')}
+                className={`px-6 py-2 rounded-md transition-all duration-200 ${
+                  pricingMode === 'subscriptions'
+                    ? 'bg-white shadow-sm text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Monthly Subscriptions
+              </Button>
+            </div>
           </div>
+
+          {pricingMode === 'pay-as-you-go' && (
+            <div className="inline-flex items-center px-4 py-2 bg-orange-50 border border-orange-200 rounded-full">
+              <Star className="h-4 w-4 text-orange-500 mr-2" />
+              <Typography variant="body-sm" className="text-orange-700 font-medium">
+                Most Popular: Professional Pack
+              </Typography>
+            </div>
+          )}
+          
+          {pricingMode === 'subscriptions' && (
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
+              <Crown className="h-4 w-4 text-blue-500 mr-2" />
+              <Typography variant="body-sm" className="text-blue-700 font-medium">
+                Best Value: Pro Monthly Plan
+              </Typography>
+            </div>
+          )}
         </div>
 
         {/* Pricing Section */}
-        <PricingSection />
+        {pricingMode === 'pay-as-you-go' ? (
+          <PricingSection />
+        ) : (
+          <SubscriptionPlansSection />
+        )}
 
         {/* FAQ Section */}
         <section className="mt-24">
@@ -54,12 +106,30 @@ export default function PricingPage() {
           <div className="max-w-3xl mx-auto space-y-8">
             <div className="border-b pb-6">
               <Typography variant="h3" className="text-xl font-semibold mb-3">
+                What's the difference between Pay As You Go and Subscriptions?
+              </Typography>
+              <Typography variant="body" className="text-muted-foreground">
+                Pay As You Go lets you buy points when you need them - perfect for occasional users. 
+                Monthly subscriptions give you points automatically every month at a better value - ideal for regular users. 
+                Both include the same features and commercial licensing.
+              </Typography>
+            </div>
+            <div className="border-b pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3">
                 How does the point system work?
               </Typography>
               <Typography variant="body" className="text-muted-foreground">
-                Each point pack gives you a certain number of points that you can use to download premium content. 
-                Points never expire and you can purchase additional packs anytime. Most images cost 10-50 points, 
-                videos cost 50-200 points, and audio files cost 20-100 points.
+                Each download costs 10 points regardless of the original price. Points never expire and you can 
+                purchase additional packs anytime. With subscriptions, you get fresh points delivered monthly.
+              </Typography>
+            </div>
+            <div className="border-b pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3">
+                Can I cancel my subscription anytime?
+              </Typography>
+              <Typography variant="body" className="text-muted-foreground">
+                Yes! You can cancel or change your subscription anytime from your dashboard. Your points will 
+                remain in your account and you can continue using them even after cancellation.
               </Typography>
             </div>
             <div className="border-b pb-6">
@@ -74,29 +144,11 @@ export default function PricingPage() {
             </div>
             <div className="border-b pb-6">
               <Typography variant="h3" className="text-xl font-semibold mb-3">
-                Can I share downloads with my team?
+                Can I switch between Pay As You Go and Subscriptions?
               </Typography>
               <Typography variant="body" className="text-muted-foreground">
-                Yes! With Professional and Enterprise packs, you can share your downloads with team members. 
-                Enterprise plans include advanced team management features and custom integrations.
-              </Typography>
-            </div>
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
-                Do points expire?
-              </Typography>
-              <Typography variant="body" className="text-muted-foreground">
-                No, your points never expire. You can use them whenever you need them, making our system perfect 
-                for both regular users and occasional creators.
-              </Typography>
-            </div>
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
-                What if I need more points?
-              </Typography>
-              <Typography variant="body" className="text-muted-foreground">
-                You can purchase additional point packs anytime. We also offer bulk discounts for large orders 
-                and custom enterprise solutions for high-volume users.
+                Absolutely! You can have both point packs and subscriptions. Your points are combined in one account, 
+                and you can manage everything from your dashboard.
               </Typography>
             </div>
             <div>
