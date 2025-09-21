@@ -22,9 +22,9 @@ export interface UrlParseResult {
  */
 export class UrlParser {
   private static readonly URL_PATTERNS = [
-    // Shutterstock patterns - extract just the numeric ID
-    { source: 'shutterstock', pattern: /shutterstock\.com\/(?:image-)?(?:photo|vector|illustration|video)\/[^\/\?]*?(\d+)/i },
-    { source: 'shutterstock', pattern: /shutterstock\.com\/[^\/]*?(\d+)/i },
+    // Shutterstock patterns - match official Nehtw API pattern exactly
+    { source: 'shutterstock', pattern: /shutterstock\.com\/(.*)(image-vector|image-photo|image-illustration|image|image-generated|editorial)\/([0-9a-zA-Z-_]*)-([0-9a-z]*)/i },
+    { source: 'shutterstock', pattern: /shutterstock\.com\/(.*)(image-vector|image-photo|image-illustration|image-generated|editorial)\/([0-9a-z]*)/i },
     
     // Getty Images patterns
     { source: 'getty', pattern: /gettyimages\.com\/detail\/(?:photo|illustration|vector|video)\/([^\/\?]+)/i },
@@ -181,7 +181,11 @@ export class UrlParser {
       for (const pattern of this.URL_PATTERNS) {
         const match = cleanUrl.match(pattern.pattern);
         if (match) {
-          const id = match[1] || match[2] || match[0];
+          // For Shutterstock, use the 4th capture group (numeric ID after the dash)
+          // For other sites, use the first available capture group
+          const id = pattern.source === 'shutterstock' 
+            ? (match[4] || match[3] || match[2] || match[1])
+            : (match[1] || match[2] || match[0]);
           if (id && id.length > 0) {
         return {
               success: true,
@@ -339,7 +343,9 @@ export class UrlParser {
           const match = cleanUrl.match(pattern.pattern);
           if (match) {
             details.matchedPattern = pattern;
-            details.extractedId = match[1] || match[2] || match[0];
+            details.extractedId = pattern.source === 'shutterstock' 
+              ? (match[4] || match[3] || match[2] || match[1])
+              : (match[1] || match[2] || match[0]);
             break;
           }
         }
