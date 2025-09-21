@@ -43,9 +43,9 @@ export interface StockInfo {
 
 export interface PreOrderItem {
   url: string
-  parsedData: ParsedUrl
-  stockSite: StockSite
-  stockInfo: StockInfo
+  parsedData: ParsedUrl | null
+  stockSite: StockSite | null
+  stockInfo: StockInfo | null
   success: boolean
   error?: string
 }
@@ -92,8 +92,8 @@ interface OrderState {
   setUserPoints: (points: number) => void
   
   // Complex actions
-  parseUrls: () => Promise<void>
-  confirmOrder: () => Promise<void>
+  parseUrls: () => Promise<{ successCount: number; errorCount: number }>
+  confirmOrder: () => Promise<ConfirmedOrder[]>
   clearOrder: () => void
   
   // Computed values

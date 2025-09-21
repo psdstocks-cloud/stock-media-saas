@@ -16,10 +16,6 @@ export { Typography, typographyVariants } from "./typography"
 
 // Purchase Components
 export { PurchaseConfirmationModal } from "../purchase/PurchaseConfirmationModal"
-export { PurchaseConfirmationModalStore } from "../purchase/PurchaseConfirmationModalStore"
-
-// Modal Components
-export { OrderConfirmationModal } from "../modals/OrderConfirmationModal"
 
 // Landing Components
 export { HeroSection } from "../landing/HeroSection"

@@ -5,10 +5,10 @@ import { auth } from '@/auth'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const orderId = params.id
+    const { id: orderId } = await params
 
     // Try JWT authentication first (for dashboard)
     const jwtUser = getUserFromRequest(request)
@@ -35,6 +35,12 @@ export async function GET(
             id: true,
             name: true,
             email: true
+          }
+        },
+        stockSite: {
+          select: {
+            name: true,
+            displayName: true
           }
         }
       }
@@ -72,15 +78,15 @@ export async function GET(
         id: order.id,
         status: order.status,
         title: order.title,
-        source: order.source,
-        assetId: order.assetId,
+        source: order.stockSite.name,
+        assetId: order.stockItemId,
         downloadUrl: order.downloadUrl,
         estimatedTime,
         isProcessing,
         canDownload,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
-        error: order.error
+        error: null // Order model doesn't have error field
       }
     })
 
@@ -94,10 +100,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const orderId = params.id
+    const { id: orderId } = await params
     const { status, downloadUrl, error } = await request.json()
 
     // Validate status
@@ -114,7 +120,6 @@ export async function PATCH(
       data: {
         status,
         downloadUrl: downloadUrl || null,
-        error: error || null,
         updatedAt: new Date()
       },
       include: {
@@ -123,6 +128,12 @@ export async function PATCH(
             id: true,
             name: true,
             email: true
+          }
+        },
+        stockSite: {
+          select: {
+            name: true,
+            displayName: true
           }
         }
       }
@@ -134,12 +145,12 @@ export async function PATCH(
         id: updatedOrder.id,
         status: updatedOrder.status,
         title: updatedOrder.title,
-        source: updatedOrder.source,
-        assetId: updatedOrder.assetId,
+        source: updatedOrder.stockSite.name,
+        assetId: updatedOrder.stockItemId,
         downloadUrl: updatedOrder.downloadUrl,
         createdAt: updatedOrder.createdAt,
         updatedAt: updatedOrder.updatedAt,
-        error: updatedOrder.error
+        error: null // Order model doesn't have error field
       }
     })
 

@@ -305,7 +305,7 @@ export default function OrderProgressTracker({
             {order.estimatedTime && (
               <div className="flex items-center gap-2 text-yellow-400">
                 <Clock className="h-4 w-4" />
-                <Typography variant="small" className="text-yellow-400">
+                <Typography variant="caption" className="text-yellow-400">
                   Estimated time remaining: {order.estimatedTime}
                 </Typography>
               </div>
@@ -313,7 +313,7 @@ export default function OrderProgressTracker({
             
             <div className="flex items-center gap-2 text-blue-400">
               <RefreshCw className="h-4 w-4 animate-spin" />
-              <Typography variant="small" className="text-blue-400">
+              <Typography variant="caption" className="text-blue-400">
                 Checking status every 10 seconds...
               </Typography>
             </div>

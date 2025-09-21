@@ -115,7 +115,7 @@ export default function OrderClient() {
           <LinkIcon className="inline h-8 w-8 mr-3 text-purple-400" />
           Stock Media Order
         </Typography>
-        <Typography variant="p" className="text-gray-300 text-lg">
+        <Typography variant="body" className="text-gray-300 text-lg">
           Paste stock media URLs to get file information and place orders
         </Typography>
         
@@ -234,7 +234,7 @@ export default function OrderClient() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-500" />
-                          <Typography variant="small" className="text-green-400">
+                          <Typography variant="caption" className="text-green-400">
                             Ready to order
                           </Typography>
                         </div>
@@ -266,33 +266,33 @@ export default function OrderClient() {
                               {getTypeIcon(item.stockInfo.type)}
                               {item.stockInfo.title}
                             </Typography>
-                            <Typography variant="small" className="text-gray-400">
+                            <Typography variant="caption" className="text-gray-400">
                               {item.stockSite.displayName}
                             </Typography>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <Typography variant="label" className="text-gray-300">Type</Typography>
-                              <Typography variant="p" className="text-white">
+                              <Typography variant="caption" className="text-gray-300">Type</Typography>
+                              <Typography variant="body" className="text-white">
                                 {item.stockInfo.type}
                               </Typography>
                             </div>
                             <div>
-                              <Typography variant="label" className="text-gray-300">Price</Typography>
-                              <Typography variant="p" className="text-white font-semibold">
+                              <Typography variant="caption" className="text-gray-300">Price</Typography>
+                              <Typography variant="body" className="text-white font-semibold">
                                 ${item.stockInfo.price}
                               </Typography>
                             </div>
                             <div>
-                              <Typography variant="label" className="text-gray-300">Points Required</Typography>
-                              <Typography variant="p" className="text-white font-semibold text-purple-400">
+                              <Typography variant="caption" className="text-gray-300">Points Required</Typography>
+                              <Typography variant="body" className="text-white font-semibold text-purple-400">
                                 {item.stockInfo.points.toLocaleString()}
                               </Typography>
                             </div>
                             <div>
-                              <Typography variant="label" className="text-gray-300">Author</Typography>
-                              <Typography variant="p" className="text-white">
+                              <Typography variant="caption" className="text-gray-300">Author</Typography>
+                              <Typography variant="body" className="text-white">
                                 {item.stockInfo.author.name}
                               </Typography>
                             </div>
@@ -318,7 +318,7 @@ export default function OrderClient() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <AlertCircle className="h-4 w-4 text-red-500" />
-                          <Typography variant="small" className="text-red-400">
+                          <Typography variant="caption" className="text-red-400">
                             Failed to parse
                           </Typography>
                         </div>
@@ -333,10 +333,10 @@ export default function OrderClient() {
                       </div>
 
                       <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                        <Typography variant="small" className="text-red-300 mb-2">
+                        <Typography variant="caption" className="text-red-300 mb-2">
                           URL: {item.url}
                         </Typography>
-                        <Typography variant="small" className="text-red-300">
+                        <Typography variant="caption" className="text-red-300">
                           Error: {item.error || 'Unknown error occurred'}
                         </Typography>
                       </div>
@@ -355,20 +355,20 @@ export default function OrderClient() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <Typography variant="label" className="text-gray-300">Items</Typography>
-                      <Typography variant="p" className="text-white font-semibold">
+                      <Typography variant="caption" className="text-gray-300">Items</Typography>
+                      <Typography variant="body" className="text-white font-semibold">
                         {getSuccessfulItems().length} item{getSuccessfulItems().length !== 1 ? 's' : ''}
                       </Typography>
                     </div>
                     <div>
-                      <Typography variant="label" className="text-gray-300">Total Points</Typography>
-                      <Typography variant="p" className="text-white font-semibold text-purple-400">
+                      <Typography variant="caption" className="text-gray-300">Total Points</Typography>
+                      <Typography variant="body" className="text-white font-semibold text-purple-400">
                         {getTotalPoints().toLocaleString()}
                       </Typography>
                     </div>
                     <div>
-                      <Typography variant="label" className="text-gray-300">Your Balance</Typography>
-                      <Typography variant="p" className="text-white font-semibold">
+                      <Typography variant="caption" className="text-gray-300">Your Balance</Typography>
+                      <Typography variant="body" className="text-white font-semibold">
                         {userPoints.toLocaleString()}
                       </Typography>
                     </div>

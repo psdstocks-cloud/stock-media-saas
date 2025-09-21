@@ -1,7 +1,32 @@
 'use client'
 
 import React, { createContext, useContext, useState, useCallback } from 'react'
-import { MediaItem } from '@/components/search/MediaCard'
+// MediaItem interface
+interface MediaItem {
+  id: string
+  title: string
+  description?: string
+  thumbnailUrl: string
+  previewUrl?: string
+  type: 'photo' | 'video' | 'audio' | 'vector' | 'illustration'
+  category: string
+  license: string
+  price: number
+  points: number
+  size: string
+  dimensions?: { width: number; height: number }
+  author: {
+    id: string
+    name: string
+    avatar?: string
+  }
+  tags: string[]
+  createdAt: string
+  rating: number
+  downloadCount: number
+  isAvailable: boolean
+  downloadUrl?: string
+}
 
 interface PurchaseContextType {
   selectedMedia: MediaItem | null

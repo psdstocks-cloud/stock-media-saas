@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     // Parse the URL using our advanced parser
     const parseResult = parseStockMediaUrl(url);
     
-    if (!parseResult.success) {
+    if (!parseResult.success || !parseResult.data) {
       return NextResponse.json({
         success: false,
         message: parseResult.error || 'Unable to parse URL'
