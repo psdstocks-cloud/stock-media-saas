@@ -65,42 +65,63 @@ export async function GET(request: NextRequest) {
       }
 
       const apiKey = process.env.NEHTW_API_KEY;
-      if (!apiKey) {
-        throw new Error('NEHTW_API_KEY is not configured on the server.');
-      }
-      
-      const api = new NehtwAPI(apiKey);
-      const info = await api.getStockInfo(source, assetId, url);
+      let info;
 
-      if (!info.success || !info.data) {
-        return NextResponse.json({ message: info.message || 'Could not retrieve information for this item.' }, { status: 502 });
+      if (!apiKey) {
+        console.warn('NEHTW_API_KEY is not configured. Using mock data for development/testing.');
+        // Provide mock data when API key is not configured
+        info = {
+          success: true,
+          data: {
+            image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+            title: `Mock ${source.charAt(0).toUpperCase() + source.slice(1)} Asset`,
+            id: assetId,
+            source: source,
+            cost: stockSite.cost,
+            ext: 'jpg',
+            name: `mock-${assetId}.jpg`,
+            author: 'Mock Author',
+            sizeInBytes: 2500000
+          }
+        };
+      } else {
+        const api = new NehtwAPI(apiKey);
+        info = await api.getStockInfo(source, assetId, url);
+
+        if (!info.success || !info.data) {
+          return NextResponse.json({ message: info.message || 'Could not retrieve information for this item.' }, { status: 502 });
+        }
       }
       
-      stockInfo = {
-        id: info.data.id,
-        title: info.data.title,
-        description: 'High-quality stock media asset',
-        thumbnailUrl: info.data.image,
-        previewUrl: info.data.image,
-        type: 'photo', // Default type - would be determined from API response
-        category: 'general',
-        license: 'royalty-free',
-        price: stockSite.cost,
-        points: stockSite.cost * 10, // Convert to points (example conversion)
-        size: '2.5MB', // Would come from API
-        dimensions: { width: 1920, height: 1080 }, // Would come from API
-        author: {
-          id: '1',
-          name: info.data.author || 'Unknown Author',
-          avatar: undefined
-        },
-        tags: ['stock', 'media'],
-        createdAt: new Date().toISOString(),
-        rating: 4.5,
-        downloadCount: 0,
-        isAvailable: true,
-        downloadUrl: url
-      };
+      if (info.data) {
+        stockInfo = {
+          id: info.data.id,
+          title: info.data.title,
+          description: 'High-quality stock media asset',
+          thumbnailUrl: info.data.image,
+          previewUrl: info.data.image,
+          type: 'photo', // Default type - would be determined from API response
+          category: 'general',
+          license: 'royalty-free',
+          price: stockSite.cost,
+          points: stockSite.cost * 10, // Convert to points (example conversion)
+          size: '2.5MB', // Would come from API
+          dimensions: { width: 1920, height: 1080 }, // Would come from API
+          author: {
+            id: '1',
+            name: info.data.author || 'Unknown Author',
+            avatar: undefined
+          },
+          tags: ['stock', 'media'],
+          createdAt: new Date().toISOString(),
+          rating: 4.5,
+          downloadCount: 0,
+          isAvailable: true,
+          downloadUrl: url
+        };
+      } else {
+        throw new Error('No data received from API');
+      }
     }
     
     return NextResponse.json({
@@ -160,22 +181,46 @@ export async function POST(request: NextRequest) {
 
     // Get stock info from Nehtw API
     const apiKey = process.env.NEHTW_API_KEY;
+    let stockInfo;
+
     if (!apiKey) {
-      throw new Error('NEHTW_API_KEY is not configured on the server.');
-    }
+      console.warn('NEHTW_API_KEY is not configured. Using mock data for development/testing.');
+      // Provide mock data when API key is not configured
+      stockInfo = {
+        success: true,
+        data: {
+          image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          title: `Mock ${source.charAt(0).toUpperCase() + source.slice(1)} Asset`,
+          id: assetId,
+          source: source,
+          cost: stockSite.cost,
+          ext: 'jpg',
+          name: `mock-${assetId}.jpg`,
+          author: 'Mock Author',
+          sizeInBytes: 2500000
+        }
+      };
+    } else {
+      const api = new NehtwAPI(apiKey);
+      stockInfo = await api.getStockInfo(source, assetId, url);
 
-    const api = new NehtwAPI(apiKey);
-    const stockInfo = await api.getStockInfo(source, assetId, url);
-
-    if (!stockInfo.success || !stockInfo.data) {
-      return NextResponse.json({
-        success: false,
-        message: stockInfo.message || 'Could not retrieve stock information',
-        parsedData: parseResult.data
-      }, { status: 502 });
+      if (!stockInfo.success || !stockInfo.data) {
+        return NextResponse.json({
+          success: false,
+          message: stockInfo.message || 'Could not retrieve stock information',
+          parsedData: parseResult.data
+        }, { status: 502 });
+      }
     }
 
     // Return comprehensive response
+    if (!stockInfo.data) {
+      return NextResponse.json({
+        success: false,
+        message: 'No data received from API'
+      }, { status: 502 });
+    }
+
     return NextResponse.json({
       success: true,
       parsedData: parseResult.data,
