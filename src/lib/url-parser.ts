@@ -22,9 +22,9 @@ export interface UrlParseResult {
  */
 export class UrlParser {
   private static readonly URL_PATTERNS = [
-    // Shutterstock patterns
-    { source: 'shutterstock', pattern: /shutterstock\.com\/(?:image-)?(?:photo|vector|illustration|video)\/([^\/\?]+)/i },
-    { source: 'shutterstock', pattern: /shutterstock\.com\/[^\/]+\/([^\/\?]+)/i },
+    // Shutterstock patterns - extract just the numeric ID
+    { source: 'shutterstock', pattern: /shutterstock\.com\/(?:image-)?(?:photo|vector|illustration|video)\/[^\/\?]*?(\d+)/i },
+    { source: 'shutterstock', pattern: /shutterstock\.com\/[^\/]*?(\d+)/i },
     
     // Getty Images patterns
     { source: 'getty', pattern: /gettyimages\.com\/detail\/(?:photo|illustration|vector|video)\/([^\/\?]+)/i },
