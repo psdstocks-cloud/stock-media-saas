@@ -67,8 +67,9 @@ export async function GET(request: NextRequest) {
       const apiKey = process.env.NEHTW_API_KEY;
       let info;
 
-      if (!apiKey) {
-        console.warn('NEHTW_API_KEY is not configured. Using mock data for development/testing.');
+      // Temporarily force mock data mode until API key is properly configured
+      if (!apiKey || process.env.FORCE_MOCK_DATA === 'true') {
+        console.warn('Using mock data mode for testing. Set NEHTW_API_KEY and FORCE_MOCK_DATA=false for production.');
         // Provide mock data when API key is not configured
         info = {
           success: true,
@@ -137,13 +138,30 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { url } = await request.json();
+    const { url, userId } = await request.json();
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json({ 
         success: false,
         message: 'URL is required and must be a string' 
       }, { status: 400 });
+    }
+
+    // Check if user has enough points before parsing (optional validation)
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { pointsBalance: true }
+      });
+
+      if (!user?.pointsBalance || user.pointsBalance.currentPoints < 10) {
+        return NextResponse.json({
+          success: false,
+          message: 'Insufficient points. You need at least 10 points to download media.',
+          requiredPoints: 10,
+          currentPoints: user?.pointsBalance?.currentPoints || 0
+        }, { status: 400 });
+      }
     }
 
     // Parse the URL using our advanced parser
@@ -183,8 +201,9 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.NEHTW_API_KEY;
     let stockInfo;
 
-    if (!apiKey) {
-      console.warn('NEHTW_API_KEY is not configured. Using mock data for development/testing.');
+    // Temporarily force mock data mode until API key is properly configured
+    if (!apiKey || process.env.FORCE_MOCK_DATA === 'true') {
+      console.warn('Using mock data mode for testing. Set NEHTW_API_KEY and FORCE_MOCK_DATA=false for production.');
         // Provide mock data when API key is not configured
         stockInfo = {
           success: true,
