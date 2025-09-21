@@ -1,4 +1,7 @@
 import { prisma } from './prisma'
+import { PrismaClient } from '@prisma/client'
+
+type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>
 
 export class PointsManager {
   /**
@@ -63,15 +66,17 @@ export class PointsManager {
     userId: string,
     amount: number,
     description?: string,
-    orderId?: string
+    orderId?: string,
+    tx?: PrismaTransactionClient
   ) {
-    const transaction = await prisma.$transaction(async (tx) => {
+    const db = tx || prisma
+    const transaction = await (tx ? Promise.resolve(tx) : prisma.$transaction(async (transactionClient) => {
       // Get current balance and rollover records
       const [balance, rolloverRecords] = await Promise.all([
-        tx.pointsBalance.findUnique({
+        db.pointsBalance.findUnique({
           where: { userId },
         }),
-        tx.rolloverRecord.findMany({
+        db.rolloverRecord.findMany({
           where: {
             userId,
             expiresAt: {
@@ -119,7 +124,7 @@ export class PointsManager {
 
       // Process rollover deductions
       for (const deduction of rolloverDeductions) {
-        const record = await tx.rolloverRecord.findUnique({
+        const record = await db.rolloverRecord.findUnique({
           where: { id: deduction.id },
         })
 
@@ -127,12 +132,12 @@ export class PointsManager {
           // Update or delete rollover record
           if (record.amount === deduction.amount) {
             // Delete the record completely
-            await tx.rolloverRecord.delete({
+            await db.rolloverRecord.delete({
               where: { id: deduction.id },
             })
           } else {
             // Reduce the amount
-            await tx.rolloverRecord.update({
+            await db.rolloverRecord.update({
               where: { id: deduction.id },
               data: {
                 amount: { decrement: deduction.amount },
@@ -141,7 +146,7 @@ export class PointsManager {
           }
 
           // Create history entry for rollover usage
-          await tx.pointsHistory.create({
+          await db.pointsHistory.create({
             data: {
               userId,
               type: 'ROLLOVER_USED',
@@ -156,7 +161,7 @@ export class PointsManager {
       // Process regular balance deduction
       if (pointsToDeductFromBalance > 0) {
         // Update points balance
-        await tx.pointsBalance.update({
+        await db.pointsBalance.update({
           where: { userId },
           data: {
             currentPoints: { decrement: pointsToDeductFromBalance },
@@ -165,7 +170,7 @@ export class PointsManager {
         })
 
         // Create points history entry
-        await tx.pointsHistory.create({
+        await db.pointsHistory.create({
           data: {
             userId,
             type: 'DOWNLOAD',
@@ -177,12 +182,12 @@ export class PointsManager {
       }
 
       // Return updated balance
-      const updatedBalance = await tx.pointsBalance.findUnique({
+      const updatedBalance = await db.pointsBalance.findUnique({
         where: { userId },
       })
 
       return updatedBalance!
-    })
+    }))
 
     return transaction
   }
