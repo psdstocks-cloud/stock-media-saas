@@ -5,7 +5,7 @@
  * Tests the comprehensive URL parser with various stock media site URLs
  */
 
-import { parseStockMediaUrl, testUrlParsing, getSupportedSites } from '../src/lib/url-parser';
+import { parseStockMediaUrl, testStockMediaUrl, getSupportedSources } from '../src/lib/url-parser';
 
 // Test URLs from various stock media sites
 const testUrls = [
@@ -174,14 +174,14 @@ function runTests(): TestResult[] {
   for (const url of testUrls) {
     console.log(`Testing: ${url}`);
     
-    const testResult = testUrlParsing(url);
+    const parseResult = parseStockMediaUrl(url);
     const result: TestResult = {
       url,
-      success: testResult.result.success,
-      source: testResult.result.data?.source,
-      id: testResult.result.data?.id,
-      error: testResult.result.error,
-      details: testResult.details
+      success: parseResult.success,
+      source: parseResult.data?.source,
+      id: parseResult.data?.id,
+      error: parseResult.error,
+      details: parseResult.success ? 'Parsed successfully' : parseResult.error
     };
     
     results.push(result);
@@ -205,7 +205,7 @@ function runTests(): TestResult[] {
   
   // Show supported sites
   console.log('\n🌐 Supported Sites:');
-  const supportedSites = getSupportedSites();
+  const supportedSites = getSupportedSources();
   console.log(supportedSites.join(', '));
   
   // Group results by source

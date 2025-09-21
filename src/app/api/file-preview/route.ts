@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { StockAPI } from '@/lib/stock-api'
-import { ComprehensiveUrlParser } from '@/lib/comprehensive-url-parser'
+import { comprehensiveParseStockUrl } from '@/lib/comprehensive-url-parser'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
