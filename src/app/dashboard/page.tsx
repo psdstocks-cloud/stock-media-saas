@@ -20,6 +20,7 @@ interface DashboardUser {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<DashboardUser | null>(null)
+  const [userPoints, setUserPoints] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
@@ -57,6 +58,25 @@ export default function DashboardPage() {
 
     verifyAuth()
   }, [router])
+
+  // Fetch user points when user is authenticated
+  useEffect(() => {
+    const fetchUserPoints = async () => {
+      if (!user) return
+      
+      try {
+        const response = await fetch('/api/points')
+        if (response.ok) {
+          const data = await response.json()
+          setUserPoints(data.data?.currentPoints || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching user points:', error)
+      }
+    }
+
+    fetchUserPoints()
+  }, [user])
 
   const handleLogout = async () => {
     try {
@@ -181,6 +201,43 @@ export default function DashboardPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
+            {/* Points Hub - Prominent display */}
+            <Card className="bg-gradient-to-r from-orange-500/20 to-purple-500/20 backdrop-blur-sm border-white/30 shadow-2xl mb-8">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center">
+                      <Coins className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <Typography variant="h1" className="text-white text-4xl font-bold">
+                        {userPoints?.toLocaleString() || '0'} Points
+                      </Typography>
+                      <Typography variant="body" className="text-white/70 text-lg">
+                        Available for downloads
+                      </Typography>
+                    </div>
+                  </div>
+                  <div className="flex space-x-4">
+                    <Button
+                      onClick={() => router.push('/dashboard/order')}
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 px-8 py-3 text-lg"
+                    >
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Order an Image
+                    </Button>
+                    <Button
+                      onClick={() => router.push('/pricing')}
+                      className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg"
+                    >
+                      <Coins className="h-5 w-5 mr-2" />
+                      Buy More Points
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PointsOverview />
               <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">

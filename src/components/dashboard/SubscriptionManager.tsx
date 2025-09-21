@@ -18,7 +18,8 @@ import {
   Star,
   Zap,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
@@ -58,7 +59,6 @@ interface BillingSummary {
 
 export default function SubscriptionManager() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
-  const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([])
   const [billingSummary, setBillingSummary] = useState<BillingSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -74,20 +74,14 @@ export default function SubscriptionManager() {
       setIsLoading(true)
       setError(null)
 
-      const [subscriptionsRes, plansRes, billingRes] = await Promise.all([
+      const [subscriptionsRes, billingRes] = await Promise.all([
         fetch('/api/subscriptions'),
-        fetch('/api/subscription-plans'),
         fetch('/api/billing')
       ])
 
       if (subscriptionsRes.ok) {
         const subscriptionsData = await subscriptionsRes.json()
         setSubscriptions(subscriptionsData.subscriptions || [])
-      }
-
-      if (plansRes.ok) {
-        const plansData = await plansRes.json()
-        setAvailablePlans(plansData.plans || [])
       }
 
       if (billingRes.ok) {
@@ -143,42 +137,6 @@ export default function SubscriptionManager() {
     }
   }
 
-  const handleCreateSubscription = async (planId: string) => {
-    try {
-      setIsProcessing(true)
-      
-      const response = await fetch('/api/subscriptions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ planId })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        toast.success(data.message, {
-          duration: 4000,
-          icon: '🎉'
-        })
-        await fetchData() // Refresh data
-      } else {
-        toast.error(data.error || 'Failed to create subscription', {
-          duration: 5000,
-          icon: '❌'
-        })
-      }
-    } catch (error) {
-      console.error('Error creating subscription:', error)
-      toast.error('Failed to create subscription', {
-        duration: 5000,
-        icon: '❌'
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -357,91 +315,27 @@ export default function SubscriptionManager() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <CreditCard className="h-12 w-12 text-white/40 mx-auto mb-4" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="h-8 w-8 text-blue-600" />
+              </div>
               <Typography variant="h5" className="text-white mb-2">
-                No Active Subscription
+                Pay As You Go Plan
               </Typography>
               <Typography variant="body" className="text-white/60 mb-6">
-                Choose a subscription plan to get started with monthly points
+                You are currently on the Pay As You Go plan. Purchase points as needed or explore subscription options for monthly savings.
               </Typography>
+              <Button
+                onClick={() => window.open('/pricing', '_blank')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Explore Subscription Plans
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Available Plans */}
-      {!activeSubscription && (
-        <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">
-              Available Plans
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {availablePlans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-white/20 transition-colors"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    {React.createElement(getPlanIcon(plan.name), {
-                      className: "h-5 w-5 text-blue-400"
-                    })}
-                    <Typography variant="h6" className="text-white">
-                      {plan.name}
-                    </Typography>
-                  </div>
-                  
-                  <Typography variant="body" className="text-white/60 mb-3">
-                    {plan.description}
-                  </Typography>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between">
-                      <Typography variant="body" className="text-white/80">
-                        Price
-                      </Typography>
-                      <Typography variant="h6" className="text-white">
-                        {formatCurrency(plan.price, plan.currency)}
-                      </Typography>
-                    </div>
-                    <div className="flex justify-between">
-                      <Typography variant="body" className="text-white/80">
-                        Points
-                      </Typography>
-                      <Typography variant="h6" className="text-white">
-                        {plan.points.toLocaleString()}
-                      </Typography>
-                    </div>
-                    <div className="flex justify-between">
-                      <Typography variant="body" className="text-white/80">
-                        Billing
-                      </Typography>
-                      <Typography variant="body" className="text-white">
-                        {plan.billingCycle}
-                      </Typography>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => handleCreateSubscription(plan.id)}
-                    disabled={isProcessing}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {isProcessing ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Crown className="h-4 w-4 mr-2" />
-                    )}
-                    Subscribe
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Billing Summary */}
       {billingSummary && (
