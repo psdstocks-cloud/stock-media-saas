@@ -89,11 +89,11 @@ export function PointsHub() {
       <CardContent className="space-y-6">
         {/* Points Display */}
         <div className="text-center">
-          <div className="text-4xl font-bold text-white mb-2">
+          <div className="text-5xl font-bold text-white mb-2 drop-shadow-lg">
             {currentPoints.toLocaleString()}
           </div>
-          <Typography variant="body" className="text-white/70">
-            {currentPoints === 1 ? 'Point' : 'Points'} Available
+          <Typography variant="body" className="text-white/80 font-medium">
+            Available Points
           </Typography>
         </div>
 

@@ -86,11 +86,21 @@ export async function GET(request: NextRequest) {
           }
         };
       } else {
-        const api = new NehtwAPI(apiKey);
-        info = await api.getStockInfo(source, assetId, url);
+        try {
+          const api = new NehtwAPI(apiKey);
+          info = await api.getStockInfo(source, assetId, url);
 
-        if (!info.success || !info.data) {
-          return NextResponse.json({ message: info.message || 'Could not retrieve information for this item.' }, { status: 502 });
+          if (!info.success || !info.data) {
+            console.error('Nehtw API returned error:', info.message);
+            return NextResponse.json({ 
+              message: info.message || 'Could not retrieve information for this item. Please check the URL and try again.' 
+            }, { status: 400 });
+          }
+        } catch (error) {
+          console.error('Error calling Nehtw API:', error);
+          return NextResponse.json({ 
+            message: 'Unable to retrieve file information at this time. Please check the URL or try again later.' 
+          }, { status: 500 });
         }
       }
       
@@ -244,17 +254,29 @@ export async function POST(request: NextRequest) {
           }
         };
     } else {
-      const api = new NehtwAPI(apiKey);
-      stockInfo = await api.getStockInfo(source, assetId, url);
+      try {
+        const api = new NehtwAPI(apiKey);
+        stockInfo = await api.getStockInfo(source, assetId, url);
 
-      if (!stockInfo.success || !stockInfo.data) {
+        if (!stockInfo.success || !stockInfo.data) {
+          console.error('Nehtw API returned error:', stockInfo.message);
+          return NextResponse.json({
+            success: false,
+            message: 'Unable to retrieve file information. The URL may be invalid or the content may not be available.',
+            error: stockInfo.message || 'Could not retrieve stock information',
+            parsedData: parseResult.data,
+            suggestion: 'Please verify the URL is correct and try again. If the problem persists, the content may not be available for download.'
+          }, { status: 400 });
+        }
+      } catch (error) {
+        console.error('Error calling Nehtw API:', error);
         return NextResponse.json({
           success: false,
-          message: 'Unable to retrieve file information. The URL may be invalid or the content may not be available.',
-          error: stockInfo.message || 'Could not retrieve stock information',
+          message: 'Unable to retrieve file information at this time. Please check the URL or try again later.',
+          error: 'External API service temporarily unavailable',
           parsedData: parseResult.data,
-          suggestion: 'Please verify the URL is correct and try again. If the problem persists, the content may not be available for download.'
-        }, { status: 502 });
+          suggestion: 'The external service may be experiencing issues. Please try again in a few minutes.'
+        }, { status: 500 });
       }
     }
 

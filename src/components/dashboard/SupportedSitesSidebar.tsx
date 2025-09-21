@@ -150,7 +150,7 @@ export function SupportedSitesSidebar() {
           Supported Sites
         </CardTitle>
         <CardDescription className="text-white/70">
-          All downloads cost 10 points
+          Unified pricing: All downloads cost 10 points
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -166,19 +166,21 @@ export function SupportedSitesSidebar() {
                   {getCategoryIcon(site.category || 'photo')}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <Typography variant="body" className="text-white font-medium truncate">
-                    {site.displayName}
-                  </Typography>
+                  <div className="flex items-center space-x-2">
+                    <Typography variant="body" className="text-white font-medium truncate">
+                      {site.displayName}
+                    </Typography>
+                    <Badge 
+                      className={`${getCostBadgeColor(site.cost)} text-xs px-2 py-1 font-semibold`}
+                    >
+                      {site.cost} pts
+                    </Badge>
+                  </div>
                   <Typography variant="caption" className="text-white/60">
                     {site.category || 'Photos'}
                   </Typography>
                 </div>
               </div>
-              <Badge 
-                className={`${getCostBadgeColor(site.cost)} text-xs px-2 py-1`}
-              >
-                {site.cost}p
-              </Badge>
             </div>
           ))}
         </div>
