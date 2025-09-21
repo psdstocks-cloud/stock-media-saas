@@ -65,7 +65,17 @@ export function PointsOverview({ className }: PointsOverviewProps) {
 
       if (pointsResponse.ok) {
         const pointsResult = await pointsResponse.json()
-        setPointsData(pointsResult.data || pointsResult)
+        const data = pointsResult.data || pointsResult
+        // Ensure all required fields have default values
+        setPointsData({
+          currentPoints: data.currentPoints || 0,
+          totalPurchased: data.totalPurchased || 0,
+          totalUsed: data.totalUsed || 0,
+          monthlyAllocation: data.monthlyAllocation || 0,
+          rolloverAmount: data.rolloverAmount || 0,
+          rolloverDate: data.rolloverDate || null,
+          subscriptionPlan: data.subscriptionPlan || null,
+        })
       } else {
         setError('Failed to fetch points data')
       }

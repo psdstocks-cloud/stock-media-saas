@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { PointsManager } from '@/lib/points'
 import { getUserFromRequest } from '@/lib/jwt-auth'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,38 @@ export async function GET(request: NextRequest) {
       PointsManager.getRolloverRecords(finalUserId),
     ])
 
-    return NextResponse.json({ balance, history, rolloverRecords })
+    // Get subscription info
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId: finalUserId,
+        status: 'ACTIVE',
+      },
+      include: {
+        plan: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Calculate rollover amount
+    const totalRolloverAmount = rolloverRecords.reduce((sum, record) => sum + record.amount, 0)
+    const nextRolloverDate = rolloverRecords[0]?.expiresAt || null
+
+    // Format response to match component expectations
+    const responseData = {
+      currentPoints: balance?.currentPoints || 0,
+      totalPurchased: balance?.totalPurchased || 0,
+      totalUsed: balance?.totalUsed || 0,
+      monthlyAllocation: subscription?.plan?.points || 0,
+      rolloverAmount: totalRolloverAmount,
+      rolloverDate: nextRolloverDate,
+      subscriptionPlan: subscription?.plan ? {
+        name: subscription.plan.name,
+        monthlyPoints: subscription.plan.points,
+        rolloverPercentage: subscription.plan.rolloverLimit,
+      } : null,
+    }
+
+    return NextResponse.json({ data: responseData })
   } catch (error) {
     console.error('Error fetching points data:', error)
     return NextResponse.json({ error: 'Failed to fetch points data' }, { status: 500 })
