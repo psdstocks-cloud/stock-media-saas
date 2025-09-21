@@ -49,7 +49,7 @@ interface PreOrderItem {
     price: number
     points: number
   } | null
-  status: 'pending' | 'success' | 'error'
+  success: boolean
   error?: string
 }
 
@@ -118,7 +118,10 @@ export default function OrderClient() {
     const urlList = urls.split('\n').map(url => url.trim()).filter(url => url.length > 0)
     const items: PreOrderItem[] = urlList.map(url => ({
       url,
-      status: 'pending'
+      parsedData: null,
+      stockSite: null,
+      stockInfo: null,
+      success: false
     }))
     
     setPreOrderItems(items)
@@ -154,7 +157,7 @@ export default function OrderClient() {
         if (error) {
           updatedItems[index] = {
             ...updatedItems[index],
-            status: 'error',
+            success: false,
             error
           }
         } else {
@@ -162,14 +165,17 @@ export default function OrderClient() {
             ...updatedItems[index],
             parsedData: data.parsedData,
             stockSite: data.stockSite,
-            stockInfo: data.stockInfo,
-            status: 'success'
+            stockInfo: {
+              ...data.stockInfo,
+              title: `${data.parsedData?.source || 'unknown'}-${data.parsedData?.id || 'unknown'}`
+            },
+            success: true
           }
         }
       } else {
         updatedItems[index] = {
           ...updatedItems[index],
-          status: 'error',
+          success: false,
           error: 'Failed to process URL'
         }
       }
@@ -179,7 +185,7 @@ export default function OrderClient() {
     setIsLoading(false)
 
     // Move to confirmation step if we have at least one successful item
-    const successfulItems = updatedItems.filter(item => item.status === 'success')
+    const successfulItems = updatedItems.filter(item => item.success)
     if (successfulItems.length > 0) {
       setStep('confirmation')
       toast.success(`Successfully parsed ${successfulItems.length} of ${urlList.length} URLs`)
@@ -189,7 +195,7 @@ export default function OrderClient() {
   }
 
   const confirmOrder = async () => {
-    const successfulItems = preOrderItems.filter(item => item.status === 'success')
+    const successfulItems = preOrderItems.filter(item => item.success)
     if (successfulItems.length === 0) {
       toast.error('No valid items to order')
       return
@@ -366,7 +372,7 @@ export default function OrderClient() {
   }
 
   const totalPoints = preOrderItems
-    .filter(item => item.status === 'success')
+    .filter(item => item.success)
     .reduce((sum, item) => sum + (item.stockInfo?.points || 0), 0)
 
   const canPlaceOrder = userPoints >= totalPoints && totalPoints > 0
@@ -465,7 +471,7 @@ export default function OrderClient() {
           <CardContent className="space-y-6">
             {/* Items List */}
             <div className="space-y-4">
-              {preOrderItems.filter(item => item.status === 'success').map((item, index) => (
+              {preOrderItems.filter(item => item.success).map((item, index) => (
                 <div key={index} className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
                   <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
                     {item.stockInfo?.previewUrl ? (
@@ -498,12 +504,12 @@ export default function OrderClient() {
             </div>
 
             {/* Failed Items */}
-            {preOrderItems.filter(item => item.status === 'error').length > 0 && (
+            {preOrderItems.filter(item => !item.success && item.error).length > 0 && (
               <Alert className="border-red-500/50 bg-red-500/10">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-red-200">
-                  <div className="font-medium mb-2">Failed to process {preOrderItems.filter(item => item.status === 'error').length} URLs:</div>
-                  {preOrderItems.filter(item => item.status === 'error').map((item, index) => (
+                  <div className="font-medium mb-2">Failed to process {preOrderItems.filter(item => !item.success && item.error).length} URLs:</div>
+                  {preOrderItems.filter(item => !item.success && item.error).map((item, index) => (
                     <div key={index} className="text-sm">
                       • {item.url} - {item.error}
                     </div>
