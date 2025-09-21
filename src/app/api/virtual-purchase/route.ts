@@ -18,10 +18,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Point package ID is required' }, { status: 400 })
     }
 
-    // Find the point package
-    const pointPackage = await prisma.pointPack.findUnique({
-      where: { id: pointPackageId }
-    })
+    // Hardcoded point packages matching frontend
+    const virtualPlans = {
+      starter: {
+        id: 'starter',
+        name: 'Starter Pack',
+        points: 50,
+        price: 9.99,
+        description: 'Perfect for getting started'
+      },
+      professional: {
+        id: 'professional',
+        name: 'Professional Pack',
+        points: 500,
+        price: 0, // Free for testing
+        description: 'Most popular choice'
+      },
+      business: {
+        id: 'business',
+        name: 'Business Pack',
+        points: 1000,
+        price: 49.99,
+        description: 'For business use'
+      },
+      enterprise: {
+        id: 'enterprise',
+        name: 'Enterprise Pack',
+        points: 1000,
+        price: 69.99,
+        description: 'For large teams and agencies'
+      }
+    }
+
+    const pointPackage = virtualPlans[pointPackageId as keyof typeof virtualPlans]
 
     if (!pointPackage) {
       return NextResponse.json({ error: 'Point package not found' }, { status: 404 })
