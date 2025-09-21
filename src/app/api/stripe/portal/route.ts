@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
+import { getUserFromRequest } from '@/lib/jwt-auth'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
+    // Try JWT authentication first (for dashboard)
+    const jwtUser = getUserFromRequest(request)
+    let userId = jwtUser?.id
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Fallback to NextAuth session if no JWT user
+    if (!userId) {
+      const session = await auth()
+      
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      userId = session.user.id
     }
 
     // Get user's Stripe customer ID
     const subscription = await prisma.subscription.findFirst({
-      where: { userId: session.user.id },
+      where: { userId: userId },
       select: { stripeCustomerId: true },
     })
 

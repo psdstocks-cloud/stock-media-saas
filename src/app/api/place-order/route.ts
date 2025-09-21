@@ -6,16 +6,25 @@ import { NehtwAPI, OrderManager } from '@/lib/nehtw-api'
 import { OrderProcessor } from '@/lib/order-processor'
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 
 export async function POST(request: NextRequest) {
   try {
     console.log('Place order API called')
     
-    const session = await auth()
-    console.log('Session check:', { hasSession: !!session, userId: session?.user?.id })
+    // Try JWT authentication first (for dashboard)
+    const jwtUser = getUserFromRequest(request)
+    let userId = jwtUser?.id
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Fallback to NextAuth session if no JWT user
+    if (!userId) {
+      const session = await auth()
+      console.log('Session check:', { hasSession: !!session, userId: session?.user?.id })
+      
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      userId = session.user.id
     }
 
     const { url, site, id, title, cost, imageUrl } = await request.json()
@@ -30,7 +39,7 @@ export async function POST(request: NextRequest) {
     console.log('Checking for existing order...')
     const existingOrder = await prisma.order.findFirst({
       where: {
-        userId: session.user.id,
+        userId: userId,
         stockItemId: id,
         status: { in: ['READY', 'COMPLETED'] }
       },
@@ -58,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Check user balance for new orders
     console.log('Checking user balance for new order...')
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       include: { pointsBalance: true }
     })
     console.log('User found:', { user: !!user, pointsBalance: !!user?.pointsBalance })
@@ -119,7 +128,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate all parameters before creating order
-    if (!session.user.id) {
+    if (!userId) {
       console.log('ERROR: session.user.id is null or undefined')
       return NextResponse.json({ error: 'Invalid user session' }, { status: 401 })
     }
@@ -137,9 +146,9 @@ export async function POST(request: NextRequest) {
     // Create order in database
     console.log('Creating order in database...')
     console.log('OrderManager.createOrder parameters:', {
-      userId: session.user.id,
-      userIdLength: session.user.id?.length,
-      userIdType: typeof session.user.id,
+      userId: userId,
+      userIdLength: userId?.length,
+      userIdType: typeof userId,
       stockSiteId: stockSite.id,
       stockSiteIdLength: stockSite.id?.length,
       stockSiteIdType: typeof stockSite.id,
@@ -164,7 +173,7 @@ export async function POST(request: NextRequest) {
     })
     
     const order = await OrderManager.createOrder(
-      session.user.id,
+      userId,
       stockSite.id,
       id,
       url,
@@ -177,7 +186,7 @@ export async function POST(request: NextRequest) {
     // Deduct points using PointsManager (proper transaction handling)
     console.log('Deducting points using PointsManager...')
     await PointsManager.deductPoints(
-      session.user.id,
+      userId,
       cost,
       `Download: ${title || 'Untitled'} from ${site}`,
       order.id

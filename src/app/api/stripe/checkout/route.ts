@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
+import { getUserFromRequest } from '@/lib/jwt-auth'
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { SubscriptionPlan, PointPack } from '@prisma/client'
@@ -31,10 +32,20 @@ const PRICING_PLANS = {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
+    // Try JWT authentication first (for dashboard)
+    const jwtUser = getUserFromRequest(request)
+    let userId = jwtUser?.id
+    let userEmail = jwtUser?.email
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Fallback to NextAuth session if no JWT user
+    if (!userId) {
+      const session = await auth()
+      
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      userId = session.user.id
+      userEmail = session.user.email || undefined
     }
 
     const { planId, packId } = await request.json()
@@ -46,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Get or create Stripe customer
     let customerId: string | null = null
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { email: true, name: true },
     })
 
@@ -56,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user already has a Stripe customer ID
     const existingSubscription = await prisma.subscription.findFirst({
-      where: { userId: session.user.id },
+      where: { userId: userId },
       select: { stripeCustomerId: true },
     })
 
@@ -68,7 +79,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name || undefined,
         metadata: {
-          userId: session.user.id,
+          userId: userId,
         },
       })
       customerId = customer.id
@@ -77,7 +88,7 @@ export async function POST(request: NextRequest) {
     let stripePriceId: string
     let line_items: any[]
     let mode: 'subscription' | 'payment'
-    let metadata: any = { userId: session.user.id }
+    let metadata: any = { userId: userId }
 
     if (packId) {
       // Handle Point Pack Purchase (One-Time Payment)
@@ -125,7 +136,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       mode: mode,
       billing_address_collection: 'auto',
-      customer_email: session.user.email,
+      customer_email: userEmail,
       line_items: line_items,
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/orders?payment=success`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/pricing?payment=canceled`,

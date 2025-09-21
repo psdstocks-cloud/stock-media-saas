@@ -108,8 +108,8 @@ export function ProfileSettings({ className }: ProfileSettingsProps) {
       }
 
       const updateData: any = {
-        name: formData.name,
-        email: formData.email
+        name: formData.name
+        // Email removed for security - cannot be changed
       }
 
       if (showPasswordFields && formData.newPassword) {
@@ -231,8 +231,10 @@ export function ProfileSettings({ className }: ProfileSettingsProps) {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="Enter your email"
+                    readOnly
+                    disabled
+                    className="bg-muted/50 cursor-not-allowed"
+                    placeholder="Email cannot be changed"
                   />
                   {profile?.emailVerified ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
@@ -240,8 +242,11 @@ export function ProfileSettings({ className }: ProfileSettingsProps) {
                     <AlertCircle className="h-5 w-5 text-yellow-500" />
                   )}
                 </div>
+                <Typography variant="caption" className="text-muted-foreground">
+                  Email address cannot be changed for security reasons. Contact support if needed.
+                </Typography>
                 {!profile?.emailVerified && (
-                  <Typography variant="caption" className="text-yellow-600">
+                  <Typography variant="caption" className="text-yellow-600 block mt-1">
                     Email not verified. Check your inbox for verification link.
                   </Typography>
                 )}
