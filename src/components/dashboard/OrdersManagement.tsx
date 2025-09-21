@@ -260,17 +260,31 @@ export function OrdersManagement({ className }: OrdersManagementProps) {
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="text-center py-8">
-            <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <Typography variant="h3" className="mb-2">
-              No Orders Found
-            </Typography>
-            <Typography variant="body" color="muted">
+          <div className="text-center py-12">
+            <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingCart className="h-8 w-8 text-blue-600" />
+            </div>
+            <Typography variant="h3" className="text-white mb-4">
               {searchTerm || statusFilter !== 'all' 
-                ? 'No orders match your search criteria'
-                : 'You haven\'t placed any orders yet'
+                ? 'No Orders Found'
+                : 'No Orders Yet'
               }
             </Typography>
+            <Typography variant="body" className="text-white/70 mb-6">
+              {searchTerm || statusFilter !== 'all' 
+                ? 'No orders match your search criteria. Try adjusting your filters.'
+                : 'You haven\'t placed any orders yet. Get started by ordering your first image!'
+              }
+            </Typography>
+            {!searchTerm && statusFilter === 'all' && (
+              <Button
+                onClick={() => window.location.href = '/dashboard/order'}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Order Your First Image
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">

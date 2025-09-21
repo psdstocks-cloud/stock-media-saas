@@ -61,6 +61,8 @@ export const SubscriptionPlansSection: React.FC = () => {
         }
         
         const data = await response.json()
+        console.log('Subscription Plans Data:', data)
+        console.log('Plans array:', data.plans)
         setSubscriptionPlans(data.plans || [])
       } catch (error) {
         console.error('Error fetching subscription plans:', error)
