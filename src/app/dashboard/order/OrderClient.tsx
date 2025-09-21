@@ -142,6 +142,7 @@ export default function OrderClient() {
           }
 
           const data = await response.json()
+          console.log('Debug - API response for URL:', url, data)
           return { index, data }
         } catch (error) {
           return { index, error: error instanceof Error ? error.message : 'Unknown error' }
@@ -151,9 +152,16 @@ export default function OrderClient() {
 
     // Update items with results
     const updatedItems = [...items]
+    console.log('Debug - Processing results:', results)
+    console.log('Debug - Initial items:', items)
+    
     results.forEach((result, index) => {
+      console.log(`Debug - Processing result ${index}:`, result)
       if (result.status === 'fulfilled') {
         const { data, error } = result.value
+        console.log(`Debug - Result ${index} data:`, data)
+        console.log(`Debug - Result ${index} error:`, error)
+        
         if (error) {
           updatedItems[index] = {
             ...updatedItems[index],
@@ -173,6 +181,7 @@ export default function OrderClient() {
           }
         }
       } else {
+        console.log(`Debug - Result ${index} rejected:`, result.reason)
         updatedItems[index] = {
           ...updatedItems[index],
           success: false,
@@ -181,6 +190,7 @@ export default function OrderClient() {
       }
     })
 
+    console.log('Debug - Final updatedItems:', updatedItems)
     setPreOrderItems(updatedItems)
     setIsLoading(false)
 
