@@ -177,7 +177,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 bg-white/10 backdrop-blur-sm border-white/20">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 bg-white/10 backdrop-blur-sm border-white/20">
             <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 text-white">
               <Coins className="h-4 w-4 mr-2" />
               Overview
@@ -197,6 +197,10 @@ export default function DashboardPage() {
             <TabsTrigger value="profile" className="data-[state=active]:bg-white/20 text-white">
               <Settings className="h-4 w-4 mr-2" />
               Profile
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="data-[state=active]:bg-white/20 text-white">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Billing
             </TabsTrigger>
           </TabsList>
 
@@ -297,6 +301,24 @@ export default function DashboardPage() {
 
           <TabsContent value="profile" className="mt-6">
             <ProfileSettings />
+          </TabsContent>
+
+          <TabsContent value="billing" className="mt-6">
+            <div className="text-center py-12">
+              <Typography variant="h3" className="text-white mb-4">
+                Billing & Transaction History
+              </Typography>
+              <Typography variant="body" className="text-white/70 mb-6">
+                View your complete transaction history and billing details
+              </Typography>
+              <Button
+                onClick={() => router.push('/dashboard/billing')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                View Full Billing History
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
