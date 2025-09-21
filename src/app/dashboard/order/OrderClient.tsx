@@ -171,17 +171,17 @@ export default function OrderClient() {
           }
         } else {
           console.log(`Debug - Creating item ${index} with data:`, JSON.stringify(data, null, 2))
-          console.log(`Debug - data.parsedData:`, data.parsedData)
-          console.log(`Debug - data.stockSite:`, data.stockSite)
-          console.log(`Debug - data.stockInfo:`, data.stockInfo)
+          console.log(`Debug - data.data.parsedData:`, data.data?.parsedData)
+          console.log(`Debug - data.data.stockSite:`, data.data?.stockSite)
+          console.log(`Debug - data.data.stockInfo:`, data.data?.stockInfo)
           
           const newItem = {
             ...updatedItems[index],
-            parsedData: data.parsedData,
-            stockSite: data.stockSite,
+            parsedData: data.data?.parsedData,
+            stockSite: data.data?.stockSite,
             stockInfo: {
-              ...data.stockInfo,
-              title: `${data.parsedData?.source || 'unknown'}-${data.parsedData?.id || 'unknown'}`
+              ...data.data?.stockInfo,
+              title: `${data.data?.parsedData?.source || 'unknown'}-${data.data?.parsedData?.id || 'unknown'}`
             },
             success: true
           }
