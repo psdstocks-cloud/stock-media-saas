@@ -43,11 +43,13 @@ interface PreOrderItem {
     cost: number
   } | null
   stockInfo?: {
+    id: string
+    source: string
     title: string
-    type: string
-    previewUrl?: string
-    price: number
+    image: string
     points: number
+    price: number
+    type?: string
   } | null
   success: boolean
   error?: string
@@ -232,12 +234,12 @@ export default function OrderClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: successfulItems.map(item => ({
-            url: item.url,
-            source: item.parsedData?.source,
-            id: item.parsedData?.id,
-            points: item.stockInfo?.points || 10
-          }))
+          url: successfulItems[0].url,
+          site: successfulItems[0].parsedData?.source,
+          id: successfulItems[0].parsedData?.id,
+          title: successfulItems[0].stockInfo?.title,
+          cost: successfulItems[0].stockInfo?.points || 10,
+          imageUrl: successfulItems[0].stockInfo?.image
         })
       })
 
@@ -498,9 +500,9 @@ export default function OrderClient() {
               {preOrderItems.filter(item => item.success).map((item, index) => (
                 <div key={index} className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
                   <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center">
-                    {item.stockInfo?.previewUrl ? (
+                    {item.stockInfo?.image ? (
                       <img 
-                        src={item.stockInfo.previewUrl} 
+                        src={item.stockInfo.image} 
                         alt={item.stockInfo.title}
                         className="w-full h-full object-cover rounded-lg"
                       />
