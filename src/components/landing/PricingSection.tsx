@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Button, Typography, Badge } from '@/components/ui'
-import { Check, Zap, Crown, Star, ArrowRight } from 'lucide-react'
+import { Check, Zap, Crown, Star, ArrowRight, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import VirtualPurchaseModal from '@/components/modals/VirtualPurchaseModal'
 
 interface PointPack {
   id: string
@@ -21,6 +22,31 @@ export const PricingSection: React.FC = () => {
   const [pointPacks, setPointPacks] = useState<PointPack[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
+  const [selectedPack, setSelectedPack] = useState<PointPack | null>(null)
+  const [showVirtualModal, setShowVirtualModal] = useState(false)
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/verify-token')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.valid && data.user) {
+            setUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+      } finally {
+        setIsAuthLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [])
 
   useEffect(() => {
     const fetchPointPacks = async () => {
@@ -139,8 +165,23 @@ export const PricingSection: React.FC = () => {
     fetchPointPacks()
   }, [])
 
-  const handlePurchase = (packId: string) => {
-    router.push(`/register?plan=${packId}`)
+  const handlePurchase = (pack: PointPack) => {
+    if (isAuthLoading) return // Don't allow clicks while checking auth
+    
+    if (user) {
+      // User is logged in, show virtual purchase modal
+      setSelectedPack(pack)
+      setShowVirtualModal(true)
+    } else {
+      // User is not logged in, redirect to login with return URL
+      router.push(`/login?redirect=${encodeURIComponent('/pricing')}`)
+    }
+  }
+
+  const handleVirtualPurchaseSuccess = () => {
+    setShowVirtualModal(false)
+    setSelectedPack(null)
+    // Optionally refresh user data or show success message
   }
 
   const getPackIcon = (pack: PointPack) => {
@@ -266,7 +307,8 @@ export const PricingSection: React.FC = () => {
                   {/* CTA Button */}
                   <Button
                     size="lg"
-                    onClick={() => handlePurchase(pack.id)}
+                    onClick={() => handlePurchase(pack)}
+                    disabled={isAuthLoading}
                     className={cn(
                       "w-full group-hover:scale-105 transition-transform duration-200",
                       pack.isPopular
@@ -274,16 +316,35 @@ export const PricingSection: React.FC = () => {
                         : "bg-gray-900 hover:bg-gray-800 text-white"
                     )}
                   >
-                    {pack.isPopular ? (
+                    {isAuthLoading ? (
                       <>
-                        <Crown className="h-5 w-5 mr-2" />
-                        Get Started
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Loading...
                       </>
+                    ) : user ? (
+                      pack.isPopular ? (
+                        <>
+                          <Crown className="h-5 w-5 mr-2" />
+                          Purchase Now
+                        </>
+                      ) : (
+                        <>
+                          <User className="h-5 w-5 mr-2" />
+                          Purchase Now
+                        </>
+                      )
                     ) : (
-                      <>
-                        Choose Plan
-                        <ArrowRight className="h-5 w-5 ml-2" />
-                      </>
+                      pack.isPopular ? (
+                        <>
+                          <LogIn className="h-5 w-5 mr-2" />
+                          Sign In to Purchase
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="h-5 w-5 mr-2" />
+                          Sign In to Purchase
+                        </>
+                      )
                     )}
                   </Button>
                 </CardContent>
@@ -302,6 +363,15 @@ export const PricingSection: React.FC = () => {
           </Typography>
         </div>
       </div>
+
+      {/* Virtual Purchase Modal */}
+      {showVirtualModal && selectedPack && (
+        <VirtualPurchaseModal
+          pointPack={selectedPack}
+          onClose={() => setShowVirtualModal(false)}
+          onSuccess={handleVirtualPurchaseSuccess}
+        />
+      )}
     </section>
   )
 }

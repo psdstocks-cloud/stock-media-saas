@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { Coins, Download, ExternalLink, AlertCircle, CheckCircle, Clock, X } from 'lucide-react'
 import { useOrderStore, PreOrderItem, ConfirmedOrder } from '@/stores/orderStore'
 import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 import ConfirmationItem from './ConfirmationItem'
 
 interface OrderConfirmationProps {
@@ -20,6 +21,7 @@ interface OrderConfirmationProps {
 }
 
 export default function OrderConfirmation({ onConfirm, onCancel, isLoading = false }: OrderConfirmationProps) {
+  const router = useRouter()
   const { 
     preOrderItems, 
     userPoints, 
@@ -104,7 +106,24 @@ export default function OrderConfirmation({ onConfirm, onCancel, isLoading = fal
             <Alert className="border-red-500/50 bg-red-500/10">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-red-200">
-                Insufficient points. You need {totalPoints.toLocaleString()} points but only have {userPoints.toLocaleString()}.
+                <div className="space-y-2">
+                  <div>
+                    Insufficient points. You need {totalPoints.toLocaleString()} points but only have {userPoints.toLocaleString()}.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => router.push('/pricing')}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <Coins className="h-4 w-4 mr-1" />
+                      Add Points
+                    </Button>
+                    <Typography variant="caption" className="text-red-300">
+                      You need {(totalPoints - userPoints).toLocaleString()} more points
+                    </Typography>
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
           )}
