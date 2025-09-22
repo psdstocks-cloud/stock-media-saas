@@ -444,7 +444,7 @@ https://depositphotos.com/example-345678"
                 <CardHeader>
                   <CardTitle className="flex items-center text-white">
                     <Coins className="h-5 w-5 mr-2" />
-                    Your Points
+                    Your Balance
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -452,7 +452,7 @@ https://depositphotos.com/example-345678"
                     <div className="text-3xl font-bold text-white mb-2">
                       {userPoints.toLocaleString()}
                     </div>
-                    <div className="text-white/60 text-sm">Available Points</div>
+                    <div className="text-white/70 text-sm font-medium">Available Points</div>
                   </div>
                 </CardContent>
               </Card>
@@ -461,28 +461,31 @@ https://depositphotos.com/example-345678"
               {step === 'confirmation' && items.length > 0 && (
                 <Card className="bg-white/10 backdrop-blur-sm border-white/20">
                   <CardHeader>
-                    <CardTitle className="text-white">Order Summary</CardTitle>
+                    <CardTitle className="text-white">Current Order Details</CardTitle>
+                    <CardDescription className="text-white/70">
+                      Breakdown of items and costs for this order
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex justify-between text-white/80">
+                    <div className="flex justify-between text-white/90">
                       <span>Total Items:</span>
-                      <span>{items.length}</span>
+                      <span className="font-medium">{items.length}</span>
                     </div>
-                    <div className="flex justify-between text-white/80">
+                    <div className="flex justify-between text-white/90">
                       <span>Ready to Order:</span>
-                      <span>{successfulItems.length - orderedCount}</span>
+                      <span className="font-medium text-green-300">{successfulItems.length - orderedCount}</span>
                     </div>
-                    <div className="flex justify-between text-white/80">
+                    <div className="flex justify-between text-white/90">
                       <span>Already Ordered:</span>
-                      <span>{orderedCount}</span>
+                      <span className="font-medium text-blue-300">{orderedCount}</span>
                     </div>
-                    <div className="flex justify-between text-white/80">
+                    <div className="flex justify-between text-white/90">
                       <span>Failed:</span>
-                      <span>{failedItems.length}</span>
+                      <span className="font-medium text-red-300">{failedItems.length}</span>
                     </div>
-                    <div className="border-t border-white/20 pt-3 flex justify-between text-white font-medium">
+                    <div className="border-t border-white/20 pt-3 flex justify-between text-white font-semibold">
                       <span>Total Cost:</span>
-                      <span>{totalPoints - Array.from(orderStatuses.values()).reduce((sum, status) => sum + 10, 0)} points</span>
+                      <span className="font-bold text-yellow-300">{totalPoints - Array.from(orderStatuses.values()).reduce((sum, status) => sum + 10, 0)} points</span>
                     </div>
                   </CardContent>
                 </Card>
