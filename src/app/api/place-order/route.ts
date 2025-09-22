@@ -154,8 +154,9 @@ export async function POST(request: NextRequest) {
         console.log(`Order created successfully: ${transactionResult.order.id}`)
 
         // Asynchronously process the order after it has been successfully created
-        // TODO: Implement OrderProcessor.processOrderWithStatus when available
-        // OrderProcessor.processOrderWithStatus(transactionResult.order.id, item.site, item.id, item.url).catch(console.error)
+        const { OrderProcessor } = await import('@/lib/order-processor')
+        const apiKey = process.env.NEHTW_API_KEY || 'A8K9bV5s2OX12E8cmS4I96mtmSNzv7'
+        OrderProcessor.startProcessing(transactionResult.order.id, apiKey, item.site, item.id, item.url).catch(console.error)
 
       } catch (error) {
         console.error(`Failed to process order for ${item.url}:`, error)
