@@ -316,27 +316,23 @@ export class OrderManager {
 
     const api = new NehtwAPI(apiKey)
     
-    try {
-      const response = await api.regenerateDownloadLink(order.taskId)
+    const response = await api.regenerateDownloadLink(order.taskId)
+    
+    if (response.success && response.downloadLink) {
+      const updatedOrder = await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          downloadUrl: response.downloadLink,
+          fileName: response.fileName || order.fileName,
+          status: 'READY' as any,
+          updatedAt: new Date(),
+        },
+        include: { stockSite: true },
+      })
       
-      if (response.success && response.downloadLink) {
-        const updatedOrder = await prisma.order.update({
-          where: { id: orderId },
-          data: {
-            downloadUrl: response.downloadLink,
-            fileName: response.fileName || order.fileName,
-            status: 'READY' as any,
-            updatedAt: new Date(),
-          },
-          include: { stockSite: true },
-        })
-        
-        return updatedOrder
-      } else {
-        throw new Error(response.message || 'Failed to regenerate download link')
-      }
-    } catch (error) {
-      throw error
+      return updatedOrder
+    } else {
+      throw new Error(response.message || 'Failed to regenerate download link')
     }
   }
 }

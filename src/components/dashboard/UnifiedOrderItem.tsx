@@ -37,7 +37,6 @@ interface UnifiedOrderItemProps {
   item: UnifiedOrderItemData;
   onOrder: (item: UnifiedOrderItemData) => void;
   onRemove: (url: string) => void;
-  onStatusUpdate?: (orderId: string, status: OrderStatus, downloadUrl?: string) => void;
   userPoints?: number;
 }
 
@@ -45,7 +44,6 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
   item, 
   onOrder, 
   onRemove, 
-  onStatusUpdate,
   userPoints = 0 
 }) => {
   const { url, parsedData, stockSite, stockInfo, status, progress, downloadUrl, error } = item;

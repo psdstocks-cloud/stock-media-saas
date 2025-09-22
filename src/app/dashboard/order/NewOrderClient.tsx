@@ -6,12 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Typography } from '@/components/ui/typography'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Link as LinkIcon, 
-  Coins,
   ShoppingCart,
-  AlertCircle,
   Loader2,
   CheckCircle
 } from 'lucide-react'
