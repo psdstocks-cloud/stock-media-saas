@@ -143,7 +143,7 @@ export default function NewOrderClient() {
       const orderPayload = itemsToOrder.map(item => ({
         url: item.url,
         site: item.stockSite?.name || item.parsedData?.source,
-        id: item.stockInfo?.id || item.parsedData?.id,
+        id: item.parsedData?.id,
         title: item.stockInfo?.title || 'Unknown',
         cost: item.stockInfo?.points || 0,
         imageUrl: item.stockInfo?.image
