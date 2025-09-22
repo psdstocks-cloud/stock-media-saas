@@ -313,17 +313,24 @@ export default function OrderClient() {
       const data = await response.json()
       console.log('Debug - Single order placement response:', JSON.stringify(data, null, 2))
       
-      // Convert to confirmed order format
+      // Handle the response - API now returns an array of orders
+      if (!data.success || !data.orders || data.orders.length === 0) {
+        throw new Error(data.error || 'Failed to create order')
+      }
+      
+      // Convert to confirmed order format - take the first order from the array
+      const firstOrder = data.orders[0]
       const newOrder: ConfirmedOrder = {
-        id: data.order.id,
-        title: data.order.title || item.stockInfo.title,
+        id: firstOrder.id,
+        title: firstOrder.title || item.stockInfo.title,
         source: item.parsedData?.source || 'Unknown',
-        status: 'PENDING' as const,
-        points: data.order.cost || itemPoints,
+        status: firstOrder.status || 'PENDING',
+        points: firstOrder.cost || itemPoints,
         estimatedTime: '2-5 minutes',
-        isProcessing: true,
-        canDownload: false,
-        createdAt: data.order.createdAt || new Date().toISOString()
+        isProcessing: firstOrder.status === 'PENDING',
+        canDownload: firstOrder.status === 'READY' || firstOrder.status === 'COMPLETED',
+        createdAt: firstOrder.createdAt || new Date().toISOString(),
+        downloadUrl: firstOrder.downloadUrl
       }
 
       // Add to existing confirmed orders
