@@ -348,9 +348,8 @@ export default function OrderClient() {
 
       // Add to existing confirmed orders
       setConfirmedOrders(prev => [...prev, newOrder])
-      setStep('progress')
       
-      // Start tracking order progress for all orders
+      // Start tracking order progress for all orders (including the new one)
       startOrderTracking([...confirmedOrders, newOrder])
       
       // Update user points
@@ -707,6 +706,13 @@ export default function OrderClient() {
                       {item.stockInfo?.points || 10} points
                     </Badge>
                     
+                    {/* Show order status if this item has been ordered */}
+                    {confirmedOrders.some(order => order.title === item.stockInfo?.title) && (
+                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                        {confirmedOrders.find(order => order.title === item.stockInfo?.title)?.status || 'PROCESSING'}
+                      </Badge>
+                    )}
+                    
                     <Button
                       size="sm"
                       onClick={() => handlePlaceSingleOrder(item)}
@@ -734,6 +740,56 @@ export default function OrderClient() {
                 </div>
               ))}
             </div>
+
+            {/* Ordered Items Progress */}
+            {confirmedOrders.length > 0 && (
+              <div className="mt-6">
+                <Typography variant="h4" className="text-white mb-4">
+                  Ordered Items ({confirmedOrders.length})
+                </Typography>
+                <div className="space-y-3">
+                  {confirmedOrders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                          {getTypeIcon(order.source)}
+                        </div>
+                        <div>
+                          <Typography variant="body" className="text-white font-medium">
+                            {order.title}
+                          </Typography>
+                          <Typography variant="caption" className="text-white/60">
+                            {order.source} • {order.points} points
+                          </Typography>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <Badge className={`${
+                          order.status === 'COMPLETED' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
+                          order.status === 'PROCESSING' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
+                          order.status === 'PENDING' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                          'bg-red-500/20 text-red-300 border-red-500/30'
+                        }`}>
+                          {order.status}
+                        </Badge>
+                        
+                        {order.downloadUrl && (
+                          <Button
+                            size="sm"
+                            onClick={() => window.open(order.downloadUrl, '_blank')}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Failed Items */}
             {preOrderItems.filter(item => !item.success && item.error).length > 0 && (
