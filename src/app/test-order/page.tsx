@@ -81,7 +81,7 @@ export default function TestOrderPage() {
         status: response.status, 
         statusText: response.statusText,
         size: blob.size,
-        type: blob.type
+        mimeType: blob.type
       });
     } catch (err) {
       console.error('Image load error:', err);

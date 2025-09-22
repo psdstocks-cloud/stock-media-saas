@@ -198,15 +198,15 @@ export default function OrderClient() {
     setItems(currentItems => currentItems.filter(item => item.url !== url));
   };
 
-  const updateItemStatus = useCallback((orderId: string, newStatus: OrderStatus, downloadUrl?: string) => {
-    setItems(currentItems =>
-      currentItems.map(item =>
-        item.orderId === orderId
-          ? { ...item, status: newStatus, downloadUrl: downloadUrl || item.downloadUrl }
-          : item
-      )
-    );
-  }, []);
+  // const updateItemStatus = useCallback((orderId: string, newStatus: OrderStatus, downloadUrl?: string) => {
+  //   setItems(currentItems =>
+  //     currentItems.map(item =>
+  //       item.orderId === orderId
+  //         ? { ...item, status: newStatus, downloadUrl: downloadUrl || item.downloadUrl }
+  //         : item
+  //     )
+  //   );
+  // }, []);
 
   // Computed values
   const readyItems = useMemo(() => items.filter(item => item.status === 'ready' && item.success), [items]);
