@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-// Removed SWR dependency - using direct fetch instead
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,9 +17,10 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { UnifiedOrderItem, UnifiedOrderItemData } from '@/components/dashboard/UnifiedOrderItem'
-import SimplePointsOverview from '@/components/dashboard/SimplePointsOverview'
+import PointsOverview from '@/components/dashboard/PointsOverview'
 import OrderItemSkeleton from '@/components/dashboard/OrderItemSkeleton'
 import EmptyState from '@/components/dashboard/EmptyState'
+import useUserStore from '@/stores/userStore'
 
 // Removed fetcher - using direct fetch calls
 
@@ -31,27 +31,8 @@ export default function NewOrderClient() {
   const [isProcessing, setIsProcessing] = useState(false)
   const searchParams = useSearchParams()
 
-  // Fetch points in the parent component
-  const [userPoints, setUserPoints] = useState(0)
-
-  const fetchUserPoints = async () => {
-    try {
-      const response = await fetch('/api/points')
-      if (response.ok) {
-        const data = await response.json()
-        setUserPoints(data.points || 0)
-      }
-    } catch (error) {
-      console.error('Error fetching user points:', error)
-    }
-  }
-
-  useEffect(() => {
-    fetchUserPoints()
-    // Refresh points every 30 seconds
-    const interval = setInterval(fetchUserPoints, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  // Use centralized user store for points
+  const { points: userPoints, updatePoints } = useUserStore()
 
   // Function to fetch info for URLs
   const processUrls = useCallback(async (urlList: string[]) => {
@@ -142,8 +123,8 @@ export default function NewOrderClient() {
   const handlePlaceOrder = async (itemsToOrder: UnifiedOrderItemData[]) => {
     const totalCost = itemsToOrder.reduce((acc, item) => acc + (item.stockInfo?.points || 0), 0)
 
-    if (userPoints < totalCost) {
-      toast.error(`Insufficient points. You need ${totalCost} points but only have ${userPoints}`)
+    if (userPoints === null || userPoints < totalCost) {
+      toast.error(`Insufficient points. You need ${totalCost} points but only have ${userPoints || 0}`)
       return
     }
     
@@ -178,7 +159,9 @@ export default function NewOrderClient() {
 
       if (result.success && result.orders) {
         toast.success(`${result.orders.length} order(s) placed successfully! Now processing...`)
-        fetchUserPoints() // Re-fetch points
+        // Update points in centralized store
+        const newPoints = userPoints - totalCost
+        updatePoints(newPoints)
         
         // Update items to 'processing'
         setItems(currentItems =>
@@ -346,7 +329,7 @@ https://depositphotos.com/example-345678"
                       item={item} 
                       onOrder={() => handlePlaceOrder([item])} 
                       onRemove={handleRemoveItem}
-                      userPoints={userPoints}
+                      userPoints={userPoints || 0}
                     />
                   ))
                 )}
@@ -368,7 +351,7 @@ https://depositphotos.com/example-345678"
               <Button 
                 onClick={() => handlePlaceOrder(readyItems)} 
                 size="lg"
-                disabled={isProcessing || userPoints < totalCost}
+                disabled={isProcessing || (userPoints || 0) < totalCost}
                 className="bg-green-600 hover:bg-green-700 text-white px-8"
               >
                 {isProcessing ? (
@@ -390,7 +373,7 @@ https://depositphotos.com/example-345678"
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Points Overview */}
-          <SimplePointsOverview points={userPoints} />
+          <PointsOverview />
 
           {/* Order Summary */}
           {items.length > 0 && (
@@ -408,7 +391,7 @@ https://depositphotos.com/example-345678"
                   <div className="space-y-2 text-base">
                     <div className="flex justify-between text-white/90">
                       <span>Your Current Balance:</span>
-                      <span className="font-medium text-white">{userPoints.toLocaleString()} Points</span>
+                      <span className="font-medium text-white">{userPoints?.toLocaleString() || '...'} Points</span>
                     </div>
                     <div className="flex justify-between text-white/90">
                       <span>Total Cost of this Order:</span>
@@ -417,7 +400,7 @@ https://depositphotos.com/example-345678"
                     <div className="border-t border-white/20 pt-2 mt-3">
                       <div className="flex justify-between font-bold text-lg text-white">
                         <span>Balance After Purchase:</span>
-                        <span className="text-green-300">{userPoints - totalCost} Points</span>
+                        <span className="text-green-300">{(userPoints || 0) - totalCost} Points</span>
                       </div>
                     </div>
                   </div>

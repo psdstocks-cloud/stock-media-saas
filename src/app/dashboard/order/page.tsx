@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/jwt-auth'
 import NewOrderClient from './NewOrderClient'
 import { SupportedSitesSidebar } from '@/components/dashboard/SupportedSitesSidebar'
+import PointsInitializer from '@/components/auth/PointsInitializer'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,7 @@ export default async function OrderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <PointsInitializer />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
