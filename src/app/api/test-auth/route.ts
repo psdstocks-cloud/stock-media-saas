@@ -7,7 +7,8 @@ export async function GET(request: NextRequest) {
     const testUser = {
       id: 'cmfn55y400001l2048qkhyqbl',
       email: 'testuser@example.com',
-      name: 'test new'
+      name: 'test new',
+      role: 'user'
     };
 
     const token = createJWT(testUser);
