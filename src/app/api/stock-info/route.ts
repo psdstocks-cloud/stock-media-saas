@@ -115,16 +115,16 @@ export async function POST(request: NextRequest) {
       dreamstime: {
         title: "Freelance people work in comfortable conditions set vector flat illustration. Freelancer character working from home or",
         image: "https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg",
-        points: 0.65,
-        price: 0.65
+        points: 10, // Fixed cost for all sites
+        price: 10   // Fixed cost for all sites
       }
     };
     
     const siteData = mockData[source as keyof typeof mockData] || {
       title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
       image: 'https://picsum.photos/400/400?random=1',
-      points: 10,
-      price: 10
+      points: 10, // Fixed cost for all sites
+      price: 10   // Fixed cost for all sites
     };
     
     console.log('Using siteData for source:', source, siteData);

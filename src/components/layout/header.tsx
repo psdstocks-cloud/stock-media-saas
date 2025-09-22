@@ -37,17 +37,20 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+            <a href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
               Dashboard
             </a>
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
-              Browse
+            <a href="/dashboard/order-v2" className="text-sm font-medium hover:text-primary transition-colors">
+              Order Media
             </a>
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+            <a href="/dashboard/history-v2" className="text-sm font-medium hover:text-primary transition-colors">
+              History
+            </a>
+            <a href="/dashboard/order" className="text-sm font-medium hover:text-primary transition-colors">
+              Legacy Order
+            </a>
+            <a href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">
               Pricing
-            </a>
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
-              Support
             </a>
           </nav>
 

@@ -41,7 +41,7 @@ export function comprehensiveParseStockUrl(url: string): { site: string; id: str
   for (const matcher of siteMatchers) {
     const match = url.match(matcher.regex);
     if (match && (match[matcher.idIndex || 1])) {
-      return {
+        return {
         site: matcher.name,
         id: match[matcher.idIndex || 1],
         url: url,

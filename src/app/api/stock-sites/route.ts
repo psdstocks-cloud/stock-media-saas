@@ -10,7 +10,16 @@ export async function GET(request: NextRequest) {
       orderBy: { cost: 'asc' },
     })
 
-    return NextResponse.json({ stockSites })
+    // Override all costs to 10 points as requested
+    const sitesWithFixedCost = stockSites.map(site => ({
+      ...site,
+      cost: 10 // Fixed cost for all sites
+    }))
+
+    return NextResponse.json({ 
+      success: true,
+      sites: sitesWithFixedCost 
+    })
   } catch (error) {
     console.error('Error fetching stock sites:', error)
     return NextResponse.json({ error: 'Failed to fetch stock sites' }, { status: 500 })
