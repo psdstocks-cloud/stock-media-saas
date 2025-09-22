@@ -1,6 +1,7 @@
 // src/lib/nehtw-api.ts
 
-import { prisma } from './prisma'
+import axios from 'axios';
+import { prisma } from './prisma';
 
 export interface NehtwStockInfo {
   success: boolean
@@ -66,35 +67,38 @@ export class NehtwAPI {
    * CRITICAL: The request must NOT include the `?url=` parameter
    */
   async placeOrder(site: string, id: string, url?: string): Promise<NehtwOrderResponse> {
-    // CRITICAL: The request must NOT include the `?url=` parameter
+    // CORRECTED: The request URL must be clean and not contain any query parameters.
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 
     console.log(`Placing order to NEHTW API: ${requestUrl}`);
 
-    const response = await fetch(requestUrl, {
-      method: 'POST',
-      headers: { 
-        'X-API-KEY': this.apiKey,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({}) // Empty body
-    });
+    try {
+      const response = await axios.post(
+        requestUrl,
+        {}, // The body is empty for this API call.
+        {
+          headers: {
+            'X-API-KEY': this.apiKey,
+            'Accept': 'application/json', // We expect a JSON response.
+          },
+        }
+      );
 
-    // Check if response is actually JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      console.error('Non-JSON response from NEHTW API:', text.substring(0, 200));
-      throw new Error('Received non-JSON response from download service');
+      // Check if the response is valid JSON before proceeding.
+      if (typeof response.data !== 'object' || response.data === null) {
+        throw new Error('Received an invalid, non-JSON response from the download service.');
+      }
+
+      if (response.data.success === false) {
+        throw new Error(response.data.error || 'The download service returned a failure message.');
+      }
+      
+      return response.data;
+
+    } catch (error) {
+      console.error("Error communicating with NEHTW API:", error instanceof Error ? error.message : 'Unknown error');
+      throw new Error('Failed to communicate with the external download service.');
     }
-
-    const data = await response.json();
-
-    if (data.success === false) {
-      throw new Error(data.error || 'Failed to place order with Nehtw');
-    }
-    return data;
   }
 
   /**
@@ -359,34 +363,37 @@ export default class NehtwApi {
   }
   
   async placeOrder(site: string, id: string, url?: string): Promise<any> {
-    // CRITICAL: The request must NOT include the `?url=` parameter
+    // CORRECTED: The request URL must be clean and not contain any query parameters.
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 
     console.log(`Placing order to NEHTW API: ${requestUrl}`);
 
-    const response = await fetch(requestUrl, {
-      method: 'POST',
-      headers: { 
-        'X-API-KEY': this.apiKey,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({}) // Empty body
-    });
+    try {
+      const response = await axios.post(
+        requestUrl,
+        {}, // The body is empty for this API call.
+        {
+          headers: {
+            'X-API-KEY': this.apiKey,
+            'Accept': 'application/json', // We expect a JSON response.
+          },
+        }
+      );
 
-    // Check if response is actually JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      console.error('Non-JSON response from NEHTW API:', text.substring(0, 200));
-      throw new Error('Received non-JSON response from download service');
+      // Check if the response is valid JSON before proceeding.
+      if (typeof response.data !== 'object' || response.data === null) {
+        throw new Error('Received an invalid, non-JSON response from the download service.');
+      }
+
+      if (response.data.success === false) {
+        throw new Error(response.data.error || 'The download service returned a failure message.');
+      }
+      
+      return response.data;
+
+    } catch (error) {
+      console.error("Error communicating with NEHTW API:", error instanceof Error ? error.message : 'Unknown error');
+      throw new Error('Failed to communicate with the external download service.');
     }
-
-    const data = await response.json();
-
-    if (data.success === false) {
-      throw new Error(data.error || 'Failed to place order with Nehtw');
-    }
-    return data;
   }
 }

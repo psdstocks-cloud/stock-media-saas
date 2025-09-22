@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       
       try {
         // Check if this item was already ordered (free download)
+        // CORRECTED: Only check for truly completed orders, not pending ones
         const existingOrder = await prisma.order.findFirst({
           where: {
             userId: userId,
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
         })
 
         if (existingOrder) {
-          console.log('Existing order found - providing free download')
+          console.log('Existing completed order found - providing free download')
           createdOrders.push({
             id: existingOrder.id,
             status: existingOrder.status,

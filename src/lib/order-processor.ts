@@ -51,7 +51,7 @@ export class OrderProcessor {
       
       // Step 1: Place order
       await this.updateOrderStatus(orderId, 'PROCESSING', 'Placing order with download service...')
-      const orderResponse = await api.placeOrder(site, id, url)
+      const orderResponse = await api.placeOrder(site, id)
       
       if (!orderResponse.success || !orderResponse.task_id) {
         throw new Error(orderResponse.message || 'Failed to place order')
