@@ -69,14 +69,25 @@ export class NehtwAPI {
     // CRITICAL: The request must NOT include the `?url=` parameter
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 
+    console.log(`Placing order to NEHTW API: ${requestUrl}`);
+
     const response = await fetch(requestUrl, {
       method: 'POST',
       headers: { 
         'X-API-KEY': this.apiKey,
+        'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({}) // Empty body
     });
+
+    // Check if response is actually JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response from NEHTW API:', text.substring(0, 200));
+      throw new Error('Received non-JSON response from download service');
+    }
 
     const data = await response.json();
 
@@ -347,15 +358,29 @@ export default class NehtwApi {
     this.baseUrl = 'https://nehtw.com/api'; 
   }
   
-  async placeOrder(id: string, site: string, url: string): Promise<any> {
+  async placeOrder(site: string, id: string, url?: string): Promise<any> {
     // CRITICAL: The request must NOT include the `?url=` parameter
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 
+    console.log(`Placing order to NEHTW API: ${requestUrl}`);
+
     const response = await fetch(requestUrl, {
       method: 'POST',
-      headers: { 'X-API-KEY': this.apiKey },
+      headers: { 
+        'X-API-KEY': this.apiKey,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({}) // Empty body
     });
+
+    // Check if response is actually JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response from NEHTW API:', text.substring(0, 200));
+      throw new Error('Received non-JSON response from download service');
+    }
 
     const data = await response.json();
 

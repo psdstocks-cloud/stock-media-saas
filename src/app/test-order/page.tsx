@@ -17,6 +17,7 @@ export default function TestOrderPage() {
 
     try {
       console.log('Testing stock-info API...');
+      console.log('URL being sent:', testUrl);
       const response = await fetch(`/api/stock-info?url=${encodeURIComponent(testUrl)}`);
       const data = await response.json();
       
@@ -37,18 +38,33 @@ export default function TestOrderPage() {
 
     try {
       console.log('Testing place-order API...');
+      
+      // First get a test auth token
+      const authResponse = await fetch('/api/test-auth');
+      const authData = await authResponse.json();
+      
+      if (!authData.success) {
+        throw new Error('Failed to get test auth token');
+      }
+      
       const orderPayload = [{
         url: testUrl,
         site: 'dreamstime',
         id: '169271221',
         title: 'Test Order',
-        cost: 10,
-        imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop'
+        cost: 0.65,
+        imageUrl: 'https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg'
       }];
+
+      const headers: Record<string, string> = { 
+        'Content-Type': 'application/json',
+        'Cookie': `token=${authData.token}`,
+        'Authorization': `Bearer ${authData.token}`
+      };
 
       const response = await fetch('/api/place-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(orderPayload)
       });
       
@@ -70,22 +86,40 @@ export default function TestOrderPage() {
 
     try {
       console.log('Testing image load...');
-      const imageUrl = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop';
+      const imageUrl = 'https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg';
       
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
+      // Use proxy to avoid CORS issues
+      console.log('Using proxy to load image...');
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      const proxyResponse = await fetch(proxyUrl);
       
-      console.log('Image load response:', response.status, response.statusText);
+      if (!proxyResponse.ok) {
+        throw new Error(`Proxy failed: ${proxyResponse.status} ${proxyResponse.statusText}`);
+      }
+      
+      const proxyBlob = await proxyResponse.blob();
+      
+      console.log('Proxy image load successful:', proxyResponse.status);
       setResult({ 
         type: 'image-load', 
-        status: response.status, 
-        statusText: response.statusText,
-        size: blob.size,
-        mimeType: blob.type
+        status: proxyResponse.status, 
+        statusText: proxyResponse.statusText,
+        size: proxyBlob.size,
+        mimeType: proxyBlob.type,
+        url: imageUrl,
+        method: 'proxy'
       });
     } catch (err) {
       console.error('Image load error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
+      
+      // Still set result with error info
+      setResult({ 
+        type: 'image-load', 
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Unknown error',
+        url: 'https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg'
+      });
     } finally {
       setLoading(false);
     }
