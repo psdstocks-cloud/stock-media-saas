@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/jwt-auth'
 import NewOrderClient from './NewOrderClient'
-import { PointsHub } from '@/components/dashboard/PointsHub'
 import { SupportedSitesSidebar } from '@/components/dashboard/SupportedSitesSidebar'
 
 export const dynamic = 'force-dynamic'
@@ -47,7 +46,6 @@ export default async function OrderPage() {
 
           {/* Sidebar (30% width on large screens) */}
           <div className="space-y-6">
-            <PointsHub />
             <SupportedSitesSidebar />
           </div>
         </div>

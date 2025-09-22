@@ -402,25 +402,45 @@ https://depositphotos.com/example-345678"
                 </Typography>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between text-white/90">
-                  <span>Total Items:</span>
-                  <span className="font-medium">{items.length}</span>
+                {/* Transaction Summary */}
+                <div className="p-4 bg-white/5 rounded-lg border border-white/20 mb-4">
+                  <h3 className="font-bold text-lg mb-3 text-white">Transaction Summary</h3>
+                  <div className="space-y-2 text-base">
+                    <div className="flex justify-between text-white/90">
+                      <span>Your Current Balance:</span>
+                      <span className="font-medium text-white">{userPoints.toLocaleString()} Points</span>
+                    </div>
+                    <div className="flex justify-between text-white/90">
+                      <span>Total Cost of this Order:</span>
+                      <span className="font-medium text-red-300">- {totalCost} Points</span>
+                    </div>
+                    <div className="border-t border-white/20 pt-2 mt-3">
+                      <div className="flex justify-between font-bold text-lg text-white">
+                        <span>Balance After Purchase:</span>
+                        <span className="text-green-300">{userPoints - totalCost} Points</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between text-white/90">
-                  <span>Ready to Order:</span>
-                  <span className="font-medium text-green-300">{readyItems.length}</span>
-                </div>
-                <div className="flex justify-between text-white/90">
-                  <span>Processing/Ordered:</span>
-                  <span className="font-medium text-blue-300">{orderedItems.length}</span>
-                </div>
-                <div className="flex justify-between text-white/90">
-                  <span>Failed:</span>
-                  <span className="font-medium text-red-300">{items.filter(item => item.status === 'failed').length}</span>
-                </div>
-                <div className="border-t border-white/20 pt-3 flex justify-between text-white font-semibold">
-                  <span>Total Cost:</span>
-                  <span className="font-bold text-yellow-300">{totalCost} points</span>
+
+                {/* Order Breakdown */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-white/90">
+                    <span>Total Items:</span>
+                    <span className="font-medium">{items.length}</span>
+                  </div>
+                  <div className="flex justify-between text-white/90">
+                    <span>Ready to Order:</span>
+                    <span className="font-medium text-green-300">{readyItems.length}</span>
+                  </div>
+                  <div className="flex justify-between text-white/90">
+                    <span>Processing/Ordered:</span>
+                    <span className="font-medium text-blue-300">{orderedItems.length}</span>
+                  </div>
+                  <div className="flex justify-between text-white/90">
+                    <span>Failed:</span>
+                    <span className="font-medium text-red-300">{items.filter(item => item.status === 'failed').length}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
