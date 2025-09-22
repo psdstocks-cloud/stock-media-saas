@@ -15,6 +15,7 @@ import {
   Music,
   Palette
 } from 'lucide-react'
+import StatusBadge from './StatusBadge'
 
 export interface OrderItemData {
   url: string
@@ -172,10 +173,7 @@ export default function UnifiedOrderItem({
           {/* Status indicator for ordered items */}
           {isOrdered && currentStatus && (
             <div className="mt-2">
-              <Badge className={getStatusColor(currentStatus)}>
-                {currentStatus === 'PROCESSING' && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                {currentStatus}
-              </Badge>
+              <StatusBadge status={currentStatus} />
             </div>
           )}
         </div>

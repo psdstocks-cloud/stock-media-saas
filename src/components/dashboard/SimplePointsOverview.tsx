@@ -3,6 +3,7 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Coins } from 'lucide-react'
+import AnimatedPoints from './AnimatedPoints'
 
 interface SimplePointsOverviewProps {
   points: number
@@ -19,10 +20,7 @@ const SimplePointsOverview: React.FC<SimplePointsOverviewProps> = ({ points, cla
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-5xl font-bold text-orange-400">
-          {points.toLocaleString()}
-        </div>
-        <p className="text-indigo-200 mt-1">Points</p>
+        <AnimatedPoints points={points} />
       </CardContent>
     </Card>
   )

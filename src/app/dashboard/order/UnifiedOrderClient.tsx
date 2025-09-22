@@ -13,11 +13,16 @@ import {
   ShoppingCart,
   AlertCircle,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import UnifiedOrderItem, { OrderItemData, OrderStatus } from '@/components/dashboard/UnifiedOrderItem'
 import SimplePointsOverview from '@/components/dashboard/SimplePointsOverview'
+import OrderItemSkeleton from '@/components/dashboard/OrderItemSkeleton'
+import PointsSkeleton from '@/components/dashboard/PointsSkeleton'
+import EmptyState from '@/components/dashboard/EmptyState'
+import { saveDraftOrder, loadDraftOrder, clearDraftOrder, hasDraftOrder } from '@/lib/order-storage'
 
 type OrderStep = 'input' | 'confirmation'
 
@@ -61,6 +66,25 @@ export default function UnifiedOrderClient() {
     const interval = setInterval(fetchUserPoints, 30000)
     return () => clearInterval(interval)
   }, [])
+
+  // Load draft order on mount
+  useEffect(() => {
+    const draftOrder = loadDraftOrder()
+    if (draftOrder) {
+      setUrls(draftOrder.urls)
+      setItems(draftOrder.items)
+      if (draftOrder.items.length > 0) {
+        setStep('confirmation')
+      }
+    }
+  }, [])
+
+  // Save draft order when items change
+  useEffect(() => {
+    if (items.length > 0) {
+      saveDraftOrder(urls, items)
+    }
+  }, [items, urls])
 
   const parseUrls = async () => {
     if (!urls.trim()) {
@@ -217,6 +241,9 @@ export default function UnifiedOrderClient() {
       // Update user points
       await fetchUserPoints()
       
+      // Clear draft order after successful order
+      clearDraftOrder()
+      
       toast.success(`Order placed successfully! ${item.stockInfo.title} is being processed.`)
     } catch (error) {
       console.error('Order error:', error)
@@ -358,13 +385,32 @@ https://depositphotos.com/example-345678"
                       onChange={(e) => setUrls(e.target.value)}
                       className="min-h-[200px] bg-white/5 border-white/30 text-white placeholder:text-white/50 resize-none"
                     />
-                    <Button 
-                      onClick={parseUrls}
-                      disabled={isLoading || !urls.trim()}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {isLoading ? 'Processing URLs...' : 'Get File Information'}
-                    </Button>
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={parseUrls}
+                        disabled={isLoading || !urls.trim()}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isLoading ? 'Processing URLs...' : 'Get File Information'}
+                      </Button>
+                      
+                      {hasDraftOrder() && (
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            clearDraftOrder()
+                            setUrls('')
+                            setItems([])
+                            setStep('input')
+                            toast.success('Draft order cleared')
+                          }}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Clear Draft
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -387,22 +433,47 @@ https://depositphotos.com/example-345678"
                   <CardContent className="space-y-6">
                     {/* Items List */}
                     <div className="space-y-4">
-                      {items.map((item, index) => {
-                        const itemKey = item.parsedData ? `${item.parsedData.source}-${item.parsedData.id}` : item.url
-                        const orderStatus = orderStatuses.get(itemKey)
-                        
-                        return (
-                          <UnifiedOrderItem
-                            key={item.url}
-                            item={item}
-                            orderStatus={orderStatus}
-                            userPoints={userPoints}
-                            isProcessing={isProcessing}
-                            onOrder={handleOrderItem}
-                            onRemove={handleRemoveItem}
-                          />
-                        )
-                      })}
+                      {isLoading ? (
+                        // Show skeleton loaders while processing URLs
+                        Array.from({ length: 3 }).map((_, index) => (
+                          <OrderItemSkeleton key={`skeleton-${index}`} />
+                        ))
+                      ) : items.length === 0 ? (
+                        <EmptyState 
+                          type="no-items" 
+                          onAction={() => setStep('input')}
+                          actionText="Add URLs"
+                        />
+                      ) : successfulItems.length === 0 ? (
+                        <EmptyState 
+                          type="all-failed" 
+                          onAction={() => setStep('input')}
+                          actionText="Try Again"
+                        />
+                      ) : orderedCount === successfulItems.length ? (
+                        <EmptyState 
+                          type="all-ordered" 
+                          onAction={() => setStep('input')}
+                          actionText="Add More URLs"
+                        />
+                      ) : (
+                        items.map((item, index) => {
+                          const itemKey = item.parsedData ? `${item.parsedData.source}-${item.parsedData.id}` : item.url
+                          const orderStatus = orderStatuses.get(itemKey)
+                          
+                          return (
+                            <UnifiedOrderItem
+                              key={item.url}
+                              item={item}
+                              orderStatus={orderStatus}
+                              userPoints={userPoints}
+                              isProcessing={isProcessing}
+                              onOrder={handleOrderItem}
+                              onRemove={handleRemoveItem}
+                            />
+                          )
+                        })
+                      )}
                     </div>
 
                     {/* Bulk Order Button */}
@@ -453,7 +524,11 @@ https://depositphotos.com/example-345678"
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Points Overview */}
-              <SimplePointsOverview points={userPoints} />
+              {userPoints === 0 && isLoading ? (
+                <PointsSkeleton />
+              ) : (
+                <SimplePointsOverview points={userPoints} />
+              )}
 
               {/* Order Summary */}
               {step === 'confirmation' && items.length > 0 && (
