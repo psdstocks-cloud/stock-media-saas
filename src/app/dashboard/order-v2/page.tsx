@@ -79,25 +79,34 @@ export default function OrderV2Page() {
       
       for (const url of urlList) {
         try {
-          // Use the official parser directly
+          // First check if URL is parseable
           const parseResult = officialParseStockUrl(url);
           
-          if (parseResult) {
-            const site = SUPPORTED_SITES.find(s => s.name === parseResult.source);
+          if (!parseResult) {
+            toast.error(`Unsupported URL format: ${url}`);
+            continue;
+          }
+
+          // Fetch detailed information from API
+          const response = await fetch(`/api/stock-info?url=${encodeURIComponent(url)}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            const site = SUPPORTED_SITES.find(s => s.name === data.data.parsedData.source);
             const item: OrderItem = {
-              id: `${parseResult.source}-${parseResult.id}-${Date.now()}`,
+              id: `${data.data.parsedData.source}-${data.data.parsedData.id}-${Date.now()}`,
               url: url,
-              site: parseResult.source,
-              siteId: parseResult.id,
-              title: site?.displayName || `${parseResult.source} Item`,
-              cost: 10, // Fixed cost as requested
-              imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+              site: data.data.parsedData.source,
+              siteId: data.data.parsedData.id,
+              title: data.data.stockInfo.title, // Use the actual title from API
+              cost: data.data.stockInfo.points, // Use the actual cost from API
+              imageUrl: data.data.stockInfo.image, // Use the actual preview image from API
               status: 'ready'
             };
             newItems.push(item);
-            toast.success(`Successfully parsed ${site?.displayName || parseResult.source} URL`);
+            toast.success(`Successfully parsed ${site?.displayName || data.data.parsedData.source} URL`);
           } else {
-            toast.error(`Unsupported URL format: ${url}`);
+            toast.error(`Failed to fetch details for URL: ${url}`);
           }
         } catch (error) {
           toast.error(`Error processing URL: ${url}`);

@@ -38,6 +38,108 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Enhanced mock data for all supported sites
+    const mockData: Record<string, { title: string; image: string; points: number; price: number }> = {
+      dreamstime: {
+        title: "Freelance people work in comfortable conditions set vector flat illustration. Freelancer character working from home or",
+        image: "https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg",
+        points: 10,
+        price: 10
+      },
+      shutterstock: {
+        title: "Smiling baby girl lying on bed - professional stock photography",
+        image: "https://image.shutterstock.com/image-photo/smiling-baby-girl-lying-on-260nw-420756877.jpg",
+        points: 10,
+        price: 10
+      },
+      adobestock: {
+        title: "Minimal product catalog layout - modern design template",
+        image: "https://as1.ftcdn.net/v2/jpg/04/54/40/76/1000_F_454407674_abc123.jpg",
+        points: 10,
+        price: 10
+      },
+      depositphotos: {
+        title: "Stanley neighborhood Alexandria Egypt - editorial photography",
+        image: "https://st.depositphotos.com/1234567/182879584/i/450/depositphotos_182879584-stock-photo-stanley-neighborhood-alexandria-egypt.jpg",
+        points: 10,
+        price: 10
+      },
+      epidemicsound: {
+        title: "Notification, Message, Text 04 - Sound Effect",
+        image: "https://thumbs.dreamstime.com/l/notification-message-text-sound-effect-169271221.jpg",
+        points: 10,
+        price: 10
+      },
+      freepik: {
+        title: "Modern business concept illustration - vector graphics",
+        image: "https://img.freepik.com/free-vector/modern-business-concept-illustration_123456-7890.jpg",
+        points: 10,
+        price: 10
+      },
+      flaticon: {
+        title: "Business icons set - professional icon collection",
+        image: "https://cdn-icons-png.flaticon.com/512/1234/1234567.png",
+        points: 10,
+        price: 10
+      },
+      envato: {
+        title: "Creative template bundle - premium design assets",
+        image: "https://elements-cover-images-0.imgix.net/abc123-def456.jpg",
+        points: 10,
+        price: 10
+      },
+      storyblocks: {
+        title: "Professional video footage - high quality stock video",
+        image: "https://images.storyblocks.com/abc123-def456.jpg",
+        points: 10,
+        price: 10
+      },
+      motionarray: {
+        title: "Motion graphics template - animated design elements",
+        image: "https://motionarray.imgix.net/abc123-def456.jpg",
+        points: 10,
+        price: 10
+      },
+      vecteezy: {
+        title: "Vector illustration pack - creative design elements",
+        image: "https://static.vecteezy.com/system/resources/thumbnails/123456/abc123.jpg",
+        points: 10,
+        price: 10
+      },
+      creativefabrica: {
+        title: "Font bundle - typography collection",
+        image: "https://www.creativefabrica.com/wp-content/uploads/2023/01/abc123.jpg",
+        points: 10,
+        price: 10
+      },
+      unsplash: {
+        title: "Beautiful landscape photography - high resolution image",
+        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+        points: 10,
+        price: 10
+      },
+      pexels: {
+        title: "Professional portrait photography - stock photo",
+        image: "https://images.pexels.com/photos/1234567/pexels-photo-1234567.jpeg?w=800&h=600&fit=crop",
+        points: 10,
+        price: 10
+      },
+      pixabay: {
+        title: "Nature photography - free stock image",
+        image: "https://cdn.pixabay.com/photo/2023/01/01/12/34/abc123-1234567_960_720.jpg",
+        points: 10,
+        price: 10
+      }
+    };
+    
+    // Generate dynamic content based on source and ID
+    const siteData = mockData[source] || {
+      title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
+      image: `https://picsum.photos/400/400?random=${assetId}&sig=${source}`,
+      points: 10,
+      price: 10
+    };
+
     // Return mock data for GET requests
     return NextResponse.json({
       success: true,
@@ -50,15 +152,15 @@ export async function GET(request: NextRequest) {
         stockSite: {
           name: source,
           displayName: source.charAt(0).toUpperCase() + source.slice(1),
-          cost: 10
+          cost: siteData.points
         },
         stockInfo: {
           id: assetId,
           source: source,
-          title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
-          image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-          points: 10,
-          price: 10
+          title: siteData.title,
+          image: siteData.image,
+          points: siteData.points,
+          price: siteData.price
         }
       }
     });
@@ -102,21 +204,106 @@ export async function POST(request: NextRequest) {
     // Return mock data with correct values based on the actual API response
     console.log('Returning mock data for source:', source);
     
-    // Use correct values based on the actual nehtw.com API response
-    const mockData = {
+    // Enhanced mock data for all supported sites
+    const mockData: Record<string, { title: string; image: string; points: number; price: number }> = {
       dreamstime: {
         title: "Freelance people work in comfortable conditions set vector flat illustration. Freelancer character working from home or",
         image: "https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg",
-        points: 10, // Fixed cost for all sites
-        price: 10   // Fixed cost for all sites
+        points: 10,
+        price: 10
+      },
+      shutterstock: {
+        title: "Smiling baby girl lying on bed - professional stock photography",
+        image: "https://image.shutterstock.com/image-photo/smiling-baby-girl-lying-on-260nw-420756877.jpg",
+        points: 10,
+        price: 10
+      },
+      adobestock: {
+        title: "Minimal product catalog layout - modern design template",
+        image: "https://as1.ftcdn.net/v2/jpg/04/54/40/76/1000_F_454407674_abc123.jpg",
+        points: 10,
+        price: 10
+      },
+      depositphotos: {
+        title: "Stanley neighborhood Alexandria Egypt - editorial photography",
+        image: "https://st.depositphotos.com/1234567/182879584/i/450/depositphotos_182879584-stock-photo-stanley-neighborhood-alexandria-egypt.jpg",
+        points: 10,
+        price: 10
+      },
+      epidemicsound: {
+        title: "Notification, Message, Text 04 - Sound Effect",
+        image: "https://thumbs.dreamstime.com/l/notification-message-text-sound-effect-169271221.jpg",
+        points: 10,
+        price: 10
+      },
+      freepik: {
+        title: "Modern business concept illustration - vector graphics",
+        image: "https://img.freepik.com/free-vector/modern-business-concept-illustration_123456-7890.jpg",
+        points: 10,
+        price: 10
+      },
+      flaticon: {
+        title: "Business icons set - professional icon collection",
+        image: "https://cdn-icons-png.flaticon.com/512/1234/1234567.png",
+        points: 10,
+        price: 10
+      },
+      envato: {
+        title: "Creative template bundle - premium design assets",
+        image: "https://elements-cover-images-0.imgix.net/abc123-def456.jpg",
+        points: 10,
+        price: 10
+      },
+      storyblocks: {
+        title: "Professional video footage - high quality stock video",
+        image: "https://images.storyblocks.com/abc123-def456.jpg",
+        points: 10,
+        price: 10
+      },
+      motionarray: {
+        title: "Motion graphics template - animated design elements",
+        image: "https://motionarray.imgix.net/abc123-def456.jpg",
+        points: 10,
+        price: 10
+      },
+      vecteezy: {
+        title: "Vector illustration pack - creative design elements",
+        image: "https://static.vecteezy.com/system/resources/thumbnails/123456/abc123.jpg",
+        points: 10,
+        price: 10
+      },
+      creativefabrica: {
+        title: "Font bundle - typography collection",
+        image: "https://www.creativefabrica.com/wp-content/uploads/2023/01/abc123.jpg",
+        points: 10,
+        price: 10
+      },
+      unsplash: {
+        title: "Beautiful landscape photography - high resolution image",
+        image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+        points: 10,
+        price: 10
+      },
+      pexels: {
+        title: "Professional portrait photography - stock photo",
+        image: "https://images.pexels.com/photos/1234567/pexels-photo-1234567.jpeg?w=800&h=600&fit=crop",
+        points: 10,
+        price: 10
+      },
+      pixabay: {
+        title: "Nature photography - free stock image",
+        image: "https://cdn.pixabay.com/photo/2023/01/01/12/34/abc123-1234567_960_720.jpg",
+        points: 10,
+        price: 10
       }
     };
     
-    const siteData = mockData[source as keyof typeof mockData] || {
-      title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
-      image: 'https://picsum.photos/400/400?random=1',
-      points: 10, // Fixed cost for all sites
-      price: 10   // Fixed cost for all sites
+    // Generate dynamic content based on source and ID
+    const siteData = mockData[source] || {
+      title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
+      image: `https://picsum.photos/400/400?random=${id}&sig=${source}`,
+      points: 10,
+      price: 10
     };
     
     console.log('Using siteData for source:', source, siteData);
