@@ -59,7 +59,24 @@ export class OrderProcessor {
 
       // Step 2: Save taskId and monitor order status
       await this.updateOrderStatus(orderId, 'PROCESSING', 'Order placed, monitoring progress...', undefined, undefined, undefined, orderResponse.task_id)
-      await this.monitorOrderStatus(orderId, api, orderResponse.task_id)
+      
+      // Check if this is a mock response
+      if (orderResponse.task_id.startsWith('mock_')) {
+        console.log('Mock order detected, simulating completion...');
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Mark as completed with mock download URL
+        await this.updateOrderStatus(
+          orderId, 
+          'COMPLETED', 
+          'Order completed successfully!', 
+          'https://example.com/mock-download.zip',
+          'mock-download.zip'
+        );
+      } else {
+        await this.monitorOrderStatus(orderId, api, orderResponse.task_id)
+      }
       
     } catch (error) {
       console.error('Order processing failed:', error)

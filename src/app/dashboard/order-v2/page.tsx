@@ -398,7 +398,13 @@ export default function OrderV2Page() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(item.downloadUrl, '_blank')}
+                          onClick={() => {
+                            if (item.downloadUrl?.includes('example.com')) {
+                              toast.success('This is a demo download. In production, this would download the actual file.');
+                            } else {
+                              window.open(item.downloadUrl, '_blank');
+                            }
+                          }}
                         >
                           <Download className="w-4 h-4 mr-1" />
                           Download
@@ -433,11 +439,11 @@ export default function OrderV2Page() {
               {supportedSites.map((site) => (
                 <div key={site.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-2">
-                    <img
-                      src={`/assets/icons/${site.icon}`}
-                      alt={site.displayName}
-                      className="w-5 h-5"
-                    />
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-orange-500 rounded flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {site.displayName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                     <span className="text-sm font-medium">{site.displayName}</span>
                   </div>
                   <Badge variant="outline" className="text-xs">

@@ -97,6 +97,12 @@ export default function HistoryV2Page() {
   };
 
   const downloadFile = (downloadUrl: string, fileName?: string) => {
+    if (downloadUrl.includes('example.com')) {
+      // Mock download - show a message instead
+      toast.success('This is a demo download. In production, this would download the actual file.');
+      return;
+    }
+    
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = fileName || 'download';
