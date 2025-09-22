@@ -10,6 +10,7 @@ import SubscriptionManager from '@/components/dashboard/SubscriptionManager'
 import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
 import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
+import useUserStore from '@/stores/userStore'
 
 interface DashboardUser {
   id: string
@@ -20,10 +21,12 @@ interface DashboardUser {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<DashboardUser | null>(null)
-  const [userPoints, setUserPoints] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
+  
+  // Use centralized store for points
+  const { points: userPoints } = useUserStore()
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -59,24 +62,7 @@ export default function DashboardPage() {
     verifyAuth()
   }, [router])
 
-  // Fetch user points when user is authenticated
-  useEffect(() => {
-    const fetchUserPoints = async () => {
-      if (!user) return
-      
-      try {
-        const response = await fetch('/api/points')
-        if (response.ok) {
-          const data = await response.json()
-          setUserPoints(data.data?.currentPoints || 0)
-        }
-      } catch (error) {
-        console.error('Error fetching user points:', error)
-      }
-    }
-
-    fetchUserPoints()
-  }, [user])
+  // Points are now managed by the centralized store via PointsInitializer
 
   const handleLogout = async () => {
     try {
@@ -215,7 +201,7 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <Typography variant="h1" className="text-white text-4xl font-bold">
-                        {userPoints?.toLocaleString() || '0'} Points
+                        {userPoints === null ? '...' : userPoints?.toLocaleString() || '0'} Points
                       </Typography>
                       <Typography variant="body" className="text-white/70 text-lg">
                         Available for downloads
