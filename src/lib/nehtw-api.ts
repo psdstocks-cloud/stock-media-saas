@@ -85,10 +85,9 @@ export class NehtwAPI {
 
     try {
       const response = await fetch(requestUrl, {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'X-Api-Key': this.apiKey,
-          'Content-Type': 'application/json',
         },
       });
 
