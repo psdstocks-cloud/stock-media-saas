@@ -174,8 +174,15 @@ export default function OrderClient() {
       return
     }
 
-    setIsLoading(true)
     const urlList = urls.split('\n').map(url => url.trim()).filter(url => url.length > 0)
+    
+    // Check link limit (maximum 5 links)
+    if (urlList.length > 5) {
+      toast.error(`Maximum 5 links allowed per order. You entered ${urlList.length} links. Please remove ${urlList.length - 5} links and try again.`)
+      return
+    }
+
+    setIsLoading(true)
     const items: PreOrderItem[] = urlList.map(url => ({
       url,
       parsedData: null,
@@ -286,6 +293,12 @@ export default function OrderClient() {
       return
     }
 
+    // Check if this item is already being processed
+    if (confirmedOrders.some(order => order.title === item.stockInfo?.title)) {
+      toast.error('This item is already being processed')
+      return
+    }
+
     setIsProcessing(true)
     try {
       const orderData = {
@@ -357,6 +370,12 @@ export default function OrderClient() {
     const successfulItems = preOrderItems.filter(item => item.success)
     if (successfulItems.length === 0) {
       toast.error('No valid items to order')
+      return
+    }
+
+    // Check link limit (maximum 5 links)
+    if (successfulItems.length > 5) {
+      toast.error(`Maximum 5 links allowed per order. You have ${successfulItems.length} links. Please remove ${successfulItems.length - 5} links and try again.`)
       return
     }
 
@@ -652,6 +671,9 @@ export default function OrderClient() {
             </CardTitle>
             <CardDescription className="text-white/70">
               Review your items and confirm the purchase
+              <div className="mt-2 text-sm text-blue-300">
+                Maximum 5 links allowed per order ({preOrderItems.filter(item => item.success).length}/5)
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -688,13 +710,18 @@ export default function OrderClient() {
                     <Button
                       size="sm"
                       onClick={() => handlePlaceSingleOrder(item)}
-                      disabled={isProcessing || userPoints < (item.stockInfo?.points || 10)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={isProcessing || userPoints < (item.stockInfo?.points || 10) || confirmedOrders.some(order => order.title === item.stockInfo?.title)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                     >
                       {isProcessing ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                           Processing...
+                        </>
+                      ) : confirmedOrders.some(order => order.title === item.stockInfo?.title) ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Ordered
                         </>
                       ) : (
                         <>
