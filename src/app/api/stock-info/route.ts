@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { parseStockMediaUrl } from '@/lib/url-parser';
+import { officialParseStockUrl } from '@/lib/official-url-parser';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -14,37 +14,29 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    let parseResult;
+    let source: string;
+    let assetId: string;
     
     if (url) {
-      parseResult = parseStockMediaUrl(url);
+      const parseResult = officialParseStockUrl(url);
+      if (!parseResult) {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid URL or ID provided'
+        }, { status: 400 });
+      }
+      source = parseResult.source;
+      assetId = parseResult.id;
     } else if (id) {
       // For direct ID lookup, create a mock parse result
-      parseResult = {
-        success: true,
-        data: {
-          source: 'unknown',
-          id: id,
-          url: `https://example.com/item/${id}`
-        }
-      };
-    }
-
-    if (!parseResult?.success) {
+      source = 'unknown';
+      assetId = id;
+    } else {
       return NextResponse.json({
         success: false,
         message: 'Invalid URL or ID provided'
       }, { status: 400 });
     }
-
-    if (!parseResult.data) {
-      return NextResponse.json({
-        success: false,
-        message: 'Invalid URL or ID provided'
-      }, { status: 400 });
-    }
-
-    const { source, id: assetId } = parseResult.data;
 
     // Return mock data for GET requests
     return NextResponse.json({
@@ -92,20 +84,20 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Parse URL using our advanced parser
+    // Parse URL using our official parser
     console.log('Parsing URL...');
-    const parseResult = parseStockMediaUrl(url);
+    const parseResult = officialParseStockUrl(url);
     console.log('Parse result:', parseResult);
 
-    if (!parseResult.success || !parseResult.data) {
+    if (!parseResult) {
       return NextResponse.json({
         success: false,
         message: 'Invalid or unsupported URL. Please check the link and try again.',
-        error: parseResult.error || 'Unable to parse URL'
+        error: 'Unable to parse URL'
       }, { status: 400 });
     }
 
-    const { source, id } = parseResult.data;
+    const { source, id } = parseResult;
 
     // Return mock data with correct values based on the actual API response
     console.log('Returning mock data for source:', source);

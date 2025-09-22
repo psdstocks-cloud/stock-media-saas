@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
+import { SUPPORTED_SITES } from '@/lib/supported-sites';
 import { 
   Download, 
   ExternalLink, 

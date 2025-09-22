@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
+import { SUPPORTED_SITES, getSitesByCategory } from '@/lib/supported-sites';
+import { officialParseStockUrl } from '@/lib/official-url-parser';
 import { 
   ShoppingCart, 
   Download, 
@@ -51,26 +53,11 @@ export default function OrderV2Page() {
   const { points: currentPoints, isLoading: pointsLoading } = useUserStore();
   const [urls, setUrls] = useState('');
   const [items, setItems] = useState<OrderItem[]>([]);
-  const [supportedSites, setSupportedSites] = useState<StockSite[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Load supported sites on mount
-  useEffect(() => {
-    loadSupportedSites();
-  }, []);
-
-  const loadSupportedSites = async () => {
-    try {
-      const response = await fetch('/api/stock-sites');
-      const data = await response.json();
-      if (data.success) {
-        setSupportedSites(data.sites);
-      }
-    } catch (error) {
-      console.error('Failed to load supported sites:', error);
-    }
-  };
+  // Use the comprehensive supported sites list
+  const supportedSites = SUPPORTED_SITES;
 
   const parseUrls = async () => {
     if (!urls.trim()) {
@@ -92,24 +79,25 @@ export default function OrderV2Page() {
       
       for (const url of urlList) {
         try {
-          const response = await fetch(`/api/stock-info?url=${encodeURIComponent(url)}`);
-          const data = await response.json();
+          // Use the official parser directly
+          const parseResult = officialParseStockUrl(url);
           
-          if (data.success) {
-            const site = supportedSites.find(s => s.name === data.data.parsedData.source);
+          if (parseResult) {
+            const site = SUPPORTED_SITES.find(s => s.name === parseResult.source);
             const item: OrderItem = {
-              id: `${data.data.parsedData.source}-${data.data.parsedData.id}-${Date.now()}`,
+              id: `${parseResult.source}-${parseResult.id}-${Date.now()}`,
               url: url,
-              site: data.data.parsedData.source,
-              siteId: data.data.parsedData.id,
-              title: data.data.stockInfo.title,
+              site: parseResult.source,
+              siteId: parseResult.id,
+              title: site?.displayName || `${parseResult.source} Item`,
               cost: 10, // Fixed cost as requested
-              imageUrl: data.data.stockInfo.image,
+              imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
               status: 'ready'
             };
             newItems.push(item);
+            toast.success(`Successfully parsed ${site?.displayName || parseResult.source} URL`);
           } else {
-            toast.error(`Failed to parse URL: ${url}`);
+            toast.error(`Unsupported URL format: ${url}`);
           }
         } catch (error) {
           toast.error(`Error processing URL: ${url}`);
@@ -431,27 +419,198 @@ export default function OrderV2Page() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <ExternalLink className="w-5 h-5" />
-              <span>Supported Websites</span>
+              <span>Supported Websites ({supportedSites.length} sites)</span>
             </CardTitle>
+            <p className="text-sm text-gray-600">
+              All sites cost 10 points per download. Click on any site to visit their website.
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {supportedSites.map((site) => (
-                <div key={site.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-orange-500 rounded flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">
-                        {site.displayName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium">{site.displayName}</span>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {site.cost} pts
-                  </Badge>
+            {getSitesByCategory('photos').length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  📸 Photography & Images ({getSitesByCategory('photos').length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {getSitesByCategory('photos').map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-orange-500 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{site.displayName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {site.cost} pts
+                      </Badge>
+                    </a>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {getSitesByCategory('videos').length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  🎬 Videos & Motion Graphics ({getSitesByCategory('videos').length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {getSitesByCategory('videos').map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{site.displayName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {site.cost} pts
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {getSitesByCategory('audio').length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  🎵 Audio & Music ({getSitesByCategory('audio').length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {getSitesByCategory('audio').map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-teal-500 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{site.displayName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {site.cost} pts
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {getSitesByCategory('graphics').length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  🎨 Graphics & Icons ({getSitesByCategory('graphics').length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {getSitesByCategory('graphics').map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-r from-pink-500 to-red-500 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{site.displayName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {site.cost} pts
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {getSitesByCategory('icons').length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  🔗 Icons & UI Elements ({getSitesByCategory('icons').length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {getSitesByCategory('icons').map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{site.displayName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {site.cost} pts
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {getSitesByCategory('mixed').length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  🎯 Mixed Content ({getSitesByCategory('mixed').length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {getSitesByCategory('mixed').map((site) => (
+                    <a
+                      key={site.id}
+                      href={site.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{site.displayName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {site.cost} pts
+                      </Badge>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
