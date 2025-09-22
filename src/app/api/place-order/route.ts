@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           createdOrders.push({
             id: existingOrder.id,
             status: existingOrder.status,
-            title: existingOrder.title,
+            title: `${existingOrder.title} (Re-download)`,
             cost: 0, // Free download
             createdAt: existingOrder.createdAt,
             downloadUrl: existingOrder.downloadUrl,

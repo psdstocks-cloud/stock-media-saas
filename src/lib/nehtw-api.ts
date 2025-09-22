@@ -78,6 +78,11 @@ export class NehtwAPI {
       apiKey: this.apiKey ? 'present' : 'missing',
     });
 
+    // Validate API key
+    if (!this.apiKey) {
+      throw new Error('Nehtw API key is missing');
+    }
+
     try {
       const response = await fetch(requestUrl, {
         method: 'GET',
@@ -92,8 +97,21 @@ export class NehtwAPI {
           status: response.status,
           statusText: response.statusText,
           body: errorText,
+          requestUrl,
+          site,
+          id
         });
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        
+        // Handle specific error cases
+        if (response.status === 400) {
+          throw new Error(`Invalid request parameters. Site: ${site}, ID: ${id}`);
+        } else if (response.status === 401) {
+          throw new Error('Invalid API key');
+        } else if (response.status === 403) {
+          throw new Error('Access forbidden - check API key permissions');
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+        }
       }
 
       const responseData = await response.json();
@@ -103,7 +121,13 @@ export class NehtwAPI {
       });
 
       if (responseData.error || !responseData.success) {
-        throw new Error(responseData.message || 'Failed to place order with Nehtw API');
+        const errorMessage = responseData.message || 'Failed to place order with Nehtw API';
+        console.error('Nehtw API returned error:', {
+          error: responseData.error,
+          message: errorMessage,
+          fullResponse: responseData
+        });
+        throw new Error(errorMessage);
       }
 
       return responseData;
