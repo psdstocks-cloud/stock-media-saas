@@ -35,6 +35,9 @@ const siteMatchers: SiteMatcher[] = [
     { name: 'creativefabrica', regex: /creativefabrica\.com\/.*\/([a-z0-9-]+)\/?$/ },
     { name: 'lovepik', regex: /lovepik\.com\/[a-z]+-(\d+)\// },
     { name: 'rawpixel', regex: /rawpixel\.com\/image\/(\d+)/ },
+    { name: 'epidemicsound', regex: /epidemicsound\.com\/sound-effects\/tracks\/([a-f0-9-]+)/ },
+    { name: 'epidemicsound', regex: /epidemicsound\.com\/music\/tracks\/([a-f0-9-]+)/ },
+    { name: 'epidemicsound', regex: /epidemicsound\.com\/.*tracks?\/([a-f0-9-]+)/ },
 ];
 
 export function comprehensiveParseStockUrl(url: string): { site: string; id: string; url: string } | null {
