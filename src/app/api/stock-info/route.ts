@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
           id: id,
           source: source,
           title: `${source.charAt(0).toUpperCase() + source.slice(1)} Image`,
-          image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+          image: 'https://picsum.photos/400/400?random=1',
           points: 10, // Unified pricing
           price: 10
         }

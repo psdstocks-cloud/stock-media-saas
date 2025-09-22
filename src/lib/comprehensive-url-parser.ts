@@ -17,6 +17,8 @@ const siteMatchers: SiteMatcher[] = [
     { name: 'depositphotos', regex: /depositphotos\.com\/(?:photo|editorial|vector|illustration)\/.*?-(\d+)/ },
     { name: 'depositphotos_video', regex: /depositphotos\.com\/([0-9]*)\/stock-video/ },
     { name: 'dreamstime', regex: /dreamstime\.com\/.*-image(\d+)/ },
+    { name: 'dreamstime', regex: /dreamstime\.com\/.*-image(\d+)\// },
+    { name: 'dreamstime', regex: /dreamstime\.com\/.*image(\d+)/ },
     { name: '123rf', regex: /123rf\.com\/(?:photo|free-photo)_([0-9]*)_/ },
     { name: 'istockphoto', regex: /istockphoto\.com\/.*gm([0-9A-Z_]*)-/ },
     { name: 'gettyimages', regex: /gettyimages\.com\/.*?\/(\d+)/ },
