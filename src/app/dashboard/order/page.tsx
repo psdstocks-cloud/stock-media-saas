@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/jwt-auth'
-import UnifiedOrderClient from './UnifiedOrderClient'
+import NewOrderClient from './NewOrderClient'
 import { PointsHub } from '@/components/dashboard/PointsHub'
 import { SupportedSitesSidebar } from '@/components/dashboard/SupportedSitesSidebar'
 
@@ -42,7 +42,7 @@ export default async function OrderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content area (70% width on large screens) */}
           <div className="lg:col-span-2">
-            <UnifiedOrderClient />
+            <NewOrderClient />
           </div>
 
           {/* Sidebar (30% width on large screens) */}

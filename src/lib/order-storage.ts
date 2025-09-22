@@ -1,16 +1,16 @@
 'use client'
 
-import { OrderItemData } from '@/components/dashboard/UnifiedOrderItem'
+import { UnifiedOrderItemData } from '@/components/dashboard/UnifiedOrderItem'
 
 const STORAGE_KEY = 'stock-media-draft-order'
 
 export interface DraftOrder {
   urls: string
-  items: OrderItemData[]
+  items: UnifiedOrderItemData[]
   timestamp: number
 }
 
-export const saveDraftOrder = (urls: string, items: OrderItemData[]) => {
+export const saveDraftOrder = (urls: string, items: UnifiedOrderItemData[]) => {
   try {
     const draftOrder: DraftOrder = {
       urls,

@@ -1,264 +1,173 @@
 'use client'
 
-import { useState } from 'react'
+import React from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Typography } from '@/components/ui/typography'
-import { 
-  CheckCircle, 
-  Loader2, 
-  Download, 
-  X, 
-  AlertCircle,
-  FileImage,
-  Film,
-  Music,
-  Palette
-} from 'lucide-react'
-import StatusBadge from './StatusBadge'
+import { X, Download, AlertCircle, Loader2 } from 'lucide-react'
 
-export interface OrderItemData {
+export interface UnifiedOrderItemData {
   url: string
-  parsedData: {
+  parsedData?: {
     source: string
     id: string
     url: string
-  } | null
-  stockSite: {
+  }
+  stockSite?: {
     name: string
     displayName: string
     cost: number
-  } | null
-  stockInfo: {
+  }
+  stockInfo?: {
     id: string
-    source: string
     title: string
     image: string
     points: number
-    price: number
-    type?: string
-  } | null
-  success: boolean
-  error?: string
-}
-
-export interface OrderStatus {
-  id: string
-  status: 'PENDING' | 'PROCESSING' | 'READY' | 'COMPLETED' | 'FAILED'
+  }
+  status: 'ready' | 'ordering' | 'processing' | 'completed' | 'failed'
+  progress?: number
   downloadUrl?: string
   error?: string
+  orderId?: string
 }
 
 interface UnifiedOrderItemProps {
-  item: OrderItemData
-  orderStatus?: OrderStatus
+  item: UnifiedOrderItemData
+  onOrder: (item: UnifiedOrderItemData) => void
+  onRemove: (url: string) => void
   userPoints: number
-  isProcessing: boolean
-  onOrder: (item: OrderItemData) => void
-  onRemove: (item: OrderItemData) => void
-  onRetry?: (item: OrderItemData) => void
 }
 
-const getTypeIcon = (type?: string) => {
-  switch (type?.toLowerCase()) {
-    case 'video':
-      return <Film className="h-5 w-5 text-blue-400" />
-    case 'audio':
-      return <Music className="h-5 w-5 text-green-400" />
-    case 'vector':
-      return <Palette className="h-5 w-5 text-purple-400" />
-    default:
-      return <FileImage className="h-5 w-5 text-gray-400" />
-  }
-}
+export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({ 
+  item, 
+  onOrder, 
+  onRemove, 
+  userPoints 
+}) => {
+  const { url, parsedData, stockSite, stockInfo, status, progress, downloadUrl, error } = item
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'COMPLETED':
-      return 'bg-green-500/20 text-green-300 border-green-500/30'
-    case 'PROCESSING':
-      return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-    case 'PENDING':
-      return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-    case 'FAILED':
-      return 'bg-red-500/20 text-red-300 border-red-500/30'
-    default:
-      return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-  }
-}
+  const canAfford = userPoints >= (stockInfo?.points || 0)
+  const isOrdered = status !== 'ready' && status !== 'failed'
 
-export default function UnifiedOrderItem({
-  item,
-  orderStatus,
-  userPoints,
-  isProcessing,
-  onOrder,
-  onRemove,
-  onRetry
-}: UnifiedOrderItemProps) {
-  const [isLocalProcessing, setIsLocalProcessing] = useState(false)
-  
-  if (!item.success || !item.stockInfo) {
-    // Failed item state
-    return (
-      <div className="flex items-center justify-between p-4 bg-red-500/5 rounded-lg border border-red-500/20">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
-            <AlertCircle className="h-6 w-6 text-red-400" />
+  const renderStatus = () => {
+    switch (status) {
+      case 'ordering':
+        return (
+          <Button className="w-full" disabled>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Ordering...
+          </Button>
+        )
+      
+      case 'processing':
+        return (
+          <div className="w-full text-center">
+            <Progress value={progress || 0} className="h-2 mb-2" />
+            <span className="text-xs text-muted-foreground">Processing...</span>
           </div>
-          <div className="flex-1 min-w-0">
-            <Typography variant="body" className="text-white font-medium truncate">
-              Failed to process URL
-            </Typography>
-            <Typography variant="caption" className="text-red-300">
-              {item.error || 'Unknown error'}
-            </Typography>
+        )
+      
+      case 'completed':
+        return (
+          <Button asChild className="w-full bg-green-600 hover:bg-green-700">
+            <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </a>
+          </Button>
+        )
+      
+      case 'failed':
+        return (
+          <div className="text-center">
+            <Badge variant="destructive" className="mb-2">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Failed
+            </Badge>
+            <p className="text-xs text-destructive mb-2">{error}</p>
+            <Button variant="outline" size="sm" onClick={() => onOrder(item)}>
+              Retry
+            </Button>
           </div>
-        </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => onRemove(item)}
-          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    )
-  }
-
-  const handleOrder = async () => {
-    setIsLocalProcessing(true)
-    try {
-      await onOrder(item)
-    } finally {
-      setIsLocalProcessing(false)
+        )
+      
+      default: // 'ready' state
+        return (
+          <Button 
+            className="w-full" 
+            onClick={() => onOrder(item)}
+            disabled={!canAfford}
+          >
+            Order for {stockInfo?.points || 0} Points
+          </Button>
+        )
     }
   }
 
-  const points = item.stockInfo.points || 10
-  const canAfford = userPoints >= points
-  const isOrdered = !!orderStatus
-  const currentStatus = orderStatus?.status
+  if (!stockInfo) {
+    return (
+      <Card className="overflow-hidden border-red-200">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className="w-20 h-20 bg-red-100 rounded-md flex items-center justify-center">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+          </div>
+          <div className="flex-grow">
+            <p className="font-semibold text-sm text-red-600">Failed to Parse</p>
+            <p className="text-xs text-muted-foreground truncate">{url}</p>
+            <p className="text-xs text-red-500 mt-1">{error}</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => onRemove(url)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
-    <div className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 ${
-      isOrdered 
-        ? 'bg-white/5 border-white/10' 
-        : 'bg-white/10 border-white/20 hover:bg-white/15'
+    <Card className={`overflow-hidden transition-all duration-200 ${
+      status === 'processing' ? 'border-blue-200 bg-blue-50' : 
+      status === 'completed' ? 'border-green-200 bg-green-50' :
+      status === 'failed' ? 'border-red-200 bg-red-50' : ''
     }`}>
-      <div className="flex items-center space-x-4 flex-1 min-w-0">
-        {/* Thumbnail */}
-        <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-          {item.stockInfo.image ? (
-            <img 
-              src={item.stockInfo.image} 
-              alt={item.stockInfo.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            getTypeIcon(item.stockInfo.type)
+      <CardContent className="p-4 flex items-center gap-4">
+        <div className="w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
+          <Image
+            src={stockInfo.image}
+            alt={stockInfo.title}
+            width={80}
+            height={80}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div className="flex-grow min-w-0">
+          <p className="font-semibold text-sm leading-tight truncate">{stockInfo.title}</p>
+          <p className="text-xs text-muted-foreground">{stockSite?.displayName || 'Unknown Source'}</p>
+          {!canAfford && status === 'ready' && (
+            <p className="text-xs text-red-500 mt-1">Insufficient points</p>
           )}
         </div>
         
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <Typography variant="body" className="text-white font-medium truncate">
-            {item.stockInfo.title}
-          </Typography>
-          <Typography variant="caption" className="text-white/60">
-            {item.stockSite?.displayName || item.parsedData?.source || 'Unknown Source'}
-          </Typography>
-          
-          {/* Status indicator for ordered items */}
-          {isOrdered && currentStatus && (
-            <div className="mt-2">
-              <StatusBadge status={currentStatus} />
-            </div>
-          )}
+        <div className="w-40 flex-shrink-0">
+          {renderStatus()}
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center space-x-3 flex-shrink-0">
-        {!isOrdered && (
-          <>
-            {/* Points badge */}
-            <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-              {points} points
-            </Badge>
-            
-            {/* Remove button */}
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onRemove(item)}
-              className="text-white/60 hover:text-white hover:bg-white/10"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            
-            {/* Order button */}
-            <Button
-              size="sm"
-              onClick={handleOrder}
-              disabled={isProcessing || isLocalProcessing || !canAfford}
-              className={`min-w-[120px] ${
-                canAfford 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                  : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-              }`}
-            >
-              {isProcessing || isLocalProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Ordering...
-                </>
-              ) : !canAfford ? (
-                'Insufficient Points'
-              ) : (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Order ({points} pts)
-                </>
-              )}
-            </Button>
-          </>
-        )}
         
-        {isOrdered && (
-          <div className="flex items-center space-x-2">
-            {currentStatus === 'COMPLETED' && orderStatus?.downloadUrl && (
-              <Button
-                size="sm"
-                onClick={() => window.open(orderStatus.downloadUrl, '_blank')}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-            )}
-            
-            {currentStatus === 'FAILED' && onRetry && (
-              <Button
-                size="sm"
-                onClick={() => onRetry(item)}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            )}
-            
-            {currentStatus === 'PENDING' && (
-              <div className="flex items-center space-x-2 text-blue-300">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Processing...</span>
-              </div>
-            )}
-          </div>
+        {status === 'ready' && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="flex-shrink-0" 
+            onClick={() => onRemove(url)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
+
+export default UnifiedOrderItem

@@ -28,7 +28,7 @@ export function parseStockMediaUrl(url: string): UrlParseResult {
     
     if (result) {
       console.log('Parse result:', result);
-      return {
+        return {
         success: true,
         data: {
           source: result.site,
