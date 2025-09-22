@@ -65,7 +65,10 @@ export async function GET(request: NextRequest) {
       } : null,
     }
 
-    return NextResponse.json({ data: responseData })
+    return NextResponse.json({ 
+      points: responseData.currentPoints,
+      data: responseData 
+    })
   } catch (error) {
     console.error('Error fetching points data:', error)
     return NextResponse.json({ error: 'Failed to fetch points data' }, { status: 500 })
