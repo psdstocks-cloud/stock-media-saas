@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
     };
     
     console.log('Using siteData for source:', source, siteData);
+    console.log('Deployment test - updated stock-info API');
     
     return NextResponse.json({
       success: true,
