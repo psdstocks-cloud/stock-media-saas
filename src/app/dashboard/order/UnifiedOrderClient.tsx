@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import UnifiedOrderItem, { OrderItemData, OrderStatus } from '@/components/dashboard/UnifiedOrderItem'
+import SimplePointsOverview from '@/components/dashboard/SimplePointsOverview'
 
 type OrderStep = 'input' | 'confirmation'
 
@@ -30,10 +31,7 @@ export default function UnifiedOrderClient() {
   const [userPoints, setUserPoints] = useState(0)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
 
-  // Fetch user points on mount
-  useEffect(() => {
-    fetchUserPoints()
-  }, [])
+  // Points fetching is now handled in the enhanced useEffect above
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -55,6 +53,14 @@ export default function UnifiedOrderClient() {
       console.error('Error fetching user points:', error)
     }
   }
+
+  // Enhanced points fetching with automatic refresh
+  useEffect(() => {
+    fetchUserPoints()
+    // Refresh points every 30 seconds
+    const interval = setInterval(fetchUserPoints, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const parseUrls = async () => {
     if (!urls.trim()) {
@@ -158,6 +164,13 @@ export default function UnifiedOrderClient() {
     const itemKey = `${item.parsedData.source}-${item.parsedData.id}`
     if (orderStatuses.has(itemKey)) {
       toast.error('This item is already being processed')
+      return
+    }
+
+    // Check if user has enough points
+    const itemCost = item.stockInfo.points || 10
+    if (userPoints < itemCost) {
+      toast.error(`Insufficient points. You need ${itemCost} points but only have ${userPoints}`)
       return
     }
 
@@ -440,22 +453,7 @@ https://depositphotos.com/example-345678"
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Points Overview */}
-              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-white">
-                    <Coins className="h-5 w-5 mr-2" />
-                    Your Balance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-white mb-2">
-                      {userPoints.toLocaleString()}
-                    </div>
-                    <div className="text-white/70 text-sm font-medium">Available Points</div>
-                  </div>
-                </CardContent>
-              </Card>
+              <SimplePointsOverview points={userPoints} />
 
               {/* Order Summary */}
               {step === 'confirmation' && items.length > 0 && (
@@ -468,24 +466,34 @@ https://depositphotos.com/example-345678"
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex justify-between text-white/90">
-                      <span>Total Items:</span>
-                      <span className="font-medium">{items.length}</span>
+                      <span>Your Current Balance:</span>
+                      <span className="font-medium text-white">{userPoints.toLocaleString()} Points</span>
                     </div>
                     <div className="flex justify-between text-white/90">
-                      <span>Ready to Order:</span>
-                      <span className="font-medium text-green-300">{successfulItems.length - orderedCount}</span>
-                    </div>
-                    <div className="flex justify-between text-white/90">
-                      <span>Already Ordered:</span>
-                      <span className="font-medium text-blue-300">{orderedCount}</span>
-                    </div>
-                    <div className="flex justify-between text-white/90">
-                      <span>Failed:</span>
-                      <span className="font-medium text-red-300">{failedItems.length}</span>
+                      <span>Total Cost:</span>
+                      <span className="font-medium text-red-300">- {totalPoints - Array.from(orderStatuses.values()).reduce((sum, status) => sum + 10, 0)} Points</span>
                     </div>
                     <div className="border-t border-white/20 pt-3 flex justify-between text-white font-semibold">
-                      <span>Total Cost:</span>
-                      <span className="font-bold text-yellow-300">{totalPoints - Array.from(orderStatuses.values()).reduce((sum, status) => sum + 10, 0)} points</span>
+                      <span>Remaining Balance:</span>
+                      <span className="font-bold text-green-300">{userPoints - (totalPoints - Array.from(orderStatuses.values()).reduce((sum, status) => sum + 10, 0))} Points</span>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      <div className="flex justify-between text-white/80 text-sm">
+                        <span>Total Items:</span>
+                        <span>{items.length}</span>
+                      </div>
+                      <div className="flex justify-between text-white/80 text-sm">
+                        <span>Ready to Order:</span>
+                        <span className="text-green-300">{successfulItems.length - orderedCount}</span>
+                      </div>
+                      <div className="flex justify-between text-white/80 text-sm">
+                        <span>Already Ordered:</span>
+                        <span className="text-blue-300">{orderedCount}</span>
+                      </div>
+                      <div className="flex justify-between text-white/80 text-sm">
+                        <span>Failed:</span>
+                        <span className="text-red-300">{failedItems.length}</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
