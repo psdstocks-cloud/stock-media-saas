@@ -28,33 +28,11 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import UnifiedOrderItem, { OrderItemData, OrderStatus } from '@/components/dashboard/UnifiedOrderItem'
 import OrderProgress from '@/components/dashboard/OrderProgress'
 
-// Types
-interface PreOrderItem {
-  url: string
-  parsedData?: {
-    source: string
-    id: string
-  } | null
-  stockSite?: {
-    id: string
-    name: string
-    displayName: string
-    cost: number
-  } | null
-  stockInfo?: {
-    id: string
-    source: string
-    title: string
-    image: string
-    points: number
-    price: number
-    type?: string
-  } | null
-  success: boolean
-  error?: string
-}
+// Types (using the unified interface)
+type PreOrderItem = OrderItemData
 
 interface ConfirmedOrder {
   id: string
@@ -78,10 +56,10 @@ export default function OrderClient() {
   const [urls, setUrls] = useState('')
   const [preOrderItems, setPreOrderItems] = useState<PreOrderItem[]>([])
   const [confirmedOrders, setConfirmedOrders] = useState<ConfirmedOrder[]>([])
+  const [orderStatuses, setOrderStatuses] = useState<Map<string, OrderStatus>>(new Map())
   const [isLoading, setIsLoading] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [userPoints, setUserPoints] = useState(0)
-  const [isTrackingProgress, setIsTrackingProgress] = useState(false)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
@@ -148,7 +126,7 @@ export default function OrderClient() {
       if (allCompleted) {
         clearInterval(interval)
         setPollingInterval(null)
-        setIsTrackingProgress(false)
+        // setIsTrackingProgress(false)
       }
     }, 3000) // Poll every 3 seconds
 
@@ -500,7 +478,7 @@ export default function OrderClient() {
       )
       
       if (allComplete) {
-        setIsTrackingProgress(false)
+        // setIsTrackingProgress(false)
         toast.success('All orders completed!', { icon: '✅' })
       }
     } catch (error) {
@@ -923,12 +901,12 @@ export default function OrderClient() {
             <CardTitle className="flex items-center text-white">
               <Download className="h-5 w-5 mr-2" />
               Order Progress
-              {isTrackingProgress && (
+              {confirmedOrders.length > 0 && (
                 <Loader2 className="h-4 w-4 ml-2 animate-spin text-blue-400" />
               )}
             </CardTitle>
             <CardDescription className="text-white/70">
-              {isTrackingProgress ? 'Live tracking enabled' : 'All orders completed'}
+              {confirmedOrders.length > 0 ? 'Live tracking enabled' : 'All orders completed'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -958,7 +936,7 @@ export default function OrderClient() {
                 <div className="flex items-center text-white/80 text-sm">
                   <Clock className="h-4 w-4 mr-2" />
                   <span>
-                    {isTrackingProgress 
+                    {confirmedOrders.length > 0 
                       ? 'Orders are being processed. This page will update automatically every 3 seconds.'
                       : 'All orders have been completed.'
                     }
