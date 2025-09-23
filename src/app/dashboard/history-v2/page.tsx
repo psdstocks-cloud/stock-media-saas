@@ -97,20 +97,69 @@ export default function HistoryV2Page() {
     }
   };
 
-  const downloadFile = (downloadUrl: string, fileName?: string) => {
-    if (downloadUrl.includes('example.com')) {
-      // Mock download - show a message instead
-      toast.success('This is a demo download. In production, this would download the actual file.');
-      return;
+  const generateFreshDownloadLink = async (order: OrderHistory) => {
+    try {
+      toast.loading('Generating fresh download link...');
+      
+      // Generate fresh download link from API
+      const response = await fetch('/api/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([{
+          url: `https://example.com/${order.site}/${order.id}`, // Construct URL from order data
+          site: order.site,
+          id: order.id,
+          title: order.title,
+          cost: 0, // Free download for history items
+          imageUrl: order.imageUrl || '',
+          isRedownload: true // Always generate fresh link
+        }])
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Poll for the fresh download link
+        const pollForDownloadLink = async () => {
+          try {
+            const statusResponse = await fetch(`/api/orders/${data.orders[0].id}/status`);
+            const statusData = await statusResponse.json();
+            
+            if (statusData.success && statusData.order.status === 'COMPLETED' && statusData.order.downloadUrl) {
+              // Download the fresh file
+              if (statusData.order.downloadUrl.includes('example.com')) {
+                toast.success('This is a demo download. In production, this would download the actual file.');
+              } else {
+                const link = document.createElement('a');
+                link.href = statusData.order.downloadUrl;
+                link.download = statusData.order.fileName || order.title;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success('Download started!');
+              }
+            } else if (statusData.success && statusData.order.status === 'FAILED') {
+              toast.error('Failed to generate download link');
+            } else {
+              // Continue polling
+              setTimeout(pollForDownloadLink, 2000);
+            }
+          } catch (error) {
+            console.error('Polling error:', error);
+            toast.error('Failed to get download link');
+          }
+        };
+        
+        // Start polling
+        setTimeout(pollForDownloadLink, 2000);
+      } else {
+        throw new Error(data.error || 'Failed to generate download link');
+      }
+    } catch (error) {
+      console.error('Download link generation error:', error);
+      toast.error('Failed to generate download link');
     }
-    
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = fileName || 'download';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const getStatusIcon = (status: OrderHistory['status']) => {
@@ -338,14 +387,14 @@ export default function HistoryV2Page() {
                         <span className="ml-1">{order.status}</span>
                       </Badge>
                       <span className="font-semibold text-gray-700">{order.cost} pts</span>
-                      {order.downloadUrl && (
+                      {(order.status === 'READY' || order.status === 'COMPLETED') && (
                         <Button
                           size="sm"
-                          onClick={() => downloadFile(order.downloadUrl!, order.fileName)}
+                          onClick={() => generateFreshDownloadLink(order)}
                           className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                         >
                           <Download className="w-4 h-4 mr-1" />
-                          Download
+                          Generate Fresh Download
                         </Button>
                       )}
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (
