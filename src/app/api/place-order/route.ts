@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
-import { OrderProcessor } from '@/lib/order-processor'
+// import { OrderProcessor } from '@/lib/order-processor' // Unused for now
 import { prisma } from '@/lib/prisma'
 import { PointsManager } from '@/lib/points'
 import { getUserFromRequest } from '@/lib/jwt-auth'

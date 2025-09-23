@@ -7,17 +7,17 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
-import { SUPPORTED_SITES } from '@/lib/supported-sites';
+// import { SUPPORTED_SITES } from '@/lib/supported-sites'; // Unused
 import { 
   Download, 
-  ExternalLink, 
+  // ExternalLink, // Unused
   CheckCircle, 
   Clock, 
   AlertCircle,
-  RefreshCw,
+  // RefreshCw, // Unused
   Search,
-  Filter,
-  Calendar,
+  // Filter, // Unused
+  // Calendar, // Unused
   FileText,
   Copy as CopyIcon,
   Check as CheckIcon
@@ -40,7 +40,7 @@ interface OrderHistory {
 }
 
 export default function HistoryV2Page() {
-  const { points: currentPoints } = useUserStore();
+  const { points: _currentPoints } = useUserStore();
   const [orders, setOrders] = useState<OrderHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -322,7 +322,9 @@ export default function HistoryV2Page() {
                                 await navigator.clipboard.writeText(order.taskId || '')
                                 setCopiedId(order.id)
                                 setTimeout(() => setCopiedId(null), 1200)
-                              } catch {}
+                              } catch {
+                                // Silently handle clipboard errors
+                              }
                             }}
                             className="text-xs text-gray-500 hover:text-gray-700 inline-flex items-center gap-1 transition"
                             title={`Copy Debug ID: ${order.taskId}`}

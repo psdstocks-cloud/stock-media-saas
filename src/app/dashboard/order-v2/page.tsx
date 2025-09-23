@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Alert, AlertDescription } from '@/components/ui/alert'; // Unused
 import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
-import { SUPPORTED_SITES, getSitesByCategory } from '@/lib/supported-sites';
+import { SUPPORTED_SITES } from '@/lib/supported-sites';
+// import { getSitesByCategory } from '@/lib/supported-sites'; // Unused
 import { officialParseStockUrl } from '@/lib/official-url-parser';
 import { 
   ShoppingCart, 
@@ -19,21 +20,21 @@ import {
   Clock, 
   AlertCircle,
   Plus,
-  Minus,
+  // Minus, // Unused
   Trash2,
   RefreshCw,
   Search
 } from 'lucide-react';
 
-interface StockSite {
-  id: string;
-  name: string;
-  displayName: string;
-  cost: number;
-  isActive: boolean;
-  category: string;
-  icon: string;
-}
+// interface StockSite { // Unused
+//   id: string;
+//   name: string;
+//   displayName: string;
+//   cost: number;
+//   isActive: boolean;
+//   category: string;
+//   icon: string;
+// }
 
 interface OrderItem {
   id: string;

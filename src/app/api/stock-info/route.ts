@@ -55,7 +55,9 @@ export async function GET(request: NextRequest) {
           }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      // Silently handle external API errors, fall back to mock data
+    }
 
     // Enhanced mock data for all supported sites
     const mockData: Record<string, { title: string; image: string; points: number; price: number }> = {
