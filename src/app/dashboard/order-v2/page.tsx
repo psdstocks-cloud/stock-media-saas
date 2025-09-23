@@ -102,6 +102,8 @@ export default function OrderV2Page() {
           const response = await fetch(`/api/stock-info?url=${encodeURIComponent(url)}`);
           const data = await response.json();
           
+          console.log('🔍 Stock Info API Response:', data);
+          
           if (data.success) {
             const site = SUPPORTED_SITES.find(s => s.name === data.data.parsedData.source);
             
@@ -129,6 +131,14 @@ export default function OrderV2Page() {
               isPreviouslyOrdered: isPreviouslyOrdered, // Add flag for UI display
               existingOrderId: existingOrder?.id // Store existing order ID for free download
             };
+            
+            console.log('🔍 Created item:', {
+              cost: item.cost,
+              isPreviouslyOrdered,
+              stockInfoPoints: data.data.stockInfo.points,
+              site: item.site,
+              id: item.siteId
+            });
             newItems.push(item);
             
             if (isPreviouslyOrdered) {
@@ -212,17 +222,21 @@ export default function OrderV2Page() {
     ));
 
     try {
+      const orderPayload = [{
+        url: item.url,
+        site: item.site,
+        id: item.siteId,
+        title: item.title,
+        cost: item.cost || 0, // Ensure cost is always a number
+        imageUrl: item.imageUrl
+      }];
+      
+      console.log('🔍 Sending order payload:', orderPayload);
+      
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify([{
-          url: item.url,
-          site: item.site,
-          id: item.siteId,
-          title: item.title,
-          cost: item.cost || 0, // Ensure cost is always a number
-          imageUrl: item.imageUrl
-        }])
+        body: JSON.stringify(orderPayload)
       });
 
       const data = await response.json();
