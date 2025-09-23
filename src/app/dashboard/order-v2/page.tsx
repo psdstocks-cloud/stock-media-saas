@@ -157,26 +157,45 @@ export default function OrderV2Page() {
     // Handle free download for previously ordered files
     if (item.isPreviouslyOrdered && item.existingOrderId) {
       try {
-        // Get the existing order details for free download
-        const response = await fetch(`/api/orders/${item.existingOrderId}`);
+        // Update status to processing
+        setItems(prev => prev.map(i => 
+          i.id === item.id ? { ...i, status: 'processing' as const } : i
+        ));
+
+        // Generate new download link from API
+        const response = await fetch('/api/place-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify([{
+            url: item.url,
+            site: item.site,
+            id: item.siteId,
+            title: item.title,
+            cost: 0, // Free download
+            imageUrl: item.imageUrl,
+            isRedownload: true // Flag for free download
+          }])
+        });
+
         const data = await response.json();
         
-        if (data.success && data.order.downloadUrl) {
-          setItems(prev => prev.map(i => 
-            i.id === item.id ? { 
-              ...i, 
-              status: 'completed' as const,
-              downloadUrl: data.order.downloadUrl,
-              fileName: data.order.fileName || `${item.site}-${item.siteId}.zip`
-            } : i
-          ));
-          toast.success('Free download ready!');
+        if (data.success) {
+          // Start polling for status updates to get the download link
+          pollOrderStatus(item.id, data.orders[0].id);
+          toast.success('Generating free download link...');
         } else {
-          throw new Error('Download link not available');
+          throw new Error(data.error || 'Failed to generate download link');
         }
       } catch (error) {
         console.error('Free download error:', error);
-        toast.error('Failed to get free download link');
+        setItems(prev => prev.map(i => 
+          i.id === item.id ? { 
+            ...i, 
+            status: 'failed' as const,
+            error: error instanceof Error ? error.message : 'Failed to generate download link'
+          } : i
+        ));
+        toast.error('Failed to generate free download link');
       }
       return;
     }
@@ -287,13 +306,68 @@ export default function OrderV2Page() {
 
     setIsProcessing(true);
     
-    for (const item of readyItems) {
-      await placeOrder(item);
-      // Small delay between orders
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    // Update all items to ordering status
+    setItems(prev => prev.map(item => 
+      readyItems.some(readyItem => readyItem.id === item.id) 
+        ? { ...item, status: 'ordering' as const }
+        : item
+    ));
+
+    try {
+      // Prepare all orders for batch processing
+      const orderPayload = readyItems.map(item => ({
+        url: item.url,
+        site: item.site,
+        id: item.siteId,
+        title: item.title,
+        cost: item.cost,
+        imageUrl: item.imageUrl,
+        isRedownload: item.isPreviouslyOrdered || false
+      }));
+
+      const response = await fetch('/api/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update all items to processing status
+        setItems(prev => prev.map(item => 
+          readyItems.some(readyItem => readyItem.id === item.id) 
+            ? { ...item, status: 'processing' as const }
+            : item
+        ));
+        
+        // Start polling for all orders
+        data.orders.forEach((order: any, index: number) => {
+          const item = readyItems[index];
+          if (item) {
+            pollOrderStatus(item.id, order.id);
+          }
+        });
+        
+        toast.success(`Processing ${readyItems.length} orders...`);
+      } else {
+        throw new Error(data.error || 'Failed to place orders');
+      }
+    } catch (error) {
+      console.error('Batch order error:', error);
+      setItems(prev => prev.map(item => 
+        readyItems.some(readyItem => readyItem.id === item.id) 
+          ? { 
+              ...item, 
+              status: 'failed' as const,
+              error: error instanceof Error ? error.message : 'Failed to place order'
+            }
+          : item
+      ));
+      toast.error('Failed to place orders');
+    } finally {
+      setIsProcessing(false);
     }
-    
-    setIsProcessing(false);
   };
 
   const removeItem = (itemId: string) => {
@@ -374,13 +448,20 @@ export default function OrderV2Page() {
               className="min-h-[120px] resize-none"
             />
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">
-                {urls.split('\n').filter(url => url.trim()).length}/5 URLs • Each item costs 10 points
-              </p>
+              <div className="flex flex-col">
+                <p className={`text-sm ${urls.split('\n').filter(url => url.trim()).length > 5 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {urls.split('\n').filter(url => url.trim()).length}/5 URLs • Each item costs 10 points
+                </p>
+                {urls.split('\n').filter(url => url.trim()).length > 5 && (
+                  <p className="text-xs text-red-500 mt-1">
+                    ⚠️ Maximum 5 URLs allowed. Please remove extra URLs to proceed.
+                  </p>
+                )}
+              </div>
               <Button 
                 onClick={parseUrls} 
-                disabled={isLoading || !urls.trim()}
-                className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
+                disabled={isLoading || !urls.trim() || urls.split('\n').filter(url => url.trim()).length > 5}
+                className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 disabled:opacity-50"
               >
                 {isLoading ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -475,7 +556,7 @@ export default function OrderV2Page() {
                         size="sm"
                         variant="ghost"
                         onClick={() => removeItem(item.id)}
-                        disabled={item.status === 'ordering' || item.status === 'processing'}
+                        disabled={item.status !== 'ready'}
                         className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -488,57 +569,97 @@ export default function OrderV2Page() {
           </Card>
         )}
 
-        {/* Supported Sites */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <ExternalLink className="w-5 h-5" />
-              <span>Supported Websites ({filteredSites.length} sites)</span>
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              All sites cost 10 points per download. Click on any site to visit their website.
-            </p>
-            <div className="mt-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        {/* Supported Sites - Modern 2024/2025 Design */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-purple-600 to-orange-600 text-white p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl font-bold flex items-center space-x-3">
+                  <div className="p-2 bg-white/20 rounded-xl">
+                    <ExternalLink className="w-6 h-6" />
+                  </div>
+                  <span>Supported Platforms</span>
+                </CardTitle>
+                <p className="text-purple-100 mt-2 text-lg">
+                  {filteredSites.length} premium stock media platforms • All at 10 points per download
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold">{filteredSites.length}</div>
+                <div className="text-purple-200 text-sm">Platforms</div>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5 group-focus-within:text-white transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search websites by name or URL..."
+                  placeholder="Search platforms by name or URL..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-2xl text-white placeholder-purple-200 focus:ring-2 focus:ring-white/50 focus:border-transparent focus:bg-white/30 transition-all duration-200"
                 />
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filteredSites.map((site) => (
-                <a
-                  key={site.id}
-                  href={site.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-orange-500 rounded flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">
-                        {site.displayName.charAt(0).toUpperCase()}
-                      </span>
+          
+          <CardContent className="p-8">
+            {filteredSites.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-purple-100 to-orange-100 rounded-full flex items-center justify-center">
+                  <Search className="w-10 h-10 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No platforms found</h3>
+                <p className="text-gray-500">Try adjusting your search terms to find more platforms.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredSites.map((site, index) => (
+                  <a
+                    key={site.id}
+                    href={site.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-purple-200 hover:shadow-lg hover:shadow-purple-100/50 transition-all duration-300 transform hover:-translate-y-1"
+                    style={{
+                      animationDelay: `${index * 50}ms`
+                    }}
+                  >
+                    {/* Hover effect overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="relative z-10">
+                      {/* Platform icon */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-white text-lg font-bold">
+                            {site.displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="px-3 py-1 bg-gradient-to-r from-purple-100 to-orange-100 text-purple-700 rounded-full text-xs font-semibold">
+                          {site.cost} pts
+                        </div>
+                      </div>
+                      
+                      {/* Platform name */}
+                      <h3 className="font-bold text-gray-800 text-lg mb-2 group-hover:text-purple-700 transition-colors">
+                        {site.displayName}
+                      </h3>
+                      
+                      {/* Platform description */}
+                      <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2">
+                        {site.description}
+                      </p>
+                      
+                      {/* Visit indicator */}
+                      <div className="flex items-center text-purple-600 text-sm font-medium group-hover:text-purple-700 transition-colors">
+                        <span>Visit Platform</span>
+                        <ExternalLink className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </div>
-                    <span className="text-sm font-medium">{site.displayName}</span>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {site.cost} pts
-                  </Badge>
-                </a>
-              ))}
-            </div>
-            {filteredSites.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <Search className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>No websites found matching your search.</p>
+                  </a>
+                ))}
               </div>
             )}
           </CardContent>
