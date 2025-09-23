@@ -127,6 +127,10 @@ export class NehtwAPI {
    */
   async checkOrderStatus(taskId: string, responseType: 'any' | 'gdrive' = 'any'): Promise<NehtwOrderStatus> {
     const requestUrl = `${this.baseUrl}/order/${taskId}/status?responsetype=${responseType}`
+    
+    console.log(`🔍 Checking order status for taskId: ${taskId}`)
+    console.log(`🔍 Request URL: ${requestUrl}`)
+    console.log(`🔍 API Key: ${this.apiKey.substring(0, 8)}...`)
 
     const response = await fetch(requestUrl, {
       method: 'GET',
@@ -135,7 +139,21 @@ export class NehtwAPI {
       },
     })
 
-    return await response.json()
+    console.log(`🔍 Response status: ${response.status}`)
+    console.log(`🔍 Response headers:`, Object.fromEntries(response.headers.entries()))
+
+    const responseText = await response.text()
+    console.log(`🔍 Raw response text:`, responseText)
+
+    try {
+      const jsonResponse = JSON.parse(responseText)
+      console.log(`🔍 Parsed JSON response:`, JSON.stringify(jsonResponse, null, 2))
+      return jsonResponse
+    } catch (error) {
+      console.error(`🔍 Failed to parse JSON response:`, error)
+      console.error(`🔍 Raw response was:`, responseText)
+      throw new Error(`Invalid JSON response from NEHTW API: ${responseText}`)
+    }
   }
 
   /**

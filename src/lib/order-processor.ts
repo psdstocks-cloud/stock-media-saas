@@ -118,7 +118,7 @@ export class OrderProcessor {
           error: statusResponse.error,
           hasDownloadLink: !!statusResponse.downloadLink,
           message: statusResponse.message,
-          fullResponse: statusResponse
+          fullResponse: JSON.stringify(statusResponse, null, 2)
         })
         
         // Check if order is ready with multiple possible status values
