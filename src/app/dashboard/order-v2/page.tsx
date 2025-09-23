@@ -171,7 +171,7 @@ export default function OrderV2Page() {
             site: item.site,
             id: item.siteId,
             title: item.title,
-            cost: 0, // Free download
+            cost: 0, // Free download - explicitly 0
             imageUrl: item.imageUrl,
             isRedownload: true // Flag for free download
           }])
@@ -220,7 +220,7 @@ export default function OrderV2Page() {
           site: item.site,
           id: item.siteId,
           title: item.title,
-          cost: item.cost,
+          cost: item.cost || 0, // Ensure cost is always a number
           imageUrl: item.imageUrl
         }])
       });
@@ -320,7 +320,7 @@ export default function OrderV2Page() {
         site: item.site,
         id: item.siteId,
         title: item.title,
-        cost: item.cost,
+        cost: item.cost || 0, // Ensure cost is always a number
         imageUrl: item.imageUrl,
         isRedownload: item.isPreviouslyOrdered || false
       }));

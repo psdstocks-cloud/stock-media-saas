@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
 
     // Validate each item
     for (const item of items) {
-      if (!item.url || !item.site || !item.id || !item.cost) {
+      if (!item.url || !item.site || !item.id || item.cost === undefined || item.cost === null) {
         console.log('Missing required fields in item:', { 
           url: !!item.url, 
           site: !!item.site, 
           id: !!item.id, 
-          cost: !!item.cost 
+          cost: item.cost 
         })
         return NextResponse.json({ error: 'Missing required fields in item' }, { status: 400 })
       }
