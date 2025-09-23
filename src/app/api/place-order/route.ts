@@ -89,18 +89,60 @@ export async function POST(request: NextRequest) {
         } : 'No existing order found');
 
         if (existingOrder) {
-          console.log('🔍 Existing completed order found - providing free download')
+          console.log('🔍 Existing completed order found - generating fresh link for FREE')
+
+          // Create a NEW 0-cost order for re-download, then trigger processing to get a fresh link
+          const redownloadResult = await prisma.$transaction(async (tx) => {
+            // Find or create stock site
+            let stockSite = await tx.stockSite.findFirst({
+              where: { name: item.site }
+            })
+
+            if (!stockSite) {
+              console.log(`Creating new stock site for re-download: ${item.site}`)
+              stockSite = await tx.stockSite.create({
+                data: {
+                  name: item.site,
+                  displayName: item.site.charAt(0).toUpperCase() + item.site.slice(1),
+                  cost: 0,
+                  category: 'images',
+                  isActive: true
+                }
+              })
+            }
+
+            // Create a new order with cost 0 (no points deduction for re-downloads)
+            const newOrder = await tx.order.create({
+              data: {
+                userId: userId,
+                stockSiteId: stockSite.id,
+                stockItemId: item.id,
+                title: `${item.title} (Re-download)`,
+                cost: 0,
+                status: 'PENDING',
+                imageUrl: item.imageUrl
+              }
+            })
+
+            return { order: newOrder, stockSite }
+          })
+
+          // Queue async processing to generate a fresh download link
+          const { OrderProcessor } = await import('@/lib/order-processor')
+          const rawApiKey = process.env.NEHTW_API_KEY || 'A8K9bV5s2OX12E8cmS4I96mtmSNzv7'
+          const apiKey = rawApiKey.replace(/[{}]/g, '')
+          OrderProcessor.startProcessing(redownloadResult.order.id, apiKey, item.site, item.id, item.url).catch(console.error)
+
           createdOrders.push({
-            id: existingOrder.id,
-            status: existingOrder.status,
-            title: `${existingOrder.title} (Re-download)`,
-            cost: 0, // Free download
-            createdAt: existingOrder.createdAt,
-            downloadUrl: existingOrder.downloadUrl,
-            stockSite: existingOrder.stockSite,
+            id: redownloadResult.order.id,
+            status: redownloadResult.order.status,
+            title: redownloadResult.order.title,
+            cost: 0,
+            createdAt: redownloadResult.order.createdAt,
+            stockSite: redownloadResult.stockSite,
             isRedownload: true
           })
-          continue // Skip to next item
+          continue // Move to next item
         }
 
         // Check user balance for this item
