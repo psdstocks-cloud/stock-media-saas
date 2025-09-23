@@ -104,7 +104,6 @@ export default function HistoryV2Page() {
 
   const getStatusIcon = (status: OrderHistory['status']) => {
     switch (normalizeStatus(status)) {
-      case 'READY':
       case 'COMPLETED':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'PROCESSING':
@@ -116,7 +115,6 @@ export default function HistoryV2Page() {
 
   const getStatusColor = (status: OrderHistory['status']) => {
     switch (normalizeStatus(status)) {
-      case 'READY':
       case 'COMPLETED':
         return 'bg-green-100 text-green-800';
       case 'PROCESSING':
