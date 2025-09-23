@@ -98,7 +98,7 @@ export default function OrderV2Page() {
               url: url,
               site: data.data.parsedData.source,
               siteId: data.data.parsedData.id,
-              title: data.data.stockInfo.title, // Use the actual title from API
+              title: `${site?.displayName || data.data.parsedData.source} - ${data.data.parsedData.id}`, // Format: Website Name - Stock ID
               cost: data.data.stockInfo.points, // Use the actual cost from API
               imageUrl: data.data.stockInfo.image, // Use the actual preview image from API
               status: 'ready'
