@@ -463,9 +463,9 @@ export default function OrderV2Page() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Your Points</h3>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <div className="text-2xl font-bold text-gray-800">
                     {pointsLoading ? <Skeleton className="w-20 h-8" /> : currentPoints?.toLocaleString() || 0}
-                  </p>
+                  </div>
                 </div>
               </div>
               <Badge variant="outline" className="text-lg px-4 py-2">

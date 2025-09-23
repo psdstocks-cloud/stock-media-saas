@@ -70,7 +70,8 @@ export class PointsManager {
     tx?: PrismaTransactionClient
   ) {
     const db = tx || prisma
-    const transaction = await (tx ? Promise.resolve(tx) : prisma.$transaction(async (transactionClient) => {
+
+    const run = async () => {
       // Get current balance and rollover records
       const [balance, rolloverRecords] = await Promise.all([
         db.pointsBalance.findUnique({
@@ -187,9 +188,16 @@ export class PointsManager {
       })
 
       return updatedBalance!
-    }))
+    }
 
-    return transaction
+    // If a transaction client is provided, run within it; otherwise start a new transaction
+    if (tx) {
+      return await run()
+    } else {
+      return await prisma.$transaction(async () => {
+        return await run()
+      })
+    }
   }
 
   /**

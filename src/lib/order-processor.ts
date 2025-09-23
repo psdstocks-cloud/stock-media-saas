@@ -60,6 +60,7 @@ export class OrderProcessor {
       }
 
       // Step 2: Save taskId and monitor order status
+      // Persist the taskId (debug id) for support/debug visibility
       await this.updateOrderStatus(orderId, 'PROCESSING', 'Order placed, monitoring progress...', undefined, undefined, undefined, orderResponse.task_id)
       
       // Check if this is a mock response

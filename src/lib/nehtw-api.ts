@@ -76,34 +76,32 @@ export class NehtwAPI {
       console.log(`🚀 Making external API call to: ${requestUrl}`);
 
     try {
-      const response = await axios.post(
-        requestUrl,
-        {}, // The body is empty for this API call.
-        {
-          headers: {
-            'X-API-KEY': this.apiKey,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          timeout: 30000, // 30 second timeout
-        }
-      );
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'X-Api-Key': this.apiKey,
+          'Accept': 'application/json',
+        },
+      })
 
-      console.log(`✅ NEHTW API Response Status: ${response.status}`);
-      console.log(`✅ NEHTW API Response Data:`, JSON.stringify(response.data, null, 2));
+      console.log(`✅ NEHTW API Response Status: ${response.status}`)
+      const text = await response.text()
+      console.log(`✅ NEHTW API Raw Response:`, text)
 
-      // Check if the response is valid JSON before proceeding.
-      if (typeof response.data !== 'object' || response.data === null) {
-        console.error('❌ Invalid response data:', response.data);
-        throw new Error('Received an invalid, non-JSON response from the download service.');
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch (e) {
+        console.error('❌ Invalid response data (not JSON):', text)
+        throw new Error('Received an invalid, non-JSON response from the download service.')
       }
 
-      if (response.data.success === false) {
-        console.error('API returned success: false', response.data);
-        throw new Error(response.data.error || 'The download service returned a failure message.');
+      if (data.success === false) {
+        console.error('API returned success: false', data)
+        throw new Error(data.error || 'The download service returned a failure message.')
       }
-      
-      return response.data;
+
+      return data
 
     } catch (error) {
       console.error("🚨 NEHTW API Error Details:", {
@@ -429,31 +427,27 @@ export default class NehtwApi {
     console.log(`Placing order to NEHTW API: ${requestUrl}`);
 
     try {
-      const response = await axios.post(
-        requestUrl,
-        {}, // The body is empty for this API call.
-        {
-          headers: {
-            'X-API-KEY': this.apiKey,
-            'Accept': 'application/json', // We expect a JSON response.
-          },
-        }
-      );
-
-      // Check if the response is valid JSON before proceeding.
-      if (typeof response.data !== 'object' || response.data === null) {
-        throw new Error('Received an invalid, non-JSON response from the download service.');
+      const response = await fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+          'X-Api-Key': this.apiKey,
+          'Accept': 'application/json',
+        },
+      })
+      const text = await response.text()
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch (e) {
+        throw new Error('Received an invalid, non-JSON response from the download service.')
       }
-
-      if (response.data.success === false) {
-        throw new Error(response.data.error || 'The download service returned a failure message.');
+      if (data.success === false) {
+        throw new Error(data.error || 'The download service returned a failure message.')
       }
-      
-      return response.data;
-
+      return data
     } catch (error) {
-      console.error("Error communicating with NEHTW API:", error instanceof Error ? error.message : 'Unknown error');
-      throw new Error('Failed to communicate with the external download service.');
+      console.error('Error communicating with NEHTW API:', error instanceof Error ? error.message : 'Unknown error')
+      throw new Error('Failed to communicate with the external download service.')
     }
   }
 }

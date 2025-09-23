@@ -18,7 +18,9 @@ import {
   Search,
   Filter,
   Calendar,
-  FileText
+  FileText,
+  Copy as CopyIcon,
+  Check as CheckIcon
 } from 'lucide-react';
 
 interface OrderHistory {
@@ -32,6 +34,9 @@ interface OrderHistory {
   imageUrl?: string;
   createdAt: string;
   completedAt?: string;
+  stockItemId?: string;
+  stockItemUrl?: string;
+  taskId?: string;
 }
 
 export default function HistoryV2Page() {
@@ -39,8 +44,8 @@ export default function HistoryV2Page() {
   const [orders, setOrders] = useState<OrderHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [siteFilter, setSiteFilter] = useState<string>('all');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrderHistory();
@@ -64,100 +69,41 @@ export default function HistoryV2Page() {
     }
   };
 
-  const reorderItem = async (order: OrderHistory) => {
-    if (!currentPoints || currentPoints < order.cost) {
-      toast.error('Insufficient points');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/place-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify([{
-          url: order.title, // Using title as URL placeholder
-          site: order.site,
-          id: order.id.split('-').pop(), // Extract ID from order ID
-          title: order.title,
-          cost: order.cost,
-          imageUrl: order.imageUrl
-        }])
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success('Re-order placed successfully');
-        loadOrderHistory(); // Refresh the list
-      } else {
-        throw new Error(data.error || 'Failed to re-order');
-      }
-    } catch (error) {
-      toast.error('Failed to re-order item');
-    }
-  };
+  // Removed re-order logic; we only generate fresh links for free redownloads
 
   const downloadFile = async (order: OrderHistory) => {
     try {
-      toast.loading('Preparing download...');
-      
-      // Generate fresh download link from API
-      const response = await fetch('/api/place-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify([{
-          url: `https://example.com/${order.site}/${order.id}`, // Construct URL from order data
-          site: order.site,
-          id: order.id,
-          title: order.title,
-          cost: 0, // Free download for history items
-          imageUrl: order.imageUrl || '',
-          isRedownload: true // Always generate fresh link
-        }])
+      setDownloadingId(order.id);
+
+      // Call regenerate endpoint to get a fresh link for FREE (no points deduction)
+      const response = await fetch(`/api/orders/${order.id}/regenerate-download`, {
+        method: 'POST'
       });
 
       const data = await response.json();
-      
-      if (data.success) {
-        // Poll for the fresh download link
-        const pollForDownloadLink = async () => {
-          try {
-            const statusResponse = await fetch(`/api/orders/${data.orders[0].id}/status`);
-            const statusData = await statusResponse.json();
-            
-            if (statusData.success && statusData.order.status === 'COMPLETED' && statusData.order.downloadUrl) {
-              // Download the fresh file
-              if (statusData.order.downloadUrl.includes('example.com')) {
-                toast.success('This is a demo download. In production, this would download the actual file.');
-              } else {
-                window.open(statusData.order.downloadUrl, '_blank');
-                toast.success('Download started!');
-              }
-            } else if (statusData.success && statusData.order.status === 'FAILED') {
-              toast.error('Failed to generate download link');
-            } else {
-              // Continue polling
-              setTimeout(pollForDownloadLink, 2000);
-            }
-          } catch (error) {
-            console.error('Polling error:', error);
-            toast.error('Failed to get download link');
-          }
-        };
-        
-        // Start polling
-        setTimeout(pollForDownloadLink, 2000);
+
+      if (response.ok && data.success && data.downloadUrl) {
+        window.location.href = data.downloadUrl; // open in same tab
+      } else if (response.ok && data.order?.downloadUrl) {
+        window.location.href = data.order.downloadUrl; // open in same tab
       } else {
-        throw new Error(data.error || 'Failed to generate download link');
+        toast.error(data.error || 'Failed to regenerate download link');
       }
     } catch (error) {
-      console.error('Download link generation error:', error);
       toast.error('Failed to generate download link');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
+  const normalizeStatus = (status: OrderHistory['status']): 'COMPLETED' | 'PROCESSING' | 'FAILED' => {
+    if (status === 'READY' || status === 'COMPLETED') return 'COMPLETED'
+    if (status === 'PROCESSING') return 'PROCESSING'
+    return 'FAILED'
+  }
+
   const getStatusIcon = (status: OrderHistory['status']) => {
-    switch (status) {
+    switch (normalizeStatus(status)) {
       case 'READY':
       case 'COMPLETED':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
@@ -169,7 +115,7 @@ export default function HistoryV2Page() {
   };
 
   const getStatusColor = (status: OrderHistory['status']) => {
-    switch (status) {
+    switch (normalizeStatus(status)) {
       case 'READY':
       case 'COMPLETED':
         return 'bg-green-100 text-green-800';
@@ -180,13 +126,32 @@ export default function HistoryV2Page() {
     }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.site.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSite = siteFilter === 'all' || order.site === siteFilter;
-    
-    return matchesSearch && matchesStatus && matchesSite;
+  // Deduplicate by stock item (show latest only) and allow searching by ID
+  const uniqueByStock: Record<string, OrderHistory> = {};
+  for (const o of orders) {
+    const key = `${o.site}-${o.stockItemId || ''}`;
+    const existing = uniqueByStock[key];
+    if (!existing) {
+      uniqueByStock[key] = o;
+    } else {
+      const existingDate = new Date(existing.createdAt).getTime();
+      const currentDate = new Date(o.createdAt).getTime();
+      if (currentDate > existingDate) uniqueByStock[key] = o;
+    }
+  }
+
+  const dedupedOrders = Object.values(uniqueByStock).filter(o => o.status === 'READY' || o.status === 'COMPLETED');
+
+  const filteredOrders = dedupedOrders.filter(order => {
+    const idText = (order.stockItemId || order.title.split(' - ').pop() || '').toLowerCase();
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+    return (
+      order.title.toLowerCase().includes(term) ||
+      idText.includes(term) ||
+      (order.stockItemUrl?.toLowerCase().includes(term) ?? false) ||
+      (order.taskId?.toLowerCase().includes(term) ?? false)
+    );
   });
 
   const completedOrders = orders.filter(order => order.status === 'READY' || order.status === 'COMPLETED');
@@ -284,7 +249,7 @@ export default function HistoryV2Page() {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Search (only) */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
@@ -293,44 +258,14 @@ export default function HistoryV2Page() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Search orders..."
+                    placeholder="Search shown orders (e.g., 1669012831)"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               </div>
-              <div className="flex gap-4">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="all">All Status</option>
-                  <option value="READY">Ready</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="PROCESSING">Processing</option>
-                  <option value="FAILED">Failed</option>
-                </select>
-                <select
-                  value={siteFilter}
-                  onChange={(e) => setSiteFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="all">All Sites</option>
-                  {Array.from(new Set(orders.map(o => o.site))).map(site => (
-                    <option key={site} value={site}>{site}</option>
-                  ))}
-                </select>
-                <Button
-                  onClick={loadOrderHistory}
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Refresh</span>
-                </Button>
-              </div>
+              {/* Status/site filters and manual refresh removed per request */}
             </div>
           </CardContent>
         </Card>
@@ -360,19 +295,48 @@ export default function HistoryV2Page() {
                 {filteredOrders.map((order) => (
                   <div key={order.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                     {order.imageUrl && (
-                      <img
-                        src={order.imageUrl}
-                        alt={order.title}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
+                      <a href={order.stockItemUrl || '#'} target="_self" rel="noopener noreferrer">
+                        <img
+                          src={order.imageUrl}
+                          alt={order.title}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                      </a>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 truncate">{order.title}</h4>
+                      <h4 className="font-medium text-gray-900 truncate">
+                        <a href={order.stockItemUrl || '#'} target="_self" rel="noopener noreferrer">
+                          {order.title.replace(/\s*\(Re-download\)$/,'')}
+                        </a>
+                      </h4>
                       <div className="flex items-center space-x-4 mt-1">
                         <span className="text-sm text-gray-500 capitalize">{order.site}</span>
                         <span className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </span>
+                        {order.taskId && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(order.taskId || '')
+                                setCopiedId(order.id)
+                                setTimeout(() => setCopiedId(null), 1200)
+                              } catch {}
+                            }}
+                            className="text-xs text-gray-500 hover:text-gray-700 inline-flex items-center gap-1 transition"
+                            title={`Copy Debug ID: ${order.taskId}`}
+                          >
+                            <span className={`truncate max-w-[180px] ${copiedId === order.id ? 'text-green-600' : ''}`}>
+                              Debug: {order.taskId}
+                            </span>
+                            {copiedId === order.id ? (
+                              <CheckIcon className="w-3 h-3 animate-bounce" />
+                            ) : (
+                              <CopyIcon className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -381,27 +345,30 @@ export default function HistoryV2Page() {
                         <span className="ml-1">{order.status}</span>
                       </Badge>
                       <span className="font-semibold text-gray-700">{order.cost} pts</span>
+                      <span className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleString()}
+                      </span>
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (
                         <Button
                           size="sm"
                           onClick={() => downloadFile(order)}
-                          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                          disabled={downloadingId === order.id}
+                          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 min-w-[120px]"
                         >
-                          <Download className="w-4 h-4 mr-1" />
-                          Download
+                          {downloadingId === order.id ? (
+                            <span className="flex items-center">
+                              <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                              Generating...
+                            </span>
+                          ) : (
+                            <>
+                              <Download className="w-4 h-4 mr-1" />
+                              Download
+                            </>
+                          )}
                         </Button>
                       )}
-                      {(order.status === 'READY' || order.status === 'COMPLETED') && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => reorderItem(order)}
-                          disabled={!currentPoints || currentPoints < order.cost}
-                        >
-                          <RefreshCw className="w-4 h-4 mr-1" />
-                          Re-order
-                        </Button>
-                      )}
+                      {/* Removed Re-order button; Download regenerates fresh link */}
                     </div>
                   </div>
                 ))}

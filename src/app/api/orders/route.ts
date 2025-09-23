@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch orders with pagination
-    const [orders, totalCount] = await Promise.all([
+    const [ordersRaw, totalCount] = await Promise.all([
       prisma.order.findMany({
         where,
         include: {
@@ -73,6 +73,12 @@ export async function GET(request: NextRequest) {
       }),
       prisma.order.count({ where })
     ])
+
+    // Normalize READY -> COMPLETED for consistency
+    const orders = ordersRaw.map(o => ({
+      ...o,
+      status: o.status === 'READY' ? 'COMPLETED' : o.status
+    }))
 
     // Calculate pagination info
     const totalPages = Math.ceil(totalCount / limit)

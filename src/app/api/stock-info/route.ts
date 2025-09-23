@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { officialParseStockUrl } from '@/lib/official-url-parser';
+import { NehtwAPI } from '@/lib/nehtw-api';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -37,6 +38,24 @@ export async function GET(request: NextRequest) {
         message: 'Invalid URL or ID provided'
       }, { status: 400 });
     }
+
+    // Attempt to fetch real stock info from NEHTW
+    let nehtwData: { title?: string; image?: string; points?: number; price?: number } | null = null
+    try {
+      const rawApiKey = process.env.NEHTW_API_KEY
+      if (rawApiKey) {
+        const api = new NehtwAPI(rawApiKey.replace(/[{}]/g, ''))
+        const res = await api.getStockInfo(source, assetId)
+        if (res.success && res.data) {
+          nehtwData = {
+            title: res.data.title,
+            image: res.data.image,
+            points: 10,
+            price: 10
+          }
+        }
+      }
+    } catch (e) {}
 
     // Enhanced mock data for all supported sites
     const mockData: Record<string, { title: string; image: string; points: number; price: number }> = {
@@ -132,13 +151,13 @@ export async function GET(request: NextRequest) {
       }
     };
     
-    // Generate dynamic content based on source and ID
-    const siteData = mockData[source] || {
+    // Prefer real data when available
+    const siteData = nehtwData ?? (mockData[source] || {
       title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
       image: `https://picsum.photos/400/400?random=${assetId}&sig=${source}`,
       points: 10,
       price: 10
-    };
+    });
 
     // Return mock data for GET requests
     return NextResponse.json({
@@ -307,7 +326,7 @@ export async function POST(request: NextRequest) {
     };
     
     console.log('Using siteData for source:', source, siteData);
-    console.log('Deployment test - updated stock-info API');
+    console.log('Deployment test - updated stock-info API (GET)');
     
     return NextResponse.json({
       success: true,
