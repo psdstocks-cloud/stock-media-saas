@@ -110,12 +110,21 @@ export default function OrderV2Page() {
             // Check if this file has been ordered before
             const historyResponse = await fetch('/api/orders');
             const historyData = await historyResponse.json();
+            
+            console.log('🔍 History data:', JSON.stringify(historyData, null, 2));
+            console.log('🔍 Looking for existing order with:', {
+              stockItemId: data.data.parsedData.id,
+              source: data.data.parsedData.source
+            });
+            
             const existingOrder = historyData.success ? 
               historyData.orders.find((order: any) => 
                 order.stockItemId === data.data.parsedData.id && 
                 order.stockSite?.name === data.data.parsedData.source &&
                 (order.status === 'COMPLETED' || order.status === 'READY')
               ) : null;
+            
+            console.log('🔍 Found existing order:', existingOrder);
             
             const isPreviouslyOrdered = !!existingOrder;
             
