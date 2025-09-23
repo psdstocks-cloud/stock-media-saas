@@ -422,8 +422,9 @@ export class OrderProcessor {
         // Skip if already being processed
         if (this.processingOrders.has(order.id)) continue
 
-        const apiKey = process.env.NEHTW_API_KEY
-        if (!apiKey) continue
+        const rawApiKey = process.env.NEHTW_API_KEY
+        if (!rawApiKey) continue
+        const apiKey = rawApiKey.replace(/[{}]/g, '') // Remove curly braces
 
         // Start processing in background
         this.startProcessing(order.id, apiKey, 'unknown', 'unknown').catch(error => {

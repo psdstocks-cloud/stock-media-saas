@@ -3,7 +3,8 @@ import { NehtwAPI } from '@/lib/nehtw-api'
 
 export async function GET(request: NextRequest) {
   try {
-    const apiKey = process.env.NEHTW_API_KEY
+    const rawApiKey = process.env.NEHTW_API_KEY
+    const apiKey = rawApiKey ? rawApiKey.replace(/[{}]/g, '') : null // Remove curly braces
     if (!apiKey) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }

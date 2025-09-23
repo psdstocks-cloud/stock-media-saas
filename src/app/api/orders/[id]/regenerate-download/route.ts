@@ -69,10 +69,10 @@ export async function POST(
     // This is a FREE redownload - no points are deducted
     try {
       // Get API key from environment or user settings
-      const apiKey = process.env.NEHTW_API_KEY
-      if (!apiKey || apiKey === 'your-nehtw-api-key-here') {
+      const rawApiKey = process.env.NEHTW_API_KEY
+      if (!rawApiKey || rawApiKey === 'your-nehtw-api-key-here') {
         console.error('NEHTW_API_KEY not configured or using placeholder value')
-        console.error('API Key value:', apiKey)
+        console.error('API Key value:', rawApiKey)
         
         // If we have an existing downloadUrl, use it as fallback
         if (order.downloadUrl) {
@@ -97,6 +97,7 @@ export async function POST(
         currentDownloadUrl: order.downloadUrl
       })
 
+      const apiKey = rawApiKey.replace(/[{}]/g, '') // Remove curly braces
       const updatedOrder = await OrderManager.regenerateDownloadLink(
         orderId,
         apiKey

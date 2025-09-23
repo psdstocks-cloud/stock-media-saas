@@ -156,7 +156,9 @@ export async function POST(request: NextRequest) {
 
         // Asynchronously process the order after it has been successfully created
         const { OrderProcessor } = await import('@/lib/order-processor')
-        const apiKey = process.env.NEHTW_API_KEY || 'A8K9bV5s2OX12E8cmS4I96mtmSNzv7'
+        // Clean API key by removing any invalid characters like curly braces
+        const rawApiKey = process.env.NEHTW_API_KEY || 'A8K9bV5s2OX12E8cmS4I96mtmSNzv7'
+        const apiKey = rawApiKey.replace(/[{}]/g, '') // Remove curly braces
         OrderProcessor.startProcessing(transactionResult.order.id, apiKey, item.site, item.id, item.url).catch(console.error)
 
       } catch (error) {

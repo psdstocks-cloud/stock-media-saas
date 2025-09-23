@@ -14,7 +14,8 @@ export async function POST(
     }
 
     const { id: orderId } = await params
-    const apiKey = process.env.NEHTW_API_KEY
+    const rawApiKey = process.env.NEHTW_API_KEY
+    const apiKey = rawApiKey ? rawApiKey.replace(/[{}]/g, '') : null // Remove curly braces
 
     if (!apiKey) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })

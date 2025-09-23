@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get API key
-    const apiKey = process.env.NEHTW_API_KEY
+    const rawApiKey = process.env.NEHTW_API_KEY
+    const apiKey = rawApiKey ? rawApiKey.replace(/[{}]/g, '') : null // Remove curly braces
     if (!apiKey) {
       return NextResponse.json({ 
         error: 'API key not configured' 
