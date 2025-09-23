@@ -21,7 +21,8 @@ import {
   Plus,
   Minus,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Search
 } from 'lucide-react';
 
 interface StockSite {
@@ -47,6 +48,8 @@ interface OrderItem {
   downloadUrl?: string;
   fileName?: string;
   error?: string;
+  isPreviouslyOrdered?: boolean;
+  existingOrderId?: string;
 }
 
 export default function OrderV2Page() {
@@ -55,9 +58,17 @@ export default function OrderV2Page() {
   const [items, setItems] = useState<OrderItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Use the comprehensive supported sites list
   const supportedSites = SUPPORTED_SITES;
+  
+  // Filter sites based on search term
+  const filteredSites = supportedSites.filter(site => 
+    site.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    site.website.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    site.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const parseUrls = async () => {
     if (!urls.trim()) {
@@ -93,18 +104,38 @@ export default function OrderV2Page() {
           
           if (data.success) {
             const site = SUPPORTED_SITES.find(s => s.name === data.data.parsedData.source);
+            
+            // Check if this file has been ordered before
+            const historyResponse = await fetch('/api/orders');
+            const historyData = await historyResponse.json();
+            const existingOrder = historyData.success ? 
+              historyData.orders.find((order: any) => 
+                order.stockItemId === data.data.parsedData.id && 
+                order.stockSite?.name === data.data.parsedData.source &&
+                (order.status === 'COMPLETED' || order.status === 'READY')
+              ) : null;
+            
+            const isPreviouslyOrdered = !!existingOrder;
+            
             const item: OrderItem = {
               id: `${data.data.parsedData.source}-${data.data.parsedData.id}-${Date.now()}`,
               url: url,
               site: data.data.parsedData.source,
               siteId: data.data.parsedData.id,
               title: `${site?.displayName || data.data.parsedData.source} - ${data.data.parsedData.id}`, // Format: Website Name - Stock ID
-              cost: data.data.stockInfo.points, // Use the actual cost from API
+              cost: isPreviouslyOrdered ? 0 : data.data.stockInfo.points, // Free if previously ordered
               imageUrl: data.data.stockInfo.image, // Use the actual preview image from API
-              status: 'ready'
+              status: 'ready',
+              isPreviouslyOrdered: isPreviouslyOrdered, // Add flag for UI display
+              existingOrderId: existingOrder?.id // Store existing order ID for free download
             };
             newItems.push(item);
-            toast.success(`Successfully parsed ${site?.displayName || data.data.parsedData.source} URL`);
+            
+            if (isPreviouslyOrdered) {
+              toast.success(`Found previously ordered file - Download for FREE!`);
+            } else {
+              toast.success(`Successfully parsed ${site?.displayName || data.data.parsedData.source} URL`);
+            }
           } else {
             toast.error(`Failed to fetch details for URL: ${url}`);
           }
@@ -123,6 +154,34 @@ export default function OrderV2Page() {
   };
 
   const placeOrder = async (item: OrderItem) => {
+    // Handle free download for previously ordered files
+    if (item.isPreviouslyOrdered && item.existingOrderId) {
+      try {
+        // Get the existing order details for free download
+        const response = await fetch(`/api/orders/${item.existingOrderId}`);
+        const data = await response.json();
+        
+        if (data.success && data.order.downloadUrl) {
+          setItems(prev => prev.map(i => 
+            i.id === item.id ? { 
+              ...i, 
+              status: 'completed' as const,
+              downloadUrl: data.order.downloadUrl,
+              fileName: data.order.fileName || `${item.site}-${item.siteId}.zip`
+            } : i
+          ));
+          toast.success('Free download ready!');
+        } else {
+          throw new Error('Download link not available');
+        }
+      } catch (error) {
+        console.error('Free download error:', error);
+        toast.error('Failed to get free download link');
+      }
+      return;
+    }
+
+    // Regular order flow for new files
     if (!currentPoints || currentPoints < item.cost) {
       toast.error('Insufficient points');
       return;
@@ -380,15 +439,20 @@ export default function OrderV2Page() {
                         {getStatusIcon(item.status)}
                         <span className="ml-1 capitalize">{item.status}</span>
                       </Badge>
-                      <span className="font-semibold text-gray-700">{item.cost} pts</span>
+                      <span className="font-semibold text-gray-700">
+                        {item.isPreviouslyOrdered ? 'FREE' : `${item.cost} pts`}
+                      </span>
                       {item.status === 'ready' && (
                         <Button
                           size="sm"
                           onClick={() => placeOrder(item)}
-                          disabled={!currentPoints || currentPoints < item.cost}
-                          className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
+                          disabled={!item.isPreviouslyOrdered && (!currentPoints || currentPoints < item.cost)}
+                          className={item.isPreviouslyOrdered 
+                            ? "bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                            : "bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
+                          }
                         >
-                          Order
+                          {item.isPreviouslyOrdered ? 'Download for Free' : 'Order'}
                         </Button>
                       )}
                       {item.status === 'completed' && item.downloadUrl && (
@@ -411,7 +475,8 @@ export default function OrderV2Page() {
                         size="sm"
                         variant="ghost"
                         onClick={() => removeItem(item.id)}
-                        className="text-red-500 hover:text-red-700"
+                        disabled={item.status === 'ordering' || item.status === 'processing'}
+                        className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -428,196 +493,52 @@ export default function OrderV2Page() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <ExternalLink className="w-5 h-5" />
-              <span>Supported Websites ({supportedSites.length} sites)</span>
+              <span>Supported Websites ({filteredSites.length} sites)</span>
             </CardTitle>
             <p className="text-sm text-gray-600">
               All sites cost 10 points per download. Click on any site to visit their website.
             </p>
+            <div className="mt-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search websites by name or URL..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {getSitesByCategory('photos').length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  📸 Photography & Images ({getSitesByCategory('photos').length})
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {getSitesByCategory('photos').map((site) => (
-                    <a
-                      key={site.id}
-                      href={site.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-orange-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium">{site.displayName}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {site.cost} pts
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {getSitesByCategory('videos').length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  🎬 Videos & Motion Graphics ({getSitesByCategory('videos').length})
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {getSitesByCategory('videos').map((site) => (
-                    <a
-                      key={site.id}
-                      href={site.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium">{site.displayName}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {site.cost} pts
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {getSitesByCategory('audio').length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  🎵 Audio & Music ({getSitesByCategory('audio').length})
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {getSitesByCategory('audio').map((site) => (
-                    <a
-                      key={site.id}
-                      href={site.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-teal-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium">{site.displayName}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {site.cost} pts
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {getSitesByCategory('graphics').length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  🎨 Graphics & Icons ({getSitesByCategory('graphics').length})
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {getSitesByCategory('graphics').map((site) => (
-                    <a
-                      key={site.id}
-                      href={site.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 bg-gradient-to-r from-pink-500 to-red-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium">{site.displayName}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {site.cost} pts
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {getSitesByCategory('icons').length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  🔗 Icons & UI Elements ({getSitesByCategory('icons').length})
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {getSitesByCategory('icons').map((site) => (
-                    <a
-                      key={site.id}
-                      href={site.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium">{site.displayName}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {site.cost} pts
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {getSitesByCategory('mixed').length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  🎯 Mixed Content ({getSitesByCategory('mixed').length})
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {getSitesByCategory('mixed').map((site) => (
-                    <a
-                      key={site.id}
-                      href={site.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-5 h-5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium">{site.displayName}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {site.cost} pts
-                      </Badge>
-                    </a>
-                  ))}
-                </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filteredSites.map((site) => (
+                <a
+                  key={site.id}
+                  href={site.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-orange-500 rounded flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {site.displayName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium">{site.displayName}</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {site.cost} pts
+                  </Badge>
+                </a>
+              ))}
+            </div>
+            {filteredSites.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <Search className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>No websites found matching your search.</p>
               </div>
             )}
           </CardContent>
