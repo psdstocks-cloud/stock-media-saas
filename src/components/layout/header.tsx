@@ -40,14 +40,17 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <a href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
               Dashboard
             </a>
-            <a href="/dashboard/order-v2" className="text-sm font-medium hover:text-primary transition-colors">
+            <a href="/dashboard/order-v3" className="text-sm font-medium hover:text-primary transition-colors">
               Order Media
             </a>
-            <a href="/dashboard/history-v2" className="text-sm font-medium hover:text-primary transition-colors">
+            <a href="/dashboard/history-v3" className="text-sm font-medium hover:text-primary transition-colors">
               History
             </a>
-            <a href="/dashboard/order" className="text-sm font-medium hover:text-primary transition-colors">
-              Legacy Order
+            <a href="/dashboard/order-v2" className="text-sm font-medium hover:text-primary transition-colors text-gray-500">
+              Order v2
+            </a>
+            <a href="/dashboard/history-v2" className="text-sm font-medium hover:text-primary transition-colors text-gray-500">
+              History v2
             </a>
             <a href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">
               Pricing
