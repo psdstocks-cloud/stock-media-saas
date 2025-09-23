@@ -102,7 +102,7 @@ export default function OrderV2Page() {
           const response = await fetch(`/api/stock-info?url=${encodeURIComponent(url)}`);
           const data = await response.json();
           
-          console.log('🔍 Stock Info API Response:', data);
+          console.log('🔍 Stock Info API Response:', JSON.stringify(data, null, 2));
           
           if (data.success) {
             const site = SUPPORTED_SITES.find(s => s.name === data.data.parsedData.source);
@@ -132,13 +132,15 @@ export default function OrderV2Page() {
               existingOrderId: existingOrder?.id // Store existing order ID for free download
             };
             
-            console.log('🔍 Created item:', {
+            console.log('🔍 Created item:', JSON.stringify({
               cost: item.cost,
               isPreviouslyOrdered,
               stockInfoPoints: data.data.stockInfo.points,
               site: item.site,
-              id: item.siteId
-            });
+              id: item.siteId,
+              title: item.title,
+              url: item.url
+            }, null, 2));
             newItems.push(item);
             
             if (isPreviouslyOrdered) {

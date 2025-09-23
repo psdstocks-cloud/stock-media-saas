@@ -70,9 +70,10 @@ export class NehtwAPI {
     // CORRECTED: The request URL must be clean and not contain any query parameters.
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 
-    console.log(`Placing order to NEHTW API: ${requestUrl}`);
-    console.log(`API Key present: ${!!this.apiKey}`);
-    console.log(`Site: ${site}, ID: ${id}`);
+      console.log(`🚀 Placing order to NEHTW API: ${requestUrl}`);
+      console.log(`🚀 API Key present: ${!!this.apiKey}`);
+      console.log(`🚀 Site: ${site}, ID: ${id}`);
+      console.log(`🚀 Making external API call to: ${requestUrl}`);
 
     try {
       const response = await axios.post(
@@ -113,6 +114,17 @@ export class NehtwAPI {
         fullError: error
       });
       
+      // Log the specific error type
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as any;
+        console.error("🚨 Axios Error Details:", {
+          status: axiosError.response?.status,
+          statusText: axiosError.response?.statusText,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers
+        });
+      }
+      
       console.error("🚨 Request details that failed:", {
         requestUrl,
         site,
@@ -122,6 +134,7 @@ export class NehtwAPI {
       
       // Return a mock successful response for testing
       console.log('🔄 Returning mock response for testing...');
+      console.log('🔄 Mock response will be used instead of real API call');
       return {
         success: true,
         task_id: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
