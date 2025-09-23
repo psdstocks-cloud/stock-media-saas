@@ -97,9 +97,9 @@ export default function HistoryV2Page() {
     }
   };
 
-  const generateFreshDownloadLink = async (order: OrderHistory) => {
+  const downloadFile = async (order: OrderHistory) => {
     try {
-      toast.loading('Generating fresh download link...');
+      toast.loading('Preparing download...');
       
       // Generate fresh download link from API
       const response = await fetch('/api/place-order', {
@@ -390,11 +390,11 @@ export default function HistoryV2Page() {
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (
                         <Button
                           size="sm"
-                          onClick={() => generateFreshDownloadLink(order)}
+                          onClick={() => downloadFile(order)}
                           className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                         >
                           <Download className="w-4 h-4 mr-1" />
-                          Generate Fresh Download
+                          Download
                         </Button>
                       )}
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (

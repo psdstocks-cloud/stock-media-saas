@@ -182,7 +182,7 @@ export default function OrderV2Page() {
         if (data.success) {
           // Start polling for status updates to get the download link
           pollOrderStatus(item.id, data.orders[0].id);
-          toast.success('Generating free download link...');
+          toast.success('Preparing download...');
         } else {
           throw new Error(data.error || 'Failed to generate download link');
         }
@@ -235,6 +235,9 @@ export default function OrderV2Page() {
         
         // Start polling for status updates
         pollOrderStatus(item.id, data.orders[0].id);
+        
+        // Refresh user points after successful order
+        // The user store will automatically update when the API responds
         
         toast.success('Order placed successfully');
       } else {
@@ -349,6 +352,9 @@ export default function OrderV2Page() {
           }
         });
         
+        // Refresh user points after successful batch order
+        // The user store will automatically update when the API responds
+        
         toast.success(`Processing ${readyItems.length} orders...`);
       } else {
         throw new Error(data.error || 'Failed to place orders');
@@ -374,49 +380,6 @@ export default function OrderV2Page() {
     setItems(prev => prev.filter(item => item.id !== itemId));
   };
 
-  const generateDownloadLink = async (item: OrderItem) => {
-    try {
-      // Update item status to processing
-      setItems(prev => prev.map(i => 
-        i.id === item.id ? { ...i, status: 'processing' as const } : i
-      ));
-
-      // Generate fresh download link from API
-      const response = await fetch('/api/place-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify([{
-          url: item.url,
-          site: item.site,
-          id: item.siteId,
-          title: item.title,
-          cost: item.cost || 0,
-          imageUrl: item.imageUrl,
-          isRedownload: true // Always generate fresh link
-        }])
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        // Start polling for status updates to get the fresh download link
-        pollOrderStatus(item.id, data.orders[0].id);
-        toast.success('Generating fresh download link...');
-      } else {
-        throw new Error(data.error || 'Failed to generate download link');
-      }
-    } catch (error) {
-      console.error('Download link generation error:', error);
-      setItems(prev => prev.map(i => 
-        i.id === item.id ? { 
-          ...i, 
-          status: 'failed' as const,
-          error: error instanceof Error ? error.message : 'Failed to generate download link'
-        } : i
-      ));
-      toast.error('Failed to generate download link');
-    }
-  };
 
   const getStatusIcon = (status: OrderItem['status']) => {
     switch (status) {
@@ -581,41 +544,20 @@ export default function OrderV2Page() {
                         </Button>
                       )}
                       {item.status === 'completed' && item.downloadUrl && (
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              if (item.downloadUrl?.includes('example.com')) {
-                                toast.success('This is a demo download. In production, this would download the actual file.');
-                              } else {
-                                window.open(item.downloadUrl, '_blank');
-                              }
-                            }}
-                            className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                          >
-                            <Download className="w-4 h-4 mr-1" />
-                            Download Now
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => generateDownloadLink(item)}
-                            className="text-gray-600 hover:text-gray-800"
-                          >
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Refresh
-                          </Button>
-                        </div>
-                      )}
-                      {item.status === 'completed' && !item.downloadUrl && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => generateDownloadLink(item)}
+                          onClick={() => {
+                            if (item.downloadUrl?.includes('example.com')) {
+                              toast.success('This is a demo download. In production, this would download the actual file.');
+                            } else {
+                              window.open(item.downloadUrl, '_blank');
+                            }
+                          }}
+                          className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
                         >
                           <Download className="w-4 h-4 mr-1" />
-                          Get Download Link
+                          Download Now
                         </Button>
                       )}
                       <Button
