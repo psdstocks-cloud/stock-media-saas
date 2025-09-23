@@ -154,8 +154,8 @@ export default function OrderV2Page() {
   };
 
   const placeOrder = async (item: OrderItem) => {
-    // Handle completed items - always generate fresh download link
-    if (item.status === 'completed') {
+    // Handle free download for previously ordered files OR completed items
+    if ((item.isPreviouslyOrdered && item.existingOrderId) || item.status === 'completed') {
       try {
         // Update status to processing
         setItems(prev => prev.map(i => 
@@ -196,52 +196,6 @@ export default function OrderV2Page() {
           } : i
         ));
         toast.error('Failed to generate download link');
-      }
-      return;
-    }
-
-    // Handle free download for previously ordered files
-    if (item.isPreviouslyOrdered && item.existingOrderId) {
-      try {
-        // Update status to processing
-        setItems(prev => prev.map(i => 
-          i.id === item.id ? { ...i, status: 'processing' as const } : i
-        ));
-
-        // Generate new download link from API
-        const response = await fetch('/api/place-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify([{
-            url: item.url,
-            site: item.site,
-            id: item.siteId,
-            title: item.title,
-            cost: 0, // Free download - explicitly 0
-            imageUrl: item.imageUrl,
-            isRedownload: true // Flag for free download
-          }])
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          // Start polling for status updates to get the download link
-          pollOrderStatus(item.id, data.orders[0].id);
-          toast.success('Preparing download...');
-        } else {
-          throw new Error(data.error || 'Failed to generate download link');
-        }
-      } catch (error) {
-        console.error('Free download error:', error);
-        setItems(prev => prev.map(i => 
-          i.id === item.id ? { 
-            ...i, 
-            status: 'failed' as const,
-            error: error instanceof Error ? error.message : 'Failed to generate download link'
-          } : i
-        ));
-        toast.error('Failed to generate free download link');
       }
       return;
     }
@@ -610,6 +564,12 @@ export default function OrderV2Page() {
                           <Download className="w-4 h-4 mr-1" />
                           Download Now
                         </Button>
+                      )}
+                      {item.status === 'processing' && (
+                        <div className="flex items-center space-x-2">
+                          <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+                          <span className="text-sm text-blue-600">Generating link...</span>
+                        </div>
                       )}
                       <Button
                         size="sm"
