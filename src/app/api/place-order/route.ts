@@ -60,7 +60,14 @@ export async function POST(request: NextRequest) {
           userId,
           stockItemId: item.id,
           site: item.site,
-          title: item.title
+          title: item.title,
+          cost: item.cost
+        });
+        
+        console.log(`🔍 Backend search criteria:`, {
+          userId: userId,
+          stockItemId: item.id,
+          status: ['READY', 'COMPLETED']
         });
         
         const existingOrder = await prisma.order.findFirst({
@@ -73,6 +80,13 @@ export async function POST(request: NextRequest) {
         })
 
         console.log(`🔍 Backend found existing order:`, existingOrder);
+        console.log(`🔍 Backend existing order details:`, existingOrder ? {
+          id: existingOrder.id,
+          stockItemId: existingOrder.stockItemId,
+          status: existingOrder.status,
+          stockSiteName: existingOrder.stockSite?.name,
+          title: existingOrder.title
+        } : 'No existing order found');
 
         if (existingOrder) {
           console.log('🔍 Existing completed order found - providing free download')
