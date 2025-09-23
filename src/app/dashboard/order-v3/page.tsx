@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+// import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
 import { SUPPORTED_SITES } from '@/lib/supported-sites';
@@ -21,6 +21,8 @@ import {
   RefreshCw,
   Search
 } from 'lucide-react';
+import PointsOverview from '@/components/dashboard/PointsOverview';
+import { useOrderStore } from '@/stores/orderStore';
 
 interface OrderItem {
   id: string;
@@ -45,6 +47,42 @@ export default function OrderV3Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // v3 store (lightweight cart)
+  const addUrl = useOrderStore((s) => s.addUrl)
+  const updateItemStatus = useOrderStore((s) => s.updateItemStatus)
+  const removeCartItem = useOrderStore((s) => s.removeItem)
+  const resetCart = useOrderStore((s) => s.resetOrder)
+  const cartItems = useOrderStore((s) => s.orderItems) || []
+
+  const enrichItemWithStockInfo = async (item: OrderItem) => {
+    try {
+      updateItemStatus?.(item.id, 'processing')
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'processing' as const } : i))
+      const resp = await fetch('/api/stock-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: item.url })
+      })
+      const json = await resp.json()
+      if (json && json.success) {
+        const stockInfo = json.data?.stockInfo
+        const platform = json.data?.stockSite?.displayName || item.site
+        const points = Number(stockInfo?.points ?? 10)
+        const image = stockInfo?.image || item.imageUrl
+        updateItemStatus?.(item.id, 'ready', { data: { title: item.title, thumbnail: image, points, platform } })
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points } : i))
+      } else {
+        const errMsg = json?.message || 'Failed to fetch stock info'
+        updateItemStatus?.(item.id, 'error', { errorMessage: errMsg })
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg } : i))
+      }
+    } catch (e) {
+      const errMsg = e instanceof Error ? e.message : 'Network error'
+      updateItemStatus?.(item.id, 'error', { errorMessage: errMsg })
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg } : i))
+    }
+  }
 
   // Filter sites based on search term
   const filteredSites = SUPPORTED_SITES.filter(site => 
@@ -100,20 +138,25 @@ export default function OrderV3Page() {
             site: parseResult.source,
             siteId: parseResult.id,
             title: `${parseResult.source.charAt(0).toUpperCase() + parseResult.source.slice(1)} - ${parseResult.id}`,
-            cost: isPreviouslyOrdered ? 0 : 10, // Free if previously ordered
+            cost: isPreviouslyOrdered ? 0 : 10,
             imageUrl: `https://picsum.photos/400/400?random=${parseResult.id}&sig=${parseResult.source}`,
-            status: 'ready',
+            status: 'processing',
             isPreviouslyOrdered: isPreviouslyOrdered,
             existingOrderId: existingOrder?.id
           };
           
           newItems.push(item);
+          // v3 store entry as pending until explicit order
+          addUrl?.(url)
           
           if (isPreviouslyOrdered) {
             toast.success(`Found previously ordered file - Download for FREE!`);
           } else {
             toast.success(`Successfully parsed ${parseResult.source} URL`);
           }
+
+          addUrl?.(url, item.id)
+          void enrichItemWithStockInfo(item)
         } catch (error) {
           toast.error(`Error processing URL: ${url}`);
         }
@@ -227,6 +270,87 @@ export default function OrderV3Page() {
     setTimeout(() => clearInterval(pollInterval), 300000);
   };
 
+  const startOrderStream = (orderId: string, itemId: string) => {
+    try {
+      const es = new EventSource(`/api/orders/${orderId}/stream`)
+      es.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data || '{}')
+          const status: string | undefined = data.status
+          const percentage: number | undefined = data.percentage
+          const downloadUrl: string | undefined = data.downloadUrl
+
+          if (status === 'progress' && typeof percentage === 'number') {
+            setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'processing' as const } : i))
+          } else if (status === 'COMPLETED' || status === 'READY' || status === 'complete') {
+            setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'completed' as const, downloadUrl } : i))
+            es.close()
+          } else if (status === 'FAILED' || status === 'failed') {
+            setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'failed' as const } : i))
+            es.close()
+          }
+        } catch (e) {
+          // Ignore malformed SSE data
+        }
+      }
+      es.onerror = () => {
+        es.close()
+      }
+    } catch (e) {
+      // SSE unavailable; skip streaming in this environment
+    }
+  }
+
+  const confirmOrdersBatch = async () => {
+    const readyItems = items.filter(item => item.status === 'ready');
+    const totalCost = readyItems.reduce((sum, item) => sum + item.cost, 0);
+    
+    if (!currentPoints || currentPoints < totalCost) {
+      toast.error('Insufficient points for all orders');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const payload = readyItems.map((item) => ({
+        url: item.url,
+        site: item.site,
+        id: item.siteId,
+        title: item.title,
+        cost: item.cost,
+        imageUrl: item.imageUrl,
+        isRedownload: !!item.isPreviouslyOrdered
+      }))
+
+      const response = await fetch('/api/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await response.json()
+
+      if (!data?.success || !Array.isArray(data.orders)) {
+        throw new Error(data?.error || 'Failed to place orders')
+      }
+
+      setItems(prev => prev.map(i => readyItems.find(r => r.id === i.id) ? { ...i, status: 'processing' as const } : i))
+
+      data.orders.forEach((order: any, idx: number) => {
+        const item = readyItems[idx]
+        if (order?.id && item) {
+          startOrderStream(order.id, item.id)
+        }
+      })
+
+      toast.success('Orders placed. Tracking progress...')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to place orders')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   const processAllOrders = async () => {
     const readyItems = items.filter(item => item.status === 'ready');
     const totalCost = readyItems.reduce((sum, item) => sum + item.cost, 0);
@@ -250,6 +374,7 @@ export default function OrderV3Page() {
 
   const removeItem = (itemId: string) => {
     setItems(prev => prev.filter(item => item.id !== itemId));
+    removeCartItem?.(itemId)
   };
 
   const getStatusIcon = (status: OrderItem['status']) => {
@@ -288,29 +413,12 @@ export default function OrderV3Page() {
           </p>
         </div>
 
-        {/* Points Display */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <ShoppingCart className="w-8 h-8 text-purple-600" />
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Your Points</h3>
-                  <p className="text-3xl font-bold text-purple-600">
-                    {pointsLoading ? (
-                      <Skeleton className="h-8 w-24" />
-                    ) : (
-                      currentPoints?.toLocaleString() || '0'
-                    )}
-                  </p>
-                </div>
-              </div>
-              <Badge variant="outline" className="text-sm">
-                Available Balance
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Points Overview */}
+        <div className="flex justify-end">
+          <div className="max-w-sm w-full">
+            <PointsOverview />
+          </div>
+        </div>
 
         {/* URL Input */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -368,8 +476,8 @@ export default function OrderV3Page() {
                   <span>Your Items ({items.length})</span>
                 </CardTitle>
                 {readyItems.length > 0 && (
-                  <Button
-                    onClick={processAllOrders}
+                    <Button
+                      onClick={confirmOrdersBatch}
                     disabled={isProcessing || !currentPoints || currentPoints < totalCost}
                     className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                   >
@@ -442,6 +550,36 @@ export default function OrderV3Page() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Order Summary */}
+        {items.length > 0 && (
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Order Summary</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {readyItems.length} item(s) • Total {totalCost} points
+                  </p>
+                </div>
+                {(() => {
+                  const hasBlocking = items.some(i => i.status === 'processing' || i.status === 'failed')
+                  const canConfirm = items.length > 0 && !hasBlocking && readyItems.length > 0
+                  return (
+                    <Button
+                      onClick={confirmOrdersBatch}
+                      disabled={!canConfirm || !currentPoints || currentPoints < totalCost}
+                      className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Confirm Order
+                    </Button>
+                  )
+                })()}
               </div>
             </CardContent>
           </Card>

@@ -92,6 +92,30 @@ interface OrderState {
   
   // Error handling
   error: string | null
+
+  // v3 lightweight cart state
+  orderItems?: {
+    id: string
+    url: string
+    status: 'pending' | 'processing' | 'ready' | 'error' | 'completed'
+    data?: { title: string; thumbnail: string; points: number; platform: string }
+    parsed?: { source: string; id: string }
+    errorMessage?: string
+  }[]
+
+  // v3 actions
+  addUrl?: (url: string, id?: string) => void
+  updateItemStatus?: (
+    id: string,
+    status: 'pending' | 'processing' | 'ready' | 'error' | 'completed',
+    extra?: {
+      data?: { title: string; thumbnail: string; points: number; platform: string }
+      parsed?: { source: string; id: string }
+      errorMessage?: string
+    }
+  ) => void
+  removeItem?: (id: string) => void
+  resetOrder?: () => void
   
   // Actions
   setStep: (step: 'input' | 'confirmation' | 'progress') => void
@@ -147,6 +171,9 @@ export const useOrderStore = create<OrderState>()(
         userPoints: 0,
         error: null,
 
+      // v3 cart initial
+      orderItems: [],
+
         // Basic setters
         setStep: (step) => set({ step }),
         setUrls: (urls) => set({ urls }),
@@ -158,6 +185,31 @@ export const useOrderStore = create<OrderState>()(
         setTrackingProgress: (tracking) => set({ isTrackingProgress: tracking }),
         setOrderStatuses: (statuses) => set({ orderStatuses: statuses }),
         setError: (error) => set({ error }),
+
+      // v3 cart actions
+      addUrl: (url, id) => set((state) => ({
+        orderItems: [
+          ...(state.orderItems || []),
+          { id: id || `${Date.now()}-${Math.random().toString(36).slice(2)}`, url, status: 'pending' as const }
+        ]
+      })),
+      updateItemStatus: (id, status, extra) => set((state) => ({
+        orderItems: (state.orderItems || []).map((it) =>
+          it.id === id
+            ? {
+                ...it,
+                status,
+                data: extra?.data ?? it.data,
+                parsed: extra?.parsed ?? it.parsed,
+                errorMessage: extra?.errorMessage ?? it.errorMessage,
+              }
+            : it
+        )
+      })),
+      removeItem: (id) => set((state) => ({
+        orderItems: (state.orderItems || []).filter((it) => it.id !== id)
+      })),
+      resetOrder: () => set({ orderItems: [] }),
 
         // Item management
         addPreOrderItem: (item) => set((state) => ({
