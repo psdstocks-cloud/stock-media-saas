@@ -154,6 +154,52 @@ export default function OrderV2Page() {
   };
 
   const placeOrder = async (item: OrderItem) => {
+    // Handle completed items - always generate fresh download link
+    if (item.status === 'completed') {
+      try {
+        // Update status to processing
+        setItems(prev => prev.map(i => 
+          i.id === item.id ? { ...i, status: 'processing' as const } : i
+        ));
+
+        // Generate fresh download link from API
+        const response = await fetch('/api/place-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify([{
+            url: item.url,
+            site: item.site,
+            id: item.siteId,
+            title: item.title,
+            cost: item.cost || 0,
+            imageUrl: item.imageUrl,
+            isRedownload: true // Always generate fresh link
+          }])
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Start polling for status updates to get the fresh download link
+          pollOrderStatus(item.id, data.orders[0].id);
+          toast.success('Generating fresh download link...');
+        } else {
+          throw new Error(data.error || 'Failed to generate download link');
+        }
+      } catch (error) {
+        console.error('Download link generation error:', error);
+        setItems(prev => prev.map(i => 
+          i.id === item.id ? { 
+            ...i, 
+            status: 'failed' as const,
+            error: error instanceof Error ? error.message : 'Failed to generate download link'
+          } : i
+        ));
+        toast.error('Failed to generate download link');
+      }
+      return;
+    }
+
     // Handle free download for previously ordered files
     if (item.isPreviouslyOrdered && item.existingOrderId) {
       try {
@@ -276,7 +322,18 @@ export default function OrderV2Page() {
               } : i
             ));
             clearInterval(pollInterval);
-            toast.success('Fresh download link ready!');
+            
+            // Automatically trigger download
+            if (data.order.downloadUrl) {
+              if (data.order.downloadUrl.includes('example.com')) {
+                toast.success('This is a demo download. In production, this would download the actual file.');
+              } else {
+                window.open(data.order.downloadUrl, '_blank');
+                toast.success('Download started!');
+              }
+            } else {
+              toast.success('Fresh download link ready!');
+            }
           } else if (isFailed) {
             setItems(prev => prev.map(i => 
               i.id === itemId ? { 
@@ -543,17 +600,11 @@ export default function OrderV2Page() {
                           {item.isPreviouslyOrdered ? 'Download for Free' : 'Order'}
                         </Button>
                       )}
-                      {item.status === 'completed' && item.downloadUrl && (
+                      {item.status === 'completed' && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            if (item.downloadUrl?.includes('example.com')) {
-                              toast.success('This is a demo download. In production, this would download the actual file.');
-                            } else {
-                              window.open(item.downloadUrl, '_blank');
-                            }
-                          }}
+                          onClick={() => placeOrder(item)}
                           className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
                         >
                           <Download className="w-4 h-4 mr-1" />

@@ -130,13 +130,7 @@ export default function HistoryV2Page() {
               if (statusData.order.downloadUrl.includes('example.com')) {
                 toast.success('This is a demo download. In production, this would download the actual file.');
               } else {
-                const link = document.createElement('a');
-                link.href = statusData.order.downloadUrl;
-                link.download = statusData.order.fileName || order.title;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                window.open(statusData.order.downloadUrl, '_blank');
                 toast.success('Download started!');
               }
             } else if (statusData.success && statusData.order.status === 'FAILED') {
