@@ -88,12 +88,12 @@ export class NehtwAPI {
         }
       );
 
-      console.log(`NEHTW API Response Status: ${response.status}`);
-      console.log(`NEHTW API Response Data:`, response.data);
+      console.log(`✅ NEHTW API Response Status: ${response.status}`);
+      console.log(`✅ NEHTW API Response Data:`, JSON.stringify(response.data, null, 2));
 
       // Check if the response is valid JSON before proceeding.
       if (typeof response.data !== 'object' || response.data === null) {
-        console.error('Invalid response data:', response.data);
+        console.error('❌ Invalid response data:', response.data);
         throw new Error('Received an invalid, non-JSON response from the download service.');
       }
 
@@ -105,15 +105,23 @@ export class NehtwAPI {
       return response.data;
 
     } catch (error) {
-      console.error("Detailed NEHTW API Error:", {
+      console.error("🚨 NEHTW API Error Details:", {
         message: error instanceof Error ? error.message : 'Unknown error',
         code: error instanceof Error && 'code' in error ? (error as any).code : 'unknown',
         response: error instanceof Error && 'response' in error ? (error as any).response?.data : 'no response',
-        status: error instanceof Error && 'response' in error ? (error as any).response?.status : 'no status'
+        status: error instanceof Error && 'response' in error ? (error as any).response?.status : 'no status',
+        fullError: error
+      });
+      
+      console.error("🚨 Request details that failed:", {
+        requestUrl,
+        site,
+        id,
+        apiKey: this.apiKey.substring(0, 8) + '...'
       });
       
       // Return a mock successful response for testing
-      console.log('Returning mock response for testing...');
+      console.log('🔄 Returning mock response for testing...');
       return {
         success: true,
         task_id: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,

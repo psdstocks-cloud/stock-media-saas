@@ -25,7 +25,9 @@ export class OrderProcessor {
     id: string, 
     url?: string
   ): Promise<void> {
-    console.log('Starting order processing:', { orderId, site, id })
+    console.log('🚀 Starting order processing:', { orderId, site, id })
+    console.log('🚀 API Key:', apiKey.substring(0, 8) + '...')
+    console.log('🚀 URL:', url)
     
     // Update order status to PROCESSING
     await this.updateOrderStatus(orderId, 'PROCESSING', 'Starting download process...')
