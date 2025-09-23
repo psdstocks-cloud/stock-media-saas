@@ -282,8 +282,8 @@ export default function HistoryV2Page() {
                 <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
                 <p className="text-gray-500">
-                  {searchTerm || statusFilter !== 'all' || siteFilter !== 'all'
-                    ? 'Try adjusting your filters'
+                  {searchTerm
+                    ? 'Try adjusting your search term'
                     : 'You haven\'t placed any orders yet'
                   }
                 </p>
