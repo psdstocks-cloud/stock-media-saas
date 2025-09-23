@@ -1,6 +1,6 @@
 // src/lib/nehtw-api.ts
 
-import axios from 'axios';
+// import axios from 'axios'; // Unused
 import { prisma } from './prisma';
 
 export interface NehtwStockInfo {
@@ -66,7 +66,7 @@ export class NehtwAPI {
    * Place an order - FIXED VERSION
    * CRITICAL: The request must NOT include the `?url=` parameter
    */
-  async placeOrder(site: string, id: string, url?: string): Promise<NehtwOrderResponse> {
+  async placeOrder(site: string, id: string, _url?: string): Promise<NehtwOrderResponse> {
     // CORRECTED: The request URL must be clean and not contain any query parameters.
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 
