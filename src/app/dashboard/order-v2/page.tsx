@@ -541,17 +541,24 @@ export default function OrderV2Page() {
                       <span className="font-semibold text-gray-700">
                         {item.isPreviouslyOrdered ? 'FREE' : `${item.cost} pts`}
                       </span>
-                      {item.status === 'ready' && (
+                      {item.status === 'ready' && !item.isPreviouslyOrdered && (
                         <Button
                           size="sm"
                           onClick={() => placeOrder(item)}
-                          disabled={!item.isPreviouslyOrdered && (!currentPoints || currentPoints < item.cost)}
-                          className={item.isPreviouslyOrdered 
-                            ? "bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
-                            : "bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
-                          }
+                          disabled={!currentPoints || currentPoints < item.cost}
+                          className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
                         >
-                          {item.isPreviouslyOrdered ? 'Download for Free' : 'Order'}
+                          Order
+                        </Button>
+                      )}
+                      {item.status === 'ready' && item.isPreviouslyOrdered && (
+                        <Button
+                          size="sm"
+                          onClick={() => placeOrder(item)}
+                          className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Download for Free
                         </Button>
                       )}
                       {item.status === 'completed' && (
