@@ -155,15 +155,18 @@ export default function OrderV3Page() {
         const image = stockInfo?.image || item.imageUrl
         updateItemStatus?.(item.id, 'ready', { data: { title: item.title, thumbnail: image, points, platform } })
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points, isLoading: false } : i))
+        setLiveAnnouncement('Item details loaded. You can place the order now.')
       } else {
         const errMsg = json?.message || 'Failed to fetch stock info'
         updateItemStatus?.(item.id, 'error', { errorMessage: errMsg })
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg, isLoading: false } : i))
+        setLiveAnnouncement('Failed to fetch item details. You can try again.')
       }
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : 'Network error'
       updateItemStatus?.(item.id, 'error', { errorMessage: errMsg })
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg, isLoading: false } : i))
+      setLiveAnnouncement('Failed to fetch item details. You can try again.')
     }
   }
 
@@ -891,6 +894,19 @@ export default function OrderV3Page() {
                       </div>
                       <div className="w-40">
                         <Skeleton className="h-9 w-full rounded-md" />
+                      </div>
+                    </div>
+                  ) : (item.status === 'failed' && !item.downloadUrl) ? (
+                    <div key={item.id} className="overflow-hidden rounded-xl border border-red-100 p-4 flex items-center gap-4 bg-red-50/60" role="status" aria-live="polite">
+                      <div className="h-20 w-20 rounded-md bg-red-100 flex items-center justify-center">
+                        <AlertCircle className="w-6 h-6 text-red-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-red-800">Couldn’t load item details</p>
+                        <p className="text-xs text-red-700 truncate">{item.error || 'Unknown error'}</p>
+                      </div>
+                      <div className="w-40">
+                        <Button size="sm" variant="outline" onClick={() => void enrichItemWithStockInfo(item)}>Try again</Button>
                       </div>
                     </div>
                   ) : (
