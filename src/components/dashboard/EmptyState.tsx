@@ -11,12 +11,16 @@ import {
 } from 'lucide-react'
 
 interface EmptyStateProps {
-  type: 'no-urls' | 'no-items' | 'all-failed' | 'all-ordered'
+  type?: 'no-urls' | 'no-items' | 'all-failed' | 'all-ordered'
   onAction?: () => void
   actionText?: string
+  title?: string
+  description?: string
+  primaryCta?: { label: string; href: string }
+  secondaryCta?: { label: string; href: string }
 }
 
-export default function EmptyState({ type, onAction, actionText }: EmptyStateProps) {
+export default function EmptyState({ type = 'no-items', onAction, actionText, title: customTitle, description: customDesc, primaryCta, secondaryCta }: EmptyStateProps) {
   const getContent = () => {
     switch (type) {
       case 'no-urls':
@@ -76,11 +80,11 @@ export default function EmptyState({ type, onAction, actionText }: EmptyStatePro
         </div>
         
         <Typography variant="h3" className="text-white mb-2">
-          {title}
+          {customTitle || title}
         </Typography>
         
         <Typography variant="body" className="text-white/70 mb-6 max-w-md">
-          {description}
+          {customDesc || description}
         </Typography>
         
         {showAction && onAction && (
@@ -90,6 +94,20 @@ export default function EmptyState({ type, onAction, actionText }: EmptyStatePro
           >
             {text}
           </Button>
+        )}
+        {!onAction && (primaryCta || secondaryCta) && (
+          <div className="flex gap-3 mt-2">
+            {primaryCta && (
+              <a href={primaryCta.href} className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
+                {primaryCta.label}
+              </a>
+            )}
+            {secondaryCta && (
+              <a href={secondaryCta.href} className="px-4 py-2 rounded-md border border-white/30 text-white hover:bg-white/10">
+                {secondaryCta.label}
+              </a>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

@@ -3,6 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Typography } from '@/components/ui'
+import { BrandButton } from '@/components/ui/brand-button'
 import { ArrowRight, Play, Download, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -64,20 +65,21 @@ export const HeroSection: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-            <Button
-              size="lg"
+            <BrandButton
               onClick={handleGetStarted}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200"
+              aria-label="Get started for free"
+              className="px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105"
             >
               <Download className="h-5 w-5 mr-2" />
               Get Started for Free
               <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
+            </BrandButton>
             
             <Button
               variant="outline"
               size="lg"
               onClick={handleViewPricing}
+              aria-label="View pricing"
               className="border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold backdrop-blur-sm"
             >
               <Play className="h-5 w-5 mr-2" />

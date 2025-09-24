@@ -37,6 +37,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [verificationMessage, setVerificationMessage] = useState('')
   const [isResendingVerification, setIsResendingVerification] = useState(false)
 
@@ -65,6 +67,24 @@ function LoginForm() {
     setError('')
 
     try {
+      // Client-side validation
+      let hasClientError = false
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setEmailError('Please enter a valid email')
+        hasClientError = true
+      } else {
+        setEmailError('')
+      }
+      if (!password || password.length < 6) {
+        setPasswordError('Password must be at least 6 characters')
+        hasClientError = true
+      } else {
+        setPasswordError('')
+      }
+      if (hasClientError) {
+        setIsLoading(false)
+        return
+      }
       // First test with simple login API
       console.log('Making test login request to /api/test-login')
       const testResponse = await fetch('/api/test-login', {
@@ -288,6 +308,9 @@ function LoginForm() {
                     disabled={isLoading}
                     required
                   />
+                  {emailError && (
+                    <div role="alert" aria-live="polite" className="mt-1 text-sm text-red-300">{emailError}</div>
+                  )}
                 </div>
               </div>
 
@@ -314,6 +337,9 @@ function LoginForm() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {passwordError && (
+                  <div role="alert" aria-live="polite" className="mt-1 text-sm text-red-300">{passwordError}</div>
+                )}
                 {/* Helpful guidance */}
                 <div className="text-xs text-white/50">
                   💡 Having trouble? Try the demo account below or contact support

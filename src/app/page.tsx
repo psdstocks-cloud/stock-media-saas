@@ -9,6 +9,8 @@ import { ProductShowcaseSection } from "@/components/landing/ProductShowcaseSect
 import { FAQSection } from "@/components/landing/FAQSection"
 import Footer from "@/components/Footer"
 
+export const revalidate = 120
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">

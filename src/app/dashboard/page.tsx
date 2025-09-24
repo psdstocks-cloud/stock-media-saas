@@ -11,6 +11,7 @@ import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
 import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
 import useUserStore from '@/stores/userStore'
+import EmptyState from '@/components/dashboard/EmptyState'
 
 interface DashboardUser {
   id: string
@@ -86,6 +87,9 @@ export default function DashboardPage() {
       </div>
     )
   }
+
+  // Onboarding: show gentle empty state if no user points and overview tab
+  const showOnboarding = userPoints === 0 && activeTab === 'overview'
 
   if (!user) {
     return (
@@ -190,7 +194,17 @@ export default function DashboardPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-6">
+        <TabsContent value="overview" className="mt-6">
+          {showOnboarding && (
+            <div className="mb-6">
+              <EmptyState
+                title="Welcome! Let's get you started"
+                description="Add your first URLs on the Order page or explore supported platforms."
+                primaryCta={{ label: 'Order Media', href: '/dashboard/order-v2' }}
+                secondaryCta={{ label: 'See Supported Sites', href: '/dashboard/order-v2#supported-platforms' }}
+              />
+            </div>
+          )}
             {/* Points Hub - Prominent display */}
             <Card className="bg-gradient-to-r from-orange-500/20 to-purple-500/20 backdrop-blur-sm border-white/30 shadow-2xl mb-8">
               <CardContent className="p-8">
