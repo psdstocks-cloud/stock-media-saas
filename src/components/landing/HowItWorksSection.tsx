@@ -67,7 +67,7 @@ export const HowItWorksSection: React.FC = () => {
           {steps.map((s, idx) => (
             <div
               key={s.k}
-              ref={(el) => (cardsRef.current[idx] = el)}
+              ref={(el) => { cardsRef.current[idx] = el }}
               data-step-index={idx}
               className={
                 "group p-6 md:p-7 rounded-2xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/60 outline-none " +
