@@ -16,7 +16,8 @@
     --popover: 0 0% 100%;           /* White */
     --popover-foreground: 222.2 84% 4.9%;
     --muted: 210 40% 96%;           /* Light Gray */
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Increased contrast for muted text (WCAG AA on white) */
+    --muted-foreground: 215.4 16.3% 35%;
     --accent: 210 40% 96%;          /* Light Gray */
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;   /* Red */
@@ -32,7 +33,11 @@
     --brand-purple-6: rgba(91,46,145,0.06);
     --brand-purple-20: rgba(91,46,145,0.20);
     --brand-text-hex: #0F172A; /* slate-900 */
-    --brand-muted-hex: #64748B; /* slate-500 */
+    --brand-muted-hex: #475569; /* slate-600 for stronger contrast */
+
+    /* Brand surfaces + muted tokens (HSL) */
+    --brand-surface: 0 0% 100%;
+    --brand-muted: 215 16% 35%;
   }
 
   .dark {
@@ -48,7 +53,8 @@
     --popover: 222.2 84% 4.9%;      /* Dark Popover */
     --popover-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;     /* Dark Muted */
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Increased contrast for muted text on dark */
+    --muted-foreground: 215 20.2% 78%;
     --accent: 217.2 32.6% 17.5%;    /* Dark Accent */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;   /* Dark Red */
@@ -56,6 +62,8 @@
     --border: 217.2 32.6% 17.5%;    /* Dark Border */
     --input: 217.2 32.6% 17.5%;     /* Dark Input */
     --ring: 275 100% 45%;           /* Lighter Purple Ring */
+    --brand-surface: 222.2 84% 4.9%;
+    --brand-muted: 215 20% 78%;
   }
 }
 
@@ -72,13 +80,13 @@
 @layer components {
   /* Accessible link contrast */
   a {
-    @apply text-foreground/90 hover:text-primary transition-colors;
+    @apply text-foreground hover:text-primary transition-colors hover:underline focus-visible:underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded;
   }
   .brand-surface {
-    @apply bg-white text-[var(--brand-text-hex)] dark:bg-[hsl(222.2_84%_4.9%)] dark:text-[hsl(210_40%_98%)];
+    @apply bg-[hsl(var(--brand-surface))] text-[var(--brand-text-hex)] dark:bg-[hsl(var(--brand-surface))] dark:text-[hsl(210_40%_98%)];
   }
   .brand-muted {
-    @apply text-[var(--brand-muted-hex)] dark:text-[hsl(215_20.2%_65.1%)];
+    @apply text-[var(--brand-muted-hex)] dark:text-[hsl(var(--muted-foreground))];
   }
   .brand-gradient {
     @apply bg-gradient-to-r from-primary to-secondary;
