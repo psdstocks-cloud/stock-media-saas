@@ -24,7 +24,9 @@ export default function HomePage() {
                 Stock Media SaaS
               </Typography>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
+              <a href="#how-it-works" className="text-white/90 text-sm hover:text-white transition-colors">How it works</a>
+              <a href="#pricing" className="text-white/90 text-sm hover:text-white transition-colors">Pricing</a>
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
                 <User className="h-4 w-4 mr-2" />
                 Sign In
@@ -44,9 +46,9 @@ export default function HomePage() {
 
       {/* Landing Page Sections */}
       <HeroSection />
+      <HowItWorksSection />
       <FeatureSection />
       <ProductShowcaseSection />
-      <HowItWorksSection />
       <PricingSection />
       <FAQSection />
       <CTASection />

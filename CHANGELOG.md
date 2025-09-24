@@ -2,6 +2,46 @@
 
 All notable changes to the Stock Media SaaS project are documented in this file.
 
+## [v2.1.0] - 2025-09-24 - Stock Ordering & UX Hardening
+
+### 🔧 Backend
+- Fix phantom redownload logic in `src/app/api/place-order/route.ts`: create new 0-cost orders for valid redownloads and always trigger fresh link generation.
+- Normalize statuses to a single final state by rewriting `READY` → `COMPLETED` in processors and API responses.
+- External API integration updates in `src/lib/nehtw-api.ts`:
+  - Switch `placeOrder` to `axios.get` (resolve 405 errors) and add robust error logging.
+  - Clean `NEHTW_API_KEY` of curly braces in all routes using it.
+  - Integrate `getStockInfo` passthrough when API key exists; fallback to mock on failure.
+- Regenerate-download route fixes: use JWT auth, await `params`, and clean API key.
+
+### 🖥️ Frontend - Order v2
+- Parse URLs using `official-url-parser.ts`; surface titles as "Site - ID" across supported websites.
+- Disable delete icon once an order is placed to prevent misuse.
+- Pre-order points validation and corrected cost handling (supports `0` for free redownloads).
+- Batch "Order All" processing ensures fresh links and proper status flow.
+- Supported Sites section: removed categories, added search, and standardized cost to 10 points via API.
+
+### 📜 Frontend - History v2
+- Deduplicate entries (latest per site + stock ID), show full timestamp, and normalize statuses in UI.
+- Enhanced search (full link, debug ID/taskId, numeric ID) and display taskId with copy + micro animation.
+- Same-tab downloads with loading indicator; removed "(Re-download)" suffix.
+- Added filters, pagination, and aria-live announcements for accessibility.
+
+### 🧪 Order v3 (Experimental)
+- New Zustand `orderStore`, `UnifiedOrderItem` component, and SSE progress streaming with retry + polling fallback.
+- Skeletons for items/platforms, offline queue for actions, and comprehensive aria-live announcements.
+- Supported platforms with real logos, example URL chips (copy/paste), and URL deduplication with toasts.
+
+### 🎨 UI/Branding
+- Introduced brand tokens and typography in `globals.css`; added `BrandButton` (dark/light variants) and applied to key CTAs.
+- Landing: added/refined `HowItWorksSection`, `ProductShowcaseSection`, `FAQSection`, and improved `PricingSection` loading states.
+- Accessibility pass for How it works: list semantics, improved contrast, labeled/ described steps, and focus order; responsive spacing fine-tuned for sm/md/lg.
+
+### 🧰 Testing & DX
+- Jest + RTL setup with initial unit tests for `orderStore` and component tests for `UnifiedOrderItem`.
+- Expanded logging across API and processor layers for easier external API debugging.
+
+---
+
 ## [v2.0.0] - 2025-01-10 - 🚀 MAJOR SYSTEM REDESIGN
 
 ### 🎯 Core Business Page Redesign
