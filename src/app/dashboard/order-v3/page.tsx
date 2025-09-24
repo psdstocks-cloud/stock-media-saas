@@ -839,7 +839,7 @@ export default function OrderV3Page() {
                         parsedData: { source: item.site, id: item.siteId },
                         stockSite: { displayName: item.site, name: item.site },
                         stockInfo: { title: item.title, image: item.imageUrl, points: item.cost },
-                        status: item.status === 'completed' ? 'completed' : item.status === 'processing' ? 'processing' : item.status === 'failed' ? 'failed' : 'ready',
+                        status: item.status,
                         downloadUrl: item.downloadUrl,
                         error: item.error,
                         orderId: item.existingOrderId,
