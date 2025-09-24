@@ -79,6 +79,8 @@ export default function OrderV3Page() {
   const [queuedParses, setQueuedParses] = useState<string[]>([])
   const [queuedOrderBatch, setQueuedOrderBatch] = useState<boolean>(false)
   const [queuedItemOrders, setQueuedItemOrders] = useState<string[]>([])
+  const listRef = useRef<HTMLDivElement | null>(null)
+  const [focusIndex, setFocusIndex] = useState<number>(-1)
 
   const focusItemWrapper = (itemId: string) => {
     try {
@@ -93,6 +95,41 @@ export default function OrderV3Page() {
       }
     } catch {
       // no-op: clipboard focus fallback not critical
+    }
+  }
+
+  // Keep focus index within bounds when items change
+  useEffect(() => {
+    if (focusIndex >= items.length) {
+      setFocusIndex(items.length - 1)
+    }
+  }, [items.length, focusIndex])
+
+  const onKeyNavigate = (e: React.KeyboardEvent) => {
+    if (items.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      const next = focusIndex < 0 ? 0 : Math.min(items.length - 1, focusIndex + 1)
+      setFocusIndex(next)
+      const id = items[next]?.id
+      if (id) focusItemWrapper(id)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      const prev = focusIndex <= 0 ? 0 : focusIndex - 1
+      setFocusIndex(prev)
+      const id = items[prev]?.id
+      if (id) focusItemWrapper(id)
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      setFocusIndex(0)
+      const id = items[0]?.id
+      if (id) focusItemWrapper(id)
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      const last = items.length - 1
+      setFocusIndex(last)
+      const id = items[last]?.id
+      if (id) focusItemWrapper(id)
     }
   }
 
@@ -842,8 +879,8 @@ export default function OrderV3Page() {
                   <Button size="sm" variant="outline" onClick={() => void confirmOrdersBatch()}>Try again</Button>
                 </div>
               )}
-              <div className="space-y-4">
-                {items.map((item) => (
+              <div className="space-y-4" ref={listRef} onKeyDown={onKeyNavigate} tabIndex={0} aria-label="Order items list. Use up and down arrows to navigate.">
+                {items.map((item, idx) => (
                   (item.isLoading || item.status === 'processing' || (item.status === 'ready' && !item.imageUrl)) ? (
                     <div key={item.id} className="overflow-hidden rounded-xl border border-gray-100 p-4 flex items-center gap-4 bg-white/70">
                       <Skeleton className="h-20 w-20 rounded-md" />
@@ -884,6 +921,8 @@ export default function OrderV3Page() {
                       toast('Queued item canceled')
                     }}
                     onRemove={() => removeItem(item.id)}
+                    dataItemId={item.id}
+                    tabIndexOverride={focusIndex === idx ? 0 : -1}
                     />
                   )
                 ))}

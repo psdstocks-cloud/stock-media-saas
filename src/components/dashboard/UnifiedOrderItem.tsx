@@ -40,6 +40,8 @@ interface UnifiedOrderItemProps {
   onRemove: (url: string) => void;
   userPoints?: number;
   onCancelQueued?: () => void;
+  dataItemId?: string;
+  tabIndexOverride?: number;
 }
 
 export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({ 
@@ -48,6 +50,8 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
   onRemove, 
   userPoints = 0,
   onCancelQueued,
+  dataItemId,
+  tabIndexOverride,
 }) => {
   const { url, parsedData, stockSite, stockInfo, status, progress, downloadUrl, error, isQueued } = item;
 
@@ -145,7 +149,7 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md" aria-busy={isBusy} data-item-id={parsedData?.id} tabIndex={-1}>
+    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md" aria-busy={isBusy} data-item-id={dataItemId || parsedData?.id} tabIndex={typeof tabIndexOverride === 'number' ? tabIndexOverride : -1}>
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Image */}
