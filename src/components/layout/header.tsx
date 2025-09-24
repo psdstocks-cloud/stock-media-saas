@@ -91,14 +91,14 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-3">
             <a href="/dashboard" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.startsWith("/dashboard") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Dashboard
             </a>
-            <a href="/dashboard/order" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/order") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+            <a href="/dashboard/order" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname.includes("/dashboard/order") ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
               Order Media
             </a>
-            <a href="/dashboard/history" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/history") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+            <a href="/dashboard/history" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname.includes("/dashboard/history") ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
               History
             </a>
             <a href="/how-it-works" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/how-it-works" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
@@ -129,7 +129,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <a href="/pricing" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/pricing" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+            <a href="/pricing" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname === "/pricing" ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
               Pricing
             </a>
           </nav>

@@ -110,6 +110,40 @@
     @apply border-2 border-primary/20;
   }
 
+  /* Glassmorphism hover - reusable (inspired by crayoncode article) */
+  .glass-hover {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border));
+    background:
+      linear-gradient(135deg,
+        hsl(var(--primary) / 0.08),
+        hsl(var(--secondary) / 0.08));
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+  }
+  .glass-hover:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--ring) / 0.4);
+    background:
+      linear-gradient(135deg,
+        hsl(var(--primary) / 0.12),
+        hsl(var(--secondary) / 0.12));
+  }
+  .glass-hover::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -130%;
+    width: 60%;
+    background: hsl(var(--card-foreground) / 0.25);
+    transform: skew(45deg);
+    transition: left 500ms ease-out;
+  }
+  .glass-hover:hover::before {
+    left: 150%;
+  }
+
   /* Typography System */
   .text-display {
     @apply text-6xl font-bold tracking-tight;
