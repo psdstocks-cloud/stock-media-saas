@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light dark;
     /* Light Mode Colors - Brand Identity */
     --primary: 275 100% 25%;        /* Dark Purple */
     --primary-foreground: 210 40% 98%;
@@ -41,6 +42,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     /* Dark Mode Colors - Brand Identity */
     --primary: 275 100% 45%;        /* Lighter Purple */
     --primary-foreground: 210 40% 98%;
@@ -78,6 +80,10 @@
 
 /* Custom Brand Styles */
 @layer components {
+  /* Token-based card surface */
+  .surface-card {
+    @apply bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] rounded-[var(--radius)];
+  }
   /* Accessible link contrast */
   a {
     @apply text-foreground hover:text-primary transition-colors hover:underline focus-visible:underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded;

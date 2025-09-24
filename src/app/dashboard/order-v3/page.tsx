@@ -738,7 +738,7 @@ export default function OrderV3Page() {
   const listBusy = isProcessing || items.some(i => i.isLoading || i.status === 'processing')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Offline banner */}
         {!isOnline && (
@@ -768,7 +768,7 @@ export default function OrderV3Page() {
         </div>
 
         {/* URL Input */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="surface-card shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Plus className="w-5 h-5" />
@@ -856,7 +856,7 @@ export default function OrderV3Page() {
 
         {/* Items List */}
         {items.length > 0 && (
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="surface-card shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2">
@@ -961,7 +961,7 @@ export default function OrderV3Page() {
 
         {/* Order Summary */}
         {items.length > 0 && (
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="surface-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
