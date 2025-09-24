@@ -100,12 +100,6 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <a href="/help" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/help" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Help
             </a>
-            <a href="/dashboard/order-v2" className="text-sm font-medium text-foreground/70 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
-              Order v2
-            </a>
-            <a href="/dashboard/history-v2" className="text-sm font-medium text-foreground/70 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
-              History v2
-            </a>
             <a href="/pricing" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/pricing" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Pricing
             </a>
@@ -115,12 +109,6 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
           <div className="flex items-center space-x-2">
             {pathname.startsWith('/dashboard') && (
               <div className="hidden lg:flex items-center space-x-2 mr-2">
-                <a href="/dashboard/order-v3" className="inline-flex h-9 items-center rounded-md px-3 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90">
-                  Order from URL
-                </a>
-                <a href="/dashboard?tab=search" className="inline-flex h-9 items-center rounded-md px-3 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]">
-                  Search
-                </a>
                 <a href="/pricing" className="inline-flex h-9 items-center rounded-md px-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700">
                   Buy Points
                 </a>
@@ -150,8 +138,8 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
               </div>
               <nav className="grid gap-2">
                 <a href="/dashboard" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Dashboard</a>
-                <a href="/dashboard/order-v3" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Order Media</a>
-                <a href="/dashboard/history-v3" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">History</a>
+                <a href="/dashboard/order" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Order Media</a>
+                <a href="/dashboard/history" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">History</a>
                 <a href="/how-it-works" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">How it works</a>
                 <a href="/supported-platforms" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Supported platforms</a>
                 <a href="/help" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Help</a>
