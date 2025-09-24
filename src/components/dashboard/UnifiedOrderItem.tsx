@@ -48,18 +48,38 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
 }) => {
   const { url, parsedData, stockSite, stockInfo, status, progress, downloadUrl, error } = item;
 
+  const isBusy = status === 'processing' || status === 'ordering';
+
   const renderStatus = () => {
     switch (status) {
       case 'processing':
         return (
-          <div className="w-full text-center">
+          <div className="w-full text-center" aria-live="polite" role="status">
             <Progress value={progress || 0} className="h-2 mb-2" />
             <span className="text-xs text-muted-foreground">Processing...</span>
           </div>
         );
+      case 'failed':
+        return (
+          <div className="text-center" aria-live="polite" role="status">
+            <Badge variant="destructive" className="mb-2">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Failed
+            </Badge>
+            <p className="text-xs text-destructive mb-2">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full" 
+              onClick={() => onOrder(item)}
+            >
+              Retry
+            </Button>
+          </div>
+        );
       case 'completed':
         return (
-          <Button asChild className="w-full bg-green-600 hover:bg-green-700">
+          <Button asChild className="w-full bg-green-600 hover:bg-green-700" data-primary-cta>
             <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
               <Download className="h-4 w-4 mr-2" />
               Download
@@ -96,6 +116,7 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
         return (
           <Button 
             className="w-full" 
+            data-primary-cta
             onClick={() => onOrder(item)}
             disabled={!canOrder}
           >
@@ -127,7 +148,7 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
+    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md" aria-busy={isBusy} data-item-id={parsedData?.id} tabIndex={-1}>
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Image */}
@@ -139,6 +160,8 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
                 width={80}
                 height={80}
                 className="rounded-md object-cover aspect-square"
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nODAnIGhlaWdodD0nODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHJlY3Qgd2lkdGg9JzgwJyBoZWlnaHQ9JzgwJyBmaWxsPSIjZWVlZWVlIi8+PC9zdmc+"
               />
             ) : (
               <div className="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center">

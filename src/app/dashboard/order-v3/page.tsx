@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BrandButton } from '@/components/ui/brand-button';
 import { Badge } from '@/components/ui/badge';
-// import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
-import { SUPPORTED_SITES } from '@/lib/supported-sites';
+// import { SUPPORTED_SITES } from '@/lib/supported-sites';
 import { officialParseStockUrl } from '@/lib/official-url-parser';
 import { 
   ShoppingCart, 
@@ -19,10 +20,13 @@ import {
   Plus,
   Trash2,
   RefreshCw,
-  Search
+  Search,
+  Copy,
+  Check
 } from 'lucide-react';
 import PointsOverview from '@/components/dashboard/PointsOverview';
 import { useOrderStore } from '@/stores/orderStore';
+import { UnifiedOrderItem } from '@/components/dashboard/UnifiedOrderItem';
 
 interface OrderItem {
   id: string;
@@ -38,22 +42,61 @@ interface OrderItem {
   error?: string;
   isPreviouslyOrdered?: boolean;
   existingOrderId?: string;
+  isLoading?: boolean;
+}
+
+interface SupportedSite {
+  name: string;
+  displayName: string;
+  url: string;
+  cost: number;
+  description?: string;
+  category?: string;
+  icon?: string;
+  isActive?: boolean;
 }
 
 export default function OrderV3Page() {
-  const { points: currentPoints, isLoading: pointsLoading } = useUserStore();
+  const { points: currentPoints } = useUserStore();
   const [urls, setUrls] = useState('');
   const [items, setItems] = useState<OrderItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [supportedSites, setSupportedSites] = useState<SupportedSite[]>([])
+  const [sitesLoading, setSitesLoading] = useState(false)
+  const [copiedSite, setCopiedSite] = useState<string>('')
+  const [copyAnnounce, setCopyAnnounce] = useState<string>('')
+  const [isOnline, setIsOnline] = useState<boolean>(true)
+  const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [sseFailures, setSseFailures] = useState<Record<string, number>>({})
+  const parseBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [orderBatchError, setOrderBatchError] = useState<string>('')
+  const [queuedParses, setQueuedParses] = useState<string[]>([])
+  const [queuedOrderBatch, setQueuedOrderBatch] = useState<boolean>(false)
+  const confirmBtnRef = useRef<HTMLButtonElement | null>(null)
+  const orderAllBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [queuedItemOrders, setQueuedItemOrders] = useState<string[]>([])
+
+  const focusItemWrapper = (itemId: string) => {
+    try {
+      const root = document.querySelector(`[data-item-id="${itemId}"]`) as HTMLElement | null
+      if (root) {
+        const cta = root.querySelector('[data-primary-cta]') as HTMLElement | null
+        if (cta && typeof (cta as any).focus === 'function') {
+          (cta as any).focus()
+          return
+        }
+        root.focus()
+      }
+    } catch {}
+  }
 
   // v3 store (lightweight cart)
   const addUrl = useOrderStore((s) => s.addUrl)
   const updateItemStatus = useOrderStore((s) => s.updateItemStatus)
   const removeCartItem = useOrderStore((s) => s.removeItem)
-  const resetCart = useOrderStore((s) => s.resetOrder)
-  const cartItems = useOrderStore((s) => s.orderItems) || []
 
   const enrichItemWithStockInfo = async (item: OrderItem) => {
     try {
@@ -71,25 +114,137 @@ export default function OrderV3Page() {
         const points = Number(stockInfo?.points ?? 10)
         const image = stockInfo?.image || item.imageUrl
         updateItemStatus?.(item.id, 'ready', { data: { title: item.title, thumbnail: image, points, platform } })
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points } : i))
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points, isLoading: false } : i))
       } else {
         const errMsg = json?.message || 'Failed to fetch stock info'
         updateItemStatus?.(item.id, 'error', { errorMessage: errMsg })
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg } : i))
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg, isLoading: false } : i))
       }
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : 'Network error'
       updateItemStatus?.(item.id, 'error', { errorMessage: errMsg })
-      setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg } : i))
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'failed' as const, error: errMsg, isLoading: false } : i))
     }
   }
 
+  // Load supported platforms from API
+  useEffect(() => {
+    let ignore = false
+    const load = async () => {
+      try {
+        setSitesLoading(true)
+        const res = await fetch('/api/supported-sites')
+        const data = await res.json()
+        if (!ignore && data?.success && Array.isArray(data.sites)) {
+          setSupportedSites(data.sites)
+        }
+      } catch (e) {
+        // ignore
+      } finally {
+        if (!ignore) setSitesLoading(false)
+      }
+    }
+    load()
+    return () => { ignore = true }
+  }, [])
+
+  // Online/offline detection
+  useEffect(() => {
+    const update = () => setIsOnline(navigator.onLine)
+    update()
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    const onCameOnline = () => {
+      if (queuedParses.length > 0) {
+        const payload = queuedParses[0]
+        setQueuedParses(prev => prev.slice(1))
+        setUrls(payload)
+        setLiveAnnouncement('You are back online. Running queued parse now.')
+        toast('Queued parse resumed')
+        setTimeout(() => { void parseUrls() }, 50)
+      }
+      if (queuedOrderBatch) {
+        setQueuedOrderBatch(false)
+        setLiveAnnouncement('You are back online. Placing queued orders now.')
+        toast('Queued orders resumed')
+        setTimeout(() => { void confirmOrdersBatch() }, 50)
+      }
+      if (queuedItemOrders.length > 0) {
+        const toRun = [...queuedItemOrders]
+        setQueuedItemOrders([])
+        setLiveAnnouncement('You are back online. Processing queued items now.')
+        toast('Queued items resumed')
+        setTimeout(() => {
+          toRun.forEach((id) => {
+            const target = items.find(i => i.id === id)
+            if (target) void processOrder(target)
+          })
+        }, 50)
+      }
+    }
+    window.addEventListener('online', onCameOnline)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+      window.removeEventListener('online', onCameOnline)
+    }
+  }, [])
+
   // Filter sites based on search term
-  const filteredSites = SUPPORTED_SITES.filter(site => 
+  const filteredSites = supportedSites.filter(site =>
     site.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    site.website.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    site.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
     site.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Curated example URLs per platform (brand-friendly, valid patterns)
+  const EXAMPLE_URLS: Record<string, string> = {
+    shutterstock: 'https://www.shutterstock.com/image-photo/smiling-baby-girl-lying-on-bed-420756877',
+    adobestock: 'https://stock.adobe.com/images/minimal-product-catalog-layout/454407674',
+    depositphotos: 'https://depositphotos.com/photo/stanley-neighborhood-alexandria-egypt-182879584.html',
+    dreamstime: 'https://www.dreamstime.com/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-image169271221',
+    epidemicsound: 'https://www.epidemicsound.com/sound-effects/tracks/6a513424-c3b4-4fd3-af6e-73fa5cfd861d/',
+    vectorstock: 'https://www.vectorstock.com/royalty-free-vector/minimal-abstract-shapes-vector-1120004'
+  }
+
+  const exampleChips = supportedSites
+    .filter(s => EXAMPLE_URLS[s.name])
+    .slice(0, 8)
+    .map(s => ({ name: s.name, displayName: s.displayName, example: EXAMPLE_URLS[s.name] }))
+
+  const handleCopyExample = async (siteName: string, exampleUrl: string) => {
+    try {
+      await navigator.clipboard.writeText(exampleUrl)
+      setCopiedSite(siteName)
+      setCopyAnnounce(`${siteName} example URL copied to clipboard`)
+      toast.success('Example URL copied')
+      // Focus textarea for quick paste/parse
+      if (textAreaRef.current) {
+        textAreaRef.current.focus()
+      }
+      setTimeout(() => { setCopiedSite(''); setCopyAnnounce('') }, 1200)
+    } catch {
+      toast.error('Copy failed')
+    }
+  }
+
+  const handlePasteExample = (exampleUrl: string) => {
+    const lines = urls ? urls.split('\n') : []
+    if (lines.length >= 5) {
+      toast.error('Maximum 5 URLs allowed at once')
+      return
+    }
+    const next = (urls && !urls.endsWith('\n')) ? `${urls}\n${exampleUrl}` : `${urls}${exampleUrl}`
+    setUrls(next)
+    setLiveAnnouncement('Example URL pasted. Ready to parse.')
+    if (textAreaRef.current) {
+      textAreaRef.current.focus()
+      const pos = next.length
+      try {
+        textAreaRef.current.setSelectionRange(pos, pos)
+      } catch {}
+    }
+  }
 
   const parseUrls = async () => {
     if (!urls.trim()) {
@@ -106,16 +261,55 @@ export default function OrderV3Page() {
       return;
     }
 
+    const prevFocus = document.activeElement as HTMLElement | null
     try {
       const newItems: OrderItem[] = [];
       
-      for (const url of urlList) {
+      const unique = new Set<string>()
+      const uniques: string[] = []
+      const duplicates: string[] = []
+      for (const raw of urlList) {
+        const url = raw.trim()
+        if (unique.has(url)) {
+          duplicates.push(url)
+        } else {
+          unique.add(url)
+          uniques.push(url)
+        }
+      }
+
+      if (duplicates.length > 0) {
+        toast((t) => (
+          <span>
+            Found {duplicates.length} duplicate URL(s). We kept {uniques.length} unique.
+          </span>
+        ))
+      }
+
+      for (const url of uniques) {
         try {
           // Parse URL to get site and ID
           const parseResult = officialParseStockUrl(url);
           
           if (!parseResult) {
             toast.error(`Unsupported URL format: ${url}`);
+            setLiveAnnouncement('One or more URLs are invalid. Please review and try again.')
+            // Move focus to the invalid URL range in the textarea
+            if (textAreaRef.current) {
+              const allLines = urls.split('\n')
+              const idx = allLines.findIndex(l => l.trim() === url.trim())
+              if (idx >= 0) {
+                let start = 0
+                for (let i = 0; i < idx; i++) start += allLines[i].length + 1
+                const end = start + allLines[idx].length
+                try {
+                  textAreaRef.current.focus()
+                  textAreaRef.current.setSelectionRange(start, end)
+                } catch {}
+              } else {
+                textAreaRef.current.focus()
+              }
+            }
             continue;
           }
 
@@ -139,8 +333,9 @@ export default function OrderV3Page() {
             siteId: parseResult.id,
             title: `${parseResult.source.charAt(0).toUpperCase() + parseResult.source.slice(1)} - ${parseResult.id}`,
             cost: isPreviouslyOrdered ? 0 : 10,
-            imageUrl: `https://picsum.photos/400/400?random=${parseResult.id}&sig=${parseResult.source}`,
+            imageUrl: '',
             status: 'processing',
+            isLoading: true,
             isPreviouslyOrdered: isPreviouslyOrdered,
             existingOrderId: existingOrder?.id
           };
@@ -151,8 +346,10 @@ export default function OrderV3Page() {
           
           if (isPreviouslyOrdered) {
             toast.success(`Found previously ordered file - Download for FREE!`);
+            setLiveAnnouncement('Previously ordered file found. You can download for free.')
           } else {
             toast.success(`Successfully parsed ${parseResult.source} URL`);
+            setLiveAnnouncement('URL parsed successfully.')
           }
 
           addUrl?.(url, item.id)
@@ -168,10 +365,16 @@ export default function OrderV3Page() {
       toast.error('Failed to parse URLs');
     } finally {
       setIsLoading(false);
+      if (prevFocus) {
+        try { prevFocus.focus() } catch {}
+      } else if (parseBtnRef.current) {
+        try { parseBtnRef.current.focus() } catch {}
+      }
     }
   };
 
   const processOrder = async (item: OrderItem) => {
+    const prevFocus = document.activeElement as HTMLElement | null
     try {
       // Update status to processing
       setItems(prev => prev.map(i => 
@@ -179,6 +382,12 @@ export default function OrderV3Page() {
       ));
 
       // Generate fresh download link from API
+      if (!isOnline) {
+        setQueuedItemOrders(prev => [...prev, item.id])
+        setLiveAnnouncement('You are offline. This item order is queued and will resume when back online.')
+        toast('Queued item order to run when you are back online')
+        return
+      }
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -212,10 +421,16 @@ export default function OrderV3Page() {
         } : i
       ));
       toast.error('Failed to process order');
+      setLiveAnnouncement('Failed to place order. Try again.')
+    } finally {
+      if (prevFocus) {
+        try { prevFocus.focus() } catch {}
+      }
     }
   };
 
   const pollOrderStatus = async (itemId: string, orderId: string) => {
+    setLiveAnnouncement('Realtime updates unavailable. Switched to polling.')
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`/api/orders/${orderId}/status`);
@@ -235,6 +450,7 @@ export default function OrderV3Page() {
                 fileName: data.order.fileName
               } : i
             ));
+            focusItemWrapper(itemId)
             clearInterval(pollInterval);
             
             // Automatically trigger download
@@ -242,6 +458,7 @@ export default function OrderV3Page() {
               if (data.order.downloadUrl.includes('example.com')) {
                 toast.success('This is a demo download. In production, this would download the actual file.');
               } else {
+                setLiveAnnouncement('Download started.')
                 window.open(data.order.downloadUrl, '_blank');
                 toast.success('Download started!');
               }
@@ -256,6 +473,7 @@ export default function OrderV3Page() {
                 error: 'Order processing failed'
               } : i
             ));
+            focusItemWrapper(itemId)
             clearInterval(pollInterval);
             toast.error('Order processing failed');
           }
@@ -284,9 +502,13 @@ export default function OrderV3Page() {
             setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'processing' as const } : i))
           } else if (status === 'COMPLETED' || status === 'READY' || status === 'complete') {
             setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'completed' as const, downloadUrl } : i))
+            setLiveAnnouncement('Download is ready.')
+            focusItemWrapper(itemId)
             es.close()
           } else if (status === 'FAILED' || status === 'failed') {
             setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'failed' as const } : i))
+            setLiveAnnouncement('Order failed. You can try again.')
+            focusItemWrapper(itemId)
             es.close()
           }
         } catch (e) {
@@ -295,6 +517,19 @@ export default function OrderV3Page() {
       }
       es.onerror = () => {
         es.close()
+        // retry with backoff (max 3 attempts); fallback to polling afterwards
+        setSseFailures(prev => {
+          const count = (prev[itemId] || 0) + 1
+          const next = { ...prev, [itemId]: count }
+          if (count <= 3) {
+            setLiveAnnouncement('Realtime connection lost. Retrying...')
+            setTimeout(() => startOrderStream(orderId, itemId), count * 1000)
+          } else {
+            setLiveAnnouncement('Realtime connection lost. Reconnected via fallback.')
+            pollOrderStatus(itemId, orderId)
+          }
+          return next
+        })
       }
     } catch (e) {
       // SSE unavailable; skip streaming in this environment
@@ -311,6 +546,7 @@ export default function OrderV3Page() {
     }
 
     setIsProcessing(true);
+    setOrderBatchError('')
 
     try {
       const payload = readyItems.map((item) => ({
@@ -322,6 +558,13 @@ export default function OrderV3Page() {
         imageUrl: item.imageUrl,
         isRedownload: !!item.isPreviouslyOrdered
       }))
+
+      if (!isOnline) {
+        setQueuedOrderBatch(true)
+        setLiveAnnouncement('You are offline. Orders queued and will place when back online.')
+        toast('Queued orders to place when back online')
+        return
+      }
 
       const response = await fetch('/api/place-order', {
         method: 'POST',
@@ -344,10 +587,20 @@ export default function OrderV3Page() {
       })
 
       toast.success('Orders placed. Tracking progress...')
+      setLiveAnnouncement('Orders placed. Tracking progress...')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to place orders')
+      const msg = e instanceof Error ? e.message : 'Failed to place orders'
+      setOrderBatchError(msg)
+      toast.error(msg)
+      setLiveAnnouncement('Failed to place orders. Try again.')
     } finally {
       setIsProcessing(false)
+      // restore focus to a primary action if present
+      if (confirmBtnRef.current) {
+        try { confirmBtnRef.current.focus() } catch {}
+      } else if (orderAllBtnRef.current) {
+        try { orderAllBtnRef.current.focus() } catch {}
+      }
     }
   }
 
@@ -403,6 +656,15 @@ export default function OrderV3Page() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Offline banner */}
+        {!isOnline && (
+          <div className="rounded-xl border border-orange-200 bg-orange-50 text-orange-800 px-4 py-3" role="status" aria-live="polite">
+            You are offline. Actions will resume when connection is restored.
+          </div>
+        )}
+
+        {/* Global live region */}
+        <span className="sr-only" role="status" aria-live="polite">{liveAnnouncement}</span>
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -432,12 +694,43 @@ export default function OrderV3Page() {
             </p>
           </CardHeader>
           <CardContent>
+            {/* Copy examples toolbar */}
+            {exampleChips.length > 0 && (
+              <div className="mb-4" aria-label="Quick example URLs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Quick examples</span>
+                  <span className="text-xs text-gray-500">Tap to copy • Brand-safe</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                  {exampleChips.map(chip => (
+                    <button
+                      key={chip.name}
+                      type="button"
+                      onClick={() => handleCopyExample(chip.name, chip.example)}
+                      aria-label={`Copy ${chip.displayName} example URL`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm transition-all duration-200 bg-white/70 hover:bg-white shadow-sm hover:shadow-md border-purple-200/60 hover:border-purple-400 ${copiedSite === chip.name ? 'scale-95 ring-2 ring-purple-400/50' : ''}`}
+                    
+                    >
+                      <img src={`/assets/icons/${chip.name}.svg`} alt="" className="w-4 h-4" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                      <span className="text-gray-700">{chip.displayName}</span>
+                      {copiedSite === chip.name ? (
+                        <Check className="w-3 h-3 text-green-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-purple-600" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <span className="sr-only" role="status" aria-live="polite">{copyAnnounce}</span>
+              </div>
+            )}
             <textarea
               placeholder="Paste your stock media URLs here (one per line, max 5 URLs)..."
               value={urls}
               onChange={(e) => setUrls(e.target.value)}
               className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
               rows={4}
+              ref={textAreaRef}
             />
             <div className="flex items-center justify-between mt-4">
               <div className="flex flex-col">
@@ -450,10 +743,20 @@ export default function OrderV3Page() {
                   </p>
                 )}
               </div>
-              <Button 
-                onClick={parseUrls} 
+              <BrandButton 
+                ref={parseBtnRef}
+                onClick={() => {
+                  if (!isOnline) {
+                    setQueuedParses(prev => [...prev, urls])
+                    setLiveAnnouncement('You are offline. Parse queued and will run when back online.')
+                    toast('Queued parse to run when you are back online')
+                    setUrls('')
+                    return
+                  }
+                  void parseUrls()
+                }} 
                 disabled={isLoading || !urls.trim() || urls.split('\n').filter(url => url.trim()).length > 5}
-                className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 disabled:opacity-50"
+                variant="dark"
               >
                 {isLoading ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -461,7 +764,7 @@ export default function OrderV3Page() {
                   <Plus className="w-4 h-4 mr-2" />
                 )}
                 Parse URLs
-              </Button>
+              </BrandButton>
             </div>
           </CardContent>
         </Card>
@@ -476,79 +779,58 @@ export default function OrderV3Page() {
                   <span>Your Items ({items.length})</span>
                 </CardTitle>
                 {readyItems.length > 0 && (
-                    <Button
+                  <BrandButton
+                      ref={orderAllBtnRef}
                       onClick={confirmOrdersBatch}
                     disabled={isProcessing || !currentPoints || currentPoints < totalCost}
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                    variant="dark"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Order All ({totalCost} points)
-                  </Button>
+                  </BrandButton>
                 )}
               </div>
             </CardHeader>
             <CardContent>
+              {orderBatchError && (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 text-red-800 px-4 py-3 flex items-center justify-between" role="alert" aria-live="assertive">
+                  <span className="text-sm">{orderBatchError}</span>
+                  <Button size="sm" variant="outline" onClick={() => void confirmOrdersBatch()}>Try again</Button>
+                </div>
+              )}
               <div className="space-y-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="w-16 h-16 object-cover rounded-lg"
+                  (item.isLoading || item.status === 'processing' || (item.status === 'ready' && !item.imageUrl)) ? (
+                    <div key={item.id} className="overflow-hidden rounded-xl border border-gray-100 p-4 flex items-center gap-4 bg-white/70">
+                      <Skeleton className="h-20 w-20 rounded-md" />
+                      <div className="flex-1 min-w-0">
+                        <Skeleton className="h-4 w-2/3 mb-2" />
+                        <Skeleton className="h-3 w-1/3 mb-2" />
+                        <Skeleton className="h-3 w-1/4" />
+                      </div>
+                      <div className="w-40">
+                        <Skeleton className="h-9 w-full rounded-md" />
+                      </div>
+                    </div>
+                  ) : (
+                    <UnifiedOrderItem
+                      key={item.id}
+                      item={{
+                        url: item.url,
+                        parsedData: { source: item.site, id: item.siteId },
+                        stockSite: { displayName: item.site, name: item.site },
+                        stockInfo: { title: item.title, image: item.imageUrl, points: item.cost },
+                        status: item.status === 'completed' ? 'completed' : item.status === 'processing' ? 'processing' : item.status === 'failed' ? 'failed' : 'ready',
+                        downloadUrl: item.downloadUrl,
+                        error: item.error,
+                        orderId: item.existingOrderId,
+                        success: item.status === 'completed',
+                      }}
+                      userPoints={currentPoints || 0}
+                      onOrder={() => processOrder(item)}
+                      onRemove={() => removeItem(item.id)}
                     />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.site}</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Badge className={getStatusColor(item.status)}>
-                        {getStatusIcon(item.status)}
-                        <span className="ml-1 capitalize">{item.status}</span>
-                      </Badge>
-                      <span className="font-semibold text-gray-700">
-                        {item.isPreviouslyOrdered ? 'FREE' : `${item.cost} pts`}
-                      </span>
-                      {item.status === 'ready' && (
-                        <Button
-                          size="sm"
-                          onClick={() => processOrder(item)}
-                          disabled={!item.isPreviouslyOrdered && (!currentPoints || currentPoints < item.cost)}
-                          className={item.isPreviouslyOrdered 
-                            ? "bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
-                            : "bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
-                          }
-                        >
-                          {item.isPreviouslyOrdered ? 'Download for Free' : 'Order'}
-                        </Button>
-                      )}
-                      {item.status === 'completed' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => processOrder(item)}
-                          className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Download Now
-                        </Button>
-                      )}
-                      {item.status === 'processing' && (
-                        <div className="flex items-center space-x-2">
-                          <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
-                          <span className="text-sm text-blue-600">Generating link...</span>
-                        </div>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeItem(item.id)}
-                        disabled={item.status !== 'ready'}
-                        className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  )
                 ))}
               </div>
             </CardContent>
@@ -570,14 +852,15 @@ export default function OrderV3Page() {
                   const hasBlocking = items.some(i => i.status === 'processing' || i.status === 'failed')
                   const canConfirm = items.length > 0 && !hasBlocking && readyItems.length > 0
                   return (
-                    <Button
+                    <BrandButton
+                      ref={confirmBtnRef}
                       onClick={confirmOrdersBatch}
                       disabled={!canConfirm || !currentPoints || currentPoints < totalCost}
-                      className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
+                      variant="dark"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Confirm Order
-                    </Button>
+                    </BrandButton>
                   )
                 })()}
               </div>
@@ -621,7 +904,20 @@ export default function OrderV3Page() {
           </CardHeader>
           
           <CardContent className="p-8">
-            {filteredSites.length === 0 ? (
+            {sitesLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl p-6 border border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <Skeleton className="h-10 w-10 rounded-xl" />
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </div>
+                    <Skeleton className="h-4 w-2/3 mb-3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredSites.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-purple-100 to-orange-100 rounded-full flex items-center justify-center">
                   <Search className="w-10 h-10 text-purple-400" />
@@ -632,44 +928,30 @@ export default function OrderV3Page() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredSites.map((site, index) => (
-                  <a
-                    key={site.id}
-                    href={site.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <div
+                    key={site.name}
                     className="group relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-purple-200 hover:shadow-lg hover:shadow-purple-100/50 transition-all duration-300 transform hover:-translate-y-1"
-                    style={{
-                      animationDelay: `${index * 50}ms`
-                    }}
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-white text-lg font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
+                    <div className="relative z-10 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <img src={`/assets/icons/${site.name}.svg`} alt={site.displayName} className="w-10 h-10 bg-gray-100 rounded-xl" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                         <div className="px-3 py-1 bg-gradient-to-r from-purple-100 to-orange-100 text-purple-700 rounded-full text-xs font-semibold">
                           {site.cost} pts
                         </div>
                       </div>
-                      
-                      <h3 className="font-bold text-gray-800 text-lg mb-2 group-hover:text-purple-700 transition-colors">
-                        {site.displayName}
-                      </h3>
-                      
-                      <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2">
-                        {site.description}
-                      </p>
-                      
-                      <div className="flex items-center text-purple-600 text-sm font-medium group-hover:text-purple-700 transition-colors">
-                        <span>Visit Platform</span>
-                        <ExternalLink className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      <h3 className="font-bold text-gray-800 text-lg group-hover:text-purple-700 transition-colors">{site.displayName}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Example:</span>
+                        <button className="text-xs text-[var(--brand-purple-hex)] underline" onClick={() => navigator.clipboard.writeText(`${site.url}/example`)}>Copy</button>
+                        <button className="text-xs text-orange-600 underline" onClick={() => handlePasteExample(EXAMPLE_URLS[site.name] || `${site.url}/example`)}>Paste</button>
+                        <a href={site.url} target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex items-center text-purple-600 text-sm font-medium group-hover:text-purple-700 transition-colors">
+                          Visit <ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </a>
                       </div>
                     </div>
-                  </a>
+                  </div>
                 ))}
               </div>
             )}

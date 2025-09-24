@@ -44,6 +44,12 @@ export default function HistoryV2Page() {
   const [orders, setOrders] = useState<OrderHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [siteFilter, setSiteFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'COMPLETED' | 'FAILED' | 'PROCESSING'>('all');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 20;
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -141,16 +147,37 @@ export default function HistoryV2Page() {
   const dedupedOrders = Object.values(uniqueByStock).filter(o => o.status === 'READY' || o.status === 'COMPLETED');
 
   const filteredOrders = dedupedOrders.filter(order => {
+    // Text search
     const idText = (order.stockItemId || order.title.split(' - ').pop() || '').toLowerCase();
     const term = searchTerm.trim().toLowerCase();
-    if (!term) return true;
-    return (
+    const matchesTerm = !term || (
       order.title.toLowerCase().includes(term) ||
       idText.includes(term) ||
       (order.stockItemUrl?.toLowerCase().includes(term) ?? false) ||
       (order.taskId?.toLowerCase().includes(term) ?? false)
     );
+
+    // Site filter
+    const matchesSite = siteFilter === 'all' || order.site === siteFilter;
+
+    // Status filter (normalized)
+    const normalized = normalizeStatus(order.status);
+    const matchesStatus = statusFilter === 'all' || normalized === statusFilter;
+
+    // Date range filter
+    const created = new Date(order.createdAt).getTime();
+    const fromOk = dateFrom ? created >= new Date(dateFrom).getTime() : true;
+    const toOk = dateTo ? created <= new Date(dateTo).getTime() : true;
+
+    return matchesTerm && matchesSite && matchesStatus && fromOk && toOk;
   });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
   const completedOrders = orders.filter(order => order.status === 'READY' || order.status === 'COMPLETED');
   const totalSpent = completedOrders.reduce((sum, order) => sum + order.cost, 0);
@@ -190,6 +217,10 @@ export default function HistoryV2Page() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Live region for accessibility */}
+        <div className="sr-only" aria-live="polite" role="status">
+          {isLoading ? 'Loading order history' : `${filteredOrders.length} orders shown`}
+        </div>
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent">
@@ -247,23 +278,62 @@ export default function HistoryV2Page() {
           </Card>
         </div>
 
-        {/* Search (only) */}
+        {/* Filters + Search */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
+            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
+              {/* Search */}
+              <div className="flex-1 w-full">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Search shown orders (e.g., 1669012831)"
+                    placeholder="Search shown orders (ID, link, title, debug)"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    onChange={(e) => { setPage(1); setSearchTerm(e.target.value) }}
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--brand-purple-20)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               </div>
-              {/* Status/site filters and manual refresh removed per request */}
+              {/* Site */}
+              <div className="w-full lg:w-48">
+                <label className="block text-xs text-gray-500 mb-1">Site</label>
+                <select
+                  value={siteFilter}
+                  onChange={(e) => { setPage(1); setSiteFilter(e.target.value) }}
+                  className="w-full py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white"
+                >
+                  <option value="all">All</option>
+                  {[...new Set(dedupedOrders.map(o => o.site))].sort().map(site => (
+                    <option key={site} value={site}>{site}</option>
+                  ))}
+                </select>
+              </div>
+              {/* Status */}
+              <div className="w-full lg:w-48">
+                <label className="block text-xs text-gray-500 mb-1">Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => { setPage(1); setStatusFilter(e.target.value as any) }}
+                  className="w-full py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white"
+                >
+                  <option value="all">All</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="PROCESSING">Processing</option>
+                  <option value="FAILED">Failed</option>
+                </select>
+              </div>
+              {/* Date range */}
+              <div className="flex items-end gap-2 w-full lg:w-auto">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">From</label>
+                  <input type="date" value={dateFrom} onChange={(e) => { setPage(1); setDateFrom(e.target.value) }} className="py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">To</label>
+                  <input type="date" value={dateTo} onChange={(e) => { setPage(1); setDateTo(e.target.value) }} className="py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white" />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -290,7 +360,7 @@ export default function HistoryV2Page() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredOrders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <div key={order.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                     {order.imageUrl && (
                       <a href={order.stockItemUrl || '#'} target="_self" rel="noopener noreferrer">
@@ -372,6 +442,28 @@ export default function HistoryV2Page() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+            {/* Pagination */}
+            {filteredOrders.length > pageSize && (
+              <div className="mt-6 flex items-center justify-between">
+                <button
+                  className="px-3 py-2 rounded-md border border-[var(--brand-purple-20)] text-[var(--brand-purple-hex)] disabled:opacity-50"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  Previous
+                </button>
+                <div className="text-sm text-gray-600">Page {currentPage} of {totalPages}</div>
+                <button
+                  className="px-3 py-2 rounded-md border border-[var(--brand-purple-20)] text-[var(--brand-purple-hex)] disabled:opacity-50"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                >
+                  Next
+                </button>
               </div>
             )}
           </CardContent>

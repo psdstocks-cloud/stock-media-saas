@@ -25,6 +25,14 @@
     --input: 214.3 31.8% 91.4%;     /* Light Gray */
     --ring: 275 100% 25%;           /* Purple Ring */
     --radius: 0.5rem;               /* Border Radius */
+
+    /* Brand Tokens */
+    --brand-purple-hex: #5B2E91;
+    --brand-orange-hex: #FF7A1A;
+    --brand-purple-6: rgba(91,46,145,0.06);
+    --brand-purple-20: rgba(91,46,145,0.20);
+    --brand-text-hex: #0F172A; /* slate-900 */
+    --brand-muted-hex: #64748B; /* slate-500 */
   }
 
   .dark {

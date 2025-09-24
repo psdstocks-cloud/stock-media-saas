@@ -4,6 +4,9 @@ import { HeroSection } from "@/components/landing/HeroSection"
 import { FeatureSection } from "@/components/landing/FeatureSection"
 import { PricingSection } from "@/components/landing/PricingSection"
 import { CTASection } from "@/components/landing/CTASection"
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
+import { ProductShowcaseSection } from "@/components/landing/ProductShowcaseSection"
+import { FAQSection } from "@/components/landing/FAQSection"
 import Footer from "@/components/Footer"
 
 export default function HomePage() {
@@ -42,7 +45,10 @@ export default function HomePage() {
       {/* Landing Page Sections */}
       <HeroSection />
       <FeatureSection />
+      <ProductShowcaseSection />
+      <HowItWorksSection />
       <PricingSection />
+      <FAQSection />
       <CTASection />
       
       {/* Footer */}

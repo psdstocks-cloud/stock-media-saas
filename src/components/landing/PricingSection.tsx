@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Button, Typography, Badge } from '@/components/ui'
+import { BrandButton } from '@/components/ui/brand-button'
 import { Check, Zap, Crown, Star, ArrowRight, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VirtualPurchaseModal from '@/components/modals/VirtualPurchaseModal'
@@ -199,15 +200,29 @@ export const PricingSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white" aria-busy={true} aria-live="polite" role="status">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Typography variant="h2" className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-10">
+            <Typography variant="h2" className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
               Simple, Transparent Pricing
             </Typography>
             <Typography variant="h4" className="text-xl text-gray-600">
               Loading pricing options...
             </Typography>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[0,1,2].map((i)=> (
+              <div key={i} className="p-6 rounded-2xl border border-[var(--brand-purple-20)] bg-white animate-pulse">
+                <div className="h-8 w-32 bg-[var(--brand-purple-6)] rounded mb-4" />
+                <div className="h-10 w-40 bg-[var(--brand-purple-6)] rounded mb-6" />
+                <div className="space-y-3 mb-6">
+                  <div className="h-4 w-full bg-[var(--brand-purple-6)] rounded" />
+                  <div className="h-4 w-5/6 bg-[var(--brand-purple-6)] rounded" />
+                  <div className="h-4 w-4/6 bg-[var(--brand-purple-6)] rounded" />
+                </div>
+                <div className="h-10 w-full bg-[var(--brand-purple-6)] rounded" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -306,16 +321,11 @@ export const PricingSection: React.FC = () => {
                   </div>
 
                   {/* CTA Button */}
-                  <Button
-                    size="lg"
+                  <BrandButton
                     onClick={() => handlePurchase(pack)}
                     disabled={isAuthLoading}
-                    className={cn(
-                      "w-full group-hover:scale-105 transition-transform duration-200",
-                      pack.isPopular
-                        ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg"
-                        : "bg-gray-900 hover:bg-gray-800 text-white"
-                    )}
+                    className="w-full"
+                    variant={pack.isPopular ? 'dark' : 'light'}
                   >
                     {isAuthLoading ? (
                       <>
@@ -347,7 +357,7 @@ export const PricingSection: React.FC = () => {
                         </>
                       )
                     )}
-                  </Button>
+                  </BrandButton>
                 </CardContent>
               </Card>
             )
