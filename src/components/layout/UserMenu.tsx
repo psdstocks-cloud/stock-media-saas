@@ -16,7 +16,10 @@ export default function UserMenu() {
           const data = await res.json()
           if (data?.user) setUser(data.user)
         }
-      } catch {}
+      } catch (_err) {
+        // Ignore network/auth errors silently for unauthenticated users
+        return
+      }
     }
     check()
   }, [])
