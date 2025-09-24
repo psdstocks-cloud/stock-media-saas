@@ -496,7 +496,7 @@ export default function OrderV2Page() {
         </div>
 
         {/* Points Display */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="surface-card shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -518,7 +518,7 @@ export default function OrderV2Page() {
         </Card>
 
         {/* URL Input */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="surface-card shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Plus className="w-5 h-5" />
@@ -603,7 +603,7 @@ export default function OrderV2Page() {
 
         {/* Order Items */}
         {items.length > 0 && (
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="surface-card shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center space-x-2">
@@ -705,7 +705,7 @@ export default function OrderV2Page() {
         )}
 
         {/* Supported Sites - Modern 2024/2025 Design */}
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
+        <Card className="surface-card shadow-xl rounded-2xl overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-purple-600 to-orange-600 text-white p-8">
             <div className="flex items-center justify-between">
               <div>

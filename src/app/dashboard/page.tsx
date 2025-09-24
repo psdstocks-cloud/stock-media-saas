@@ -79,7 +79,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <Typography variant="body" className="text-white/70">Loading...</Typography>
@@ -93,8 +93,8 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <Card className="w-full max-w-md bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex items-center justify-center">
+        <Card className="w-full max-w-md surface-card shadow-2xl">
           <CardHeader className="text-center">
             <CardTitle className="text-white">Authentication Required</CardTitle>
           </CardHeader>
@@ -115,9 +115,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       {/* Header */}
-      <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+      <div className="border-b border-[hsl(var(--border))]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-3">
@@ -167,28 +167,28 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 bg-white/10 backdrop-blur-sm border-white/20">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 text-white">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <Coins className="h-4 w-4 mr-2" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="search" className="data-[state=active]:bg-white/20 text-white">
+            <TabsTrigger value="search" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <FileSearch className="h-4 w-4 mr-2" />
               Search
             </TabsTrigger>
-            <TabsTrigger value="orders" className="data-[state=active]:bg-white/20 text-white">
+            <TabsTrigger value="orders" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <ShoppingCart className="h-4 w-4 mr-2" />
               Orders
             </TabsTrigger>
-            <TabsTrigger value="subscription" className="data-[state=active]:bg-white/20 text-white">
+            <TabsTrigger value="subscription" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <CreditCard className="h-4 w-4 mr-2" />
               Subscription
             </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-white/20 text-white">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <Settings className="h-4 w-4 mr-2" />
               Profile
             </TabsTrigger>
-            <TabsTrigger value="billing" className="data-[state=active]:bg-white/20 text-white">
+            <TabsTrigger value="billing" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <CreditCard className="h-4 w-4 mr-2" />
               Billing
             </TabsTrigger>
@@ -206,18 +206,18 @@ export default function DashboardPage() {
             </div>
           )}
             {/* Points Hub - Prominent display */}
-            <Card className="bg-gradient-to-r from-orange-500/20 to-purple-500/20 backdrop-blur-sm border-white/30 shadow-2xl mb-8">
+              <Card className="surface-card shadow-2xl mb-8">
               <CardContent className="p-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6">
-                    <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center">
-                      <Coins className="h-8 w-8 text-white" />
+                    <div className="bg-[hsl(var(--muted))] w-16 h-16 rounded-full flex items-center justify-center">
+                      <Coins className="h-8 w-8" />
                     </div>
                     <div>
-                      <Typography variant="h1" className="text-white text-4xl font-bold">
+                      <Typography variant="h1" className="text-4xl font-bold">
                         {userPoints === null ? '...' : userPoints?.toLocaleString() || '0'} Points
                       </Typography>
-                      <Typography variant="body" className="text-white/70 text-lg">
+                      <Typography variant="body" className="text-lg text-[hsl(var(--muted-foreground))]">
                         Available for downloads
                       </Typography>
                     </div>
@@ -244,7 +244,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PointsOverview />
-              <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+              <Card className="surface-card shadow-2xl">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
                     <User className="h-5 w-5 mr-2" />

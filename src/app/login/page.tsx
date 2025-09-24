@@ -239,7 +239,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -255,7 +255,7 @@ function LoginForm() {
         </div>
 
         {/* Login Form */}
-        <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+        <Card className="w-full surface-card shadow-2xl">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
               <LogIn className="h-6 w-6 text-white" />
@@ -401,7 +401,7 @@ function LoginForm() {
         </Card>
 
         {/* Demo Credentials Card */}
-        <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl mt-6">
+        <Card className="w-full surface-card shadow-2xl mt-6">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
               <User className="h-6 w-6 text-blue-400" />
@@ -439,7 +439,7 @@ function LoginForm() {
         </Card>
 
         {/* Admin Login Card */}
-        <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl mt-6">
+        <Card className="w-full surface-card shadow-2xl mt-6">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
               <Shield className="h-6 w-6 text-purple-400" />
