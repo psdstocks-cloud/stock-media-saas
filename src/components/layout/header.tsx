@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Menu, Search, User, Bell } from "lucide-react"
+import UserMenu from "@/components/layout/UserMenu"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 
@@ -101,9 +102,9 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
               <Bell className="h-4 w-4" />
             </Button>
             <ThemeToggle />
-            <a href="/login" className="hidden md:inline-flex items-center h-9 rounded-md px-3 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary/60">
-              <User className="h-4 w-4 mr-2" />
-              Sign In
+            <UserMenu />
+            <a href="/login" className="md:inline-flex hidden items-center h-9 rounded-md px-3 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary/60">
+              <User className="h-4 w-4 mr-2" /> Sign In
             </a>
             <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <Menu className="h-4 w-4" />
