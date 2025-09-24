@@ -184,7 +184,7 @@ export default function HistoryV2Page() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
+      <div className="min-h-screen bg-[hsl(var(--background))] p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="text-center space-y-2">
             <Skeleton className="h-10 w-80 mx-auto" />
@@ -192,7 +192,7 @@ export default function HistoryV2Page() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card key={i} className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
                 <CardContent className="p-6">
                   <Skeleton className="h-6 w-32 mb-2" />
                   <Skeleton className="h-8 w-20" />
@@ -200,7 +200,7 @@ export default function HistoryV2Page() {
               </Card>
             ))}
           </div>
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
             <CardContent className="p-6">
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
@@ -215,7 +215,7 @@ export default function HistoryV2Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
+    <div className="min-h-screen bg-[hsl(var(--background))] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Live region for accessibility */}
         <div className="sr-only" aria-live="polite" role="status">
@@ -226,14 +226,14 @@ export default function HistoryV2Page() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent">
             Order History
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-[hsl(var(--muted-foreground))] text-lg">
             View and manage your completed orders
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
@@ -241,13 +241,13 @@ export default function HistoryV2Page() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Completed Orders</h3>
-                  <p className="text-2xl font-bold text-gray-800">{completedOrders.length}</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--foreground))]">{completedOrders.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -255,13 +255,13 @@ export default function HistoryV2Page() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Total Spent</h3>
-                  <p className="text-2xl font-bold text-gray-800">{totalSpent} pts</p>
+                  <p className="text-2xl font-bold text-[hsl(var(--foreground))]">{totalSpent} pts</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
@@ -269,7 +269,7 @@ export default function HistoryV2Page() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Available Downloads</h3>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold text-[hsl(var(--foreground))]">
                     {completedOrders.filter(o => o.downloadUrl).length}
                   </p>
                 </div>
@@ -279,29 +279,29 @@ export default function HistoryV2Page() {
         </div>
 
         {/* Filters + Search */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
               {/* Search */}
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[hsl(var(--muted-foreground))] w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Search shown orders (ID, link, title, debug)"
                     value={searchTerm}
                     onChange={(e) => { setPage(1); setSearchTerm(e.target.value) }}
-                    className="w-full pl-10 pr-4 py-2 border border-[var(--brand-purple-20)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:ring-2 focus:ring-ring focus:border-transparent"
                   />
                 </div>
               </div>
               {/* Site */}
               <div className="w-full lg:w-48">
-                <label className="block text-xs text-gray-500 mb-1">Site</label>
+                <label className="block text-xs text-[hsl(var(--muted-foreground))] mb-1">Site</label>
                 <select
                   value={siteFilter}
                   onChange={(e) => { setPage(1); setSiteFilter(e.target.value) }}
-                  className="w-full py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white"
+                  className="w-full py-2 px-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]"
                 >
                   <option value="all">All</option>
                   {[...new Set(dedupedOrders.map(o => o.site))].sort().map(site => (
@@ -311,11 +311,11 @@ export default function HistoryV2Page() {
               </div>
               {/* Status */}
               <div className="w-full lg:w-48">
-                <label className="block text-xs text-gray-500 mb-1">Status</label>
+                <label className="block text-xs text-[hsl(var(--muted-foreground))] mb-1">Status</label>
                 <select
                   value={statusFilter}
                   onChange={(e) => { setPage(1); setStatusFilter(e.target.value as any) }}
-                  className="w-full py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white"
+                  className="w-full py-2 px-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]"
                 >
                   <option value="all">All</option>
                   <option value="COMPLETED">Completed</option>
@@ -326,12 +326,12 @@ export default function HistoryV2Page() {
               {/* Date range */}
               <div className="flex items-end gap-2 w-full lg:w-auto">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">From</label>
-                  <input type="date" value={dateFrom} onChange={(e) => { setPage(1); setDateFrom(e.target.value) }} className="py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white" />
+                  <label className="block text-xs text-[hsl(var(--muted-foreground))] mb-1">From</label>
+                  <input type="date" value={dateFrom} onChange={(e) => { setPage(1); setDateFrom(e.target.value) }} className="py-2 px-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]" />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">To</label>
-                  <input type="date" value={dateTo} onChange={(e) => { setPage(1); setDateTo(e.target.value) }} className="py-2 px-3 border border-[var(--brand-purple-20)] rounded-lg bg-white" />
+                  <label className="block text-xs text-[hsl(var(--muted-foreground))] mb-1">To</label>
+                  <input type="date" value={dateTo} onChange={(e) => { setPage(1); setDateTo(e.target.value) }} className="py-2 px-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]" />
                 </div>
               </div>
             </div>
@@ -339,7 +339,7 @@ export default function HistoryV2Page() {
         </Card>
 
         {/* Orders List */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -349,9 +349,9 @@ export default function HistoryV2Page() {
           <CardContent>
             {filteredOrders.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-                <p className="text-gray-500">
+                <FileText className="w-16 h-16 text-[hsl(var(--muted-foreground))] mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-[hsl(var(--foreground))] mb-2">No orders found</h3>
+                <p className="text-[hsl(var(--muted-foreground))]">
                   {searchTerm
                     ? 'Try adjusting your search term'
                     : 'You haven\'t placed any orders yet'
@@ -361,7 +361,7 @@ export default function HistoryV2Page() {
             ) : (
               <div className="space-y-4">
                 {paginatedOrders.map((order) => (
-                  <div key={order.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                  <div key={order.id} className="flex items-center space-x-4 p-4 bg-[hsl(var(--muted))] rounded-lg">
                     {order.imageUrl && (
                       <a href={order.stockItemUrl || '#'} target="_self" rel="noopener noreferrer">
                         <img
@@ -372,14 +372,14 @@ export default function HistoryV2Page() {
                       </a>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 truncate">
+                      <h4 className="font-medium text-[hsl(var(--foreground))] truncate">
                         <a href={order.stockItemUrl || '#'} target="_self" rel="noopener noreferrer">
                           {order.title.replace(/\s*\(Re-download\)$/,'')}
                         </a>
                       </h4>
                       <div className="flex items-center space-x-4 mt-1">
-                        <span className="text-sm text-gray-500 capitalize">{order.site}</span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-[hsl(var(--muted-foreground))] capitalize">{order.site}</span>
+                        <span className="text-sm text-[hsl(var(--muted-foreground))]">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </span>
                         {order.taskId && (
@@ -394,10 +394,10 @@ export default function HistoryV2Page() {
                                 // Silently handle clipboard errors
                               }
                             }}
-                            className="text-xs text-gray-500 hover:text-gray-700 inline-flex items-center gap-1 transition"
+                            className="text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] inline-flex items-center gap-1 transition"
                             title={`Copy Debug ID: ${order.taskId}`}
                           >
-                            <span className={`truncate max-w-[180px] ${copiedId === order.id ? 'text-green-600' : ''}`}>
+                            <span className={`truncate max-w-[180px] ${copiedId === order.id ? 'text-green-500' : ''}`}>
                               Debug: {order.taskId}
                             </span>
                             {copiedId === order.id ? (
@@ -414,8 +414,8 @@ export default function HistoryV2Page() {
                         {getStatusIcon(order.status)}
                         <span className="ml-1">{order.status}</span>
                       </Badge>
-                      <span className="font-semibold text-gray-700">{order.cost} pts</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="font-semibold text-[hsl(var(--foreground))]">{order.cost} pts</span>
+                      <span className="text-sm text-[hsl(var(--muted-foreground))]">
                         {new Date(order.createdAt).toLocaleString()}
                       </span>
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (
@@ -448,7 +448,7 @@ export default function HistoryV2Page() {
             {filteredOrders.length > pageSize && (
               <div className="mt-6 flex items-center justify-between">
                 <button
-                  className="px-3 py-2 rounded-md border border-[var(--brand-purple-20)] text-[var(--brand-purple-hex)] disabled:opacity-50"
+                  className="px-3 py-2 rounded-md border border-[hsl(var(--border))] text-[hsl(var(--foreground))] disabled:opacity-50"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   aria-label="Previous page"
@@ -457,7 +457,7 @@ export default function HistoryV2Page() {
                 </button>
                 <div className="text-sm text-gray-600">Page {currentPage} of {totalPages}</div>
                 <button
-                  className="px-3 py-2 rounded-md border border-[var(--brand-purple-20)] text-[var(--brand-purple-hex)] disabled:opacity-50"
+                  className="px-3 py-2 rounded-md border border-[hsl(var(--border))] text-[hsl(var(--foreground))] disabled:opacity-50"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   aria-label="Next page"
