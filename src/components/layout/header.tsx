@@ -93,7 +93,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             </a>
           </nav>
 
-          {/* Actions */}
+          {/* Actions (with dashboard quick actions) */}
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="icon" className="hidden sm:inline-flex focus-visible:ring-2 focus-visible:ring-primary/60">
               <Search className="h-4 w-4" />

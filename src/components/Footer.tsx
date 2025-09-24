@@ -40,8 +40,24 @@ export default function Footer() {
                 <Mail className="h-4 w-4" />
               </Button>
             </div>
-            <form className="mt-6 flex max-w-sm">
-              <input type="email" placeholder="Get product updates" className="flex-1 rounded-l-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] px-3 py-2 placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-ring" />
+            <form className="mt-6 flex max-w-sm" onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget as HTMLFormElement;
+              const input = form.querySelector('input[name=email]') as HTMLInputElement | null;
+              const email = input?.value || '';
+              try {
+                const res = await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+                if (res.ok) {
+                  input && (input.value = '');
+                  alert('Subscribed successfully!');
+                } else {
+                  alert('Subscription failed.');
+                }
+              } catch (_err) {
+                alert('Network error.');
+              }
+            }}>
+              <input name="email" type="email" placeholder="Get product updates" className="flex-1 rounded-l-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] px-3 py-2 placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-ring" />
               <button type="submit" className="rounded-r-md px-4 bg-gradient-to-r from-primary to-secondary text-white">Subscribe</button>
             </form>
           </div>
