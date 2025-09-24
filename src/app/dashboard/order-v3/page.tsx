@@ -83,6 +83,14 @@ export default function OrderV3Page() {
   const listRef = useRef<HTMLDivElement | null>(null)
   const [focusIndex, setFocusIndex] = useState<number>(-1)
 
+  // Map inconsistent site keys to existing icon filenames
+  const iconAlias: Record<string, string> = {
+    artlist_music: 'artlist_sound',
+    artlist_sound: 'artlist_sound',
+    www: 'globe',
+  }
+  const getIconName = (name: string) => iconAlias[name] || name
+
   const focusItemWrapper = (itemId: string) => {
     try {
       const root = document.querySelector(`[data-item-id="${itemId}"]`) as HTMLElement | null
@@ -153,7 +161,8 @@ export default function OrderV3Page() {
         const stockInfo = json.data?.stockInfo
         const platform = json.data?.stockSite?.displayName || item.site
         const points = Number(stockInfo?.points ?? 10)
-        const image = stockInfo?.image || item.imageUrl
+        const imageRaw = stockInfo?.image || item.imageUrl
+        const image = imageRaw ? `/api/proxy-image?url=${encodeURIComponent(imageRaw)}` : ''
         const titleFromApi: string | undefined = stockInfo?.title || json.data?.title
         const parsedId: string | undefined = json.data?.parsedData?.id || item.siteId
         updateItemStatus?.(item.id, 'ready', { data: { title: item.title, thumbnail: image, points, platform } })
@@ -1061,7 +1070,7 @@ export default function OrderV3Page() {
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative z-10 space-y-4">
                       <div className="flex items-center justify-between">
-                        <img src={`/assets/icons/${site.name}.svg`} alt={site.displayName} className="w-10 h-10 rounded-xl bg-[hsl(var(--muted))]" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        <img src={`/assets/icons/${getIconName(site.name)}.svg`} alt={site.displayName} className="w-10 h-10 rounded-xl bg-[hsl(var(--muted))]" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/globe.svg'; }} />
                         <div className="px-3 py-1 rounded-full text-xs font-semibold bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]/80">
                           {site.cost} pts
                         </div>
