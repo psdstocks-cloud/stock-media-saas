@@ -22,16 +22,18 @@ import {
 } from 'lucide-react';
 
 interface OrderHistory {
-  id: string;
+  id: string; // order id (db)
   title: string;
-  site: string;
   cost: number;
   status: 'READY' | 'COMPLETED' | 'FAILED' | 'PROCESSING';
-  downloadUrl?: string;
-  fileName?: string;
-  imageUrl?: string;
+  downloadUrl?: string | null;
+  fileName?: string | null;
+  imageUrl?: string | null;
   createdAt: string;
-  completedAt?: string;
+  completedAt?: string | null;
+  stockItemId: string; // asset id per platform
+  stockItemUrl: string;
+  stockSite?: { name: string; displayName: string } | null;
 }
 
 export default function HistoryV3Page() {
@@ -53,7 +55,19 @@ export default function HistoryV3Page() {
       const data = await response.json();
       
       if (data.success) {
-        setOrders(data.orders);
+        // Normalize, dedupe by site+stockItemId, keeping most recent (already desc)
+        const raw: OrderHistory[] = data.orders || []
+        const seen = new Set<string>()
+        const deduped: OrderHistory[] = []
+        for (const o of raw) {
+          const site = o.stockSite?.name || 'unknown'
+          const key = `${site}:${o.stockItemId}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            deduped.push(o)
+          }
+        }
+        setOrders(deduped)
       } else {
         toast.error('Failed to load order history');
       }
@@ -69,18 +83,18 @@ export default function HistoryV3Page() {
     try {
       toast.loading('Preparing download...');
       
-      // Generate fresh download link from API
+      // Generate fresh download link from API (free re-download)
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([{
-          url: `https://example.com/${order.site}/${order.id}`, // Construct URL from order data
-          site: order.site,
-          id: order.id,
-          title: order.title,
+          url: order.stockItemUrl,
+          site: order.stockSite?.name || 'unknown',
+          id: order.stockItemId,
+          title: order.title || `${order.stockSite?.displayName || 'Item'} - ${order.stockItemId}`,
           cost: 0, // Free download for history items
           imageUrl: order.imageUrl || '',
-          isRedownload: true // Always generate fresh link
+          isRedownload: true // Always generate fresh link, backend skips points
         }])
       });
 
@@ -93,7 +107,7 @@ export default function HistoryV3Page() {
             const statusResponse = await fetch(`/api/orders/${data.orders[0].id}/status`);
             const statusData = await statusResponse.json();
             
-            if (statusData.success && statusData.order.status === 'COMPLETED' && statusData.order.downloadUrl) {
+            if (statusData.success && (statusData.order.status === 'COMPLETED' || statusData.order.status === 'READY') && statusData.order.downloadUrl) {
               // Download the fresh file
               if (statusData.order.downloadUrl.includes('example.com')) {
                 toast.success('This is a demo download. In production, this would download the actual file.');
@@ -124,15 +138,7 @@ export default function HistoryV3Page() {
     }
   };
 
-  const reorderItem = async (order: OrderHistory) => {
-    try {
-      // Navigate to order page with pre-filled URL
-      const orderUrl = `/dashboard/order-v3?url=${encodeURIComponent(order.title)}`;
-      window.location.href = orderUrl;
-    } catch (error) {
-      toast.error('Failed to re-order item');
-    }
-  };
+  // Single action now handles redownloads; remove reorderItem
 
   const getStatusIcon = (status: OrderHistory['status']) => {
     switch (status) {
@@ -152,13 +158,13 @@ export default function HistoryV3Page() {
     switch (status) {
       case 'READY':
       case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-[hsl(var(--success))]/20 text-[hsl(var(--success-foreground))]';
       case 'PROCESSING':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[hsl(var(--ring))]/20 text-[hsl(var(--ring))]';
       case 'FAILED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-[hsl(var(--destructive))]/20 text-[hsl(var(--destructive-foreground))]';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]';
     }
   };
 
@@ -187,7 +193,7 @@ export default function HistoryV3Page() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
+      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="text-center">
             <Skeleton className="h-12 w-64 mx-auto mb-4" />
@@ -195,7 +201,7 @@ export default function HistoryV3Page() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <Card key={i} className="surface-card shadow-lg">
                 <CardContent className="p-6">
                   <Skeleton className="h-20 w-full" />
                 </CardContent>
@@ -208,29 +214,29 @@ export default function HistoryV3Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-[hsl(var(--foreground))] mb-4">
             Order History
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-[hsl(var(--muted-foreground))]">
             View and manage your download history
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="surface-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <FileText className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-[hsl(var(--muted))] rounded-full">
+                  <FileText className="w-6 h-6 text-[hsl(var(--foreground))]" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Total Orders</h3>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold">
                     {orders.length}
                   </p>
                 </div>
@@ -238,15 +244,15 @@ export default function HistoryV3Page() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="surface-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Download className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-[hsl(var(--muted))] rounded-full">
+                  <Download className="w-6 h-6 text-[hsl(var(--foreground))]" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Available Downloads</h3>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold">
                     {completedOrders.filter(o => o.downloadUrl).length}
                   </p>
                 </div>
@@ -254,15 +260,15 @@ export default function HistoryV3Page() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="surface-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="p-3 bg-orange-100 rounded-full">
-                  <CheckCircle className="w-6 h-6 text-orange-600" />
+                <div className="p-3 bg-[hsl(var(--muted))] rounded-full">
+                  <CheckCircle className="w-6 h-6 text-[hsl(var(--foreground))]" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">Total Spent</h3>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold">
                     {totalSpent} pts
                   </p>
                 </div>
@@ -272,18 +278,18 @@ export default function HistoryV3Page() {
         </div>
 
         {/* Filters */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="surface-card shadow-lg">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[hsl(var(--muted-foreground))] w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Search orders..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border bg-[hsl(var(--input))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] focus:ring-2 focus:ring-[hsl(var(--ring))] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -291,7 +297,7 @@ export default function HistoryV3Page() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="px-4 py-2 rounded-lg border bg-[hsl(var(--input))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] focus:ring-2 focus:ring-[hsl(var(--ring))] focus:border-transparent"
                 >
                   <option value="all">All Status</option>
                   <option value="COMPLETED">Completed</option>
@@ -302,10 +308,10 @@ export default function HistoryV3Page() {
                 <select
                   value={siteFilter}
                   onChange={(e) => setSiteFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="px-4 py-2 rounded-lg border bg-[hsl(var(--input))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] focus:ring-2 focus:ring-[hsl(var(--ring))] focus:border-transparent"
                 >
                   <option value="all">All Sites</option>
-                  {Array.from(new Set(orders.map(o => o.site))).map(site => (
+                  {Array.from(new Set(orders.map(o => o.stockSite?.name || 'unknown'))).map(site => (
                     <option key={site} value={site}>{site}</option>
                   ))}
                 </select>
@@ -315,7 +321,7 @@ export default function HistoryV3Page() {
         </Card>
 
         {/* Orders List */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="surface-card shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <FileText className="w-5 h-5" />
@@ -325,23 +331,29 @@ export default function HistoryV3Page() {
           <CardContent>
             {filteredOrders.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">No orders found</h3>
-                <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
+                <FileText className="w-16 h-16 text-[hsl(var(--muted-foreground))] mx-auto mb-4" />
+                <h3 className="text-lg font-semibold">No orders found</h3>
+                <p className="text-[hsl(var(--muted-foreground))]">Try adjusting your search or filter criteria.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredOrders.map((order) => (
-                  <div key={order.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                    <img
-                      src={order.imageUrl || `https://picsum.photos/400/400?random=${order.id}`}
-                      alt={order.title}
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
+                  <div key={order.id} className="flex items-center space-x-4 p-4 rounded-lg bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))]">
+                    {(() => {
+                      const img = order.imageUrl ? `/api/proxy-image?url=${encodeURIComponent(order.imageUrl)}` : `https://picsum.photos/400/400?random=${order.stockItemId}`
+                      return (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={img}
+                          alt={order.title}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                      )
+                    })()}
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{order.title}</h3>
-                      <p className="text-sm text-gray-600">{order.site}</p>
-                      <p className="text-xs text-gray-500">
+                      <h3 className="font-semibold">{order.title}</h3>
+                      <p className="text-sm text-[hsl(var(--muted-foreground))]">{order.stockSite?.displayName || order.stockSite?.name || 'Unknown'}</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">
                         Ordered: {formatDate(order.createdAt)}
                         {order.completedAt && (
                           <span> • Completed: {formatDate(order.completedAt)}</span>
@@ -353,26 +365,16 @@ export default function HistoryV3Page() {
                         {getStatusIcon(order.status)}
                         <span className="ml-1">{order.status}</span>
                       </Badge>
-                      <span className="font-semibold text-gray-700">{order.cost} pts</span>
+                      <span className="font-semibold">{order.cost} pts</span>
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (
                         <Button
                           size="sm"
                           onClick={() => downloadFile(order)}
-                          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Download
-                        </Button>
-                      )}
-                      {(order.status === 'READY' || order.status === 'COMPLETED') && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => reorderItem(order)}
-                          disabled={!currentPoints || currentPoints < order.cost}
+                          className="glass-hover bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-95"
+                          aria-label="Generate fresh download link"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
-                          Re-order
+                          Redownload (Free)
                         </Button>
                       )}
                     </div>
