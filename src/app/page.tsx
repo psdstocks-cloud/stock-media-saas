@@ -29,18 +29,17 @@ export default function HomePage() {
             <div className="flex items-center space-x-6">
               <a href="/how-it-works" className="text-sm hover:opacity-80 transition-colors">How it works</a>
               <a href="#pricing" className="text-sm hover:opacity-80 transition-colors">Pricing</a>
-              <Button variant="ghost" size="sm">
+              <a href="/login" className="inline-flex items-center h-9 rounded-md px-3 text-sm hover:opacity-80 transition-colors">
                 <User className="h-4 w-4 mr-2" />
                 Sign In
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className=""
+              </a>
+              <a 
+                href="/register" 
+                className="inline-flex items-center h-9 rounded-md px-3 border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors text-sm"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Get Started
-              </Button>
+              </a>
             </div>
           </div>
         </div>

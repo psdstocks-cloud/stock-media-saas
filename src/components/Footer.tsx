@@ -25,7 +25,7 @@ export default function Footer() {
               Access millions of premium assets with our revolutionary point-based system.
             </Typography>
             
-            {/* Social Links */}
+            {/* Social Links + Newsletter */}
             <div className="flex space-x-4">
               <Button variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
                 <Twitter className="h-4 w-4" />
@@ -40,6 +40,10 @@ export default function Footer() {
                 <Mail className="h-4 w-4" />
               </Button>
             </div>
+            <form className="mt-6 flex max-w-sm">
+              <input type="email" placeholder="Get product updates" className="flex-1 rounded-l-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] px-3 py-2 placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-ring" />
+              <button type="submit" className="rounded-r-md px-4 bg-gradient-to-r from-primary to-secondary text-white">Subscribe</button>
+            </form>
           </div>
 
           {/* Product Links */}
