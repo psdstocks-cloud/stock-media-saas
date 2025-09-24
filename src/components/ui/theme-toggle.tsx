@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Moon, Sun } from 'lucide-react'
 
 function getSystemPrefersDark(): boolean {
@@ -25,6 +24,7 @@ function applyThemeClass(isDark: boolean) {
 
 export function ThemeToggle() {
   const [isDark, setIsDark] = useState<boolean>(false)
+  const [reducedMotion, setReducedMotion] = useState<boolean>(false)
 
   useEffect(() => {
     // Initialize from localStorage or system preference
@@ -33,6 +33,9 @@ export function ThemeToggle() {
       const initialDark = stored === 'dark' || (stored === null && getSystemPrefersDark())
       setIsDark(initialDark)
       applyThemeClass(initialDark)
+      if (typeof window !== 'undefined' && 'matchMedia' in window) {
+        setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      }
     } catch {
       // no-op
     }
@@ -50,21 +53,40 @@ export function ThemeToggle() {
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="icon"
+      role="switch"
+      aria-checked={isDark}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      aria-pressed={isDark}
       onClick={toggleTheme}
-      className="rounded-full"
+      className={
+        `relative inline-flex h-9 w-16 items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))] ` +
+        (isDark
+          ? 'border-blue-500/50 bg-gradient-to-r from-blue-600 to-blue-500'
+          : 'border-amber-500/50 bg-gradient-to-r from-amber-500 to-orange-500')
+      }
+      style={{
+        transitionDuration: reducedMotion ? '0ms' : '200ms',
+      }}
     >
-      {isDark ? (
-        <Sun className="h-4 w-4" />
-      ) : (
-        <Moon className="h-4 w-4" />
-      )}
-    </Button>
+      {/* Icons */}
+      <span className="absolute left-2 text-white/90" aria-hidden="true">
+        <Sun className={`h-4 w-4 ${isDark ? 'opacity-0' : 'opacity-100'}`} />
+      </span>
+      <span className="absolute right-2 text-white/90" aria-hidden="true">
+        <Moon className={`h-4 w-4 ${isDark ? 'opacity-100' : 'opacity-0'}`} />
+      </span>
+
+      {/* Knob */}
+      <span
+        aria-hidden="true"
+        className={
+          `pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-md transition-transform ` +
+          (isDark ? 'translate-x-1' : 'translate-x-8')
+        }
+        style={{ transitionDuration: reducedMotion ? '0ms' : '200ms' }}
+      />
+    </button>
   )
 }
 
