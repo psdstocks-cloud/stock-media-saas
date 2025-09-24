@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +25,7 @@ import {
   RefreshCw,
   Search
 } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 
 // interface StockSite { // Unused
 //   id: string;
@@ -60,6 +61,9 @@ export default function OrderV2Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [copiedSite, setCopiedSite] = useState<string>('');
+  const [copyAnnounce, setCopyAnnounce] = useState<string>('');
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Use the comprehensive supported sites list
   const supportedSites = SUPPORTED_SITES;
@@ -70,6 +74,43 @@ export default function OrderV2Page() {
     site.website.toLowerCase().includes(searchTerm.toLowerCase()) ||
     site.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Curated example URLs per platform (brand-friendly, valid patterns)
+  const EXAMPLE_URLS: Record<string, string> = {
+    shutterstock: 'https://www.shutterstock.com/image-photo/smiling-baby-girl-lying-on-bed-420756877',
+    adobestock: 'https://stock.adobe.com/images/minimal-product-catalog-layout/454407674',
+    depositphotos: 'https://depositphotos.com/photo/stanley-neighborhood-alexandria-egypt-182879584.html',
+    dreamstime: 'https://www.dreamstime.com/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-image169271221',
+    epidemicsound: 'https://www.epidemicsound.com/sound-effects/tracks/6a513424-c3b4-4fd3-af6e-73fa5cfd861d/',
+    vectorstock: 'https://www.vectorstock.com/royalty-free-vector/minimal-abstract-shapes-vector-1120004'
+  };
+
+  const exampleChips = supportedSites
+    .filter(s => EXAMPLE_URLS[s.name])
+    .slice(0, 8)
+    .map(s => ({ name: s.name, displayName: s.displayName, example: EXAMPLE_URLS[s.name] }));
+
+  const handleCopyExample = async (siteName: string, exampleUrl: string) => {
+    try {
+      await navigator.clipboard.writeText(exampleUrl);
+      setCopiedSite(siteName);
+      setCopyAnnounce(`${siteName} example copied`);
+      setTimeout(() => setCopiedSite(''), 1200);
+    } catch {
+      // Silently handle clipboard errors
+    }
+  };
+
+  const handlePasteExample = (exampleUrl: string) => {
+    const current = urls ? (urls.endsWith('\n') ? urls : urls + '\n') : '';
+    const next = current + exampleUrl;
+    setUrls(next);
+    try {
+      textAreaRef.current?.focus();
+    } catch {
+      // Silently ignore focus errors
+    }
+  };
 
   const parseUrls = async () => {
     if (!urls.trim()) {
@@ -490,7 +531,37 @@ export default function OrderV2Page() {
               value={urls}
               onChange={(e) => setUrls(e.target.value)}
               className="min-h-[120px] resize-none"
+              ref={textAreaRef}
             />
+            {/* Examples row */}
+            {exampleChips.length > 0 && (
+              <div className="-mt-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">Examples</span>
+                  <span className="text-xs text-gray-400">Tap to copy • Brand-safe</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+                  {exampleChips.map(chip => (
+                    <button
+                      key={chip.name}
+                      type="button"
+                      onClick={() => handleCopyExample(chip.name, chip.example)}
+                      aria-label={`Copy ${chip.displayName} example URL`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm transition-all duration-200 bg-white/70 hover:bg-white shadow-sm hover:shadow-md border-purple-200/60 hover:border-purple-400 ${copiedSite === chip.name ? 'scale-95 ring-2 ring-purple-400/50' : ''}`}
+                    >
+                      <img src={`/assets/icons/${chip.name}.svg`} alt="" className="w-4 h-4" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                      <span className="text-gray-700">{chip.displayName}</span>
+                      {copiedSite === chip.name ? (
+                        <Check className="w-3 h-3 text-green-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-purple-600" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <span className="sr-only" role="status" aria-live="polite">{copyAnnounce}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <p className={`text-sm ${urls.split('\n').filter(url => url.trim()).length > 5 ? 'text-red-500' : 'text-gray-500'}`}>
@@ -502,6 +573,17 @@ export default function OrderV2Page() {
                   </p>
                 )}
               </div>
+              <div className="flex items-center gap-2">
+                {exampleChips.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handlePasteExample(exampleChips[0].example)}
+                    className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                  >
+                    Paste example
+                  </Button>
+                )}
               <Button 
                 onClick={parseUrls} 
                 disabled={isLoading || !urls.trim() || urls.split('\n').filter(url => url.trim()).length > 5}
@@ -514,6 +596,7 @@ export default function OrderV2Page() {
                 )}
                 Parse URLs
               </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -682,12 +765,23 @@ export default function OrderV2Page() {
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
                     <div className="relative z-10">
-                      {/* Platform icon */}
+                      {/* Platform icon (logo with fallback) */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-white text-lg font-bold">
-                            {site.displayName.charAt(0).toUpperCase()}
-                          </span>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg bg-white">
+                          <img
+                            src={`/assets/icons/${site.name}.svg`}
+                            alt=""
+                            className="w-8 h-8"
+                            onError={(e) => {
+                              const el = e.currentTarget as HTMLImageElement;
+                              el.style.display = 'none';
+                              const parent = el.parentElement;
+                              if (parent) {
+                                parent.classList.add('bg-gradient-to-br','from-purple-500','to-orange-500');
+                                parent.innerHTML = `<span class=\"text-white text-lg font-bold\">${site.displayName.charAt(0).toUpperCase()}</span>`;
+                              }
+                            }}
+                          />
                         </div>
                         <div className="px-3 py-1 bg-gradient-to-r from-purple-100 to-orange-100 text-purple-700 rounded-full text-xs font-semibold">
                           {site.cost} pts
