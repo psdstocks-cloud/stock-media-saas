@@ -50,10 +50,10 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <a href="#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
               How it works
             </a>
-            <a href="/dashboard/order-v2" className="text-sm font-medium hover:text-primary transition-colors text-gray-500">
+            <a href="/dashboard/order-v2" className="text-sm font-medium hover:text-primary transition-colors text-foreground/70">
               Order v2
             </a>
-            <a href="/dashboard/history-v2" className="text-sm font-medium hover:text-primary transition-colors text-gray-500">
+            <a href="/dashboard/history-v2" className="text-sm font-medium hover:text-primary transition-colors text-foreground/70">
               History v2
             </a>
             <a href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">

@@ -70,6 +70,16 @@
 
 /* Custom Brand Styles */
 @layer components {
+  /* Accessible link contrast */
+  a {
+    @apply text-foreground/90 hover:text-primary transition-colors;
+  }
+  .brand-surface {
+    @apply bg-white text-[var(--brand-text-hex)] dark:bg-[hsl(222.2_84%_4.9%)] dark:text-[hsl(210_40%_98%)];
+  }
+  .brand-muted {
+    @apply text-[var(--brand-muted-hex)] dark:text-[hsl(215_20.2%_65.1%)];
+  }
   .brand-gradient {
     @apply bg-gradient-to-r from-primary to-secondary;
   }
