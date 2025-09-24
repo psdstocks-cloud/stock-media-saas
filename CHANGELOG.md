@@ -2,6 +2,42 @@
 
 All notable changes to the Stock Media SaaS project are documented in this file.
 
+## [v2.1.1] - 2025-09-24 - Dark Mode & Pricing Polish
+
+### 🎨 Theming & Accessibility
+- Global theme polish: ensured header ThemeToggle is visible and FOUC-safe; honors system preference and persists to localStorage.
+- Tokenized surfaces and text across sections using HSL CSS variables: `--background`, `--foreground`, `--card`, `--muted`, `--border`, etc.
+- Improved contrast for headings, links, and labels in dark mode to meet a11y standards.
+
+### 💳 Pricing Page (pay-as-you-go + subscriptions)
+- Overhauled dark mode for the entire `/pricing` page:
+  - Tokenized the pricing mode toggle (buttons, inactive/active states) for light/dark.
+  - Fixed “Simple, Transparent Pricing” header and supporting copy to use theme tokens.
+  - Converted the comparison table to theme-aware borders, backgrounds, and text; added dark variant highlight for Professional column.
+  - Updated the CTA section gradient with dark variants and theme-aware button/border colors.
+  - Ensured point values and supportive text use foreground/muted-foreground tokens with proper contrast.
+- `PricingSection`: tokenized card surfaces, headings, body text, and bottom helper text for dark mode.
+- `SubscriptionPlansSection`: tokenized cards, icon chips, price text, points block, and benefits section; added dark gradients and contrast-safe colors.
+
+### 🧭 Header & Landing
+- Header links and typography now use theme tokens for consistent contrast in dark mode.
+- Landing sections “How it works” and “Pricing” converted to tokenized surfaces and text with improved contrast.
+
+### 🧰 Order v3 UI Consistency
+- Supported Platforms tiles: switched to tokenized card/muted/border tokens; fixed site name contrast in dark mode.
+- URL textarea: migrated to shared tokenized Textarea so it renders light in light mode and dark in dark mode.
+
+### 🔒 Scope
+- UI-only changes. No backend behavior altered.
+
+### 📄 Files Touched (high level)
+- `src/app/pricing/page.tsx`
+- `src/components/landing/PricingSection.tsx`
+- `src/components/landing/SubscriptionPlansSection.tsx`
+- Related theme/token usage already present in `globals.css`, header, and shared UI components
+
+---
+
 ## [v2.1.0] - 2025-09-24 - Stock Ordering & UX Hardening
 
 ### 🔧 Backend
@@ -202,19 +238,17 @@ All notable changes to the Stock Media SaaS project are documented in this file.
 
 ## 📝 Commit History
 
-### Latest Commit: f32b9e2
-**🚀 MAJOR SYSTEM REDESIGN: Complete Browse Media Page Overhaul**
+### Latest Commit: ff75dc6
+**fix: comprehensive dark mode tokenization for pricing page**
 
-**Files Changed:** 47 files
-**Insertions:** 11,738 lines
-**Deletions:** 580 lines
+**Files Changed:** 3 files
+**Insertions:** 103 lines
+**Deletions:** 103 lines
 
 **Key Changes:**
-- Complete redesign of core business functionality
-- Real-time order processing with Server-Sent Events
-- Comprehensive security enhancements
-- Mobile-responsive design improvements
-- Advanced error handling and user feedback
+- Tokenized pricing page toggle, comparison table, FAQ, and CTA for dark mode
+- Updated `PricingSection` and `SubscriptionPlansSection` to use theme tokens
+- Ensured high-contrast text and theme-aware borders/surfaces
 
 ### Previous Commits:
 - **3822b98** - 📏 OPTIMIZE FILE SIZE LIMIT TO 2MB
