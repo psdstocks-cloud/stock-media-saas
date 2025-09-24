@@ -3,8 +3,9 @@ import * as React from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Menu, Search, User, Bell } from "lucide-react"
+import { Menu, User } from "lucide-react"
 import UserMenu from "@/components/layout/UserMenu"
+import NotificationsMenu from "@/components/layout/NotificationsMenu"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 
@@ -110,7 +111,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             </a>
           </nav>
 
-          {/* Actions (with dashboard quick actions) */}
+          {/* Actions (simplified; dashboard quick actions + notifications + theme) */}
           <div className="flex items-center space-x-2">
             {pathname.startsWith('/dashboard') && (
               <div className="hidden lg:flex items-center space-x-2 mr-2">
@@ -125,12 +126,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
                 </a>
               </div>
             )}
-            <Button variant="ghost" size="icon" className="hidden sm:inline-flex focus-visible:ring-2 focus-visible:ring-primary/60">
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="hidden sm:inline-flex focus-visible:ring-2 focus-visible:ring-primary/60">
-              <Bell className="h-4 w-4" />
-            </Button>
+            <NotificationsMenu />
             <ThemeToggle />
             <UserMenu />
             {!isAuthed && (
