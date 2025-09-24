@@ -342,7 +342,6 @@ export default function HistoryV3Page() {
                     {(() => {
                       const img = order.imageUrl ? `/api/proxy-image?url=${encodeURIComponent(order.imageUrl)}` : `https://picsum.photos/400/400?random=${order.stockItemId}`
                       return (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={img}
                           alt={order.title}
