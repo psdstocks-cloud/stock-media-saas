@@ -71,12 +71,10 @@ export default function OrderV3Page() {
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
   const [sseFailures, setSseFailures] = useState<Record<string, number>>({})
-  const parseBtnRef = useRef<HTMLButtonElement | null>(null)
+  // Button refs are queried via data-* attributes to avoid ref typing on custom buttons
   const [orderBatchError, setOrderBatchError] = useState<string>('')
   const [queuedParses, setQueuedParses] = useState<string[]>([])
   const [queuedOrderBatch, setQueuedOrderBatch] = useState<boolean>(false)
-  const confirmBtnRef = useRef<HTMLButtonElement | null>(null)
-  const orderAllBtnRef = useRef<HTMLButtonElement | null>(null)
   const [queuedItemOrders, setQueuedItemOrders] = useState<string[]>([])
 
   const focusItemWrapper = (itemId: string) => {
@@ -375,9 +373,10 @@ export default function OrderV3Page() {
         try { prevFocus.focus() } catch {
           // no-op
         }
-      } else if (parseBtnRef.current) {
-        try { parseBtnRef.current.focus() } catch {
-          // no-op
+      } else {
+        const parseBtn = document.querySelector('[data-parse-btn]') as HTMLElement | null
+        if (parseBtn) {
+          try { parseBtn.focus() } catch {}
         }
       }
     }
@@ -608,14 +607,12 @@ export default function OrderV3Page() {
     } finally {
       setIsProcessing(false)
       // restore focus to a primary action if present
-      if (confirmBtnRef.current) {
-        try { confirmBtnRef.current.focus() } catch {
-          // no-op
-        }
-      } else if (orderAllBtnRef.current) {
-        try { orderAllBtnRef.current.focus() } catch {
-          // no-op
-        }
+      const confirmBtn = document.querySelector('[data-confirm-btn]') as HTMLElement | null
+      const orderAllBtn = document.querySelector('[data-orderall-btn]') as HTMLElement | null
+      if (confirmBtn) {
+        try { confirmBtn.focus() } catch {}
+      } else if (orderAllBtn) {
+        try { orderAllBtn.focus() } catch {}
       }
     }
   }
@@ -760,7 +757,7 @@ export default function OrderV3Page() {
                 )}
               </div>
               <BrandButton 
-                ref={parseBtnRef}
+                data-parse-btn
                 onClick={() => {
                   if (!isOnline) {
                     setQueuedParses(prev => [...prev, urls])
@@ -796,7 +793,7 @@ export default function OrderV3Page() {
                 </CardTitle>
                 {readyItems.length > 0 && (
                   <BrandButton
-                      ref={orderAllBtnRef}
+                      data-orderall-btn
                       onClick={confirmOrdersBatch}
                     disabled={isProcessing || !currentPoints || currentPoints < totalCost}
                     variant="dark"
@@ -869,7 +866,7 @@ export default function OrderV3Page() {
                   const canConfirm = items.length > 0 && !hasBlocking && readyItems.length > 0
                   return (
                     <BrandButton
-                      ref={confirmBtnRef}
+                      data-confirm-btn
                       onClick={confirmOrdersBatch}
                       disabled={!canConfirm || !currentPoints || currentPoints < totalCost}
                       variant="dark"
