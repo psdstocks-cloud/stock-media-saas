@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Menu, Search, User, Bell } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 interface HeaderProps {
   className?: string
@@ -68,6 +69,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
               <Bell className="h-4 w-4" />
             </Button>
+            <ThemeToggle />
             <Button variant="brand" size="sm">
               <User className="h-4 w-4 mr-2" />
               Sign In

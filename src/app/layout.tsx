@@ -24,6 +24,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Inline theme script to avoid FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+  (function(){
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var useDark = stored ? stored === 'dark' : prefersDark;
+      if (useDark) { document.documentElement.classList.add('dark'); }
+    } catch (e) { /* no-op */ }
+  })();
+          `}}
+        />
+      </head>
       <body className={inter.className}>
         <ErrorBoundary>
           {children}
