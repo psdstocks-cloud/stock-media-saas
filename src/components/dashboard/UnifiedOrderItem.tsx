@@ -31,6 +31,7 @@ export interface UnifiedOrderItemData {
   error?: string;
   orderId?: string;
   success?: boolean;
+  isQueued?: boolean;
 }
 
 interface UnifiedOrderItemProps {
@@ -38,15 +39,17 @@ interface UnifiedOrderItemProps {
   onOrder: (item: UnifiedOrderItemData) => void;
   onRemove: (url: string) => void;
   userPoints?: number;
+  onCancelQueued?: () => void;
 }
 
 export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({ 
   item, 
   onOrder, 
   onRemove, 
-  userPoints = 0 
+  userPoints = 0,
+  onCancelQueued,
 }) => {
-  const { url, parsedData, stockSite, stockInfo, status, progress, downloadUrl, error } = item;
+  const { url, parsedData, stockSite, stockInfo, status, progress, downloadUrl, error, isQueued } = item;
 
   const isBusy = status === 'processing' || status === 'ordering';
 
@@ -95,7 +98,19 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
         );
       default: // 'ready' state
         const canOrder = userPoints >= (stockInfo?.points || 0);
-        return (
+        return isQueued ? (
+          <div className="flex flex-col items-stretch gap-2" role="status" aria-live="polite">
+            <Button className="w-full" disabled>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Queued (offline)
+            </Button>
+            {onCancelQueued && (
+              <Button variant="ghost" size="sm" onClick={() => onCancelQueued()}>
+                Cancel queued
+              </Button>
+            )}
+          </div>
+        ) : (
           <Button 
             className="w-full" 
             data-primary-cta
@@ -173,6 +188,9 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
               <Badge className={`ml-2 ${getStatusColor()}`}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
               </Badge>
+              {isQueued && (
+                <Badge className="ml-2 bg-amber-100 text-amber-800">Queued</Badge>
+              )}
             </div>
           </div>
 

@@ -43,6 +43,7 @@ interface OrderItem {
   isPreviouslyOrdered?: boolean;
   existingOrderId?: string;
   isLoading?: boolean;
+  isQueued?: boolean;
 }
 
 interface SupportedSite {
@@ -389,18 +390,19 @@ export default function OrderV3Page() {
   const processOrder = async (item: OrderItem) => {
     const prevFocus = document.activeElement as HTMLElement | null
     try {
-      // Update status to processing
-      setItems(prev => prev.map(i => 
-        i.id === item.id ? { ...i, status: 'processing' as const } : i
-      ));
-
-      // Generate fresh download link from API
+      // If offline, queue and exit
       if (!isOnline) {
-        setQueuedItemOrders(prev => [...prev, item.id])
+        setQueuedItemOrders(prev => (prev.includes(item.id) ? prev : [...prev, item.id]))
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, isQueued: true, status: 'ready' as const } : i))
         setLiveAnnouncement('You are offline. This item order is queued and will resume when back online.')
         toast('Queued item order to run when you are back online')
         return
       }
+
+      // Update status to processing when online
+      setItems(prev => prev.map(i => 
+        i.id === item.id ? { ...i, status: 'processing' as const, isQueued: false } : i
+      ));
       const response = await fetch('/api/place-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -587,6 +589,9 @@ export default function OrderV3Page() {
 
       if (!isOnline) {
         setQueuedOrderBatch(true)
+        const ids = readyItems.map(i => i.id)
+        setQueuedItemOrders(prev => Array.from(new Set([...prev, ...ids])))
+        setItems(prev => prev.map(i => ids.includes(i.id) ? { ...i, isQueued: true } : i))
         setLiveAnnouncement('You are offline. Orders queued and will place when back online.')
         toast('Queued orders to place when back online')
         return
@@ -863,11 +868,22 @@ export default function OrderV3Page() {
                         downloadUrl: item.downloadUrl,
                         error: item.error,
                         orderId: item.existingOrderId,
-                        success: item.status === 'completed',
+                      success: item.status === 'completed',
+                      isQueued: item.isQueued,
                       }}
                       userPoints={currentPoints || 0}
-                      onOrder={() => processOrder(item)}
-                      onRemove={() => removeItem(item.id)}
+                    onOrder={() => processOrder(item)}
+                    onCancelQueued={() => {
+                      setItems(prev => prev.map(i => i.id === item.id ? { ...i, isQueued: false } : i))
+                      setQueuedItemOrders(prev => prev.filter(id => id !== item.id))
+                      if (queuedOrderBatch) {
+                        const nextLen = queuedItemOrders.filter(id => id !== item.id).length
+                        if (nextLen === 0) setQueuedOrderBatch(false)
+                      }
+                      setLiveAnnouncement('Queued item canceled. It will not auto-run when online.')
+                      toast('Queued item canceled')
+                    }}
+                    onRemove={() => removeItem(item.id)}
                     />
                   )
                 ))}
