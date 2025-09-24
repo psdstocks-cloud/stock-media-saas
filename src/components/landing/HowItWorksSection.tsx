@@ -57,11 +57,11 @@ export const HowItWorksSection: React.FC = () => {
   }, [])
 
   return (
-    <section id="how-it-works" className="py-24 md:py-28 bg-white">
+    <section id="how-it-works" className="py-24 md:py-28 bg-[hsl(var(--background))]">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">How it works</h2>
-          <p className="mt-3 text-gray-800">It just works — three simple steps.</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-[hsl(var(--foreground))]">How it works</h2>
+          <p className="mt-3 text-[hsl(var(--muted-foreground))]">It just works — three simple steps.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-8 xl:gap-10 max-w-6xl mx-auto" role="list" aria-label="Steps to download stock media">
           {steps.map((s, idx) => (
@@ -70,8 +70,8 @@ export const HowItWorksSection: React.FC = () => {
               ref={(el) => { cardsRef.current[idx] = el }}
               data-step-index={idx}
               className={
-                "group p-6 md:p-7 rounded-2xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/60 outline-none " +
-                "focus-visible:ring-2 focus-visible:ring-purple-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white " +
+                "group p-6 md:p-7 rounded-2xl border bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border-[hsl(var(--border))] outline-none " +
+                "focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))] " +
                 "transition-all duration-700 ease-out transform " +
                 (visible[idx] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4") +
                 " supports-[hover:hover]:hover:-translate-y-1 supports-[hover:hover]:hover:shadow-2xl active:scale-[.99]"
@@ -83,15 +83,15 @@ export const HowItWorksSection: React.FC = () => {
               style={{ transitionDelay: prefersReduced ? undefined : `${idx * 100}ms` }}
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="text-sm text-gray-700">Step {s.k}</div>
+                <div className="text-sm text-[hsl(var(--muted-foreground))]">Step {s.k}</div>
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 flex items-center justify-center text-white transition-transform duration-300 group-hover:rotate-3">
                   <s.Icon className="w-5 h-5" aria-hidden="true" />
                 </div>
               </div>
-              <h3 id={`how-step-${s.k}`} className="text-xl md:text-[1.35rem] font-semibold mb-2 text-gray-900">
+              <h3 id={`how-step-${s.k}`} className="text-xl md:text-[1.35rem] font-semibold mb-2 text-[hsl(var(--foreground))]">
                 {s.title}
               </h3>
-              <p id={`how-step-desc-${s.k}`} className="text-gray-800 leading-relaxed">{s.desc}</p>
+              <p id={`how-step-desc-${s.k}`} className="leading-relaxed text-[hsl(var(--muted-foreground))]">{s.desc}</p>
             </div>
           ))}
         </div>

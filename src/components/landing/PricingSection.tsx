@@ -200,13 +200,13 @@ export const PricingSection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-white" aria-busy={true} aria-live="polite" role="status">
+    <section className="py-20 bg-[hsl(var(--background))]" aria-busy={true} aria-live="polite" role="status">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <Typography variant="h2" className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+            <Typography variant="h2" className="text-4xl md:text-5xl font-bold text-[hsl(var(--foreground))] mb-2">
               Simple, Transparent Pricing
             </Typography>
-            <Typography variant="h4" className="text-xl text-gray-600">
+            <Typography variant="h4" className="text-xl text-[hsl(var(--muted-foreground))]">
               Loading pricing options...
             </Typography>
           </div>
@@ -230,14 +230,14 @@ export const PricingSection: React.FC = () => {
   }
 
   return (
-    <section className="py-20 bg-white">
+    <section id="pricing" className="py-20 bg-[hsl(var(--background))]">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <Typography variant="h2" className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <Typography variant="h2" className="text-4xl md:text-5xl font-bold text-[hsl(var(--foreground))] mb-6">
             Simple, Transparent Pricing
           </Typography>
-          <Typography variant="h4" className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <Typography variant="h4" className="text-xl text-[hsl(var(--muted-foreground))] max-w-3xl mx-auto">
             Pay only for what you use. No subscriptions, no hidden fees, 
             just straightforward pricing that scales with your needs.
           </Typography>
@@ -262,7 +262,7 @@ export const PricingSection: React.FC = () => {
               <Card 
                 key={pack.id}
                 className={cn(
-                  "relative group hover:shadow-2xl transition-all duration-300 border-2",
+                  "relative group hover:shadow-2xl transition-all duration-300 border-2 bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]",
                   pack.isPopular 
                     ? "border-orange-500 shadow-xl scale-105" 
                     : "border-gray-200 hover:border-orange-300 hover:-translate-y-2"
@@ -285,12 +285,12 @@ export const PricingSection: React.FC = () => {
                     <Icon className="h-8 w-8 text-white" />
                   </div>
                   
-                  <CardTitle className="text-2xl font-bold text-gray-900">
+                  <CardTitle className="text-2xl font-bold text-[hsl(var(--foreground))]">
                     {pack.name}
                   </CardTitle>
                   
                   {pack.description && (
-                    <Typography variant="body" className="text-gray-600 mt-2">
+                    <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mt-2">
                       {pack.description}
                     </Typography>
                   )}
@@ -300,10 +300,10 @@ export const PricingSection: React.FC = () => {
                   {/* Price */}
                   <div>
                     <div className="flex items-baseline justify-center">
-                      <span className="text-5xl font-bold text-gray-900">${pack.price}</span>
-                      <span className="text-lg text-gray-600 ml-2">one-time</span>
+                      <span className="text-5xl font-bold text-[hsl(var(--foreground))]">${pack.price}</span>
+                      <span className="text-lg text-[hsl(var(--muted-foreground))] ml-2">one-time</span>
                     </div>
-                    <Typography variant="body" className="text-gray-600 mt-2">
+                    <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mt-2">
                       {pack.points} premium points
                     </Typography>
                   </div>
@@ -313,7 +313,7 @@ export const PricingSection: React.FC = () => {
                     {pack.features?.map((feature, featureIndex) => (
                       <div key={featureIndex} className="flex items-center space-x-3">
                         <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <Typography variant="body-sm" className="text-gray-600">
+                        <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                           {feature}
                         </Typography>
                       </div>
