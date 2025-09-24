@@ -17,6 +17,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
     const [isScrolled, setIsScrolled] = React.useState(false)
     const [mobileOpen, setMobileOpen] = React.useState(false)
     const pathname = usePathname?.() || ""
+    const [isAuthed, setIsAuthed] = React.useState(false)
 
     React.useEffect(() => {
       const onScroll = () => {
@@ -25,6 +26,22 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
       onScroll()
       window.addEventListener('scroll', onScroll, { passive: true })
       return () => window.removeEventListener('scroll', onScroll)
+    }, [])
+
+    React.useEffect(() => {
+      // Lightweight auth check to toggle Sign In vs Avatar
+      const check = async () => {
+        try {
+          const res = await fetch('/api/auth/verify-token')
+          if (res.ok) {
+            const data = await res.json()
+            setIsAuthed(Boolean(data?.user))
+          }
+        } catch (_e) {
+          setIsAuthed(false)
+        }
+      }
+      check()
     }, [])
 
     return (
@@ -95,6 +112,19 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
 
           {/* Actions (with dashboard quick actions) */}
           <div className="flex items-center space-x-2">
+            {pathname.startsWith('/dashboard') && (
+              <div className="hidden lg:flex items-center space-x-2 mr-2">
+                <a href="/dashboard/order-v3" className="inline-flex h-9 items-center rounded-md px-3 bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:opacity-90">
+                  Order from URL
+                </a>
+                <a href="/dashboard?tab=search" className="inline-flex h-9 items-center rounded-md px-3 border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))]">
+                  Search
+                </a>
+                <a href="/pricing" className="inline-flex h-9 items-center rounded-md px-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700">
+                  Buy Points
+                </a>
+              </div>
+            )}
             <Button variant="ghost" size="icon" className="hidden sm:inline-flex focus-visible:ring-2 focus-visible:ring-primary/60">
               <Search className="h-4 w-4" />
             </Button>
@@ -103,9 +133,11 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             </Button>
             <ThemeToggle />
             <UserMenu />
+            {!isAuthed && (
             <a href="/login" className="md:inline-flex hidden items-center h-9 rounded-md px-3 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary/60">
               <User className="h-4 w-4 mr-2" /> Sign In
             </a>
+            )}
             <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <Menu className="h-4 w-4" />
             </button>

@@ -19,10 +19,9 @@ export const HeroSection: React.FC = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-orange-600 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center bg-[hsl(var(--background))] overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-black/20" />
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/50 to-orange-600/50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-orange-500/10 dark:from-purple-900/25 dark:to-orange-700/20" />
       
       {/* Animated Background Elements */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl animate-pulse" />
@@ -31,9 +30,9 @@ export const HeroSection: React.FC = () => {
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-            <Zap className="h-4 w-4 text-orange-400 mr-2" />
-            <Typography variant="body-sm" className="text-white/90 font-medium">
+          <div className="inline-flex items-center px-4 py-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted))]">
+            <Zap className="h-4 w-4 text-orange-500 dark:text-orange-400 mr-2" />
+            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] font-medium">
               Trusted by 10,000+ creators worldwide
             </Typography>
           </div>
@@ -41,7 +40,7 @@ export const HeroSection: React.FC = () => {
           {/* Main Headline */}
           <Typography 
             variant="h1" 
-            className="text-5xl md:text-7xl font-bold text-white leading-tight"
+            className="text-5xl md:text-7xl font-bold text-[hsl(var(--foreground))] leading-tight"
           >
             Unlock{' '}
             <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
@@ -56,7 +55,7 @@ export const HeroSection: React.FC = () => {
           {/* Subheadline */}
           <Typography 
             variant="h3" 
-            className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl text-[hsl(var(--muted-foreground))] max-w-3xl mx-auto leading-relaxed"
           >
             Access premium stock photos, videos, and audio from top providers. 
             Download instantly with our revolutionary point-based system. 
@@ -80,7 +79,7 @@ export const HeroSection: React.FC = () => {
               size="lg"
               onClick={handleViewPricing}
               aria-label="View pricing"
-              className="border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold backdrop-blur-sm"
+              className="px-8 py-4 text-lg font-semibold"
             >
               <Play className="h-5 w-5 mr-2" />
               View Pricing
@@ -90,26 +89,26 @@ export const HeroSection: React.FC = () => {
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16 max-w-2xl mx-auto">
             <div className="text-center">
-              <Typography variant="h2" className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <Typography variant="h2" className="text-3xl md:text-4xl font-bold text-[hsl(var(--foreground))] mb-2">
                 2M+
               </Typography>
-              <Typography variant="body-sm" className="text-white/70">
+              <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                 Stock Assets
               </Typography>
             </div>
             <div className="text-center">
-              <Typography variant="h2" className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <Typography variant="h2" className="text-3xl md:text-4xl font-bold text-[hsl(var(--foreground))] mb-2">
                 50+
               </Typography>
-              <Typography variant="body-sm" className="text-white/70">
+              <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                 Premium Sites
               </Typography>
             </div>
             <div className="text-center">
-              <Typography variant="h2" className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <Typography variant="h2" className="text-3xl md:text-4xl font-bold text-[hsl(var(--foreground))] mb-2">
                 24/7
               </Typography>
-              <Typography variant="body-sm" className="text-white/70">
+              <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                 Instant Access
               </Typography>
             </div>
