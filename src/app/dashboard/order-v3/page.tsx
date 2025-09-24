@@ -558,6 +558,11 @@ export default function OrderV3Page() {
         return
       }
       const es = new EventSource(`/api/orders/${orderId}/stream`)
+      es.onopen = () => {
+        setPollingFallbackIds(prev => ({ ...prev, [itemId]: false }))
+        setSseFailures(prev => ({ ...prev, [itemId]: 0 }))
+        setLiveAnnouncement('Realtime connection established.')
+      }
       es.onmessage = (ev) => {
         try {
           const data = JSON.parse(ev.data || '{}')
@@ -729,6 +734,8 @@ export default function OrderV3Page() {
 
   const readyItems = items.filter(item => item.status === 'ready');
   const totalCost = readyItems.reduce((sum, item) => sum + item.cost, 0);
+  const anyRetryingSse = Object.keys(sseFailures).some((id) => (sseFailures[id] || 0) > 0 && !pollingFallbackIds[id])
+  const listBusy = isProcessing || items.some(i => i.isLoading || i.status === 'processing')
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-6">
@@ -876,13 +883,18 @@ export default function OrderV3Page() {
                   Realtime updates are temporarily unavailable. Using fallback polling; updates may be slightly delayed.
                 </div>
               )}
+              {anyRetryingSse && !Object.values(pollingFallbackIds).some(Boolean) && (
+                <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 text-blue-800 px-4 py-3" role="status" aria-live="polite">
+                  Realtime connection interrupted. Retrying...
+                </div>
+              )}
               {orderBatchError && (
                 <div className="mb-4 rounded-lg border border-red-200 bg-red-50 text-red-800 px-4 py-3 flex items-center justify-between" role="alert" aria-live="assertive">
                   <span className="text-sm">{orderBatchError}</span>
                   <Button size="sm" variant="outline" onClick={() => void confirmOrdersBatch()}>Try again</Button>
                 </div>
               )}
-              <div className="space-y-4" ref={listRef} onKeyDown={onKeyNavigate} tabIndex={0} aria-label="Order items list. Use up and down arrows to navigate.">
+              <div className="space-y-4" ref={listRef} onKeyDown={onKeyNavigate} tabIndex={0} aria-label="Order items list. Use up and down arrows to navigate." aria-busy={listBusy}>
                 {items.map((item, idx) => (
                   (item.isLoading || item.status === 'processing' || (item.status === 'ready' && !item.imageUrl)) ? (
                     <div key={item.id} className="overflow-hidden rounded-xl border border-gray-100 p-4 flex items-center gap-4 bg-white/70">
