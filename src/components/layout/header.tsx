@@ -1,5 +1,6 @@
 "use client"
 import * as React from "react"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Menu, Search, User, Bell } from "lucide-react"
@@ -13,6 +14,8 @@ interface HeaderProps {
 const Header = React.forwardRef<HTMLElement, HeaderProps>(
   ({ className, ...props }, ref) => {
     const [isScrolled, setIsScrolled] = React.useState(false)
+    const [mobileOpen, setMobileOpen] = React.useState(false)
+    const pathname = usePathname?.() || ""
 
     React.useEffect(() => {
       const onScroll = () => {
@@ -60,17 +63,23 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="/dashboard" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
+            <a href="/dashboard" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.startsWith("/dashboard") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Dashboard
             </a>
-            <a href="/dashboard/order-v3" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
+            <a href="/dashboard/order-v3" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/order-v3") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Order Media
             </a>
-            <a href="/dashboard/history-v3" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
+            <a href="/dashboard/history-v3" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/history") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               History
             </a>
-            <a href="/how-it-works" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
+            <a href="/how-it-works" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/how-it-works" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               How it works
+            </a>
+            <a href="/supported-platforms" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/supported-platforms" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+              Supported platforms
+            </a>
+            <a href="/help" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/help" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+              Help
             </a>
             <a href="/dashboard/order-v2" className="text-sm font-medium text-foreground/70 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
               Order v2
@@ -78,7 +87,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <a href="/dashboard/history-v2" className="text-sm font-medium text-foreground/70 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
               History v2
             </a>
-            <a href="/pricing" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded">
+            <a href="/pricing" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/pricing" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Pricing
             </a>
           </nav>
@@ -92,15 +101,37 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
               <Bell className="h-4 w-4" />
             </Button>
             <ThemeToggle />
-            <Button variant="brand" size="sm" className="focus-visible:ring-2 focus-visible:ring-primary/60">
+            <a href="/login" className="hidden md:inline-flex items-center h-9 rounded-md px-3 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary/60">
               <User className="h-4 w-4 mr-2" />
               Sign In
-            </Button>
-            <Button variant="ghost" size="icon" className="md:hidden focus-visible:ring-2 focus-visible:ring-primary/60">
+            </a>
+            <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <Menu className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden fixed inset-0 z-[60] bg-black/40" onClick={() => setMobileOpen(false)}>
+            <div role="dialog" aria-modal="true" className="absolute left-0 top-0 h-full w-80 max-w-[85%] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border-r border-[hsl(var(--border))] shadow-xl p-5" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-semibold">Menu</span>
+                <button onClick={() => setMobileOpen(false)} className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-[hsl(var(--muted))]">✕</button>
+              </div>
+              <nav className="grid gap-2">
+                <a href="/dashboard" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Dashboard</a>
+                <a href="/dashboard/order-v3" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Order Media</a>
+                <a href="/dashboard/history-v3" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">History</a>
+                <a href="/how-it-works" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">How it works</a>
+                <a href="/supported-platforms" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Supported platforms</a>
+                <a href="/help" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Help</a>
+                <a href="/pricing" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Pricing</a>
+                <a href="/login" className="mt-2 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-primary to-secondary text-white h-10">Sign In</a>
+              </nav>
+            </div>
+          </div>
+        )}
       </header>
     )
   }
