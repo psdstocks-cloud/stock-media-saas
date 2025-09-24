@@ -125,17 +125,17 @@ export default function DashboardPage() {
                 <span className="text-white font-bold text-lg">SM</span>
               </div>
               <div>
-                <Typography variant="h2" className="text-white font-bold text-xl">
+                <Typography variant="h2" className="text-[hsl(var(--foreground))] font-bold text-xl">
                   Stock Media SaaS
                 </Typography>
-                <Typography variant="body" className="text-white/70 text-sm">
+                <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-sm">
                   Welcome back, {user.name}
                 </Typography>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-white/70">
+              <div className="flex items-center space-x-2 text-[hsl(var(--muted-foreground))]">
                 <User className="h-4 w-4" />
                 <span className="text-sm">{user.role}</span>
               </div>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
                   onClick={() => router.push('/admin/dashboard')}
                   variant="outline"
                   size="sm"
-                  className="border-white/30 text-white hover:bg-white/10"
+                  className="text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   Admin Panel
@@ -154,7 +154,7 @@ export default function DashboardPage() {
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
-                className="border-white/30 text-white hover:bg-white/10"
+                className="text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -225,7 +225,8 @@ export default function DashboardPage() {
                   <div className="flex space-x-4">
                     <Button
                       onClick={() => router.push('/dashboard/order')}
-                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 px-8 py-3 text-lg"
+                      variant="outline"
+                      className="px-8 py-3 text-lg"
                     >
                       <ShoppingCart className="h-5 w-5 mr-2" />
                       Order an Image
@@ -246,7 +247,7 @@ export default function DashboardPage() {
               <PointsOverview />
               <Card className="surface-card shadow-2xl">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center">
+                  <CardTitle className="text-[hsl(var(--card-foreground))] flex items-center">
                     <User className="h-5 w-5 mr-2" />
                     Quick Actions
                   </CardTitle>
@@ -268,7 +269,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button 
                     variant="outline"
-                    className="w-full border-white/30 text-white hover:bg-white/10"
+                    className="w-full"
                     onClick={() => setActiveTab('orders')}
                   >
                     <Download className="h-4 w-4 mr-2" />
@@ -276,7 +277,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button 
                     variant="outline"
-                    className="w-full border-white/30 text-white hover:bg-white/10"
+                    className="w-full"
                     onClick={() => setActiveTab('subscription')}
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
@@ -305,10 +306,10 @@ export default function DashboardPage() {
 
           <TabsContent value="billing" className="mt-6">
             <div className="text-center py-12">
-              <Typography variant="h3" className="text-white mb-4">
+              <Typography variant="h3" className="text-[hsl(var(--foreground))] mb-4">
                 Billing & Transaction History
               </Typography>
-              <Typography variant="body" className="text-white/70 mb-6">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mb-6">
                 View your complete transaction history and billing details
               </Typography>
               <Button
