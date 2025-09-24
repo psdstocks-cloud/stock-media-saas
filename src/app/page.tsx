@@ -27,7 +27,7 @@ export default function HomePage() {
               </Typography>
             </div>
             <div className="flex items-center space-x-6">
-              <a href="#how-it-works" className="text-sm hover:opacity-80 transition-colors">How it works</a>
+              <a href="/how-it-works" className="text-sm hover:opacity-80 transition-colors">How it works</a>
               <a href="#pricing" className="text-sm hover:opacity-80 transition-colors">Pricing</a>
               <Button variant="ghost" size="sm">
                 <User className="h-4 w-4 mr-2" />
