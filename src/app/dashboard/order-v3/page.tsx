@@ -69,8 +69,10 @@ export default function OrderV3Page() {
   const [copyAnnounce, setCopyAnnounce] = useState<string>('')
   const [isOnline, setIsOnline] = useState<boolean>(true)
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
+  const [liveAssertive, setLiveAssertive] = useState<string>('')
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
   const [sseFailures, setSseFailures] = useState<Record<string, number>>({})
+  const [pollingFallbackIds, setPollingFallbackIds] = useState<Record<string, boolean>>({})
   // Button refs are queried via data-* attributes to avoid ref typing on custom buttons
   const [orderBatchError, setOrderBatchError] = useState<string>('')
   const [queuedParses, setQueuedParses] = useState<string[]>([])
@@ -295,7 +297,7 @@ export default function OrderV3Page() {
           
           if (!parseResult) {
             toast.error(`Unsupported URL format: ${url}`);
-            setLiveAnnouncement('One or more URLs are invalid. Please review and try again.')
+            setLiveAssertive('One or more URLs are invalid. Please review and try again.')
             // Move focus to the invalid URL range in the textarea
             if (textAreaRef.current) {
               const allLines = urls.split('\n')
@@ -432,7 +434,7 @@ export default function OrderV3Page() {
         } : i
       ));
       toast.error('Failed to process order');
-      setLiveAnnouncement('Failed to place order. Try again.')
+      setLiveAssertive('Failed to place order. Try again.')
     } finally {
       if (prevFocus) {
         try { prevFocus.focus() } catch {
@@ -444,6 +446,7 @@ export default function OrderV3Page() {
 
   const pollOrderStatus = async (itemId: string, orderId: string) => {
     setLiveAnnouncement('Realtime updates unavailable. Switched to polling.')
+    setPollingFallbackIds(prev => ({ ...prev, [itemId]: true }))
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`/api/orders/${orderId}/status`);
@@ -463,6 +466,7 @@ export default function OrderV3Page() {
                 fileName: data.order.fileName
               } : i
             ));
+            setPollingFallbackIds(prev => ({ ...prev, [itemId]: false }))
             focusItemWrapper(itemId)
             clearInterval(pollInterval);
             
@@ -486,6 +490,7 @@ export default function OrderV3Page() {
                 error: 'Order processing failed'
               } : i
             ));
+            setPollingFallbackIds(prev => ({ ...prev, [itemId]: false }))
             focusItemWrapper(itemId)
             clearInterval(pollInterval);
             toast.error('Order processing failed');
@@ -503,6 +508,13 @@ export default function OrderV3Page() {
 
   const startOrderStream = (orderId: string, itemId: string) => {
     try {
+      // If EventSource is unavailable (e.g., some older Safari/Firefox environments), fallback to polling
+      if (typeof window !== 'undefined' && typeof (window as any).EventSource === 'undefined') {
+        setLiveAnnouncement('Realtime updates unavailable in this browser. Switched to polling.')
+        setPollingFallbackIds(prev => ({ ...prev, [itemId]: true }))
+        pollOrderStatus(itemId, orderId)
+        return
+      }
       const es = new EventSource(`/api/orders/${orderId}/stream`)
       es.onmessage = (ev) => {
         try {
@@ -539,6 +551,7 @@ export default function OrderV3Page() {
             setTimeout(() => startOrderStream(orderId, itemId), count * 1000)
           } else {
             setLiveAnnouncement('Realtime connection lost. Reconnected via fallback.')
+            setPollingFallbackIds(p => ({ ...p, [itemId]: true }))
             pollOrderStatus(itemId, orderId)
           }
           return next
@@ -605,7 +618,7 @@ export default function OrderV3Page() {
       const msg = e instanceof Error ? e.message : 'Failed to place orders'
       setOrderBatchError(msg)
       toast.error(msg)
-      setLiveAnnouncement('Failed to place orders. Try again.')
+      setLiveAssertive('Failed to place orders. Try again.')
     } finally {
       setIsProcessing(false)
       // restore focus to a primary action if present
@@ -684,6 +697,7 @@ export default function OrderV3Page() {
 
         {/* Global live region */}
         <span className="sr-only" role="status" aria-live="polite">{liveAnnouncement}</span>
+      <span className="sr-only" role="alert" aria-live="assertive">{liveAssertive}</span>
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -811,6 +825,12 @@ export default function OrderV3Page() {
               </div>
             </CardHeader>
             <CardContent>
+              {/* Fallback notice if any item is using polling */}
+              {Object.values(pollingFallbackIds).some(Boolean) && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3" role="status" aria-live="polite">
+                  Realtime updates are temporarily unavailable. Using fallback polling; updates may be slightly delayed.
+                </div>
+              )}
               {orderBatchError && (
                 <div className="mb-4 rounded-lg border border-red-200 bg-red-50 text-red-800 px-4 py-3 flex items-center justify-between" role="alert" aria-live="assertive">
                   <span className="text-sm">{orderBatchError}</span>
