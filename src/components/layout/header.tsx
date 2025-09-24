@@ -8,6 +8,7 @@ import UserMenu from "@/components/layout/UserMenu"
 import NotificationsMenu from "@/components/layout/NotificationsMenu"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface HeaderProps {
   className?: string
@@ -44,6 +45,15 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
       }
       check()
     }, [])
+
+    const isResourcesActive = [
+      "/help",
+      "/supported-platforms",
+      "/status",
+      "/accessibility",
+      "/security",
+      "/changelog",
+    ].includes(pathname)
 
     return (
       <header
@@ -94,12 +104,31 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <a href="/how-it-works" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/how-it-works" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               How it works
             </a>
-            <a href="/supported-platforms" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/supported-platforms" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
-              Supported platforms
-            </a>
-            <a href="/help" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/help" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
-              Help
-            </a>
+            <DropdownMenu>
+              <DropdownMenuTrigger className={`text-sm font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${isResourcesActive ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+                Resources
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuItem asChild>
+                  <a href="/supported-platforms">Supported platforms</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/help">Help Center</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/status">Status</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/accessibility">Accessibility</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/security">Security</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/changelog">Changelog</a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <a href="/pricing" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/pricing" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Pricing
             </a>
