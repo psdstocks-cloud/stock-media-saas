@@ -25,6 +25,7 @@ export interface UnifiedOrderItemData {
     image: string;
     points: number;
   };
+  isRedownload?: boolean;
   status: OrderStatus;
   progress?: number;
   downloadUrl?: string;
@@ -101,7 +102,7 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
           </Button>
         );
       default: // 'ready' state
-        const canOrder = userPoints >= (stockInfo?.points || 0);
+        const canOrder = (item.isRedownload === true) || userPoints >= (stockInfo?.points || 0);
         return isQueued ? (
           <div className="flex flex-col items-stretch gap-2" role="status" aria-live="polite">
             <Button className="w-full" disabled>
@@ -122,10 +123,17 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
             disabled={!canOrder}
           >
             {canOrder ? (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Order for {stockInfo?.points || 0} Points
-              </>
+              item.isRedownload ? (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download for Free
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Order for {stockInfo?.points || 0} Points
+                </>
+              )
             ) : (
               <>
                 <AlertCircle className="h-4 w-4 mr-2" />

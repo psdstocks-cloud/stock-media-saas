@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
                 stockSiteId: stockSite.id,
                 stockItemId: item.id,
                 stockItemUrl: item.url,
-                title: `${item.title} (Re-download)`,
+                title: `${item.title || existingOrder.title} (Re-download)`,
                 cost: 0,
                 status: 'PENDING',
                 imageUrl: item.imageUrl
@@ -141,7 +141,8 @@ export async function POST(request: NextRequest) {
             cost: 0,
             createdAt: redownloadResult.order.createdAt,
             stockSite: redownloadResult.stockSite,
-            isRedownload: true
+            isRedownload: true,
+            originalUrl: item.url
           })
           continue // Move to next item
         }
@@ -216,7 +217,8 @@ export async function POST(request: NextRequest) {
           cost: transactionResult.order.cost,
           createdAt: transactionResult.order.createdAt,
           stockSite: transactionResult.stockSite,
-          isRedownload: false
+          isRedownload: false,
+          originalUrl: item.url
         })
 
         console.log(`Order created successfully: ${transactionResult.order.id}`)

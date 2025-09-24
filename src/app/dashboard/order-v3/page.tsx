@@ -166,7 +166,7 @@ export default function OrderV3Page() {
         const titleFromApi: string | undefined = stockInfo?.title || json.data?.title
         const parsedId: string | undefined = json.data?.parsedData?.id || item.siteId
         updateItemStatus?.(item.id, 'ready', { data: { title: item.title, thumbnail: image, points, platform } })
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points, isLoading: false, title: titleFromApi ? `${platform} - ${parsedId}` : i.title } : i))
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: i.isPreviouslyOrdered ? 0 : points, isLoading: false, title: titleFromApi ? `${platform} - ${parsedId}` : i.title } : i))
         setLiveAnnouncement('Item details loaded. You can place the order now.')
       } else {
         const errMsg = json?.message || 'Failed to fetch stock info'
@@ -452,7 +452,7 @@ export default function OrderV3Page() {
       }
 
       // Update status to processing when online
-      setItems(prev => prev.map(i => 
+        setItems(prev => prev.map(i => 
         i.id === item.id ? { ...i, status: 'processing' as const, isQueued: false } : i
       ));
       const response = await fetch('/api/place-order', {
@@ -463,9 +463,9 @@ export default function OrderV3Page() {
           site: item.site,
           id: item.siteId,
           title: item.title,
-          cost: item.cost,
+          cost: item.isPreviouslyOrdered ? 0 : item.cost,
           imageUrl: item.imageUrl,
-          isRedownload: true // Always generate fresh link
+          isRedownload: !!item.isPreviouslyOrdered // free re-downloads only when previously ordered
         }])
       });
 
@@ -639,7 +639,7 @@ export default function OrderV3Page() {
         site: item.site,
         id: item.siteId,
         title: item.title,
-        cost: item.cost,
+        cost: item.isPreviouslyOrdered ? 0 : item.cost,
         imageUrl: item.imageUrl,
         isRedownload: !!item.isPreviouslyOrdered
       }))
@@ -941,6 +941,7 @@ export default function OrderV3Page() {
                         parsedData: { source: item.site, id: item.siteId },
                         stockSite: { displayName: item.site, name: item.site },
                         stockInfo: { title: item.title, image: item.imageUrl, points: item.cost },
+                        isRedownload: !!item.isPreviouslyOrdered,
                         status: item.status,
                         downloadUrl: item.downloadUrl,
                         error: item.error,
