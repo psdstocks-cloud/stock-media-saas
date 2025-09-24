@@ -376,7 +376,9 @@ export default function OrderV3Page() {
       } else {
         const parseBtn = document.querySelector('[data-parse-btn]') as HTMLElement | null
         if (parseBtn) {
-          try { parseBtn.focus() } catch {}
+          try { parseBtn.focus() } catch {
+            // no-op
+          }
         }
       }
     }
@@ -610,9 +612,13 @@ export default function OrderV3Page() {
       const confirmBtn = document.querySelector('[data-confirm-btn]') as HTMLElement | null
       const orderAllBtn = document.querySelector('[data-orderall-btn]') as HTMLElement | null
       if (confirmBtn) {
-        try { confirmBtn.focus() } catch {}
+        try { confirmBtn.focus() } catch {
+          // no-op
+        }
       } else if (orderAllBtn) {
-        try { orderAllBtn.focus() } catch {}
+        try { orderAllBtn.focus() } catch {
+          // no-op
+        }
       }
     }
   }
