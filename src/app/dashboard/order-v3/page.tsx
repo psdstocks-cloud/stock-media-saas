@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { BrandButton } from '@/components/ui/brand-button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
 // import { SUPPORTED_SITES } from '@/lib/supported-sites';
@@ -809,11 +810,11 @@ export default function OrderV3Page() {
                 <span className="sr-only" role="status" aria-live="polite">{copyAnnounce}</span>
               </div>
             )}
-            <textarea
+            <Textarea
               placeholder="Paste your stock media URLs here (one per line, max 5 URLs)..."
               value={urls}
               onChange={(e) => setUrls(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="resize-none"
               rows={4}
               ref={textAreaRef}
             />
