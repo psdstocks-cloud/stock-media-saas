@@ -87,7 +87,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
             <a href="/dashboard/order" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/order") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               Order Media
             </a>
-            <a href="/dashboard/history-v3" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/history") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
+            <a href="/dashboard/history" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.includes("/dashboard/history") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
               History
             </a>
             <a href="/how-it-works" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/how-it-works" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
