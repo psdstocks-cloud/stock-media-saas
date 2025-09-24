@@ -62,8 +62,8 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
       case 'processing':
         return (
           <div className="w-full text-center" aria-live="polite" role="status">
-            <Progress value={progress || 0} className="h-2 mb-2" />
-            <span className="text-xs text-muted-foreground">Processing...</span>
+            <Progress value={progress || 5} className="h-2 mb-2" />
+            <span className="text-xs text-muted-foreground">{typeof progress === 'number' ? `${Math.max(5, progress)}%` : 'Processing...'}</span>
           </div>
         );
       case 'failed':

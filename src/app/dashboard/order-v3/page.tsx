@@ -154,8 +154,10 @@ export default function OrderV3Page() {
         const platform = json.data?.stockSite?.displayName || item.site
         const points = Number(stockInfo?.points ?? 10)
         const image = stockInfo?.image || item.imageUrl
+        const titleFromApi: string | undefined = stockInfo?.title || json.data?.title
+        const parsedId: string | undefined = json.data?.parsedData?.id || item.siteId
         updateItemStatus?.(item.id, 'ready', { data: { title: item.title, thumbnail: image, points, platform } })
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points, isLoading: false } : i))
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: points, isLoading: false, title: titleFromApi ? `${platform} - ${parsedId}` : i.title } : i))
         setLiveAnnouncement('Item details loaded. You can place the order now.')
       } else {
         const errMsg = json?.message || 'Failed to fetch stock info'
@@ -572,7 +574,7 @@ export default function OrderV3Page() {
           const downloadUrl: string | undefined = data.downloadUrl
 
           if (status === 'progress' && typeof percentage === 'number') {
-            setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'processing' as const } : i))
+            setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'processing' as const, isLoading: false, progress: Math.max(5, Math.min(99, Math.floor(percentage))) } : i))
           } else if (status === 'COMPLETED' || status === 'READY' || status === 'complete') {
             setItems(prev => prev.map(i => i.id === itemId ? { ...i, status: 'completed' as const, downloadUrl } : i))
             setLiveAnnouncement('Download is ready.')
@@ -898,15 +900,15 @@ export default function OrderV3Page() {
               <div className="space-y-4" ref={listRef} onKeyDown={onKeyNavigate} tabIndex={0} aria-label="Order items list. Use up and down arrows to navigate." aria-busy={listBusy}>
                 {items.map((item, idx) => (
                   (item.isLoading || item.status === 'processing' || (item.status === 'ready' && !item.imageUrl)) ? (
-                    <div key={item.id} className="overflow-hidden rounded-xl border border-gray-100 p-4 flex items-center gap-4 bg-white/70">
+                    <div key={item.id} className="overflow-hidden rounded-xl border border-[hsl(var(--border))] p-4 flex items-center gap-4 bg-[hsl(var(--muted))]">
                       <Skeleton className="h-20 w-20 rounded-md" />
                       <div className="flex-1 min-w-0">
-                        <Skeleton className="h-4 w-2/3 mb-2" />
-                        <Skeleton className="h-3 w-1/3 mb-2" />
-                        <Skeleton className="h-3 w-1/4" />
+                        <Skeleton className="h-4 w-2/3 mb-2 bg-[hsl(var(--card))]" />
+                        <Skeleton className="h-3 w-1/3 mb-2 bg-[hsl(var(--card))]" />
+                        <Skeleton className="h-3 w-1/4 bg-[hsl(var(--card))]" />
                       </div>
                       <div className="w-40">
-                        <Skeleton className="h-9 w-full rounded-md" />
+                        <Skeleton className="h-9 w-full rounded-md bg-[hsl(var(--card))]" />
                       </div>
                     </div>
                   ) : (item.status === 'failed' && !item.downloadUrl) ? (
