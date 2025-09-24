@@ -991,7 +991,7 @@ export default function OrderV3Page() {
         )}
 
         {/* Supported Sites */}
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
+        <Card className="surface-card shadow-xl rounded-2xl overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-purple-600 to-orange-600 text-white p-8">
             <div className="flex items-center justify-between">
               <div>
@@ -1052,23 +1052,23 @@ export default function OrderV3Page() {
                 {filteredSites.map((site, index) => (
                   <div
                     key={site.name}
-                    className="group relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-purple-200 hover:shadow-lg hover:shadow-purple-100/50 transition-all duration-300 transform hover:-translate-y-1"
+                    className="group relative rounded-2xl p-6 border transition-all duration-300 transform hover:-translate-y-1 bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border-[hsl(var(--border))] hover:border-[hsl(var(--ring))] hover:shadow-lg"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative z-10 space-y-4">
                       <div className="flex items-center justify-between">
-                        <img src={`/assets/icons/${site.name}.svg`} alt={site.displayName} className="w-10 h-10 bg-gray-100 rounded-xl" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-                        <div className="px-3 py-1 bg-gradient-to-r from-purple-100 to-orange-100 text-purple-700 rounded-full text-xs font-semibold">
+                        <img src={`/assets/icons/${site.name}.svg`} alt={site.displayName} className="w-10 h-10 rounded-xl bg-[hsl(var(--muted))]" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        <div className="px-3 py-1 rounded-full text-xs font-semibold bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]/80">
                           {site.cost} pts
                         </div>
                       </div>
-                      <h3 className="font-bold text-gray-800 text-lg group-hover:text-purple-700 transition-colors">{site.displayName}</h3>
+                      <h3 className="font-bold text-lg transition-colors">{site.displayName}</h3>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Example:</span>
+                        <span className="text-xs text-[hsl(var(--muted-foreground))]">Example:</span>
                         <button className="text-xs text-[var(--brand-purple-hex)] underline" onClick={() => navigator.clipboard.writeText(`${site.url}/example`)}>Copy</button>
                         <button className="text-xs text-orange-600 underline" onClick={() => handlePasteExample(EXAMPLE_URLS[site.name] || `${site.url}/example`)}>Paste</button>
-                        <a href={site.url} target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex items-center text-purple-600 text-sm font-medium group-hover:text-purple-700 transition-colors">
+                        <a href={site.url} target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex items-center text-sm font-medium text-[var(--brand-purple-hex)] hover:opacity-90 transition-colors">
                           Visit <ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </a>
                       </div>
