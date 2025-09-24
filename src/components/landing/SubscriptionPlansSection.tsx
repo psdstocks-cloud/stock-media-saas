@@ -181,10 +181,10 @@ export const SubscriptionPlansSection: React.FC = () => {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <Typography variant="h2" className="text-3xl font-bold mb-4">
+        <Typography variant="h2" className="text-3xl font-bold mb-4 text-[hsl(var(--foreground))]">
           Monthly Subscription Plans
         </Typography>
-        <Typography variant="body-lg" className="text-muted-foreground max-w-2xl mx-auto">
+        <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto">
           Get monthly points automatically delivered to your account. Perfect for regular users who want consistent access to premium content.
         </Typography>
       </div>
@@ -199,7 +199,7 @@ export const SubscriptionPlansSection: React.FC = () => {
             <Card
               key={plan.id}
               className={cn(
-                "relative group hover:shadow-lg transition-all duration-200 cursor-pointer",
+                "relative group hover:shadow-lg transition-all duration-200 cursor-pointer bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border-[hsl(var(--border))]",
                 isPopular && "ring-2 ring-orange-500 shadow-lg scale-105"
               )}
             >
@@ -216,22 +216,22 @@ export const SubscriptionPlansSection: React.FC = () => {
                   <div className={cn(
                     "p-3 rounded-full",
                     isPopular 
-                      ? "bg-orange-100 text-orange-600" 
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" 
+                      : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
                   )}>
                     <IconComponent className="h-6 w-6" />
                   </div>
                 </div>
                 
-                <CardTitle className="text-xl font-bold">
+                <CardTitle className="text-xl font-bold text-[hsl(var(--foreground))]">
                   {plan.name}
                 </CardTitle>
                 
                 <div className="mt-4">
-                  <Typography variant="h3" className="text-3xl font-bold">
+                  <Typography variant="h3" className="text-3xl font-bold text-[hsl(var(--foreground))]">
                     {formatCurrency(plan.price, plan.currency)}
                   </Typography>
-                  <Typography variant="body" className="text-muted-foreground">
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                     per {getBillingCycleText(plan.billingCycle)}
                   </Typography>
                 </div>
@@ -239,17 +239,17 @@ export const SubscriptionPlansSection: React.FC = () => {
 
               <CardContent className="space-y-4">
                 {plan.description && (
-                  <Typography variant="body" className="text-muted-foreground text-center">
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-center">
                     {plan.description}
                   </Typography>
                 )}
 
                 {/* Points Display */}
-                <div className="text-center py-4 bg-gray-50 rounded-lg">
-                  <Typography variant="h4" className="font-bold text-orange-600">
+                <div className="text-center py-4 bg-[hsl(var(--muted))] rounded-lg">
+                  <Typography variant="h4" className="font-bold text-orange-600 dark:text-orange-400">
                     {plan.points.toLocaleString()} Points
                   </Typography>
-                  <Typography variant="body-sm" className="text-muted-foreground">
+                  <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                     Monthly allocation
                   </Typography>
                 </div>
@@ -258,32 +258,32 @@ export const SubscriptionPlansSection: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm">
+                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
                       {plan.points.toLocaleString()} premium points
                     </Typography>
                   </div>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm">
+                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
                       Access to all stock sites
                     </Typography>
                   </div>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm">
+                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
                       Commercial license included
                     </Typography>
                   </div>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm">
+                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
                       {plan.rolloverLimit}% rollover limit
                     </Typography>
                   </div>
                   {isPopular && (
                     <div className="flex items-center">
                       <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                      <Typography variant="body-sm">
+                      <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
                         Priority support
                       </Typography>
                     </div>
@@ -325,46 +325,46 @@ export const SubscriptionPlansSection: React.FC = () => {
       </div>
 
       {/* Benefits Section */}
-      <div className="mt-12 bg-gradient-to-r from-orange-50 to-purple-50 rounded-2xl p-8">
+      <div className="mt-12 bg-gradient-to-r from-orange-50 to-purple-50 dark:from-orange-900/20 dark:to-purple-900/20 rounded-2xl p-8">
         <div className="text-center mb-8">
-          <Typography variant="h3" className="text-2xl font-bold mb-4">
+          <Typography variant="h3" className="text-2xl font-bold mb-4 text-[hsl(var(--foreground))]">
             Why Choose Monthly Subscriptions?
           </Typography>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="bg-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="h-6 w-6 text-orange-600" />
+            <div className="bg-orange-100 dark:bg-orange-900/20 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Zap className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
-            <Typography variant="h4" className="font-semibold mb-2">
+            <Typography variant="h4" className="font-semibold mb-2 text-[hsl(var(--foreground))]">
               Automatic Renewal
             </Typography>
-            <Typography variant="body" className="text-muted-foreground">
+            <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
               Never run out of points. Get fresh points delivered to your account every month automatically.
             </Typography>
           </div>
           
           <div className="text-center">
-            <div className="bg-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Star className="h-6 w-6 text-orange-600" />
+            <div className="bg-orange-100 dark:bg-orange-900/20 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Star className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
-            <Typography variant="h4" className="font-semibold mb-2">
+            <Typography variant="h4" className="font-semibold mb-2 text-[hsl(var(--foreground))]">
               Better Value
             </Typography>
-            <Typography variant="body" className="text-muted-foreground">
+            <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
               Save money compared to one-time purchases. Get more points for less with our subscription plans.
             </Typography>
           </div>
           
           <div className="text-center">
-            <div className="bg-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="h-6 w-6 text-orange-600" />
+            <div className="bg-orange-100 dark:bg-orange-900/20 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
-            <Typography variant="h4" className="font-semibold mb-2">
+            <Typography variant="h4" className="font-semibold mb-2 text-[hsl(var(--foreground))]">
               Cancel Anytime
             </Typography>
-            <Typography variant="body" className="text-muted-foreground">
+            <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
               No long-term commitments. Cancel or change your plan anytime from your dashboard.
             </Typography>
           </div>

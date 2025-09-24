@@ -44,14 +44,14 @@ export default function PricingPage() {
           
           {/* Pricing Mode Toggle */}
           <div className="flex justify-center mb-8">
-            <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+            <div className="bg-[hsl(var(--muted))] p-1 rounded-lg inline-flex">
               <Button
                 variant={pricingMode === 'pay-as-you-go' ? 'default' : 'ghost'}
                 onClick={() => setPricingMode('pay-as-you-go')}
                 className={`px-6 py-2 rounded-md transition-all duration-200 ${
                   pricingMode === 'pay-as-you-go'
-                    ? 'bg-white shadow-sm text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-[hsl(var(--card))] shadow-sm text-[hsl(var(--card-foreground))]'
+                    : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
                 }`}
               >
                 <CreditCard className="h-4 w-4 mr-2" />
@@ -62,8 +62,8 @@ export default function PricingPage() {
                 onClick={() => setPricingMode('subscriptions')}
                 className={`px-6 py-2 rounded-md transition-all duration-200 ${
                   pricingMode === 'subscriptions'
-                    ? 'bg-white shadow-sm text-gray-900'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-[hsl(var(--card))] shadow-sm text-[hsl(var(--card-foreground))]'
+                    : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
                 }`}
               >
                 <Calendar className="h-4 w-4 mr-2" />
@@ -73,18 +73,18 @@ export default function PricingPage() {
           </div>
 
           {pricingMode === 'pay-as-you-go' && (
-            <div className="inline-flex items-center px-4 py-2 bg-orange-50 border border-orange-200 rounded-full">
+            <div className="inline-flex items-center px-4 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-full">
               <Star className="h-4 w-4 text-orange-500 mr-2" />
-              <Typography variant="body-sm" className="text-orange-700 font-medium">
+              <Typography variant="body-sm" className="text-orange-700 dark:text-orange-300 font-medium">
                 Most Popular: Professional Pack
               </Typography>
             </div>
           )}
           
           {pricingMode === 'subscriptions' && (
-            <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full">
               <Crown className="h-4 w-4 text-blue-500 mr-2" />
-              <Typography variant="body-sm" className="text-blue-700 font-medium">
+              <Typography variant="body-sm" className="text-blue-700 dark:text-blue-300 font-medium">
                 Best Value: Pro Monthly Plan
               </Typography>
             </div>
@@ -100,62 +100,62 @@ export default function PricingPage() {
 
         {/* FAQ Section */}
         <section className="mt-24">
-          <Typography variant="h2" className="text-3xl font-bold text-center mb-12">
+          <Typography variant="h2" className="text-3xl font-bold text-center mb-12 text-[hsl(var(--foreground))]">
             Frequently Asked Questions
           </Typography>
           <div className="max-w-3xl mx-auto space-y-8">
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 What's the difference between Pay As You Go and Subscriptions?
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 Pay As You Go lets you buy points when you need them - perfect for occasional users. 
                 Monthly subscriptions give you points automatically every month at a better value - ideal for regular users. 
                 Both include the same features and commercial licensing.
               </Typography>
             </div>
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 How does the point system work?
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 Each download costs 10 points regardless of the original price. Points never expire and you can 
                 purchase additional packs anytime. With subscriptions, you get fresh points delivered monthly.
               </Typography>
             </div>
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 Can I cancel my subscription anytime?
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 Yes! You can cancel or change your subscription anytime from your dashboard. Your points will 
                 remain in your account and you can continue using them even after cancellation.
               </Typography>
             </div>
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 What's included with my purchase?
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 Every download includes commercial licensing, allowing you to use the content in client projects, 
                 marketing materials, and commercial applications. You also get access to high-resolution files 
                 and multiple format options.
               </Typography>
             </div>
-            <div className="border-b pb-6">
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 Can I switch between Pay As You Go and Subscriptions?
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 Absolutely! You can have both point packs and subscriptions. Your points are combined in one account, 
                 and you can manage everything from your dashboard.
               </Typography>
             </div>
             <div>
-              <Typography variant="h3" className="text-xl font-semibold mb-3">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 Is there a free trial?
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 Yes! New users get 50 free points to try our platform. You can explore our entire library and 
                 download content without any commitment. No credit card required.
               </Typography>
@@ -165,93 +165,93 @@ export default function PricingPage() {
 
         {/* Comparison Table */}
         <section className="mt-24">
-          <Typography variant="h2" className="text-3xl font-bold text-center mb-12">
+          <Typography variant="h2" className="text-3xl font-bold text-center mb-12 text-[hsl(var(--foreground))]">
             Compare Plans
           </Typography>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-200 rounded-lg">
+            <table className="w-full border-collapse border border-[hsl(var(--border))] rounded-lg bg-[hsl(var(--card))]">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-6 py-4 text-left font-semibold">Features</th>
-                  <th className="border border-gray-200 px-6 py-4 text-center font-semibold">Starter</th>
-                  <th className="border border-gray-200 px-6 py-4 text-center font-semibold bg-orange-50">Professional</th>
-                  <th className="border border-gray-200 px-6 py-4 text-center font-semibold">Enterprise</th>
+                <tr className="bg-[hsl(var(--muted))]">
+                  <th className="border border-[hsl(var(--border))] px-6 py-4 text-left font-semibold text-[hsl(var(--foreground))]">Features</th>
+                  <th className="border border-[hsl(var(--border))] px-6 py-4 text-center font-semibold text-[hsl(var(--foreground))]">Starter</th>
+                  <th className="border border-[hsl(var(--border))] px-6 py-4 text-center font-semibold bg-orange-50 dark:bg-orange-900/20 text-[hsl(var(--foreground))]">Professional</th>
+                  <th className="border border-[hsl(var(--border))] px-6 py-4 text-center font-semibold text-[hsl(var(--foreground))]">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Premium Points</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">100</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">500</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">1,000</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Premium Points</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--foreground))]">100</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20 text-[hsl(var(--foreground))]">500</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--foreground))]">1,000</td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Access to All Sites</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Access to All Sites</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
-                    <Check className="h-5 w-5 text-green-500 mx-auto" />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Commercial License</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
-                    <Check className="h-5 w-5 text-green-500 mx-auto" />
-                  </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">
-                    <Check className="h-5 w-5 text-green-500 mx-auto" />
-                  </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Team Sharing</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Commercial License</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Priority Support</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">
-                    <Check className="h-5 w-5 text-green-500 mx-auto" />
-                  </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Bulk Downloads</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Team Sharing</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
-                    <Check className="h-5 w-5 text-green-500 mx-auto" />
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Dedicated Manager</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-200 px-6 py-4 font-medium">Custom Integrations</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center bg-orange-50">-</td>
-                  <td className="border border-gray-200 px-6 py-4 text-center">
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Priority Support</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20">
+                    <Check className="h-5 w-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
+                    <Check className="h-5 w-5 text-green-500 mx-auto" />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Bulk Downloads</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20">
+                    <Check className="h-5 w-5 text-green-500 mx-auto" />
+                  </td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
+                    <Check className="h-5 w-5 text-green-500 mx-auto" />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Dedicated Manager</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20 text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
+                    <Check className="h-5 w-5 text-green-500 mx-auto" />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 font-medium text-[hsl(var(--foreground))]">Custom Integrations</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center bg-orange-50 dark:bg-orange-900/20 text-[hsl(var(--muted-foreground))]">-</td>
+                  <td className="border border-[hsl(var(--border))] px-6 py-4 text-center">
                     <Check className="h-5 w-5 text-green-500 mx-auto" />
                   </td>
                 </tr>
@@ -261,11 +261,11 @@ export default function PricingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="mt-24 text-center bg-gradient-to-r from-purple-50 to-orange-50 rounded-2xl p-12">
-          <Typography variant="h2" className="text-3xl font-bold mb-6">
+        <section className="mt-24 text-center bg-gradient-to-r from-purple-50 to-orange-50 dark:from-purple-900/20 dark:to-orange-900/20 rounded-2xl p-12">
+          <Typography variant="h2" className="text-3xl font-bold mb-6 text-[hsl(var(--foreground))]">
             Ready to Get Started?
           </Typography>
-          <Typography variant="body-lg" className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] mb-8 max-w-2xl mx-auto">
             Join thousands of creators who trust our platform for their content needs. 
             Start with 50 free points and see the difference.
           </Typography>
@@ -279,7 +279,7 @@ export default function PricingPage() {
             </a>
             <a 
               href="/contact" 
-              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all duration-200"
+              className="inline-flex items-center justify-center px-8 py-3 border border-[hsl(var(--border))] text-[hsl(var(--foreground))] font-semibold rounded-lg hover:bg-[hsl(var(--muted))] transition-all duration-200"
             >
               <Users className="h-5 w-5 mr-2" />
               Contact Sales

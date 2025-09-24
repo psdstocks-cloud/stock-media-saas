@@ -366,10 +366,10 @@ export const PricingSection: React.FC = () => {
 
         {/* Bottom Text */}
         <div className="text-center mt-16">
-          <Typography variant="body" className="text-gray-600 mb-4">
+          <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mb-4">
             All plans include unlimited access to our entire collection of premium stock assets.
           </Typography>
-          <Typography variant="body-sm" className="text-gray-500">
+          <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
             Points never expire • No monthly fees • Cancel anytime
           </Typography>
         </div>
