@@ -52,7 +52,7 @@ export const PricingSection: React.FC = () => {
   useEffect(() => {
     const fetchPointPacks = async () => {
       try {
-        const response = await fetch('/api/point-packs')
+        const response = await fetch('/api/point-packs', { next: { revalidate: 120 } })
         const data = await response.json()
         
         if (data.success && data.pointPacks) {
