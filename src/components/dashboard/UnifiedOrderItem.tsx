@@ -86,24 +86,6 @@ export const UnifiedOrderItem: React.FC<UnifiedOrderItemProps> = ({
             </a>
           </Button>
         );
-      case 'failed':
-        return (
-          <div className="text-center">
-            <Badge variant="destructive" className="mb-2">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              Failed
-            </Badge>
-            <p className="text-xs text-destructive mb-2">{error}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full" 
-              onClick={() => onOrder(item)}
-            >
-              Retry
-            </Button>
-          </div>
-        );
       case 'ordering':
         return (
           <Button className="w-full" disabled>

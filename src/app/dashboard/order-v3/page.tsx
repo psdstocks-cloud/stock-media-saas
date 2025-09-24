@@ -90,7 +90,9 @@ export default function OrderV3Page() {
         }
         root.focus()
       }
-    } catch {}
+    } catch {
+      // no-op: clipboard focus fallback not critical
+    }
   }
 
   // v3 store (lightweight cart)
@@ -242,7 +244,9 @@ export default function OrderV3Page() {
       const pos = next.length
       try {
         textAreaRef.current.setSelectionRange(pos, pos)
-      } catch {}
+      } catch {
+        // no-op: selection range may fail on some browsers
+      }
     }
   }
 
@@ -305,7 +309,9 @@ export default function OrderV3Page() {
                 try {
                   textAreaRef.current.focus()
                   textAreaRef.current.setSelectionRange(start, end)
-                } catch {}
+                } catch {
+                  // no-op: selection range may fail on some browsers
+                }
               } else {
                 textAreaRef.current.focus()
               }
@@ -366,9 +372,13 @@ export default function OrderV3Page() {
     } finally {
       setIsLoading(false);
       if (prevFocus) {
-        try { prevFocus.focus() } catch {}
+        try { prevFocus.focus() } catch {
+          // no-op
+        }
       } else if (parseBtnRef.current) {
-        try { parseBtnRef.current.focus() } catch {}
+        try { parseBtnRef.current.focus() } catch {
+          // no-op
+        }
       }
     }
   };
@@ -424,7 +434,9 @@ export default function OrderV3Page() {
       setLiveAnnouncement('Failed to place order. Try again.')
     } finally {
       if (prevFocus) {
-        try { prevFocus.focus() } catch {}
+        try { prevFocus.focus() } catch {
+          // no-op
+        }
       }
     }
   };
@@ -597,9 +609,13 @@ export default function OrderV3Page() {
       setIsProcessing(false)
       // restore focus to a primary action if present
       if (confirmBtnRef.current) {
-        try { confirmBtnRef.current.focus() } catch {}
+        try { confirmBtnRef.current.focus() } catch {
+          // no-op
+        }
       } else if (orderAllBtnRef.current) {
-        try { orderAllBtnRef.current.focus() } catch {}
+        try { orderAllBtnRef.current.focus() } catch {
+          // no-op
+        }
       }
     }
   }
