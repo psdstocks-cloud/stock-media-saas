@@ -32,6 +32,7 @@ interface OrderHistory {
   stockItemUrl: string;
   stockSite?: { name: string; displayName: string } | null;
   debugId?: string | null;
+  taskId?: string | null;
 }
 
 export default function HistoryV3Page() {
