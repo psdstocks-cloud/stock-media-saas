@@ -41,7 +41,7 @@ export default function HistoryV3Page() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [siteFilter, setSiteFilter] = useState<string>('all');
-  const [redownloadBusy, setRedownloadBusy] = useState<Record<string, boolean>>({});
+  const [redownloadState, setRedownloadState] = useState<Record<string, 'idle' | 'loading' | 'ready' | 'failed'>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,6 +57,16 @@ export default function HistoryV3Page() {
       if (data.success) {
         // Normalize, dedupe by site+stockItemId, keeping most recent (already desc)
         const raw: OrderHistory[] = data.orders || []
+        // Determine original (first) non-zero cost per asset
+        const firstCostByKey: Record<string, number> = {}
+        for (let i = raw.length - 1; i >= 0; i--) {
+          const o = raw[i]
+          const siteName = o.stockSite?.name || 'unknown'
+          const key = `${siteName}:${o.stockItemId}`
+          if (o.cost > 0 && firstCostByKey[key] === undefined) {
+            firstCostByKey[key] = o.cost
+          }
+        }
         const seen = new Set<string>()
         const deduped: OrderHistory[] = []
         for (const o of raw) {
@@ -64,7 +74,7 @@ export default function HistoryV3Page() {
           const key = `${site}:${o.stockItemId}`
           if (!seen.has(key)) {
             seen.add(key)
-            deduped.push(o)
+            deduped.push({ ...o, cost: firstCostByKey[key] ?? o.cost })
           }
         }
         setOrders(deduped)
@@ -81,7 +91,7 @@ export default function HistoryV3Page() {
 
   const downloadFile = async (order: OrderHistory) => {
     try {
-      setRedownloadBusy(prev => ({ ...prev, [order.id]: true }))
+      setRedownloadState(prev => ({ ...prev, [order.id]: 'loading' }))
       toast.loading('Preparing download...');
       
       // Generate fresh download link from API (free re-download)
@@ -113,13 +123,14 @@ export default function HistoryV3Page() {
               if (statusData.order.downloadUrl.includes('example.com')) {
                 toast.success('This is a demo download. In production, this would download the actual file.');
               } else {
-                window.open(statusData.order.downloadUrl, '_blank');
+                setRedownloadState(prev => ({ ...prev, [order.id]: 'ready' }))
+                // Open in same tab to avoid popup blockers
+                window.location.href = statusData.order.downloadUrl
                 toast.success('Download started!');
               }
-              setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
             } else if (statusData.success && statusData.order.status === 'FAILED') {
               toast.error('Failed to generate download link');
-              setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
+              setRedownloadState(prev => ({ ...prev, [order.id]: 'failed' }))
             } else {
               // Continue polling
               setTimeout(pollForDownloadLink, 2000);
@@ -127,7 +138,7 @@ export default function HistoryV3Page() {
           } catch (error) {
             console.error('Polling error:', error);
             toast.error('Failed to get download link');
-            setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
+            setRedownloadState(prev => ({ ...prev, [order.id]: 'failed' }))
           }
         };
         
@@ -140,7 +151,9 @@ export default function HistoryV3Page() {
       console.error('Download link generation error:', error);
       toast.error('Failed to generate download link');
     } finally {
-      setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
+      if (redownloadState[order.id] !== 'ready') {
+        setRedownloadState(prev => ({ ...prev, [order.id]: prev[order.id] === 'failed' ? 'failed' : 'idle' }))
+      }
     }
   };
 
@@ -193,10 +206,10 @@ export default function HistoryV3Page() {
     const isNumericId = /^\d{3,}$/.test(term)
     const matchesSearch =
       term === '' ||
-      order.title.toLowerCase().includes(term) ||
+      getDisplayTitle(order).toLowerCase().includes(term) ||
       siteName.includes(term) ||
       (isUrl && (order.stockItemUrl || '').toLowerCase().includes(term)) ||
-      (isDebugId && (extractDebugId(order)?.toLowerCase() || '').includes(term)) ||
+      (isDebugId && ((extractDebugId(order)?.toLowerCase() || order.taskId?.toLowerCase() || ''))) ||
       (isNumericId && order.stockItemId.includes(term))
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesSite = siteFilter === 'all' || (order.stockSite?.name || 'unknown') === siteFilter;
@@ -368,10 +381,10 @@ export default function HistoryV3Page() {
                       <h3 className="font-semibold">
                         {getPublicItemUrl(order) ? (
                           <a href={getPublicItemUrl(order)} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-90">
-                            {order.title}
+                            {getDisplayTitle(order)}
                           </a>
                         ) : (
-                          order.title
+                          getDisplayTitle(order)
                         )}
                       </h3>
                       <p className="text-sm text-[hsl(var(--muted-foreground))]">{order.stockSite?.displayName || order.stockSite?.name || 'Unknown'}</p>
@@ -413,13 +426,21 @@ export default function HistoryV3Page() {
                         <Button
                           size="sm"
                           onClick={() => downloadFile(order)}
-                          disabled={!!redownloadBusy[order.id]}
-                          className="glass-hover bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-95"
+                          disabled={redownloadState[order.id] === 'loading'}
+                          className={
+                            "glass-hover text-[hsl(var(--primary-foreground))] hover:opacity-95 " +
+                            (redownloadState[order.id] === 'ready' ? 'bg-green-600' : 'bg-[hsl(var(--primary))]')
+                          }
                           aria-label="Generate fresh download link"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
-                          Download (Free)
+                          {redownloadState[order.id] === 'loading' ? 'Generating…' : redownloadState[order.id] === 'ready' ? 'Download Ready' : 'Download (Free)'}
                         </Button>
+                      )}
+                      {redownloadState[order.id] === 'loading' && (
+                        <div className="w-24 h-1 bg-[hsl(var(--muted))] rounded overflow-hidden">
+                          <div className="h-full w-1/2 bg-[hsl(var(--ring))] animate-pulse"></div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -447,4 +468,9 @@ function getPublicItemUrl(order: OrderHistory): string | '' {
     return `https://www.shutterstock.com/image-photo/${order.stockItemId}`
   }
   return ''
+}
+
+function getDisplayTitle(order: OrderHistory): string {
+  const t = order.title || `${order.stockSite?.displayName || order.stockSite?.name || 'Item'} - ${order.stockItemId}`
+  return t.replace(/\(Re-download\)/gi, '').replace(/\s+\(\s*\)/g, '').trim()
 }
