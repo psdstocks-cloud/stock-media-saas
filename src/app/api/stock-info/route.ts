@@ -319,8 +319,8 @@ export async function POST(request: NextRequest) {
       }
     };
     
-    // Generate dynamic content based on source and ID
-    const siteData = mockData[source] || {
+    // Generate dynamic content based on source and ID - always use generatePreviewUrl
+    const siteData = {
       title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
       image: generatePreviewUrl(source, id),
       points: 10,
