@@ -7,17 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import useUserStore from '@/stores/userStore';
 import { toast } from 'react-hot-toast';
-import { SUPPORTED_SITES } from '@/lib/supported-sites';
 import { 
   Download, 
-  ExternalLink, 
   CheckCircle, 
   Clock, 
   AlertCircle,
   RefreshCw,
   Search,
-  Filter,
-  Calendar,
   FileText
 } from 'lucide-react';
 
@@ -180,11 +176,11 @@ export default function HistoryV3Page() {
 
   // Filter orders based on search and filters
   const filteredOrders = orders.filter(order => {
+    const siteName = (order.stockSite?.name || order.stockSite?.displayName || '').toLowerCase()
     const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.site.toLowerCase().includes(searchTerm.toLowerCase());
+                         siteName.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSite = siteFilter === 'all' || order.site === siteFilter;
-    
+    const matchesSite = siteFilter === 'all' || (order.stockSite?.name || 'unknown') === siteFilter;
     return matchesSearch && matchesStatus && matchesSite;
   });
 
