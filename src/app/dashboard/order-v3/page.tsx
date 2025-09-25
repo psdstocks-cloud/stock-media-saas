@@ -161,12 +161,12 @@ export default function OrderV3Page() {
         const stockInfo = json.data?.stockInfo
         const platform = json.data?.stockSite?.displayName || item.site
         const points = Number(stockInfo?.points ?? 10)
-        const imageRaw = stockInfo?.image || item.imageUrl
+        const apiId: string | undefined = stockInfo?.id || json.data?.parsedData?.id || item.siteId
+        const imageRaw = stockInfo?.image
         const image = imageRaw ? `/api/proxy-image?url=${encodeURIComponent(imageRaw)}` : ''
-        const titleFromApi: string | undefined = stockInfo?.title || json.data?.title
-        const parsedId: string | undefined = json.data?.parsedData?.id || item.siteId
-        updateItemStatus?.(item.id, 'ready', { data: { title: titleFromApi || `${platform} - ${parsedId}`, thumbnail: image, points, platform } })
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: i.isPreviouslyOrdered ? 0 : points, isLoading: false, title: titleFromApi || `${platform} - ${parsedId}` } : i))
+        const displayTitle = `${platform} - ${apiId}`
+        updateItemStatus?.(item.id, 'ready', { data: { title: displayTitle, thumbnail: image, points, platform } })
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: 'ready' as const, imageUrl: image, cost: i.isPreviouslyOrdered ? 0 : points, isLoading: false, title: displayTitle } : i))
         setLiveAnnouncement('Item details loaded. You can place the order now.')
       } else {
         const errMsg = json?.message || 'Failed to fetch stock info'
