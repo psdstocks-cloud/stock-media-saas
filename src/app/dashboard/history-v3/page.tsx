@@ -14,7 +14,8 @@ import {
   AlertCircle,
   RefreshCw,
   Search,
-  FileText
+  FileText,
+  Copy
 } from 'lucide-react';
 
 interface OrderHistory {
@@ -30,6 +31,7 @@ interface OrderHistory {
   stockItemId: string; // asset id per platform
   stockItemUrl: string;
   stockSite?: { name: string; displayName: string } | null;
+  debugId?: string | null;
 }
 
 export default function HistoryV3Page() {
@@ -39,6 +41,8 @@ export default function HistoryV3Page() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [siteFilter, setSiteFilter] = useState<string>('all');
+  const [redownloadBusy, setRedownloadBusy] = useState<Record<string, boolean>>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrderHistory();
@@ -77,6 +81,7 @@ export default function HistoryV3Page() {
 
   const downloadFile = async (order: OrderHistory) => {
     try {
+      setRedownloadBusy(prev => ({ ...prev, [order.id]: true }))
       toast.loading('Preparing download...');
       
       // Generate fresh download link from API (free re-download)
@@ -84,7 +89,7 @@ export default function HistoryV3Page() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([{
-          url: order.stockItemUrl,
+          url: order.stockItemUrl || getPublicItemUrl(order),
           site: order.stockSite?.name || 'unknown',
           id: order.stockItemId,
           title: order.title || `${order.stockSite?.displayName || 'Item'} - ${order.stockItemId}`,
@@ -111,8 +116,10 @@ export default function HistoryV3Page() {
                 window.open(statusData.order.downloadUrl, '_blank');
                 toast.success('Download started!');
               }
+              setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
             } else if (statusData.success && statusData.order.status === 'FAILED') {
               toast.error('Failed to generate download link');
+              setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
             } else {
               // Continue polling
               setTimeout(pollForDownloadLink, 2000);
@@ -120,17 +127,20 @@ export default function HistoryV3Page() {
           } catch (error) {
             console.error('Polling error:', error);
             toast.error('Failed to get download link');
+            setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
           }
         };
         
         // Start polling
-        setTimeout(pollForDownloadLink, 2000);
+        setTimeout(pollForDownloadLink, 500);
       } else {
         throw new Error(data.error || 'Failed to generate download link');
       }
     } catch (error) {
       console.error('Download link generation error:', error);
       toast.error('Failed to generate download link');
+    } finally {
+      setRedownloadBusy(prev => ({ ...prev, [order.id]: false }))
     }
   };
 
@@ -177,8 +187,17 @@ export default function HistoryV3Page() {
   // Filter orders based on search and filters
   const filteredOrders = orders.filter(order => {
     const siteName = (order.stockSite?.name || order.stockSite?.displayName || '').toLowerCase()
-    const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         siteName.includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase()
+    const isUrl = term.startsWith('http')
+    const isDebugId = /[a-f0-9]{32}/i.test(term)
+    const isNumericId = /^\d{3,}$/.test(term)
+    const matchesSearch =
+      term === '' ||
+      order.title.toLowerCase().includes(term) ||
+      siteName.includes(term) ||
+      (isUrl && (order.stockItemUrl || '').toLowerCase().includes(term)) ||
+      (isDebugId && (extractDebugId(order)?.toLowerCase() || '').includes(term)) ||
+      (isNumericId && order.stockItemId.includes(term))
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesSite = siteFilter === 'all' || (order.stockSite?.name || 'unknown') === siteFilter;
     return matchesSearch && matchesStatus && matchesSite;
@@ -346,7 +365,15 @@ export default function HistoryV3Page() {
                       )
                     })()}
                     <div className="flex-1">
-                      <h3 className="font-semibold">{order.title}</h3>
+                      <h3 className="font-semibold">
+                        {getPublicItemUrl(order) ? (
+                          <a href={getPublicItemUrl(order)} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-90">
+                            {order.title}
+                          </a>
+                        ) : (
+                          order.title
+                        )}
+                      </h3>
                       <p className="text-sm text-[hsl(var(--muted-foreground))]">{order.stockSite?.displayName || order.stockSite?.name || 'Unknown'}</p>
                       <p className="text-xs text-[hsl(var(--muted-foreground))]">
                         Ordered: {formatDate(order.createdAt)}
@@ -354,6 +381,27 @@ export default function HistoryV3Page() {
                           <span> • Completed: {formatDate(order.completedAt)}</span>
                         )}
                       </p>
+                      {extractDebugId(order) && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Debug ID:</span>
+                          <code className="text-[10px] px-1 py-0.5 rounded bg-[hsl(var(--muted))]">{extractDebugId(order)}</code>
+                          <button
+                            className="inline-flex items-center text-[10px] px-2 py-0.5 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors relative"
+                            onClick={() => {
+                              navigator.clipboard.writeText(extractDebugId(order) || '')
+                              setCopiedId(order.id)
+                              setTimeout(() => setCopiedId(null), 1200)
+                            }}
+                            aria-label="Copy debug ID"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copy
+                            {copiedId === order.id && (
+                              <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 shadow-sm">Copied!</span>
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center space-x-3">
                       <Badge className={getStatusColor(order.status)}>
@@ -365,11 +413,12 @@ export default function HistoryV3Page() {
                         <Button
                           size="sm"
                           onClick={() => downloadFile(order)}
+                          disabled={!!redownloadBusy[order.id]}
                           className="glass-hover bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-95"
                           aria-label="Generate fresh download link"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
-                          Redownload (Free)
+                          Download (Free)
                         </Button>
                       )}
                     </div>
@@ -382,4 +431,20 @@ export default function HistoryV3Page() {
       </div>
     </div>
   );
+}
+
+function extractDebugId(order: OrderHistory): string | null {
+  if (order.debugId) return order.debugId
+  const url = order.downloadUrl || ''
+  const m = url.match(/[a-f0-9]{32}/i)
+  return m ? m[0] : null
+}
+
+function getPublicItemUrl(order: OrderHistory): string | '' {
+  if (order.stockItemUrl) return order.stockItemUrl
+  const site = order.stockSite?.name
+  if (site === 'shutterstock') {
+    return `https://www.shutterstock.com/image-photo/${order.stockItemId}`
+  }
+  return ''
 }
