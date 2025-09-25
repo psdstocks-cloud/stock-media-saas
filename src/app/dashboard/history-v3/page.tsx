@@ -78,7 +78,26 @@ export default function HistoryV3Page() {
             deduped.push({ ...o, cost: firstCostByKey[key] ?? o.cost })
           }
         }
-        setOrders(deduped)
+        // Enrich missing previews/titles from stock-info
+        const enriched = await Promise.all(deduped.map(async (o) => {
+          if (o.imageUrl && o.title) return o
+          try {
+            const res = await fetch('/api/stock-info', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: o.stockItemUrl || '', id: o.stockItemId })
+            })
+            const js = await res.json()
+            const img = js?.data?.stockInfo?.image || js?.data?.image
+            const image = img ? `/api/proxy-image?url=${encodeURIComponent(img)}` : o.imageUrl
+            const platform = js?.data?.stockSite?.displayName || o.stockSite?.displayName || o.stockSite?.name
+            const title = platform ? `${platform} - ${o.stockItemId}` : (o.title || '')
+            return { ...o, imageUrl: image || o.imageUrl, title: title || o.title }
+          } catch {
+            return o
+          }
+        }))
+        setOrders(enriched)
       } else {
         toast.error('Failed to load order history');
       }
@@ -424,24 +443,27 @@ export default function HistoryV3Page() {
                       </Badge>
                       <span className="font-semibold">{order.cost} pts</span>
                       {(order.status === 'READY' || order.status === 'COMPLETED') && (
-                        <Button
-                          size="sm"
-                          onClick={() => downloadFile(order)}
-                          disabled={redownloadState[order.id] === 'loading'}
-                          className={
-                            "glass-hover text-[hsl(var(--primary-foreground))] hover:opacity-95 " +
-                            (redownloadState[order.id] === 'ready' ? 'bg-green-600' : 'bg-[hsl(var(--primary))]')
-                          }
-                          aria-label="Generate fresh download link"
-                        >
-                          <RefreshCw className="w-4 h-4 mr-1" />
-                          {redownloadState[order.id] === 'loading' ? 'Generating…' : redownloadState[order.id] === 'ready' ? 'Download Ready' : 'Download (Free)'}
-                        </Button>
-                      )}
-                      {redownloadState[order.id] === 'loading' && (
-                        <div className="w-24 h-1 bg-[hsl(var(--muted))] rounded overflow-hidden">
-                          <div className="h-full w-1/2 bg-[hsl(var(--ring))] animate-pulse"></div>
-                        </div>
+                        redownloadState[order.id] === 'loading' ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-1 bg-[hsl(var(--muted))] rounded overflow-hidden">
+                              <div className="h-full w-1/2 bg-[hsl(var(--ring))] animate-pulse"></div>
+                            </div>
+                            <span className="text-xs text-[hsl(var(--muted-foreground))]">Processing…</span>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => downloadFile(order)}
+                            className={
+                              "glass-hover text-[hsl(var(--primary-foreground))] hover:opacity-95 " +
+                              (redownloadState[order.id] === 'ready' ? 'bg-green-600' : 'bg-[hsl(var(--primary))]')
+                            }
+                            aria-label="Generate fresh download link"
+                          >
+                            {redownloadState[order.id] === 'ready' ? <Download className="w-4 h-4 mr-1" /> : <RefreshCw className="w-4 h-4 mr-1" />}
+                            {redownloadState[order.id] === 'ready' ? 'Download now' : 'Download (Free)'}
+                          </Button>
+                        )
                       )}
                     </div>
                   </div>
