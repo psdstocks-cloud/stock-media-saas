@@ -43,9 +43,12 @@ export async function GET(request: NextRequest) {
     let nehtwData: { title?: string; image?: string; points?: number; price?: number } | null = null
     try {
       const rawApiKey = process.env.NEHTW_API_KEY
+      console.log('NEHTW API Key present:', !!rawApiKey)
       if (rawApiKey) {
+        console.log('Calling NEHTW API for:', source, assetId)
         const api = new NehtwAPI(rawApiKey.replace(/[{}]/g, ''))
         const res = await api.getStockInfo(source, assetId)
+        console.log('NEHTW API Response:', JSON.stringify(res, null, 2))
         if (res.success && res.data) {
           nehtwData = {
             title: res.data.title,
@@ -53,9 +56,15 @@ export async function GET(request: NextRequest) {
             points: 10,
             price: 10
           }
+          console.log('Using NEHTW API data:', nehtwData)
+        } else {
+          console.log('NEHTW API call unsuccessful or no data')
         }
+      } else {
+        console.log('No NEHTW API key found, using fallback preview generation')
       }
     } catch (e) {
+      console.error('NEHTW API error:', e)
       // Silently handle external API errors, fall back to mock data
     }
 
