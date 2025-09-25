@@ -231,6 +231,35 @@ export async function POST(request: NextRequest) {
 
     const { source, id } = parseResult;
 
+    // Attempt to fetch real stock info from NEHTW (POST method)
+    let nehtwData: { title?: string; image?: string; points?: number; price?: number } | null = null
+    try {
+      const rawApiKey = process.env.NEHTW_API_KEY
+      console.log('NEHTW API Key present:', !!rawApiKey)
+      if (rawApiKey) {
+        console.log('Calling NEHTW API for:', source, id)
+        const api = new NehtwAPI(rawApiKey.replace(/[{}]/g, ''))
+        const res = await api.getStockInfo(source, id)
+        console.log('NEHTW API Response:', JSON.stringify(res, null, 2))
+        if (res.success && res.data) {
+          nehtwData = {
+            title: res.data.title,
+            image: res.data.image,
+            points: 10,
+            price: 10
+          }
+          console.log('Using NEHTW API data:', nehtwData)
+        } else {
+          console.log('NEHTW API call unsuccessful or no data')
+        }
+      } else {
+        console.log('No NEHTW API key found, using fallback preview generation')
+      }
+    } catch (e) {
+      console.error('NEHTW API error:', e)
+      // Silently handle external API errors, fall back to mock data
+    }
+
     // Return mock data with correct values based on the actual API response
     console.log('Returning mock data for source:', source);
     
@@ -328,8 +357,8 @@ export async function POST(request: NextRequest) {
       }
     };
     
-    // Generate dynamic content based on source and ID - always use generatePreviewUrl
-    const siteData = {
+    // Prefer real NEHTW data when available, otherwise use generatePreviewUrl
+    const siteData = nehtwData ?? {
       title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
       image: generatePreviewUrl(source, id),
       points: 10,
