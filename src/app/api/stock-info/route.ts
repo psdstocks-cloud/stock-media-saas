@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
     // Prefer real data when available
     const siteData = nehtwData ?? (mockData[source] || {
       title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
-      image: `https://picsum.photos/400/400?random=${assetId}&sig=${source}`,
+      image: generatePreviewUrl(source, assetId),
       points: 10,
       price: 10
     });
@@ -322,7 +322,7 @@ export async function POST(request: NextRequest) {
     // Generate dynamic content based on source and ID
     const siteData = mockData[source] || {
       title: `${source.charAt(0).toUpperCase() + source.slice(1)} - Professional ${source.includes('video') ? 'Video' : source.includes('audio') ? 'Audio' : source.includes('icon') ? 'Icon' : 'Image'} Asset`,
-      image: `https://picsum.photos/400/400?random=${id}&sig=${source}`,
+      image: generatePreviewUrl(source, id),
       points: 10,
       price: 10
     };
@@ -360,5 +360,31 @@ export async function POST(request: NextRequest) {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
+  }
+}
+
+function generatePreviewUrl(site: string, id: string): string {
+  switch (site.toLowerCase()) {
+    case 'shutterstock':
+      // Use the format from your example: https://i2.pngimg.me/stock/shutterstock/1661260816.jpg
+      return `https://i2.pngimg.me/stock/shutterstock/${id}.jpg`
+    case 'dreamstime':
+      return `https://thumbs.dreamstime.com/l/${id}.jpg`
+    case 'depositphotos':
+      return `https://st.depositphotos.com/1234567/${id}/i/450/depositphotos_${id}-stock-photo.jpg`
+    case 'adobestock':
+      return `https://as1.ftcdn.net/v2/jpg/${id.slice(0,2)}/${id.slice(2,4)}/${id.slice(4,6)}/${id.slice(6,8)}/1000_F_${id}_abc123.jpg`
+    case '123rf':
+      return `https://us.123rf.com/450wm/${id}.jpg`
+    case 'istockphoto':
+      return `https://media.istockphoto.com/id/${id}/photo.jpg?s=612x612`
+    case 'freepik':
+      return `https://img.freepik.com/free-photo/${id}.jpg`
+    case 'vecteezy':
+      return `https://static.vecteezy.com/${id}/preview.jpg`
+    case 'unsplash':
+      return `https://images.unsplash.com/photo-${id}?w=400&h=400&fit=crop`
+    default:
+      return `https://picsum.photos/400/400?random=${id}&sig=${site}`
   }
 }
