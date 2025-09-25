@@ -369,7 +369,7 @@ function generatePreviewUrl(site: string, id: string): string {
       // Use the format from your example: https://i2.pngimg.me/stock/shutterstock/1661260816.jpg
       return `https://i2.pngimg.me/stock/shutterstock/${id}.jpg`
     case 'dreamstime':
-      return `https://thumbs.dreamstime.com/l/${id}.jpg`
+      return `https://thumbs.dreamstime.com/z/r-${id}.jpg`
     case 'depositphotos':
       return `https://st.depositphotos.com/1234567/${id}/i/450/depositphotos_${id}-stock-photo.jpg`
     case 'adobestock':
