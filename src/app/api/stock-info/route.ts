@@ -371,11 +371,13 @@ function generatePreviewUrl(site: string, id: string): string {
     case 'dreamstime':
       return `https://thumbs.dreamstime.com/z/r-${id}.jpg`
     case 'depositphotos':
-      // Use the actual DepositPhotos thumbnail format
+      // DepositPhotos uses different subdomains for different ID ranges
       const idStr = id.toString()
-      const folder1 = idStr.slice(0, 2) // "18"
-      const folder2 = idStr.slice(2, 5) // "287"
-      return `https://st3.depositphotos.com/thumbs/2115371/image/${folder1}${folder2}/${id}/thumb_110.jpg?forcejpeg=true`
+      const folder = idStr.slice(0, 5) // First 5 digits for folder
+      const idNum = parseInt(id)
+      // Use st3 for higher IDs (like 182879584), st for lower IDs (like 108554492)
+      const subdomain = idNum > 150000000 ? 'st3' : 'st'
+      return `https://${subdomain}.depositphotos.com/thumbs/2115371/image/${folder}/${id}/thumb_110.jpg?forcejpeg=true`
     case 'adobestock':
       return `https://as1.ftcdn.net/v2/jpg/${id.slice(0,2)}/${id.slice(2,4)}/${id.slice(4,6)}/${id.slice(6,8)}/1000_F_${id}_abc123.jpg`
     case '123rf':
