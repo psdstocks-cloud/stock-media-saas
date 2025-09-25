@@ -90,9 +90,10 @@ export default function HistoryV3Page() {
             const js = await res.json()
             const img = js?.data?.stockInfo?.image || js?.data?.image
             const image = img ? `/api/proxy-image?url=${encodeURIComponent(img)}` : o.imageUrl
+            const apiTitle: string | undefined = js?.data?.stockInfo?.title || js?.data?.title
             const platform = js?.data?.stockSite?.displayName || o.stockSite?.displayName || o.stockSite?.name
-            const title = platform ? `${platform} - ${o.stockItemId}` : (o.title || '')
-            return { ...o, imageUrl: image || o.imageUrl, title: title || o.title }
+            const title = apiTitle || (platform ? `${platform} - ${o.stockItemId}` : (o.title || ''))
+            return { ...o, imageUrl: image || o.imageUrl, title }
           } catch {
             return o
           }
