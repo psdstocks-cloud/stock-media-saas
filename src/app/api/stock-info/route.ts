@@ -375,8 +375,8 @@ function generatePreviewUrl(site: string, id: string): string {
       const idStr = id.toString()
       const folder = idStr.slice(0, 5) // First 5 digits for folder
       const idNum = parseInt(id)
-      // Use st3 for higher IDs (like 182879584), st for lower IDs (like 108554492)
-      const subdomain = idNum > 150000000 ? 'st3' : 'st'
+      // Based on observed patterns: st3 for IDs in range ~180M-200M, st for others
+      const subdomain = (idNum >= 180000000 && idNum < 200000000) ? 'st3' : 'st'
       return `https://${subdomain}.depositphotos.com/thumbs/2115371/image/${folder}/${id}/thumb_110.jpg?forcejpeg=true`
     case 'adobestock':
       return `https://as1.ftcdn.net/v2/jpg/${id.slice(0,2)}/${id.slice(2,4)}/${id.slice(4,6)}/${id.slice(6,8)}/1000_F_${id}_abc123.jpg`
