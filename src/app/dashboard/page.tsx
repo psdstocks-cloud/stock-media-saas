@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/components/ui'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PointsOverview from '@/components/dashboard/PointsOverview'
-import OrdersManagement from '@/components/dashboard/OrdersManagement'
-import SubscriptionManager from '@/components/dashboard/SubscriptionManager'
-import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
+import dynamic from 'next/dynamic'
+const OrdersManagement = dynamic(() => import('@/components/dashboard/OrdersManagement'), { ssr: false })
+const SubscriptionManager = dynamic(() => import('@/components/dashboard/SubscriptionManager'), { ssr: false })
+const StockMediaSearch = dynamic(() => import('@/components/dashboard/StockMediaSearch'), { ssr: false })
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
 import RecentActivity from '@/components/dashboard/RecentActivity'
 import BillingSummary from '@/components/dashboard/BillingSummary'
@@ -138,7 +139,7 @@ export default function DashboardPage() {
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-[hsl(var(--muted-foreground))]">
-                <User className="h-4 w-4" />
+                <User className="h-4 w-4" aria-hidden="true" />
                 <span className="text-sm">{user.role}</span>
               </div>
               {user.role === 'admin' || user.role === 'SUPER_ADMIN' ? (
@@ -147,8 +148,9 @@ export default function DashboardPage() {
                   variant="outline"
                   size="sm"
                   className="text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"
+                  title="Open Admin Panel"
                 >
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Shield className="h-4 w-4 mr-2" aria-hidden="true" />
                   Admin Panel
                 </Button>
               ) : null}
@@ -157,8 +159,9 @@ export default function DashboardPage() {
                 variant="outline"
                 size="sm"
                 className="text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"
+                title="Sign out of your account"
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
                 Logout
               </Button>
             </div>
@@ -169,29 +172,29 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); const el = document.getElementById('content'); if (el) el.focus(); }} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card sticky top-[72px] z-40">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card sticky top-[72px] z-40" title="Dashboard sections">
             <TabsTrigger value="overview" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <Coins className="h-4 w-4 mr-2" />
+              <Coins className="h-4 w-4 mr-2" aria-hidden="true" />
               Overview
             </TabsTrigger>
             <TabsTrigger value="search" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <FileSearch className="h-4 w-4 mr-2" />
+              <FileSearch className="h-4 w-4 mr-2" aria-hidden="true" />
               Search
             </TabsTrigger>
             <TabsTrigger value="orders" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <ShoppingCart className="h-4 w-4 mr-2" />
+              <ShoppingCart className="h-4 w-4 mr-2" aria-hidden="true" />
               Orders
             </TabsTrigger>
             <TabsTrigger value="subscription" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <CreditCard className="h-4 w-4 mr-2" />
+              <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
               Subscription
             </TabsTrigger>
             <TabsTrigger value="profile" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
               Profile
             </TabsTrigger>
             <TabsTrigger value="billing" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <CreditCard className="h-4 w-4 mr-2" />
+              <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
               Billing
             </TabsTrigger>
           </TabsList>
