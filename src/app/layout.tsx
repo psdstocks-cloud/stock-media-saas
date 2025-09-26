@@ -14,6 +14,14 @@ export const metadata: Metadata = {
     title: "Stock Media SaaS - Design System Demo",
     description: "A modern, production-ready SaaS platform with Material.io efficiency, Spotify UX, and Figma's minimalist design.",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Stock Media SaaS preview"
+      }
+    ],
   },
 }
 
@@ -39,10 +47,56 @@ export default function RootLayout({
   })();
           `}}
         />
+        {/* JSON-LD: Organization and Product */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Stock Media SaaS",
+              "url": "https://stock-media-saas.vercel.app",
+              "logo": "https://stock-media-saas.vercel.app/og-image.png",
+              "sameAs": [
+                "https://twitter.com",
+                "https://www.linkedin.com",
+                "https://github.com"
+              ]
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "Stock Media Points",
+              "image": ["https://stock-media-saas.vercel.app/og-image.png"],
+              "description": "Point-based access to premium stock assets across 50+ providers.",
+              "brand": {
+                "@type": "Brand",
+                "name": "Stock Media SaaS"
+              },
+              "offers": {
+                "@type": "AggregateOffer",
+                "priceCurrency": "USD",
+                "lowPrice": "9.99",
+                "highPrice": "69.99",
+                "offerCount": "3"
+              }
+            })
+          }}
+        />
       </head>
       <body className={inter.className}>
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
+          Skip to content
+        </a>
         <ErrorBoundary>
-          {children}
+          <main id="main" role="main">
+            {children}
+          </main>
         </ErrorBoundary>
       </body>
     </html>

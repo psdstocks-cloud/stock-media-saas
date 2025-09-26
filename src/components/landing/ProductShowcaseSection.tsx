@@ -1,8 +1,10 @@
 'use client'
 
 import React from 'react'
+import DemoVideoModal from '@/components/modals/DemoVideoModal'
 
 export const ProductShowcaseSection: React.FC = () => {
+  const [isDemoOpen, setIsDemoOpen] = React.useState(false)
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -20,8 +22,11 @@ export const ProductShowcaseSection: React.FC = () => {
           ))}
         </div>
         <div className="text-center mt-8">
-          <a href="#how-it-works" className="inline-flex items-center px-4 py-2 rounded-md border border-[var(--brand-purple-20)] text-[var(--brand-purple-hex)]">Watch 45s demo</a>
+          <button onClick={() => setIsDemoOpen(true)} className="inline-flex items-center px-4 py-2 rounded-md border border-[var(--brand-purple-20)] text-[var(--brand-purple-hex)]" aria-label="Watch quick demo">
+            Watch demo
+          </button>
         </div>
+        <DemoVideoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
       </div>
     </section>
   )

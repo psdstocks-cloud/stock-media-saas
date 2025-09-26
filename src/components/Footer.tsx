@@ -27,39 +27,43 @@ export default function Footer() {
             
             {/* Social Links + Newsletter */}
             <div className="flex space-x-4">
-              <Button variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
-                <Twitter className="h-4 w-4" />
+              <Button aria-label="Twitter" variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
+                <Twitter className="h-4 w-4" aria-hidden="true" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
-                <Linkedin className="h-4 w-4" />
+              <Button aria-label="LinkedIn" variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
+                <Linkedin className="h-4 w-4" aria-hidden="true" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
-                <Github className="h-4 w-4" />
+              <Button aria-label="GitHub" variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
+                <Github className="h-4 w-4" aria-hidden="true" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
-                <Mail className="h-4 w-4" />
+              <Button aria-label="Email" variant="ghost" size="sm" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
+                <Mail className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
-            <form className="mt-6 flex max-w-sm" onSubmit={async (e) => {
+            <form aria-describedby="newsletter-hint" className="mt-6 flex max-w-sm" onSubmit={async (e) => {
               e.preventDefault();
               const form = e.currentTarget as HTMLFormElement;
               const input = form.querySelector('input[name=email]') as HTMLInputElement | null;
               const email = input?.value || '';
+              const status = form.querySelector('#newsletter-status') as HTMLDivElement | null;
               try {
                 const res = await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
                 if (res.ok) {
                   input && (input.value = '');
-                  alert('Subscribed successfully!');
+                  status && (status.textContent = 'Subscribed successfully!');
                 } else {
-                  alert('Subscription failed.');
+                  status && (status.textContent = 'Subscription failed.');
                 }
               } catch (_err) {
-                alert('Network error.');
+                status && (status.textContent = 'Network error.');
               }
             }}>
-              <input name="email" type="email" placeholder="Get product updates" className="flex-1 rounded-l-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] px-3 py-2 placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-ring" />
+              <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+              <input id="newsletter-email" name="email" type="email" placeholder="Get product updates" required autoComplete="email" className="flex-1 rounded-l-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] px-3 py-2 placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-2 focus:ring-ring" />
               <button type="submit" className="rounded-r-md px-4 bg-gradient-to-r from-primary to-secondary text-white">Subscribe</button>
             </form>
+            <div id="newsletter-status" role="status" aria-live="polite" className="mt-2 text-[hsl(var(--muted-foreground))] text-sm"></div>
+            <p id="newsletter-hint" className="sr-only">We respect your privacy. You can unsubscribe at any time.</p>
           </div>
 
           {/* Product Links */}
