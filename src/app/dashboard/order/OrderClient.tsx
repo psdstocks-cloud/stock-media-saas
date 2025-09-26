@@ -221,6 +221,31 @@ export default function OrderClient() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-white">Create New Order</h1>
+      {/* Low balance banner */}
+      {userPoints !== null && totalCostForReadyItems > 0 && userPoints < totalCostForReadyItems && (
+        <div className="mb-6 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <Typography variant="body" className="text-yellow-200 font-medium">
+                Low balance: You need {totalCostForReadyItems} points but only have {userPoints}.
+              </Typography>
+              <Typography variant="caption" className="text-yellow-300/80">
+                Shortfall: {(totalCostForReadyItems - (userPoints || 0))} points
+              </Typography>
+            </div>
+            <Button
+              onClick={() => {
+                // Redirect to pricing; could append query with suggested pack later
+                window.location.href = '/pricing'
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <Coins className="h-4 w-4 mr-2" />
+              Buy points
+            </Button>
+          </div>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
