@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
+import { requirePermission } from '@/lib/rbac'
 import { PointsManager } from '@/lib/points'
 import { getUserFromRequest } from '@/lib/jwt-auth'
 import { prisma } from '@/lib/prisma'
@@ -77,6 +78,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    const guard = await requirePermission(request, session?.user?.id, 'points.adjust')
+    if (guard) return guard
+
     const { userId, amount, type, description } = await request.json()
 
     if (!userId || !amount || !type) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWT } from '@/lib/jwt-auth'
 import { prisma } from '@/lib/prisma'
+import { requirePermission } from '@/lib/rbac'
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +15,8 @@ export async function GET(request: NextRequest) {
 
     // Verify JWT token
     const user = verifyJWT(adminToken);
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const guard = await requirePermission(request, user?.id, 'users.view')
+    if (guard) return guard
 
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')

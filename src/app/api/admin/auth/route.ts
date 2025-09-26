@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
+import { requirePermission } from '@/lib/rbac'
 import bcrypt from 'bcryptjs'
 
 export const dynamic = 'force-dynamic';
@@ -122,10 +123,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'users.view')
+    if (guard) return guard
 
     return NextResponse.json({
       authenticated: true,

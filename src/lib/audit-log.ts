@@ -10,6 +10,9 @@ interface CreateAuditLogParams {
   resourceId?: string
   oldValues?: any
   newValues?: any
+  permission?: string
+  reason?: string
+  permissionSnapshot?: any
   ipAddress?: string
   userAgent?: string
 }
@@ -23,6 +26,9 @@ export async function createAuditLog(params: CreateAuditLogParams) {
       resourceId,
       oldValues,
       newValues,
+      permission,
+      reason,
+      permissionSnapshot,
       ipAddress,
       userAgent
     } = params
@@ -35,6 +41,9 @@ export async function createAuditLog(params: CreateAuditLogParams) {
         resourceId,
         oldValues: oldValues ? JSON.stringify(oldValues) : null,
         newValues: newValues ? JSON.stringify(newValues) : null,
+        permission,
+        reason,
+        permissionSnapshot: permissionSnapshot ? JSON.stringify(permissionSnapshot) : null,
         ipAddress,
         userAgent
       }

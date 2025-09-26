@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit-log'
+import { requirePermission } from '@/lib/rbac'
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs'; // Use Node.js runtime for Prisma and other Node.js APIs
@@ -15,10 +16,8 @@ export async function GET(
 ) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'flags.view')
+    if (guard) return guard
     
     // Ensure id exists and is a string
     const { id } = await params;
@@ -47,10 +46,8 @@ export async function PUT(
 ) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'flags.manage')
+    if (guard) return guard
 
     const { id } = await params;
     if (!id) {
@@ -110,6 +107,9 @@ export async function PUT(
         isEnabled: updatedFeatureFlag.isEnabled,
         rolloutPercentage: updatedFeatureFlag.rolloutPercentage
       },
+      permission: 'flags.manage',
+      reason: 'Update feature flag',
+      permissionSnapshot: { permissions: ['flags.manage'] },
       ipAddress: clientIP,
       userAgent
     })
@@ -127,10 +127,8 @@ export async function DELETE(
 ) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'flags.manage')
+    if (guard) return guard
 
     const { id } = await params;
     if (!id) {
@@ -163,6 +161,9 @@ export async function DELETE(
         name: currentFeatureFlag.name,
         isEnabled: currentFeatureFlag.isEnabled
       },
+      permission: 'flags.manage',
+      reason: 'Delete feature flag',
+      permissionSnapshot: { permissions: ['flags.manage'] },
       ipAddress: clientIP,
       userAgent
     })

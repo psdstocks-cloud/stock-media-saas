@@ -25,7 +25,7 @@ export default function EmptyState({ type = 'no-items', onAction, actionText, ti
     switch (type) {
       case 'no-urls':
         return {
-          icon: <LinkIcon className="h-12 w-12 text-white/40" />,
+          icon: <LinkIcon className="h-12 w-12 text-white/40" aria-hidden="true" />,
           title: 'No URLs Entered',
           description: 'Paste your stock media URLs above to get started',
           actionText: actionText || 'Enter URLs',
@@ -34,7 +34,7 @@ export default function EmptyState({ type = 'no-items', onAction, actionText, ti
       
       case 'no-items':
         return {
-          icon: <FileImage className="h-12 w-12 text-white/40" />,
+          icon: <FileImage className="h-12 w-12 text-white/40" aria-hidden="true" />,
           title: 'No Items to Display',
           description: 'Your processed links will appear here once you enter some URLs',
           actionText: actionText || 'Add URLs',
@@ -43,7 +43,7 @@ export default function EmptyState({ type = 'no-items', onAction, actionText, ti
       
       case 'all-failed':
         return {
-          icon: <AlertCircle className="h-12 w-12 text-red-400" />,
+          icon: <AlertCircle className="h-12 w-12 text-red-400" aria-hidden="true" />,
           title: 'All URLs Failed to Process',
           description: 'None of the URLs could be processed. Please check the URLs and try again.',
           actionText: actionText || 'Try Again',
@@ -52,7 +52,7 @@ export default function EmptyState({ type = 'no-items', onAction, actionText, ti
       
       case 'all-ordered':
         return {
-          icon: <FileImage className="h-12 w-12 text-green-400" />,
+          icon: <FileImage className="h-12 w-12 text-green-400" aria-hidden="true" />,
           title: 'All Items Ordered',
           description: 'All your items have been successfully ordered and are being processed.',
           actionText: actionText || 'Add More URLs',
@@ -61,7 +61,7 @@ export default function EmptyState({ type = 'no-items', onAction, actionText, ti
       
       default:
         return {
-          icon: <FileImage className="h-12 w-12 text-white/40" />,
+          icon: <FileImage className="h-12 w-12 text-white/40" aria-hidden="true" />,
           title: 'No Items',
           description: 'No items to display',
           actionText: actionText || 'Refresh',

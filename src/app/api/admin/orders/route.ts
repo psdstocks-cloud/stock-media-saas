@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWT } from '@/lib/jwt-auth'
 import { prisma } from '@/lib/prisma'
+import { createAuditLog } from '@/lib/audit-log'
+import { requirePermission } from '@/lib/rbac'
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +16,8 @@ export async function GET(request: NextRequest) {
 
     // Verify JWT token
     const user = verifyJWT(adminToken);
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const guard = await requirePermission(request, user.id, 'orders.view')
+    if (guard) return guard
 
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -71,9 +72,8 @@ export async function PATCH(request: NextRequest) {
 
     // Verify JWT token
     const user = verifyJWT(adminToken);
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const guard = await requirePermission(request, user.id, 'orders.manage')
+    if (guard) return guard
 
     const { orderId, status, notes } = await request.json()
 
@@ -90,6 +90,22 @@ export async function PATCH(request: NextRequest) {
         },
         stockSite: true,
       },
+    })
+
+    // Audit log
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+    await createAuditLog({
+      adminId: user.id,
+      action: 'UPDATE',
+      resourceType: 'order',
+      resourceId: orderId,
+      newValues: { status, notes },
+      permission: 'orders.manage',
+      reason: 'Admin updated order status',
+      permissionSnapshot: { permissions: ['orders.manage'] },
+      ipAddress: clientIP,
+      userAgent,
     })
 
     return NextResponse.json({ order: updatedOrder })

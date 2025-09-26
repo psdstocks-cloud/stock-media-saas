@@ -339,7 +339,7 @@ export default function OrderClient() {
         {/* Main Content */}
         <div className="lg:col-span-2">
           {step === 'input' && (
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+            <Card className="surface-card shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <LinkIcon className="h-5 w-5 mr-2" />
@@ -401,7 +401,7 @@ export default function OrderClient() {
 
           {step === 'confirmation' && (
             <div className="space-y-6">
-              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+              <Card className="surface-card shadow-2xl">
                 <CardHeader>
                   <CardTitle className="flex items-center text-white">
                     <ShoppingCart className="h-5 w-5 mr-2" />
@@ -508,7 +508,7 @@ export default function OrderClient() {
 
           {/* Order Summary */}
           {items.length > 0 && (
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+            <Card className="surface-card shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-white">Order Summary</CardTitle>
                 <Typography variant="body" className="text-white/70">

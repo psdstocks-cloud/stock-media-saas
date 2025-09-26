@@ -5,16 +5,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit-log'
+import { requirePermission } from '@/lib/rbac'
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'flags.view')
+    if (guard) return guard
 
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -66,10 +65,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'flags.manage')
+    if (guard) return guard
 
     const { name, description, isEnabled, rolloutPercentage, targetUsers, conditions } = await request.json()
 
@@ -111,6 +108,9 @@ export async function POST(request: NextRequest) {
         isEnabled: featureFlag.isEnabled,
         rolloutPercentage: featureFlag.rolloutPercentage
       },
+      permission: 'flags.manage',
+      reason: 'Create feature flag',
+      permissionSnapshot: { permissions: ['flags.manage'] },
       ipAddress: clientIP,
       userAgent
     })

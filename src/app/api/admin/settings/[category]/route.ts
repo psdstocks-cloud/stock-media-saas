@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
 import { createAuditLog } from '@/lib/audit-log'
+import { requirePermission } from '@/lib/rbac'
 
 export const dynamic = 'force-dynamic';
 
@@ -14,10 +15,8 @@ export async function GET(
 ) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'settings.write')
+    if (guard) return guard
 
     const { category } = await params
 
@@ -55,10 +54,8 @@ export async function PUT(
 ) {
   try {
     const session = await auth()
-
-    if (!session?.user?.id || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const guard = await requirePermission(request, session?.user?.id, 'settings.write')
+    if (guard) return guard
 
     const { category } = await params
     const { settings } = await request.json()
@@ -113,6 +110,9 @@ export async function PUT(
         resourceId: key,
         oldValues: { value: currentSetting.value },
         newValues: { value: updatedSetting.value },
+        permission: 'settings.write',
+        reason: 'Admin updated category setting',
+        permissionSnapshot: { permissions: ['settings.write'] },
         ipAddress: clientIP,
         userAgent
       })
