@@ -198,6 +198,7 @@ export default function RegisterForm() {
             <div className="relative">
               <Input
                 id="name"
+                name="name"
                 type="text"
                 {...register('name')}
                 placeholder="Enter your full name"
@@ -222,9 +223,10 @@ export default function RegisterForm() {
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/90 font-medium">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="email"
+                name="email"
                 type="email"
                 {...register('email', {
                   onChange: (e) => {
@@ -238,6 +240,7 @@ export default function RegisterForm() {
                   isEmailValid ? 'border-green-500' : ''
                 }`}
                 disabled={isLoading}
+                autoComplete="email"
               />
               {/* Real-time validation indicator */}
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -284,21 +287,25 @@ export default function RegisterForm() {
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/90 font-medium">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? 'text' : 'password'}
                 {...register('password')}
                 placeholder="Create a strong password"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
                 disabled={isLoading}
+                autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
             {errors.password && (
@@ -319,21 +326,25 @@ export default function RegisterForm() {
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="text-white/90 font-medium">Confirm Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="confirmPassword"
+                name="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 {...register('confirmPassword')}
                 placeholder="Confirm your password"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 disabled={isLoading}
+                autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70"
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showConfirmPassword}
               >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
             {errors.confirmPassword && (

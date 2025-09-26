@@ -1,8 +1,18 @@
 import { redirect } from 'next/navigation'
+import type { Metadata } from 'next'
 import { safeAuth } from '@/auth'
 import RegisterClient from './RegisterClient'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: 'Create Account • Stock Media SaaS',
+  description: 'Join and start downloading premium stock assets. Create your account in seconds.',
+  openGraph: {
+    title: 'Create Account • Stock Media SaaS',
+    description: 'Sign up to access premium stock media with our point-based system.'
+  }
+}
 
 export default async function RegisterPage() {
   try {
