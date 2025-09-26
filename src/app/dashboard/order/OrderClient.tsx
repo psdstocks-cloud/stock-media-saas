@@ -218,6 +218,35 @@ export default function OrderClient() {
     return readyItems.reduce((acc, item) => acc + (item.stockInfo?.points || 0), 0);
   }, [readyItems]);
 
+  useEffect(() => {
+    // Subscribe to SSE for each processing item
+    const eventSources: EventSource[] = []
+    items.forEach((it) => {
+      if ((it.status === 'processing' || it.status === 'ordering') && it.orderId) {
+        const es = new EventSource(`/api/orders/${it.orderId}/stream`)
+        es.onmessage = (ev) => {
+          try {
+            const data = JSON.parse(ev.data)
+            setItems((current) => current.map(ci => ci.orderId === data.orderId ? {
+              ...ci,
+              status: (data.status?.toLowerCase?.() || ci.status) as any,
+              progress: typeof data.progress === 'number' ? data.progress : ci.progress,
+              downloadUrl: data.downloadUrl || ci.downloadUrl,
+              success: data.status === 'COMPLETED' ? true : ci.success
+            } : ci))
+          } catch {}
+        }
+        es.onerror = () => {
+          es.close()
+        }
+        eventSources.push(es)
+      }
+    })
+    return () => {
+      eventSources.forEach(es => es.close())
+    }
+  }, [items])
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-white">Create New Order</h1>
