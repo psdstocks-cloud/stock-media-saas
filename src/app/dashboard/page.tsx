@@ -10,6 +10,7 @@ import SubscriptionManager from '@/components/dashboard/SubscriptionManager'
 import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
 import RecentActivity from '@/components/dashboard/RecentActivity'
+import BillingSummary from '@/components/dashboard/BillingSummary'
 import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
 import useUserStore from '@/stores/userStore'
 import EmptyState from '@/components/dashboard/EmptyState'
@@ -246,6 +247,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PointsOverview />
+              <BillingSummary />
               <RecentActivity />
               <Card className="surface-card shadow-2xl">
                 <CardHeader>

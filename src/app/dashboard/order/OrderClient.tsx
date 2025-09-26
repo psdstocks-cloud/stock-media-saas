@@ -373,6 +373,7 @@ export default function OrderClient() {
                     onClick={() => processUrls(urls.split('\n').map(url => url.trim()).filter(Boolean))}
                     disabled={isLoading || !urls.trim()}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                    title="Parse and validate up to 5 URLs from supported sites"
                   >
                     {isLoading ? (
                       <>
@@ -472,7 +473,7 @@ export default function OrderClient() {
                     </div>
                   )}
 
-                  <div className="flex gap-4 justify-center pt-6 border-t border-white/20">
+                <div className="flex gap-4 justify-center pt-6 border-t border-white/20" aria-live="polite">
                     <Button
                       variant="outline"
                       onClick={() => {
