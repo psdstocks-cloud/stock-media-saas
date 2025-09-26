@@ -13,7 +13,8 @@ import {
   Loader2,
   CheckCircle,
   Download,
-  ArrowLeft
+  ArrowLeft,
+  Coins
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { UnifiedOrderItem, UnifiedOrderItemData, OrderStatus } from '@/components/dashboard/UnifiedOrderItem';
