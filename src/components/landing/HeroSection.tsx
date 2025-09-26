@@ -23,6 +23,7 @@ export const HeroSection: React.FC = () => {
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   return (
+    <>
     <section className="relative min-h-screen flex items-center justify-center bg-[hsl(var(--background))] overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-orange-500/10 dark:from-purple-900/25 dark:to-orange-700/20" />
@@ -128,5 +129,6 @@ export const HeroSection: React.FC = () => {
       </div>
     </section>
     <DemoVideoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
+    </>
   )
 }
