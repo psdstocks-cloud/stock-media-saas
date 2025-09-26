@@ -62,6 +62,7 @@ export async function GET(
         cost: order.cost,
         createdAt: order.createdAt,
         downloadUrl: order.downloadUrl,
+        stockItemUrl: order.stockItemUrl,
         stockSite: order.stockSite
       }
     })

@@ -151,6 +151,22 @@ export function OrdersManagement({ className }: OrdersManagementProps) {
     }
   }
 
+  const handleReorder = async (orderId: string) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/order-status`)
+      const data = await res.json()
+      if (!res.ok || !data?.order?.stockItemUrl) {
+        toast.error('Unable to reorder this item')
+        return
+      }
+      const url = data.order.stockItemUrl
+      const encoded = encodeURIComponent(JSON.stringify([url]))
+      window.location.href = `/dashboard/order?urls=${encoded}`
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to prepare reorder')
+    }
+  }
+
   const statusOptions = [
     { value: 'all', label: 'All Orders' },
     { value: 'COMPLETED', label: 'Completed' },
@@ -332,6 +348,16 @@ export function OrdersManagement({ className }: OrdersManagementProps) {
                         Download
                       </Button>
                     )}
+
+                    {(order.status === 'COMPLETED' || order.status === 'READY') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleReorder(order.id)}
+                      >
+                        Reorder
+                      </Button>
+                    )}
                     
                     {order.status === 'FAILED' && (
                       <Button
@@ -340,7 +366,7 @@ export function OrdersManagement({ className }: OrdersManagementProps) {
                         onClick={() => handleRegenerateDownload(order.id)}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
-                        Retry
+                        Retry link
                       </Button>
                     )}
 
