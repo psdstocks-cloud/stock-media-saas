@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description: "A modern, production-ready SaaS platform with Material.io efficiency, Spotify UX, and Figma's minimalist design.",
   keywords: ["stock media", "saas", "design system", "react", "nextjs", "tailwind"],
   authors: [{ name: "Stock Media SaaS Team" }],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   openGraph: {
     title: "Stock Media SaaS - Design System Demo",
     description: "A modern, production-ready SaaS platform with Material.io efficiency, Spotify UX, and Figma's minimalist design.",
