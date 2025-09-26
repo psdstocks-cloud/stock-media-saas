@@ -25,6 +25,8 @@ type OrderStep = 'input' | 'confirmation';
 
 export default function OrderClient() {
   const [urls, setUrls] = useState('');
+  const [isSitesOpen, setIsSitesOpen] = useState(false);
+  const [sites, setSites] = useState<{ name: string; displayName?: string }[]>([]);
   const [items, setItems] = useState<UnifiedOrderItemData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -98,6 +100,55 @@ export default function OrderClient() {
       setIsLoading(false);
     }
   }, []);
+
+  const extractUrls = (text: string): string[] => {
+    if (!text) return [];
+    const urlRegex = /(https?:\/\/[^\s\n]+)/gim;
+    const found = text.match(urlRegex) || [];
+    return Array.from(new Set(found.map(u => u.trim()))).slice(0, 50);
+  };
+
+  const handlePaste: React.ClipboardEventHandler<HTMLTextAreaElement> = (e) => {
+    const pasted = e.clipboardData.getData('text');
+    const found = extractUrls(pasted);
+    if (found.length > 0) {
+      e.preventDefault();
+      const existing = urls.split('\n').map(s => s.trim()).filter(Boolean);
+      const merged = Array.from(new Set([...existing, ...found])).join('\n');
+      setUrls(merged);
+    }
+  };
+
+  const handleDrop: React.DragEventHandler<HTMLDivElement> = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const text = e.dataTransfer.getData('text');
+    const found = extractUrls(text);
+    if (found.length > 0) {
+      const existing = urls.split('\n').map(s => s.trim()).filter(Boolean);
+      const merged = Array.from(new Set([...existing, ...found])).join('\n');
+      setUrls(merged);
+    }
+  };
+
+  const handleDragOver: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+  };
+
+  const toggleSites = async () => {
+    const willOpen = !isSitesOpen;
+    setIsSitesOpen(willOpen);
+    if (willOpen && sites.length === 0) {
+      try {
+        const res = await fetch('/api/supported-sites');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.sites) setSites(data.sites);
+      } catch {
+        // no-op
+      }
+    }
+  };
 
   // Handle URL processing from search params
   useEffect(() => {
@@ -277,7 +328,7 @@ export default function OrderClient() {
         </div>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8" onDrop={handleDrop} onDragOver={handleDragOver}>
         {/* Main Content */}
         <div className="lg:col-span-2">
           {step === 'input' && (
@@ -296,9 +347,27 @@ export default function OrderClient() {
                   placeholder="Paste your URLs here, one per line. E.g., https://www.shutterstock.com/image-photo/example-123456789&#10;https://depositphotos.com/example-345678"
                   value={urls}
                   onChange={(e) => setUrls(e.target.value)}
+                  onPaste={handlePaste}
                   rows={8}
                   className="min-h-[200px] bg-white/5 border-white/30 text-white placeholder:text-white/50 resize-none"
                 />
+                <div className="flex items-center justify-between text-xs text-white/70">
+                  <span>Tip: Paste or drag-and-drop multiple URLs. Max 5 per order.</span>
+                  <button type="button" onClick={toggleSites} className="underline hover:text-white">Supported sites</button>
+                </div>
+                {isSitesOpen && (
+                  <div className="p-3 rounded border border-white/20 bg-white/5 text-xs text-white/80 max-h-40 overflow-auto">
+                    {sites.length === 0 ? (
+                      <span>Loading sites…</span>
+                    ) : (
+                      <ul className="grid grid-cols-2 gap-2">
+                        {sites.map((s, i) => (
+                          <li key={i}>{s.displayName || s.name}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
                 <div className="flex gap-3">
                   <Button
                     onClick={() => processUrls(urls.split('\n').map(url => url.trim()).filter(Boolean))}

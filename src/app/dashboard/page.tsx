@@ -33,9 +33,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        console.log('Verifying authentication...')
+        if (process.env.NODE_ENV !== 'production') console.log('Verifying authentication...')
         const response = await fetch('/api/auth/verify-token')
-        console.log('Auth verification response status:', response.status)
+        if (process.env.NODE_ENV !== 'production') console.log('Auth verification response status:', response.status)
         
         if (!response.ok) {
           console.log('Auth verification failed, redirecting to login')
@@ -44,17 +44,17 @@ export default function DashboardPage() {
         }
         
         const data = await response.json()
-        console.log('Auth verification data:', data)
+        if (process.env.NODE_ENV !== 'production') console.log('Auth verification data:', data)
         
         if (data && data.valid && data.user) {
-          console.log('User authenticated:', data.user)
+          if (process.env.NODE_ENV !== 'production') console.log('User authenticated:', data.user)
           setUser(data.user)
         } else {
-          console.log('Invalid auth data, redirecting to login')
+          if (process.env.NODE_ENV !== 'production') console.log('Invalid auth data, redirecting to login')
           router.push('/login')
         }
       } catch (error) {
-        console.error('Auth verification error:', error)
+        if (process.env.NODE_ENV !== 'production') console.error('Auth verification error:', error)
         router.push('/login')
       } finally {
         setIsLoading(false)
@@ -68,12 +68,12 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      console.log('Logging out...')
+      if (process.env.NODE_ENV !== 'production') console.log('Logging out...')
       await fetch('/api/auth/logout', { method: 'POST' })
-      console.log('Logout successful, redirecting to login')
+      if (process.env.NODE_ENV !== 'production') console.log('Logout successful, redirecting to login')
       router.push('/login')
     } catch (error) {
-      console.error('Logout error:', error)
+      if (process.env.NODE_ENV !== 'production') console.error('Logout error:', error)
       router.push('/login')
     }
   }
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card sticky top-[72px] z-40">
             <TabsTrigger value="overview" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <Coins className="h-4 w-4 mr-2" />
               Overview
@@ -201,8 +201,8 @@ export default function DashboardPage() {
               <EmptyState
                 title="Welcome! Let's get you started"
                 description="Add your first URLs on the Order page or explore supported platforms."
-                primaryCta={{ label: 'Order Media', href: '/dashboard/order-v2' }}
-                secondaryCta={{ label: 'See Supported Sites', href: '/dashboard/order-v2#supported-platforms' }}
+                primaryCta={{ label: 'Order media', href: '/dashboard/order' }}
+                secondaryCta={{ label: 'See supported sites', href: '/dashboard/order#supported-platforms' }}
               />
             </div>
           )}
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                       className="px-8 py-3 text-lg"
                     >
                       <ShoppingCart className="h-5 w-5 mr-2" />
-                      Order an Image
+                      Order media
                     </Button>
                     <Button
                       onClick={() => router.push('/pricing')}
