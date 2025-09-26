@@ -1,8 +1,6 @@
-import { Typography } from "@/components/ui"
 import HowItWorksSection from "@/components/landing/HowItWorksSection"
 import type { Metadata } from "next"
 import HowItWorksClient from "./HowItWorksClient"
-import type { Metadata } from "next"
 
 export const revalidate = 120
 
