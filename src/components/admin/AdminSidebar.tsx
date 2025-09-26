@@ -13,6 +13,7 @@ import {
   LogOut,
   Shield
 } from 'lucide-react'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 const navigation = [
   {
@@ -24,21 +25,25 @@ const navigation = [
     name: 'Users',
     href: '/admin/users',
     icon: Users,
+    permission: 'users.view',
   },
   {
     name: 'Orders',
     href: '/admin/orders',
     icon: ShoppingCart,
+    permission: 'orders.view',
   },
   {
     name: 'Settings',
     href: '/admin/settings',
     icon: Settings,
+    permission: 'settings.write',
   },
 ]
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const { has, loading } = usePermissions()
 
   const handleLogout = () => {
     // Clear auth token and redirect to login
@@ -58,25 +63,31 @@ export function AdminSidebar() {
         
         <div className="mt-8 flex-grow flex flex-col">
           <nav className="flex-1 px-2 pb-4 space-y-1">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link key={item.name} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <item.icon className="mr-3 h-5 w-5" />
-                    {item.name}
-                  </Button>
-                </Link>
-              )
-            })}
+            {navigation
+              .filter(item => !item.permission || has(item.permission))
+              .map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link key={item.name} href={item.href} aria-disabled={item.permission ? !has(item.permission) : false}>
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      className={cn(
+                        "w-full justify-start",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                      disabled={item.permission ? !has(item.permission) : false}
+                    >
+                      <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />
+                      {item.name}
+                    </Button>
+                  </Link>
+                )
+              })}
+            {loading && (
+              <div className="text-xs text-muted-foreground px-2">Loading permissions…</div>
+            )}
           </nav>
           
           <div className="flex-shrink-0 flex border-t border-border p-4">
@@ -85,7 +96,7 @@ export function AdminSidebar() {
               onClick={handleLogout}
               className="w-full justify-start text-muted-foreground hover:text-foreground"
             >
-              <LogOut className="mr-3 h-5 w-5" />
+              <LogOut className="mr-3 h-5 w-5" aria-hidden="true" />
               Logout
             </Button>
           </div>
