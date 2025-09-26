@@ -198,7 +198,6 @@ export default function RegisterForm() {
             <div className="relative">
               <Input
                 id="name"
-                name="name"
                 type="text"
                 {...register('name')}
                 placeholder="Enter your full name"
@@ -226,7 +225,6 @@ export default function RegisterForm() {
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="email"
-                name="email"
                 type="email"
                 {...register('email', {
                   onChange: (e) => {
@@ -290,7 +288,6 @@ export default function RegisterForm() {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="password"
-                name="password"
                 type={showPassword ? 'text' : 'password'}
                 {...register('password')}
                 placeholder="Create a strong password"
@@ -329,7 +326,6 @@ export default function RegisterForm() {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="confirmPassword"
-                name="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 {...register('confirmPassword')}
                 placeholder="Confirm your password"
