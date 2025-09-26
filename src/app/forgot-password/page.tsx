@@ -1,5 +1,15 @@
 import { Typography } from '@/components/ui/typography'
+import type { Metadata } from 'next'
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm'
+
+export const metadata: Metadata = {
+  title: 'Forgot Password • Stock Media SaaS',
+  description: "Enter your email and we'll send you a password reset link.",
+  openGraph: {
+    title: 'Forgot Password • Stock Media SaaS',
+    description: 'Reset your password securely via email.'
+  }
+}
 
 export default function ForgotPasswordPage() {
   return (

@@ -93,7 +93,7 @@ export default function ForgotPasswordForm() {
       <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-            <CheckCircle className="h-6 w-6 text-green-400" />
+            <CheckCircle className="h-6 w-6 text-green-400" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl font-bold text-white">Check Your Email</CardTitle>
           <CardDescription className="text-white/70">
@@ -102,8 +102,8 @@ export default function ForgotPasswordForm() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <Alert className="bg-green-500/10 border-green-500/30">
-            <CheckCircle className="h-4 w-4 text-green-400" />
+              <Alert className="bg-green-500/10 border-green-500/30">
+            <CheckCircle className="h-4 w-4 text-green-400" aria-hidden="true" />
             <AlertDescription className="text-green-200">
               If an account with this email exists, we've sent a password reset link.
             </AlertDescription>
@@ -176,15 +176,17 @@ export default function ForgotPasswordForm() {
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/90 font-medium">Email Address</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="email"
+            name="email"
                 type="email"
                 value={email}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder="Enter your email address"
                 disabled={isLoading}
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 ${errors.email ? 'border-red-500' : ''}`}
+            autoComplete="email"
               />
             </div>
             {errors.email && (
@@ -200,12 +202,12 @@ export default function ForgotPasswordForm() {
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 <span>Sending Reset Link...</span>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4" aria-hidden="true" />
                 <span>Send Reset Link</span>
               </div>
             )}

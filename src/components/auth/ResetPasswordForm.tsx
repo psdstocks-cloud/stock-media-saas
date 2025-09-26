@@ -145,7 +145,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardContent className="p-8 text-center">
           <div className="mx-auto w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
-            <Loader2 className="h-6 w-6 text-orange-400 animate-spin" />
+            <Loader2 className="h-6 w-6 text-orange-400 animate-spin" aria-hidden="true" />
           </div>
           <Typography variant="h3" className="text-xl font-bold text-white mb-2">
             Validating Reset Token...
@@ -164,7 +164,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-            <AlertCircle className="h-6 w-6 text-red-400" />
+            <AlertCircle className="h-6 w-6 text-red-400" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl font-bold text-white">Invalid Reset Link</CardTitle>
           <CardDescription className="text-white/70">
@@ -175,7 +175,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         <CardContent className="space-y-4">
           {errors.general && (
             <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
-              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertCircle className="h-4 w-4 text-red-400" aria-hidden="true" />
               <AlertDescription className="text-red-200">
                 {errors.general}
               </AlertDescription>
@@ -197,7 +197,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             onClick={() => router.push('/forgot-password')}
             className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           >
-            <ArrowRight className="h-4 w-4 mr-2" />
+            <ArrowRight className="h-4 w-4 mr-2" aria-hidden="true" />
             Request New Reset Link
           </Button>
           
@@ -221,7 +221,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-            <CheckCircle className="h-6 w-6 text-green-400" />
+            <CheckCircle className="h-6 w-6 text-green-400" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl font-bold text-white">Password Reset Successful!</CardTitle>
           <CardDescription className="text-white/70">
@@ -231,7 +231,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
         <CardContent className="space-y-4">
           <Alert className="bg-green-500/10 border-green-500/30">
-            <CheckCircle className="h-4 w-4 text-green-400" />
+            <CheckCircle className="h-4 w-4 text-green-400" aria-hidden="true" />
             <AlertDescription className="text-green-200">
               Your password has been reset successfully. Redirecting to login...
             </AlertDescription>
@@ -249,7 +249,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             onClick={() => router.push('/login')}
             className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           >
-            <ArrowRight className="h-4 w-4 mr-2" />
+            <ArrowRight className="h-4 w-4 mr-2" aria-hidden="true" />
             Go to Login
           </Button>
         </CardFooter>
@@ -262,7 +262,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     <Card className="w-full bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
       <CardHeader className="text-center space-y-2">
         <div className="mx-auto w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-          <Shield className="h-6 w-6 text-white" />
+          <Shield className="h-6 w-6 text-white" aria-hidden="true" />
         </div>
         <CardTitle className="text-2xl font-bold text-white">Set New Password</CardTitle>
         <CardDescription className="text-white/70">
@@ -275,7 +275,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           {/* General Error */}
           {errors.general && (
             <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
-              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertCircle className="h-4 w-4 text-red-400" aria-hidden="true" />
               <AlertDescription className="text-red-200">
                 {errors.general}
               </AlertDescription>
@@ -286,7 +286,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/90 font-medium">New Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
@@ -295,13 +295,16 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 placeholder="Enter your new password"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
                 disabled={isLoading}
+                autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
             {errors.password && (
@@ -313,7 +316,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="text-white/90 font-medium">Confirm New Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" aria-hidden="true" />
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
@@ -322,13 +325,16 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 placeholder="Confirm your new password"
                 className={`bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 disabled={isLoading}
+                autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70"
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showConfirmPassword}
               >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
             {errors.confirmPassword && (
@@ -344,12 +350,12 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 <span>Updating Password...</span>
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Shield className="h-4 w-4" />
+                <Shield className="h-4 w-4" aria-hidden="true" />
                 <span>Reset Password</span>
               </div>
             )}
