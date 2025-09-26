@@ -61,6 +61,16 @@ interface AppState {
   viewMode: 'grid' | 'list'
   selectedMedia: MediaItem[]
   sidebarOpen: boolean
+
+  // Notifications
+  notifications: Array<{
+    id: string
+    title: string
+    body?: string
+    href?: string
+    cta?: string
+    createdAt: number
+  }>
   
   // Actions
   setUser: (user: User | null) => void
@@ -75,6 +85,10 @@ interface AppState {
   toggleMediaSelection: (item: MediaItem) => void
   setSidebarOpen: (open: boolean) => void
   updateCartItemQuantity: (itemId: string, quantity: number) => void
+
+  // Notification actions
+  addNotification: (n: { id?: string; title: string; body?: string; href?: string; cta?: string }) => void
+  clearNotifications: () => void
 }
 
 // Store implementation
@@ -102,6 +116,9 @@ export const useAppStore = create<AppState>()(
         viewMode: 'grid',
         selectedMedia: [],
         sidebarOpen: false,
+
+        // Notifications
+        notifications: [],
 
         // Actions
         setUser: (user) => set({ 
@@ -185,7 +202,15 @@ export const useAppStore = create<AppState>()(
             cart: updatedCart,
             cartTotal: updatedCart.reduce((total, item) => total + (item.cost * item.quantity), 0)
           }
-        })
+        }),
+
+        addNotification: (n) => set((state) => ({
+          notifications: [
+            { id: n.id || crypto.randomUUID(), title: n.title, body: n.body, href: n.href, cta: n.cta, createdAt: Date.now() },
+            ...state.notifications
+          ].slice(0, 50)
+        })),
+        clearNotifications: () => set({ notifications: [] })
       }),
       {
         name: 'stockmedia-store',
@@ -195,7 +220,8 @@ export const useAppStore = create<AppState>()(
           cart: state.cart,
           cartTotal: state.cartTotal,
           viewMode: state.viewMode,
-          searchFilters: state.searchFilters
+          searchFilters: state.searchFilters,
+          notifications: state.notifications
         })
       }
     ),

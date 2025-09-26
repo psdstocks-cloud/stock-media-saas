@@ -20,6 +20,7 @@ import toast from 'react-hot-toast';
 import { UnifiedOrderItem, UnifiedOrderItemData, OrderStatus } from '@/components/dashboard/UnifiedOrderItem';
 import PointsOverview from '@/components/dashboard/PointsOverview';
 import useUserStore from '@/stores/userStore';
+import { useAppStore } from '@/lib/store';
 
 type OrderStep = 'input' | 'confirmation';
 
@@ -35,6 +36,7 @@ export default function OrderClient() {
 
   // Use centralized user store for points
   const { points: userPoints, updatePoints } = useUserStore();
+  const addNotification = useAppStore((s) => s.addNotification);
 
   // Function to fetch info for URLs
   const processUrls = useCallback(async (urlList: string[]) => {
@@ -286,6 +288,11 @@ export default function OrderClient() {
               downloadUrl: data.downloadUrl || ci.downloadUrl,
               success: data.status === 'COMPLETED' ? true : ci.success
             } : ci))
+            if (data.status === 'COMPLETED' && data.downloadUrl) {
+              addNotification({ title: 'Order completed', body: 'Download ready', href: data.downloadUrl, cta: 'Download' })
+            } else if (data.status === 'FAILED') {
+              addNotification({ title: 'Order failed', body: data.message || 'Please retry' })
+            }
           } catch (_e) { return }
         }
         es.onerror = () => {

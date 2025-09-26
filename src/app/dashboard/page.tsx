@@ -168,7 +168,7 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); const el = document.getElementById('content'); if (el) el.focus(); }} className="w-full">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card sticky top-[72px] z-40">
             <TabsTrigger value="overview" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
               <Coins className="h-4 w-4 mr-2" />
