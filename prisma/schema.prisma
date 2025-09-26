@@ -45,6 +45,10 @@ model User {
   // RBAC
   roles                     UserRole[]
 
+  // Dual-control approvals
+  approvalRequestsRequested ApprovalRequest[]   @relation("RequestedBy")
+  approvalRequestsApproved  ApprovalRequest[]   @relation("ApprovedBy")
+
   @@map("users")
 }
 
@@ -266,6 +270,27 @@ model AdminAuditLog {
   @@index([adminId])
   @@index([createdAt])
   @@map("admin_audit_logs")
+}
+
+model ApprovalRequest {
+  id            String   @id @default(cuid())
+  type          String   // POINTS_ADJUST, ORDER_REFUND
+  resourceType  String   // user, order
+  resourceId    String
+  amount        Float?
+  reason        String?
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELED
+  requestedById String
+  approvedById  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  requestedBy   User     @relation("RequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
+  approvedBy    User?    @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  @@index([resourceType, resourceId])
+  @@index([status])
+  @@map("approval_requests")
 }
 
 // RBAC Models
