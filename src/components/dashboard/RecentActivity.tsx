@@ -46,7 +46,9 @@ export default function RecentActivity() {
         const url = data.downloadUrl || data.order.downloadUrl
         window.open(url, '_blank')
       }
-    } catch {}
+    } catch (_e) {
+      // no-op
+    }
   }
 
   const handleRetry = async (orderId: string) => {

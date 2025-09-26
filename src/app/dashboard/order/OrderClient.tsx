@@ -234,7 +234,7 @@ export default function OrderClient() {
               downloadUrl: data.downloadUrl || ci.downloadUrl,
               success: data.status === 'COMPLETED' ? true : ci.success
             } : ci))
-          } catch {}
+          } catch (_e) { return }
         }
         es.onerror = () => {
           es.close()
