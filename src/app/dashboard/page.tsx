@@ -9,6 +9,7 @@ import OrdersManagement from '@/components/dashboard/OrdersManagement'
 import SubscriptionManager from '@/components/dashboard/SubscriptionManager'
 import StockMediaSearch from '@/components/dashboard/StockMediaSearch'
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
+import RecentActivity from '@/components/dashboard/RecentActivity'
 import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
 import useUserStore from '@/stores/userStore'
 import EmptyState from '@/components/dashboard/EmptyState'
@@ -245,6 +246,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PointsOverview />
+              <RecentActivity />
               <Card className="surface-card shadow-2xl">
                 <CardHeader>
                   <CardTitle className="text-[hsl(var(--card-foreground))] flex items-center">
