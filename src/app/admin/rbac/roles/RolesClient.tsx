@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Typography } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,9 @@ export default function RolesClient() {
   const [assignInput, setAssignInput] = useState('')
   const [assignIds, setAssignIds] = useState<string>('')
   const [allPermissions, setAllPermissions] = useState<string[]>([])
+  const [importOpen, setImportOpen] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importDryRun, setImportDryRun] = useState<any>(null)
 
   async function load() {
     try {
@@ -91,6 +94,8 @@ export default function RolesClient() {
           <Input placeholder="Search roles..." value={search} onChange={e => setSearch(e.target.value)} className="w-60" />
           <Button onClick={load}>Search</Button>
           <Button onClick={() => setCreateOpen(true)}>New Role</Button>
+          <Button variant="outline" onClick={() => window.open('/api/admin/rbac/export?includeUsers=1', '_blank')}>Export JSON</Button>
+          <Button variant="secondary" onClick={() => setImportOpen(true)}>Import</Button>
         </div>
       </div>
 
@@ -180,6 +185,41 @@ export default function RolesClient() {
             }}>Unassign</Button>
             <Button variant="ghost" onClick={()=> setAssignOpen(false)}>Close</Button>
           </div>
+        </Card>
+      )}
+
+      {/* Import panel */}
+      {importOpen && (
+        <Card className="p-4 space-y-3">
+          <div className="text-lg font-semibold">Import Roles (JSON)</div>
+          <textarea className="w-full h-48 p-2 rounded-md border" value={importText} onChange={e => setImportText(e.target.value)} placeholder='{"roles":[{"name":"Ops","permissions":["orders.view"],"users":["userId"]}]}' />
+          <div className="flex items-center gap-2">
+            <Button onClick={async ()=>{
+              try {
+                const roles = JSON.parse(importText).roles
+                const res = await fetch('/api/admin/rbac/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ roles, dryRun:true }) })
+                const data = await res.json(); setImportDryRun(data)
+              } catch { alert('Invalid JSON') }
+            }}>Dry‑run</Button>
+            <Button variant="secondary" onClick={async ()=>{
+              try {
+                const roles = JSON.parse(importText).roles
+                const res = await fetch('/api/admin/rbac/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ roles, dryRun:false }) })
+                if (!res.ok) alert('Import failed'); else { setImportOpen(false); setImportDryRun(null); setImportText(''); load() }
+              } catch { alert('Invalid JSON') }
+            }}>Apply</Button>
+            <Button variant="ghost" onClick={()=> { setImportOpen(false); setImportDryRun(null) }}>Close</Button>
+          </div>
+          {importDryRun && (
+            <div className="mt-2 text-sm">
+              <div className="font-medium">Dry‑run summary</div>
+              <ul className="list-disc pl-5">
+                {(importDryRun.diffs || []).map((d:any, i:number)=> (
+                  <li key={i}>{d.role}: {d.create ? 'create' : 'update'}; add {d.addPerms.length}, remove {d.removePerms.length}{typeof d.setUsers==='number' ? `; set ${d.setUsers} users` : ''}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Card>
       )}
     </div>
