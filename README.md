@@ -313,3 +313,84 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 # Deployment test - Thu Sep 11 00:02:00 EEST 2025
 # GitHub Actions Test
 # GitHub Actions Test - Thu Sep 11 05:22:21 EEST 2025
+
+## 🔐 Admin RBAC & Dual‑Control Runbook
+
+### Overview
+Granular RBAC is enforced across admin APIs and UI. Dual‑control requires a second admin to approve high‑risk actions (points adjustments, refunds) before execution.
+
+### Key Files
+- RBAC helpers: `src/lib/rbac.ts`
+- Permissions endpoint: `src/app/api/admin/permissions/route.ts`
+- Admin UI gating: `src/components/admin/AdminSidebar.tsx`, `usePermissions` hook at `src/lib/hooks/usePermissions.ts`
+- Protected admin APIs: `src/app/api/admin/settings/**`, `src/app/api/admin/feature-flags/**`, `src/app/api/admin/orders/**`, `src/app/api/admin/users/route.ts`, `src/app/api/points/route.ts`
+- Dual‑control models: `ApprovalRequest` in `prisma/schema.prisma`
+- Dual‑control APIs: `src/app/api/admin/approvals/**`, `src/app/api/admin/points/adjust/route.ts`, `src/app/api/admin/orders/refund/route.ts`
+- Admin Approvals UI: `src/app/admin/approvals/*`
+- Settings toggle: `rbac.dualControl` in `SystemSetting` (toggle in Admin Settings UI).
+
+### Permissions
+- `users.view`, `users.edit`, `users.impersonate`
+- `orders.view`, `orders.manage`, `orders.refund`
+- `points.adjust`
+- `billing.view`
+- `flags.view`, `flags.manage`
+- `settings.write`
+- `approvals.manage` (approve/execute dual‑control)
+
+Default roles are seeded in `prisma/seed-rbac.ts`:
+- `SUPER_ADMIN`: all permissions
+- `Ops`: ops/admin operations
+- `Support`: user support
+- `Finance`: billing/points/refunds + approvals.manage
+- `Content`, `Analyst`: limited scopes
+
+Run seed after migrations:
+```bash
+npx tsx prisma/seed-rbac.ts
+```
+
+### Enabling Dual‑Control
+- Toggle in Admin → Settings: `rbac.dualControl` (boolean switch)
+- Or via script:
+```bash
+npx tsx scripts/enable-dual-control.ts
+```
+
+### Approval Workflow
+1. Actor triggers a high‑risk action:
+   - Adjust points: POST `/api/admin/points/adjust` { userId, amount, reason }
+   - Refund order: POST `/api/admin/orders/refund` { orderId, amount, reason }
+2. If `rbac.dualControl=true`, an `ApprovalRequest` is created with status `PENDING` and the API returns 202.
+3. Approver (must have `approvals.manage`) reviews in Admin → Approvals and chooses Approve or Reject.
+4. After approval, executor (with `approvals.manage`) clicks Execute to apply the action:
+   - Points added via `PointsManager.addPoints`
+   - Refund via `PointsManager.refundPoints` and order status updated to `REFUNDED`
+
+APIs:
+- List approvals: `GET /api/admin/approvals?status=PENDING|APPROVED|REJECTED`
+- Approve/reject: `PATCH /api/admin/approvals/[id]` { action: 'approve' | 'reject', reason? }
+- Execute approved: `POST /api/admin/approvals/execute` { id }
+
+### UI Gating
+- Sidebar items hidden/disabled without required permissions.
+- Users page: view/edit/delete and bulk actions gated by `users.view`/`users.edit`.
+- Orders page: view/export gated by `orders.view`; edit/bulk status gated by `orders.manage`.
+- Feature Flags: view by `flags.view`, modify by `flags.manage`.
+- Settings: modify by `settings.write`.
+- Approvals: visible and actionable with `approvals.manage`.
+
+### Auditing
+- `AdminAuditLog` records: `permission`, `reason`, and `permissionSnapshot` for sensitive actions.
+- See `src/lib/audit-log.ts` and admin APIs for log writes.
+
+### Troubleshooting
+- DB connectivity errors (Neon): retry; ensure `DATABASE_URL` and network allowlist.
+- Prisma drift: run `npx prisma migrate reset --force --skip-seed` (destructive), then `npx prisma migrate dev` and re‑seed.
+- Missing permissions/roles: re‑run `npx tsx prisma/seed-rbac.ts`.
+- Dual‑control not triggering: confirm `rbac.dualControl=true` in Admin Settings and that the calling API is one of the wired endpoints.
+
+### Extending
+- Add new permission: append to `PERMISSIONS` in `prisma/seed-rbac.ts`, map to roles, re‑seed.
+- Gate a new admin API: call `requirePermission(request, userId, 'perm.key')` early.
+- Gate UI: use `usePermissions().has('perm.key')` to disable or hide.
