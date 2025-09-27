@@ -24,7 +24,8 @@ export default function AdminLoginClient() {
 
     try {
       // Use direct login API for admin authentication
-      const response = await fetch('/api/admin/login', {
+      const endpoint = process.env.NEXT_PUBLIC_E2E ? '/api/admin/login-test' : '/api/admin/login'
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

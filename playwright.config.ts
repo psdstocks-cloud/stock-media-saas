@@ -11,7 +11,7 @@ const config: PlaywrightTestConfig = {
     trace: 'retain-on-failure',
   },
   webServer: process.env.E2E_EXTERNAL ? undefined : {
-    command: 'npm run dev',
+    command: 'NEXT_PUBLIC_E2E=1 npm run dev',
     url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
     timeout: 120_000,

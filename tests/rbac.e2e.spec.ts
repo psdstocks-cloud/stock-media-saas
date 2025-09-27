@@ -8,9 +8,9 @@ const financePass = process.env.E2E_FIN_PASS || 'Passw0rd!'
 
 async function adminLogin(page, email: string, password: string) {
   await page.goto('/admin/login')
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: /login/i }).click()
+  await page.locator('#admin-email').fill(email)
+  await page.locator('#admin-password').fill(password)
+  await page.getByRole('button', { name: /access/i }).click()
 }
 
 test.describe('RBAC UI gating', () => {
