@@ -1,0 +1,29 @@
+name: Create SUPER ADMIN
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'SUPER ADMIN email (overrides secret if provided)'
+        required: false
+      password:
+        description: 'SUPER ADMIN password (overrides secret if provided)'
+        required: false
+
+jobs:
+  create-super-admin:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPER_ADMIN_EMAIL: ${{ github.event.inputs.email || secrets.SUPER_ADMIN_EMAIL }}
+      SUPER_ADMIN_PASSWORD: ${{ github.event.inputs.password || secrets.SUPER_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Generate Prisma Client
+        run: npx prisma generate
+      - name: Create/Update SUPER_ADMIN
+        run: npx tsx scripts/create-super-admin.ts
