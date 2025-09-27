@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - main [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - heading "Admin Panel" [level=1] [ref=e11]
+        - generic [ref=e12]:
+          - navigation [ref=e13]:
+            - link "Dashboard" [ref=e14] [cursor=pointer]:
+              - /url: /admin/dashboard
+              - button "Dashboard" [ref=e15] [cursor=pointer]:
+                - img [ref=e16] [cursor=pointer]
+                - text: Dashboard
+          - button "Logout" [ref=e22] [cursor=pointer]:
+            - img [ref=e23] [cursor=pointer]
+            - text: Logout
+      - main [ref=e26]:
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - img [ref=e32]
+            - generic [ref=e35]:
+              - heading "Admin Access" [level=3] [ref=e36]
+              - paragraph [ref=e37]: Enter your admin email and password to access the dashboard
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - generic [ref=e40]:
+                - paragraph [ref=e41]: Admin Email
+                - generic [ref=e42]:
+                  - textbox "Enter admin email" [ref=e43]
+                  - img [ref=e44]
+              - generic [ref=e47]:
+                - paragraph [ref=e48]: Admin Password
+                - generic [ref=e49]:
+                  - textbox "Enter admin password" [ref=e50]
+                  - button [ref=e51] [cursor=pointer]:
+                    - img [ref=e52] [cursor=pointer]
+              - button "Access Dashboard" [disabled]
+            - paragraph [ref=e56]: Secure admin authentication required
+  - button "Open Next.js Dev Tools" [ref=e62] [cursor=pointer]:
+    - img [ref=e63] [cursor=pointer]
+  - alert [ref=e66]
+```
