@@ -12,13 +12,14 @@ const PERMISSIONS = [
   'analytics.view',
   'settings.write',
   'approvals.manage',
+  'rbac.manage',
 ]
 
 const ROLES: Record<string, string[]> = {
   SUPER_ADMIN: PERMISSIONS,
   Ops: ['orders.view','orders.manage','flags.view','flags.manage','webhooks.view','webhooks.replay','analytics.view'],
   Support: ['orders.view','users.view','users.impersonate','webhooks.view','analytics.view'],
-  Finance: ['billing.view','points.adjust','orders.refund','analytics.view','approvals.manage'],
+  Finance: ['billing.view','points.adjust','orders.refund','analytics.view'],
   Content: ['flags.view','analytics.view'],
   Analyst: ['analytics.view'],
 }
