@@ -420,7 +420,11 @@ export default function UserManagementClient() {
               <Input id="adjust-reason" value={adjustReason} onChange={e => setAdjustReason(e.target.value)} placeholder="Why are you adjusting points?" />
             </div>
             {adjustMessage && (
-              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">{adjustMessage}</div>
+              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">
+                {adjustMessage} {adjustMessage.includes('Approval requested') && (
+                  <a href="/admin/approvals" className="underline">View in Approvals</a>
+                )}
+              </div>
             )}
           </div>
           <DialogFooter>

@@ -401,7 +401,11 @@ export default function OrderManagementClient() {
               <Input id="refund-reason" value={refundReason} onChange={e => setRefundReason(e.target.value)} placeholder="Why refund?" />
             </div>
             {refundMessage && (
-              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">{refundMessage}</div>
+              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">
+                {refundMessage} {refundMessage.includes('approval requested') || refundMessage.includes('Approval requested') ? (
+                  <a href="/admin/approvals" className="underline">View in Approvals</a>
+                ) : null}
+              </div>
             )}
           </div>
           <DialogFooter>
