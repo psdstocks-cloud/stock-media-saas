@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   Shield,
-  CheckSquare
+  CheckSquare,
+  Flag
 } from 'lucide-react'
 import { usePermissions } from '@/lib/hooks/usePermissions'
 
@@ -41,6 +42,18 @@ const navigation = [
     permission: 'approvals.manage',
   },
   {
+    name: 'RBAC Roles',
+    href: '/admin/rbac',
+    icon: Shield,
+    permission: 'rbac.manage',
+  },
+  {
+    name: 'Effective Perms',
+    href: '/admin/rbac/effective',
+    icon: Shield,
+    permission: 'users.view',
+  },
+  {
     name: 'Permissions',
     href: '/admin/permissions-coverage',
     icon: Shield,
@@ -57,6 +70,12 @@ const navigation = [
     href: '/admin/settings',
     icon: Settings,
     permission: 'settings.write',
+  },
+  {
+    name: 'Feature Flags',
+    href: '/admin/settings/feature-flags',
+    icon: Flag,
+    permission: 'flags.view',
   },
 ]
 
@@ -83,7 +102,7 @@ export function AdminSidebar() {
         <div className="mt-8 flex-grow flex flex-col">
           <nav className="flex-1 px-2 pb-4 space-y-1">
             {navigation
-              .filter(item => !item.permission || has(item.permission))
+              .filter(item => (!item.permission || has(item.permission)) || (!permissions && !loading))
               .map((item) => {
                 const isActive = pathname === item.href
                 return (
