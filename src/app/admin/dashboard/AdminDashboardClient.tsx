@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Typography } from '@/components/ui/typography'
-import { RefreshCw } from 'lucide-react'
 import KPICards from '@/components/admin/KPICards'
 import RevenueChart from '@/components/admin/RevenueChart'
 import RecentOrdersList from '@/components/admin/RecentOrdersList'

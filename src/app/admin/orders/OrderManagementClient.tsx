@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
@@ -13,7 +12,6 @@ import {
   Eye,
   Download,
   ExternalLink,
-  Filter,
   FileText
 } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'

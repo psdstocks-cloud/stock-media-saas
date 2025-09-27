@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePermissions } from '@/lib/hooks/usePermissions'
 import { Button } from '@/components/ui/button'
 import { Typography } from '@/components/ui/typography'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 
 interface Approval {
   id: string

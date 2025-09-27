@@ -56,7 +56,9 @@ export default function RolesClient() {
       }
       // load members via user roles (server supports by user → roles, so we skip for now or leave placeholder)
       setMembers([])
-    } catch {}
+    } catch {
+      /* no-op */
+    }
   }
 
   const togglePerm = (key: string) => {
