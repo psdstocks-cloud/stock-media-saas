@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { usePermissions } from '@/lib/hooks/usePermissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Typography } from '@/components/ui/typography'
 
 interface SettingItem {
   key: string
   value: string
+  type?: string
 }
 
 export default function AdminSettingsClient() {
@@ -26,7 +28,7 @@ export default function AdminSettingsClient() {
         const res = await fetch('/api/admin/settings', { cache: 'no-store' })
         if (!res.ok) throw new Error('Failed to load settings')
         const data = await res.json()
-        if (!cancelled) setSettings((data.settings || []).map((s: any) => ({ key: s.key, value: s.value })))
+        if (!cancelled) setSettings((data.settings || []).map((s: any) => ({ key: s.key, value: s.value, type: s.type })))
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Error')
       } finally {
@@ -61,13 +63,27 @@ export default function AdminSettingsClient() {
       <div className="grid gap-4">
         {settings.map((item, idx) => (
           <div key={item.key} className="flex items-center gap-3">
-            <label className="min-w-48 text-sm text-muted-foreground">{item.key}</label>
-            <Input
-              value={item.value ?? ''}
-              onChange={e => onChange(idx, e.target.value)}
-              disabled={!canWrite}
-            />
-            <Button onClick={() => onSave(item)} disabled={!canWrite}>Save</Button>
+            <label className="min-w-48 text-sm text-muted-foreground" htmlFor={`setting-${idx}`}>{item.key}</label>
+            {item.type === 'boolean' ? (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id={`setting-${idx}`}
+                  checked={(item.value ?? '').toString() === 'true'}
+                  onCheckedChange={(checked) => onChange(idx, checked ? 'true' : 'false')}
+                  disabled={!canWrite}
+                  aria-label={`${item.key} toggle`}
+                />
+                <span className="text-sm text-muted-foreground">{(item.value ?? '').toString() === 'true' ? 'On' : 'Off'}</span>
+              </div>
+            ) : (
+              <Input
+                id={`setting-${idx}`}
+                value={item.value ?? ''}
+                onChange={e => onChange(idx, e.target.value)}
+                disabled={!canWrite}
+              />
+            )}
+            <Button onClick={() => onSave(item)} disabled={!canWrite} aria-label={`Save ${item.key}`}>Save</Button>
           </div>
         ))}
       </div>
