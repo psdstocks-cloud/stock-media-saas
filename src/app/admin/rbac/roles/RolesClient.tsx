@@ -19,6 +19,10 @@ export default function RolesClient() {
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [permissions, setPermissions] = useState<string[]>([])
+  const [members, setMembers] = useState<{id:string;email:string}[]>([])
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [assignInput, setAssignInput] = useState('')
+  const [assignIds, setAssignIds] = useState<string>('')
   const [allPermissions, setAllPermissions] = useState<string[]>([])
 
   async function load() {
@@ -50,6 +54,8 @@ export default function RolesClient() {
         const data = await res.json()
         setPermissions(data.permissions || [])
       }
+      // load members via user roles (server supports by user → roles, so we skip for now or leave placeholder)
+      setMembers([])
     } catch {}
   }
 
@@ -130,6 +136,7 @@ export default function RolesClient() {
               </div>
               <div className="flex items-center gap-2">
                 <Button onClick={savePerms}>Save Permissions</Button>
+                <Button variant="outline" onClick={() => setAssignOpen(true)}>Assign Users</Button>
                 <a href={`/admin/rbac/effective?role=${encodeURIComponent(selected.name)}`} className="text-sm underline">View effective access</a>
               </div>
             </div>
@@ -146,6 +153,30 @@ export default function RolesClient() {
           <div className="flex items-center gap-2">
             <Button onClick={createRole} disabled={!newName.trim()}>Create</Button>
             <Button variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Assign Users inline drawer (simple) */}
+      {assignOpen && selected && (
+        <Card className="p-4 space-y-3">
+          <div className="text-lg font-semibold">Assign users to {selected.name}</div>
+          <div className="text-sm text-muted-foreground">Enter comma-separated user IDs to assign or remove.</div>
+          <Input placeholder="userId1,userId2" value={assignIds} onChange={e => setAssignIds(e.target.value)} />
+          <div className="flex items-center gap-2">
+            <Button onClick={async ()=>{
+              const ids = assignIds.split(',').map(s=>s.trim()).filter(Boolean)
+              if (ids.length===0) return
+              const res = await fetch(`/api/admin/rbac/roles/${selected.id}/assign`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userIds: ids }) })
+              if (!res.ok) alert('Failed to assign')
+            }}>Assign</Button>
+            <Button variant="secondary" onClick={async ()=>{
+              const ids = assignIds.split(',').map(s=>s.trim()).filter(Boolean)
+              if (ids.length===0) return
+              const res = await fetch(`/api/admin/rbac/roles/${selected.id}/unassign`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userIds: ids }) })
+              if (!res.ok) alert('Failed to unassign')
+            }}>Unassign</Button>
+            <Button variant="ghost" onClick={()=> setAssignOpen(false)}>Close</Button>
           </div>
         </Card>
       )}
