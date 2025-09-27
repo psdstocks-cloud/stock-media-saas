@@ -32,19 +32,17 @@
               - generic [ref=e40]:
                 - generic [ref=e41]: Email
                 - generic [ref=e42]:
-                  - textbox "Email" [ref=e43]: admin@example.com
+                  - textbox "Email" [ref=e43]
                   - img [ref=e44]
               - generic [ref=e47]:
                 - generic [ref=e48]: Password
                 - generic [ref=e49]:
-                  - textbox "Password" [ref=e50]: Passw0rd!
+                  - textbox "Password" [ref=e50]
                   - button "Show password" [ref=e51] [cursor=pointer]:
                     - img [ref=e52] [cursor=pointer]
-              - alert [ref=e55]:
-                - generic [ref=e56]: Login failed. Please try again.
-              - button "Access Dashboard" [ref=e57] [cursor=pointer]
-            - paragraph [ref=e59]: Secure admin authentication required
-  - button "Open Next.js Dev Tools" [ref=e65] [cursor=pointer]:
-    - img [ref=e66] [cursor=pointer]
-  - alert [ref=e69]
+              - button "Access Dashboard" [disabled]
+            - paragraph [ref=e56]: Secure admin authentication required
+  - button "Open Next.js Dev Tools" [ref=e62] [cursor=pointer]:
+    - img [ref=e63] [cursor=pointer]
+  - alert [ref=e66]
 ```

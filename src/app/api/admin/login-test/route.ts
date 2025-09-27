@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.NEXTAUTH_SECRET || 'secret', { expiresIn: '2h' })
     const response = NextResponse.json({ success: true, user })
-    response.cookies.set('admin-token', token, {
+    response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
