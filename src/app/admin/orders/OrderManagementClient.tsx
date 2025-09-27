@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { 
   ShoppingCart, 
   Eye,
@@ -41,6 +43,7 @@ export default function OrderManagementClient() {
   const { has } = usePermissions()
   const canView = has('orders.view')
   const canManage = has('orders.manage')
+  const canRefund = has('orders.refund')
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -51,6 +54,12 @@ export default function OrderManagementClient() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [bulkStatusModalOpen, setBulkStatusModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  // Dual-control: Refund modal
+  const [refundModalOpen, setRefundModalOpen] = useState(false)
+  const [refundAmount, setRefundAmount] = useState<string>('')
+  const [refundReason, setRefundReason] = useState<string>('')
+  const [refundSubmitting, setRefundSubmitting] = useState(false)
+  const [refundMessage, setRefundMessage] = useState<string>('')
 
   const fetchOrders = async () => {
     setIsLoading(true)
@@ -199,6 +208,21 @@ export default function OrderManagementClient() {
               title={!canManage ? 'Requires orders.manage' : undefined}
             >
               <FileText className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedOrder(order)
+                setRefundAmount(String(order.cost ?? ''))
+                setRefundReason('')
+                setRefundMessage('')
+                setRefundModalOpen(true)
+              }}
+              disabled={!canRefund}
+              title={!canRefund ? 'Requires orders.refund' : undefined}
+            >
+              Request refund
             </Button>
             {order.assetUrl && (
               <Button
@@ -357,6 +381,63 @@ export default function OrderManagementClient() {
         orderIds={selectedOrders}
         onConfirm={handleBulkStatusUpdate}
       />
+
+      {/* Refund Modal */}
+      <Dialog open={refundModalOpen} onOpenChange={setRefundModalOpen}>
+        <DialogContent aria-describedby="refund-desc">
+          <DialogHeader>
+            <DialogTitle>Request refund</DialogTitle>
+            <DialogDescription id="refund-desc">
+              Create an approval request to refund order {selectedOrder?.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label htmlFor="refund-amount" className="text-sm">Amount</label>
+              <Input id="refund-amount" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} />
+            </div>
+            <div>
+              <label htmlFor="refund-reason" className="text-sm">Reason</label>
+              <Input id="refund-reason" value={refundReason} onChange={e => setRefundReason(e.target.value)} placeholder="Why refund?" />
+            </div>
+            {refundMessage && (
+              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">{refundMessage}</div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRefundModalOpen(false)} disabled={refundSubmitting}>Cancel</Button>
+            <Button onClick={async () => {
+              if (!selectedOrder) return
+              const amt = Number(refundAmount)
+              if (Number.isNaN(amt)) {
+                setRefundMessage('Please enter a valid amount')
+                return
+              }
+              setRefundSubmitting(true)
+              setRefundMessage('Submitting…')
+              try {
+                const res = await fetch('/api/admin/orders/refund', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ orderId: selectedOrder.id, amount: amt, reason: refundReason })
+                })
+                if (res.status === 202) {
+                  setRefundMessage('Refund approval requested. Track it in Approvals.')
+                } else if (res.ok) {
+                  setRefundMessage('Refund processed')
+                } else {
+                  const j = await res.json().catch(() => ({}))
+                  setRefundMessage(j.error || 'Request failed')
+                }
+              } finally {
+                setRefundSubmitting(false)
+              }
+            }} disabled={refundSubmitting || !canRefund} title={!canRefund ? 'Requires orders.refund' : undefined}>
+              {refundSubmitting ? 'Submitting…' : 'Request approval'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

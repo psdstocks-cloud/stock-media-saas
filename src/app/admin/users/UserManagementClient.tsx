@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { 
   Users, 
   Edit, 
@@ -54,6 +56,12 @@ export default function UserManagementClient() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
+  // Dual-control: Adjust points modal
+  const [adjustModalOpen, setAdjustModalOpen] = useState(false)
+  const [adjustAmount, setAdjustAmount] = useState<string>('')
+  const [adjustReason, setAdjustReason] = useState<string>('')
+  const [adjustSubmitting, setAdjustSubmitting] = useState(false)
+  const [adjustMessage, setAdjustMessage] = useState<string>('')
 
   const fetchUsers = async () => {
     setIsLoading(true)
@@ -192,6 +200,21 @@ export default function UserManagementClient() {
               title={!canEdit ? 'Requires users.edit' : undefined}
             >
               <Edit className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedUser(user)
+                setAdjustAmount('')
+                setAdjustReason('')
+                setAdjustMessage('')
+                setAdjustModalOpen(true)
+              }}
+              disabled={!has('points.adjust')}
+              title={!has('points.adjust') ? 'Requires points.adjust' : undefined}
+            >
+              Adjust points
             </Button>
             {user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
               <Button
@@ -377,6 +400,63 @@ export default function UserManagementClient() {
         }}
         user={selectedUser}
       />
+
+      {/* Adjust Points Modal */}
+      <Dialog open={adjustModalOpen} onOpenChange={setAdjustModalOpen}>
+        <DialogContent aria-describedby="adjust-desc">
+          <DialogHeader>
+            <DialogTitle>Adjust points</DialogTitle>
+            <DialogDescription id="adjust-desc">
+              Request approval to adjust points for {selectedUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label htmlFor="adjust-amount" className="text-sm">Amount (use negative to deduct)</label>
+              <Input id="adjust-amount" value={adjustAmount} onChange={e => setAdjustAmount(e.target.value)} placeholder="e.g. 10 or -5" />
+            </div>
+            <div>
+              <label htmlFor="adjust-reason" className="text-sm">Reason</label>
+              <Input id="adjust-reason" value={adjustReason} onChange={e => setAdjustReason(e.target.value)} placeholder="Why are you adjusting points?" />
+            </div>
+            {adjustMessage && (
+              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">{adjustMessage}</div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAdjustModalOpen(false)} disabled={adjustSubmitting}>Cancel</Button>
+            <Button onClick={async () => {
+              if (!selectedUser) return
+              const amt = Number(adjustAmount)
+              if (Number.isNaN(amt)) {
+                setAdjustMessage('Please enter a valid number for amount')
+                return
+              }
+              setAdjustSubmitting(true)
+              setAdjustMessage('Submitting…')
+              try {
+                const res = await fetch('/api/admin/points/adjust', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId: selectedUser.id, amount: amt, reason: adjustReason })
+                })
+                if (res.status === 202) {
+                  setAdjustMessage('Approval requested. Track it in Approvals.')
+                } else if (res.ok) {
+                  setAdjustMessage('Points updated successfully')
+                } else {
+                  const j = await res.json().catch(() => ({}))
+                  setAdjustMessage(j.error || 'Request failed')
+                }
+              } finally {
+                setAdjustSubmitting(false)
+              }
+            }} disabled={adjustSubmitting || !has('points.adjust')} title={!has('points.adjust') ? 'Requires points.adjust' : undefined}>
+              {adjustSubmitting ? 'Submitting…' : 'Request approval'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
