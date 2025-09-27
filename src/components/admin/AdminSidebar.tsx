@@ -47,6 +47,12 @@ const navigation = [
     permission: 'users.view',
   },
   {
+    name: 'Audit Logs',
+    href: '/admin/audit-logs',
+    icon: Shield,
+    permission: 'users.view',
+  },
+  {
     name: 'Settings',
     href: '/admin/settings',
     icon: Settings,
