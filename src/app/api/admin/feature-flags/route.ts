@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     await createAuditLog({
-      adminId: session.user.id,
+      adminId: session!.user!.id,
       action: 'CREATE',
       resourceType: 'feature_flag',
       resourceId: featureFlag.id,

@@ -104,7 +104,7 @@ export async function PUT(
 
       // Create audit log
       await createAuditLog({
-        adminId: session.user.id,
+        adminId: session!.user!.id,
         action: 'UPDATE',
         resourceType: 'setting',
         resourceId: key,

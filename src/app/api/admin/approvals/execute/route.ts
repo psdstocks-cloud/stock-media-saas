@@ -20,7 +20,12 @@ export async function POST(request: NextRequest) {
     if (approval.status !== 'APPROVED') return NextResponse.json({ error: 'Approval is not APPROVED' }, { status: 400 })
 
     if (approval.type === 'POINTS_ADJUST' && approval.resourceType === 'user' && approval.amount) {
-      await PointsManager.addPoints(approval.resourceId, approval.amount, 'ADMIN_ADJUSTMENT', approval.reason)
+      await PointsManager.addPoints(
+        approval.resourceId,
+        approval.amount,
+        'ADMIN_ADJUSTMENT',
+        approval.reason || undefined
+      )
     } else if (approval.type === 'ORDER_REFUND' && approval.resourceType === 'order' && approval.amount) {
       const order = await prisma.order.findUnique({ where: { id: approval.resourceId } })
       if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })

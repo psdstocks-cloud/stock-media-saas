@@ -16,6 +16,9 @@ export async function GET(request: NextRequest) {
 
     // Verify JWT token
     const user = verifyJWT(adminToken);
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const guard = await requirePermission(request, user.id, 'orders.view')
     if (guard) return guard
 
@@ -72,6 +75,9 @@ export async function PATCH(request: NextRequest) {
 
     // Verify JWT token
     const user = verifyJWT(adminToken);
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const guard = await requirePermission(request, user.id, 'orders.manage')
     if (guard) return guard
 

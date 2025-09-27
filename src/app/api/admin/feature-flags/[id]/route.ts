@@ -93,7 +93,7 @@ export async function PUT(
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     await createAuditLog({
-      adminId: session.user.id,
+      adminId: session!.user!.id,
       action: 'UPDATE',
       resourceType: 'feature_flag',
       resourceId: id,
@@ -153,7 +153,7 @@ export async function DELETE(
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     await createAuditLog({
-      adminId: session.user.id,
+      adminId: session!.user!.id,
       action: 'DELETE',
       resourceType: 'feature_flag',
       resourceId: id,

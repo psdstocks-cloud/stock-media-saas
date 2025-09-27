@@ -126,6 +126,10 @@ export async function GET(request: NextRequest) {
     const guard = await requirePermission(request, session?.user?.id, 'users.view')
     if (guard) return guard
 
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {
