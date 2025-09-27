@@ -2,6 +2,11 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 export default async function globalSetup() {
+  // Skip seeding when DATABASE_URL is missing or clearly not configured (e.g., CI lint jobs)
+  const dbUrl = process.env.DATABASE_URL || ''
+  const shouldSkip = !dbUrl || dbUrl.includes('dummy')
+  if (shouldSkip) return
+
   const prisma = new PrismaClient()
   try {
     // Ensure seed ran
