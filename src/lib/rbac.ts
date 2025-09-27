@@ -1,5 +1,6 @@
 import { prisma } from './prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import { isEnforced } from './featureFlags'
 
 export async function getEffectivePermissions(userId: string): Promise<Set<string>> {
   const roles = await prisma.userRole.findMany({
@@ -29,6 +30,13 @@ export async function requirePermission(request: NextRequest, userId: string | u
   if (isSuper) return null
   const allowed = await hasPermission(userId, key)
   if (!allowed) {
+    // If not enforced, return 200 with a warning header for progressive rollout
+    const enforced = await isEnforced(key.split('.')[0])
+    if (!enforced) {
+      const res = NextResponse.next()
+      res.headers.set('x-rbac-warning', `missing ${key}`)
+      return res
+    }
     return NextResponse.json({ error: 'Forbidden: missing permission', permission: key }, { status: 403 })
   }
   return null
