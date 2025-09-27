@@ -128,11 +128,11 @@ export default function AdminApprovalsClient() {
                         <td className="p-2 space-x-2">
                           {a.status === 'PENDING' ? (
                             <>
-                              <Button size="sm" onClick={() => onAction(a.id, 'approve')} disabled={!canManage} aria-label={`Approve ${a.type} ${a.resourceId}`}>Approve</Button>
-                              <Button size="sm" variant="secondary" onClick={() => onAction(a.id, 'reject')} disabled={!canManage} aria-label={`Reject ${a.type} ${a.resourceId}`}>Reject</Button>
+                              <Button size="sm" onClick={() => onAction(a.id, 'approve')} disabled={!canManage} aria-label={`Approve ${a.type} ${a.resourceId}`} title={!canManage ? 'Requires approvals.manage' : undefined}>Approve</Button>
+                              <Button size="sm" variant="secondary" onClick={() => onAction(a.id, 'reject')} disabled={!canManage} aria-label={`Reject ${a.type} ${a.resourceId}`} title={!canManage ? 'Requires approvals.manage' : undefined}>Reject</Button>
                             </>
                           ) : a.status === 'APPROVED' ? (
-                            <Button size="sm" onClick={() => onExecute(a.id)} disabled={!canManage} aria-label={`Execute ${a.type} ${a.resourceId}`}>Execute</Button>
+                            <Button size="sm" onClick={() => onExecute(a.id)} disabled={!canManage} aria-label={`Execute ${a.type} ${a.resourceId}`} title={!canManage ? 'Requires approvals.manage' : undefined}>Execute</Button>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}

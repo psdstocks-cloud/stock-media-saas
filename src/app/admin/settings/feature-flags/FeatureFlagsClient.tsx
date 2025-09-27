@@ -73,13 +73,13 @@ export default function FeatureFlagsClient() {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <Switch checked={flag.isEnabled} onCheckedChange={(v) => toggle(flag, v)} disabled={!canManage} />
+              <Switch checked={flag.isEnabled} onCheckedChange={(v) => toggle(flag, v)} disabled={!canManage} title={!canManage ? 'Requires flags.manage' : undefined} />
               <span className="text-sm text-muted-foreground">{flag.isEnabled ? 'Enabled' : 'Disabled'}</span>
             </div>
             <div className="flex items-center gap-2">
               <label className="text-sm text-muted-foreground">Rollout %</label>
               <Input type="number" defaultValue={flag.rolloutPercentage} min={0} max={100} disabled={!canManage} />
-              <Button disabled={!canManage} onClick={() => alert('Adjusting rollout requires backend call')}>Update</Button>
+              <Button disabled={!canManage} onClick={() => alert('Adjusting rollout requires backend call')} title={!canManage ? 'Requires flags.manage' : undefined}>Update</Button>
             </div>
           </div>
         ))}

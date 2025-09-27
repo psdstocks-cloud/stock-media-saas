@@ -184,6 +184,7 @@ export default function OrderManagementClient() {
                 setViewModalOpen(true)
               }}
               disabled={!canView}
+              title={!canView ? 'Requires orders.view' : undefined}
             >
               <Eye className="h-3 w-3" />
             </Button>
@@ -195,6 +196,7 @@ export default function OrderManagementClient() {
                 setEditModalOpen(true)
               }}
               disabled={!canManage}
+              title={!canManage ? 'Requires orders.manage' : undefined}
             >
               <FileText className="h-3 w-3" />
             </Button>
@@ -204,6 +206,7 @@ export default function OrderManagementClient() {
                 size="sm"
                 onClick={() => window.open(order.assetUrl!, '_blank')}
                 disabled={!canView}
+                title={!canView ? 'Requires orders.view' : undefined}
               >
                 <ExternalLink className="h-3 w-3" />
               </Button>

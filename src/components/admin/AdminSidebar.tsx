@@ -41,6 +41,12 @@ const navigation = [
     permission: 'approvals.manage',
   },
   {
+    name: 'Permissions',
+    href: '/admin/permissions-coverage',
+    icon: Shield,
+    permission: 'users.view',
+  },
+  {
     name: 'Settings',
     href: '/admin/settings',
     icon: Settings,

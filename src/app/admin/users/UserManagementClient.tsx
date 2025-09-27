@@ -177,6 +177,7 @@ export default function UserManagementClient() {
                 setViewModalOpen(true)
               }}
               disabled={!canView}
+              title={!canView ? 'Requires users.view' : undefined}
             >
               <Eye className="h-3 w-3" />
             </Button>
@@ -188,6 +189,7 @@ export default function UserManagementClient() {
                 setEditModalOpen(true)
               }}
               disabled={!canEdit}
+              title={!canEdit ? 'Requires users.edit' : undefined}
             >
               <Edit className="h-3 w-3" />
             </Button>
@@ -201,6 +203,7 @@ export default function UserManagementClient() {
                 }}
                 className="text-red-600 hover:text-red-700"
                 disabled={!canEdit}
+                title={!canEdit ? 'Requires users.edit' : undefined}
               >
                 <Trash2 className="h-3 w-3" />
               </Button>

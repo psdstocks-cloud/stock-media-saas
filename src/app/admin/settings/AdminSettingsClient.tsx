@@ -83,7 +83,7 @@ export default function AdminSettingsClient() {
                 disabled={!canWrite}
               />
             )}
-            <Button onClick={() => onSave(item)} disabled={!canWrite} aria-label={`Save ${item.key}`}>Save</Button>
+            <Button onClick={() => onSave(item)} disabled={!canWrite} aria-label={`Save ${item.key}`} title={!canWrite ? 'Requires settings.write' : undefined}>Save</Button>
           </div>
         ))}
       </div>
