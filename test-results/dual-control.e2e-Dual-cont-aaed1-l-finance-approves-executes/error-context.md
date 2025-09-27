@@ -21,28 +21,54 @@
             - img [ref=e23] [cursor=pointer]
             - text: Logout
       - main [ref=e26]:
-        - generic [ref=e29]:
+        - generic [ref=e28]:
           - generic [ref=e30]:
-            - img [ref=e32]
-            - generic [ref=e35]:
-              - heading "Admin Access" [level=3] [ref=e36]
-              - paragraph [ref=e37]: Enter your admin email and password to access the dashboard
-          - generic [ref=e38]:
-            - generic [ref=e39]:
-              - generic [ref=e40]:
-                - generic [ref=e41]: Email
-                - generic [ref=e42]:
-                  - textbox "Email" [ref=e43]
-                  - img [ref=e44]
-              - generic [ref=e47]:
-                - generic [ref=e48]: Password
-                - generic [ref=e49]:
-                  - textbox "Password" [ref=e50]
-                  - button "Show password" [ref=e51] [cursor=pointer]:
-                    - img [ref=e52] [cursor=pointer]
-              - button "Access Dashboard" [disabled]
-            - paragraph [ref=e56]: Secure admin authentication required
-  - button "Open Next.js Dev Tools" [ref=e62] [cursor=pointer]:
-    - img [ref=e63] [cursor=pointer]
-  - alert [ref=e66]
+            - heading "Admin Dashboard" [level=1] [ref=e31]
+            - paragraph [ref=e32]: Comprehensive overview of your Stock Media SaaS platform performance and metrics
+          - generic [ref=e34]:
+            - alert [ref=e35]:
+              - generic [ref=e36]: Failed to fetch KPI data
+            - button "Retry" [ref=e37] [cursor=pointer]:
+              - img [ref=e38] [cursor=pointer]
+              - text: Retry
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - heading "Revenue Analytics" [level=3] [ref=e45]:
+                - img [ref=e46]
+                - text: Revenue Analytics
+              - paragraph [ref=e48]: Revenue trends over the last 30 days
+            - generic [ref=e49]:
+              - alert [ref=e50]:
+                - generic [ref=e51]: Failed to fetch revenue data
+              - button "Retry" [ref=e52] [cursor=pointer]:
+                - img [ref=e53] [cursor=pointer]
+                - text: Retry
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]:
+                - heading "Recent Orders" [level=3] [ref=e61]:
+                  - img [ref=e62]
+                  - text: Recent Orders
+                - paragraph [ref=e66]: Latest orders from the platform
+              - generic [ref=e67]:
+                - alert [ref=e68]:
+                  - generic [ref=e69]: Failed to fetch recent orders
+                - button "Retry" [ref=e70] [cursor=pointer]:
+                  - img [ref=e71] [cursor=pointer]
+                  - text: Retry
+            - generic [ref=e76]:
+              - generic [ref=e77]:
+                - heading "New Users" [level=3] [ref=e78]:
+                  - img [ref=e79]
+                  - text: New Users
+                - paragraph [ref=e84]: Recently registered users
+              - generic [ref=e85]:
+                - alert [ref=e86]:
+                  - generic [ref=e87]: Failed to fetch recent users
+                - button "Retry" [ref=e88] [cursor=pointer]:
+                  - img [ref=e89] [cursor=pointer]
+                  - text: Retry
+  - button "Open Next.js Dev Tools" [ref=e99] [cursor=pointer]:
+    - img [ref=e100] [cursor=pointer]
+  - alert [ref=e103]
 ```
