@@ -24,6 +24,7 @@ import {
   DeleteUserModal, 
   ViewUserModal 
 } from '@/components/admin/UserModals'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 interface UserData {
   id: string
@@ -38,6 +39,10 @@ interface UserData {
 }
 
 export default function UserManagementClient() {
+  const { has } = usePermissions()
+  const canView = has('users.view')
+  const canEdit = has('users.edit')
+  const canImpersonate = has('users.impersonate')
   const [users, setUsers] = useState<UserData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -171,6 +176,7 @@ export default function UserManagementClient() {
                 setSelectedUser(user)
                 setViewModalOpen(true)
               }}
+              disabled={!canView}
             >
               <Eye className="h-3 w-3" />
             </Button>
@@ -181,6 +187,7 @@ export default function UserManagementClient() {
                 setSelectedUser(user)
                 setEditModalOpen(true)
               }}
+              disabled={!canEdit}
             >
               <Edit className="h-3 w-3" />
             </Button>
@@ -193,6 +200,7 @@ export default function UserManagementClient() {
                   setDeleteModalOpen(true)
                 }}
                 className="text-red-600 hover:text-red-700"
+                disabled={!canEdit}
               >
                 <Trash2 className="h-3 w-3" />
               </Button>
@@ -290,11 +298,11 @@ export default function UserManagementClient() {
           </Typography>
         </div>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleExport} variant="outline" size="sm">
+          <Button onClick={handleExport} variant="outline" size="sm" disabled={!canView}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={() => setCreateModalOpen(true)}>
+          <Button onClick={() => setCreateModalOpen(true)} disabled={!canEdit}>
             <Plus className="h-4 w-4 mr-2" />
             Create User
           </Button>
@@ -317,18 +325,18 @@ export default function UserManagementClient() {
         showSearch={true}
         showFilters={true}
         filterOptions={filterOptions}
-        showBulkActions={true}
+        showBulkActions={canEdit}
         showPagination={true}
         pageSize={20}
         emptyMessage="No users found"
         emptyIcon={<Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
         onRefresh={fetchUsers}
-        onExport={handleExport}
-        onBulkAction={handleBulkAction}
+        onExport={canView ? handleExport : undefined}
+        onBulkAction={canEdit ? handleBulkAction : undefined}
         onFilterChange={handleFilterChange}
-        selectedRowIds={selectedUsers}
-        onSelectionChange={setSelectedUsers}
-        enableRowSelection={true}
+        selectedRowIds={canEdit ? selectedUsers : []}
+        onSelectionChange={canEdit ? setSelectedUsers : undefined}
+        enableRowSelection={canEdit}
       />
 
       {/* Modals */}

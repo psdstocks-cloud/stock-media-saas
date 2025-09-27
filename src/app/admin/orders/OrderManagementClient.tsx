@@ -21,6 +21,7 @@ import {
   EditOrderModal, 
   BulkStatusModal 
 } from '@/components/admin/OrderModals'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 interface Order {
   id: string
@@ -37,6 +38,9 @@ interface Order {
 }
 
 export default function OrderManagementClient() {
+  const { has } = usePermissions()
+  const canView = has('orders.view')
+  const canManage = has('orders.manage')
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -179,6 +183,7 @@ export default function OrderManagementClient() {
                 setSelectedOrder(order)
                 setViewModalOpen(true)
               }}
+              disabled={!canView}
             >
               <Eye className="h-3 w-3" />
             </Button>
@@ -189,6 +194,7 @@ export default function OrderManagementClient() {
                 setSelectedOrder(order)
                 setEditModalOpen(true)
               }}
+              disabled={!canManage}
             >
               <FileText className="h-3 w-3" />
             </Button>
@@ -197,6 +203,7 @@ export default function OrderManagementClient() {
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(order.assetUrl!, '_blank')}
+                disabled={!canView}
               >
                 <ExternalLink className="h-3 w-3" />
               </Button>
@@ -205,7 +212,7 @@ export default function OrderManagementClient() {
         )
       },
     },
-  ], [])
+  ], [canView, canManage])
 
   const handleEditSuccess = (updatedOrder: Order) => {
     setOrders(prev => prev.map(order => order.id === updatedOrder.id ? updatedOrder : order))
@@ -284,7 +291,7 @@ export default function OrderManagementClient() {
           </Typography>
         </div>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleExport} variant="outline" size="sm">
+          <Button onClick={handleExport} variant="outline" size="sm" disabled={!canView}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -307,18 +314,18 @@ export default function OrderManagementClient() {
         showSearch={true}
         showFilters={true}
         filterOptions={filterOptions}
-        showBulkActions={true}
+        showBulkActions={canManage}
         showPagination={true}
         pageSize={20}
         emptyMessage="No orders found"
         emptyIcon={<ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
         onRefresh={fetchOrders}
-        onExport={handleExport}
-        onBulkAction={handleBulkAction}
+        onExport={canView ? handleExport : undefined}
+        onBulkAction={canManage ? handleBulkAction : undefined}
         onFilterChange={handleFilterChange}
-        selectedRowIds={selectedOrders}
-        onSelectionChange={setSelectedOrders}
-        enableRowSelection={true}
+        selectedRowIds={canManage ? selectedOrders : []}
+        onSelectionChange={canManage ? setSelectedOrders : undefined}
+        enableRowSelection={canManage}
       />
 
       {/* Modals */}
