@@ -35,10 +35,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Key and value required' }, { status: 400 })
     }
 
-    const updatedSetting = await prisma.systemSetting.update({
-      where: { key },
-      data: { value },
-    })
+    // Upsert to create missing keys (e.g., rbac.enforce.*)
+    const existing = await prisma.systemSetting.findUnique({ where: { key } })
+    const updatedSetting = existing
+      ? await prisma.systemSetting.update({ where: { key }, data: { value } })
+      : await prisma.systemSetting.create({ data: { key, value: String(value), type: typeof value === 'boolean' ? 'boolean' : 'string' } })
 
     // Audit log
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'

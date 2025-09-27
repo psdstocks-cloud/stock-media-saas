@@ -61,7 +61,12 @@ export default function AdminSettingsClient() {
     <div className="p-6 space-y-6">
       <Typography variant="h2">Admin Settings</Typography>
       <div className="grid gap-4">
-        {settings.map((item, idx) => (
+        {[...settings,
+          { key: 'rbac.enforce.users', value: settings.find(s => s.key==='rbac.enforce.users')?.value ?? 'false', type: 'boolean' },
+          { key: 'rbac.enforce.orders', value: settings.find(s => s.key==='rbac.enforce.orders')?.value ?? 'false', type: 'boolean' },
+          { key: 'rbac.enforce.flags', value: settings.find(s => s.key==='rbac.enforce.flags')?.value ?? 'false', type: 'boolean' },
+          { key: 'rbac.enforce.settings', value: settings.find(s => s.key==='rbac.enforce.settings')?.value ?? 'false', type: 'boolean' },
+        ].reduce((acc, cur) => acc.some(a => a.key===cur.key) ? acc : acc.concat(cur as any), settings as any).map((item, idx) => (
           <div key={item.key} className="flex items-center gap-3">
             <label className="min-w-48 text-sm text-muted-foreground" htmlFor={`setting-${idx}`}>{item.key}</label>
             {item.type === 'boolean' ? (
