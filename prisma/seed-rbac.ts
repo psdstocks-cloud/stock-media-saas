@@ -13,6 +13,11 @@ const PERMISSIONS = [
   'settings.write',
   'approvals.manage',
   'rbac.manage',
+  // Team & API scopes
+  'team.manage',
+  'team.member',
+  'api.read',
+  'api.write',
 ]
 
 const ROLES: Record<string, string[]> = {
@@ -22,6 +27,12 @@ const ROLES: Record<string, string[]> = {
   Finance: ['billing.view','points.adjust','orders.refund','analytics.view'],
   Content: ['flags.view','analytics.view'],
   Analyst: ['analytics.view'],
+  // New team-scoped roles
+  'team.admin': ['team.manage', 'team.member'],
+  'team.member': ['team.member'],
+  // Public API scopes
+  'api.client': ['api.read'],
+  'api.integrator': ['api.read','api.write'],
 }
 
 async function main() {

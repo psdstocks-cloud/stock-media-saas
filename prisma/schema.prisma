@@ -118,6 +118,8 @@ model Subscription {
   billingHistory       BillingHistory[]
 
   @@map("subscriptions")
+  @@index([userId])
+  @@index([status])
 }
 
 model BillingHistory {
@@ -166,6 +168,9 @@ model PointsHistory {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("points_history")
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model StockSite {
@@ -204,6 +209,10 @@ model Order {
   pointsHistory PointsHistory[]
 
   @@map("orders")
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model ApiKey {
@@ -217,6 +226,8 @@ model ApiKey {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
+  @@index([userId])
+  @@index([isActive])
 }
 
 model SystemSetting {
