@@ -5,17 +5,26 @@ import { Typography, Button } from "@/components/ui"
 import { Check, Star, Users, Zap, Crown, CreditCard, Calendar } from "lucide-react"
 import { PricingSection } from "@/components/landing/PricingSection"
 import { SubscriptionPlansSection } from "@/components/landing/SubscriptionPlansSection"
+import { DynamicPricingSlider } from "@/components/landing/DynamicPricingSlider"
 
 export default function PricingClient() {
-  const [pricingMode, setPricingMode] = useState<'pay-as-you-go' | 'subscriptions'>('pay-as-you-go')
+  const [pricingMode, setPricingMode] = useState<'pay-as-you-go' | 'subscriptions' | 'dynamic'>('dynamic')
 
   const handleToggleKeys = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault()
-      setPricingMode((m) => (m === 'pay-as-you-go' ? 'subscriptions' : 'pay-as-you-go'))
+      setPricingMode((m) => {
+        if (m === 'dynamic') return 'pay-as-you-go'
+        if (m === 'pay-as-you-go') return 'subscriptions'
+        return 'dynamic'
+      })
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault()
-      setPricingMode((m) => (m === 'subscriptions' ? 'pay-as-you-go' : 'subscriptions'))
+      setPricingMode((m) => {
+        if (m === 'dynamic') return 'subscriptions'
+        if (m === 'subscriptions') return 'pay-as-you-go'
+        return 'dynamic'
+      })
     }
   }
 
@@ -49,24 +58,39 @@ export default function PricingClient() {
             Simple, <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Transparent</span> Pricing
           </Typography>
           <Typography variant="h3" className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-4">
-            Choose the pricing model that works best for you. Pay as you go or subscribe for monthly savings.
+            Choose the pricing model that works best for you. Dynamic pricing, pay as you go, or subscribe for monthly savings.
           </Typography>
 
           {/* Pricing Mode Toggle */}
           <div className="flex justify-center mb-6 md:mb-8">
             <div
-              className="bg-[hsl(var(--muted))] p-1 rounded-lg inline-flex w-full max-w-md"
+              className="bg-[hsl(var(--muted))] p-1 rounded-lg inline-flex w-full max-w-2xl"
               role="radiogroup"
               aria-label="Pricing mode"
               onKeyDown={handleToggleKeys}
             >
               <Button
                 role="radio"
+                aria-checked={pricingMode === 'dynamic'}
+                aria-controls="dynamic-panel"
+                variant={pricingMode === 'dynamic' ? 'default' : 'ghost'}
+                onClick={() => setPricingMode('dynamic')}
+                className={`px-3 sm:px-4 py-2 rounded-md transition-all duration-200 flex-1 text-sm sm:text-base ${
+                  pricingMode === 'dynamic'
+                    ? 'bg-[hsl(var(--card))] shadow-sm text-[hsl(var(--card-foreground))]'
+                    : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+                }`}
+              >
+                <Zap className="h-4 w-4 mr-2" aria-hidden="true" />
+                Dynamic Pricing
+              </Button>
+              <Button
+                role="radio"
                 aria-checked={pricingMode === 'pay-as-you-go'}
                 aria-controls="payg-panel"
                 variant={pricingMode === 'pay-as-you-go' ? 'default' : 'ghost'}
                 onClick={() => setPricingMode('pay-as-you-go')}
-                className={`px-3 sm:px-6 py-2 rounded-md transition-all duration-200 flex-1 text-sm sm:text-base ${
+                className={`px-3 sm:px-4 py-2 rounded-md transition-all duration-200 flex-1 text-sm sm:text-base ${
                   pricingMode === 'pay-as-you-go'
                     ? 'bg-[hsl(var(--card))] shadow-sm text-[hsl(var(--card-foreground))]'
                     : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
@@ -81,7 +105,7 @@ export default function PricingClient() {
                 aria-controls="subs-panel"
                 variant={pricingMode === 'subscriptions' ? 'default' : 'ghost'}
                 onClick={() => setPricingMode('subscriptions')}
-                className={`px-3 sm:px-6 py-2 rounded-md transition-all duration-200 flex-1 text-sm sm:text-base ${
+                className={`px-3 sm:px-4 py-2 rounded-md transition-all duration-200 flex-1 text-sm sm:text-base ${
                   pricingMode === 'subscriptions'
                     ? 'bg-[hsl(var(--card))] shadow-sm text-[hsl(var(--card-foreground))]'
                     : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
@@ -92,6 +116,15 @@ export default function PricingClient() {
               </Button>
             </div>
           </div>
+
+          {pricingMode === 'dynamic' && (
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-full" aria-live="polite">
+              <Zap className="h-4 w-4 text-purple-500 mr-2" aria-hidden="true" />
+              <Typography variant="body-sm" className="text-purple-700 dark:text-purple-300 font-medium">
+                New: Dynamic Pricing - The more you buy, the less you pay!
+              </Typography>
+            </div>
+          )}
 
           {pricingMode === 'pay-as-you-go' && (
             <div className="inline-flex items-center px-4 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-full" aria-live="polite">
@@ -146,8 +179,10 @@ export default function PricingClient() {
         </div>
 
         {/* Pricing Section */}
-        <div id={pricingMode === 'pay-as-you-go' ? 'payg-panel' : 'subs-panel'} aria-live="polite">
-          {pricingMode === 'pay-as-you-go' ? (
+        <div id={pricingMode === 'dynamic' ? 'dynamic-panel' : pricingMode === 'pay-as-you-go' ? 'payg-panel' : 'subs-panel'} aria-live="polite">
+          {pricingMode === 'dynamic' ? (
+            <DynamicPricingSlider />
+          ) : pricingMode === 'pay-as-you-go' ? (
             <PricingSection />
           ) : (
             <SubscriptionPlansSection />
@@ -209,10 +244,30 @@ export default function PricingClient() {
             </div>
             <div className="border-b border-[hsl(var(--border))] pb-6">
               <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
+                How does dynamic pricing work?
+              </Typography>
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                Dynamic pricing offers volume discounts - the more points you buy, the less you pay per point. 
+                You can choose from 1-500 points with 6 different pricing tiers, plus flexible validity periods 
+                (30, 60, 90 days, or 1 year). For 500+ points, contact our sales team for custom enterprise pricing.
+              </Typography>
+            </div>
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
+                What's the difference between validity periods?
+              </Typography>
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                Standard 30-day validity is included at no extra cost. Extended periods add a small premium: 
+                60 days (+15%), 90 days (+25%), or 1 year (+40%). This gives you more time to use your points 
+                without pressure, perfect for long-term projects.
+              </Typography>
+            </div>
+            <div className="border-b border-[hsl(var(--border))] pb-6">
+              <Typography variant="h3" className="text-xl font-semibold mb-3 text-[hsl(var(--foreground))]">
                 Is there a free trial?
               </Typography>
               <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
-                Yes! New users get 10 free points to try our platform. You can explore our entire library and 
+                Yes! New users get 10 free points to try our platform. You can explore our entire library and
                 download content without any commitment. No credit card required.
               </Typography>
             </div>
