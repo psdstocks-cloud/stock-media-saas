@@ -6,7 +6,9 @@ import { HeroSection } from "@/components/landing/HeroSection"
 import { TrustBadgesSection } from "@/components/landing/TrustBadgesSection"
 import { CustomerLogosSection } from "@/components/landing/CustomerLogosSection"
 import { NewsletterSection } from "@/components/landing/NewsletterSection"
+import { TestimonialsSection } from "@/components/landing/TestimonialsSection"
 import { ExitIntentPopup } from "@/components/ExitIntentPopup"
+import { SocialProofTicker } from "@/components/SocialProofTicker"
 
 // Lazy load below-the-fold components for better initial load performance
 const HowItWorksSection = dynamic(() => import('@/components/landing/HowItWorksSection').then(mod => ({ default: mod.HowItWorksSection })), {
@@ -118,6 +120,9 @@ export default function HomePage() {
       {/* Exit Intent Popup */}
       <ExitIntentPopup />
       
+      {/* Social Proof Ticker */}
+      <SocialProofTicker />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[hsl(var(--background))]/80 backdrop-blur border-b border-[hsl(var(--border))]" role="banner">
         <div className="container mx-auto px-4 py-6">
@@ -156,6 +161,7 @@ export default function HomePage() {
       <HowItWorksSection />
       <FeatureSection />
       <ProductShowcaseSection />
+      <TestimonialsSection />
       <PricingSection />
       <FAQSection />
       <NewsletterSection />
