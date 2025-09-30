@@ -41,7 +41,7 @@ export function BillingManager() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingPortal, setIsLoadingPortal] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [success, _setSuccess] = useState('')
 
   const fetchBillingInfo = async () => {
     setIsLoading(true)

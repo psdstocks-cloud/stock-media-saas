@@ -1,7 +1,7 @@
 'use client'
 
 import { Typography } from '@/components/ui'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 // Customer logos - can be replaced with real logos later
 const customers = [
