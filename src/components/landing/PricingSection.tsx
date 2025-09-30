@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Badge } from '@/components/ui'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { BrandButton } from '@/components/ui/brand-button'
 import { Check, Zap, Crown, Star, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -313,9 +314,29 @@ export const PricingSection: React.FC = () => {
                     {pack.features?.map((feature, featureIndex) => (
                       <div key={featureIndex} className="flex items-center space-x-3">
                         <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
-                          {feature}
-                        </Typography>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))] cursor-help">
+                                {feature}
+                              </Typography>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                {feature.includes('points') && 'Each download costs 10 points. Points never expire and can be used anytime.'}
+                                {feature.includes('stock sites') && 'Download from 25+ premium stock sites including Shutterstock, Adobe Stock, Freepik, and more.'}
+                                {feature.includes('Commercial license') && 'Use downloaded content in client projects, marketing materials, and commercial applications without restrictions.'}
+                                {feature.includes('Priority support') && 'Get faster response times and dedicated support for your account.'}
+                                {feature.includes('Team sharing') && 'Share your account with team members and manage permissions.'}
+                                {feature.includes('Bulk download') && 'Download multiple files at once for faster workflow.'}
+                                {feature.includes('Dedicated account manager') && 'Get a personal account manager for enterprise support.'}
+                                {feature.includes('Custom integrations') && 'Integrate with your existing tools and workflows.'}
+                                {feature.includes('White-label') && 'Customize the platform with your branding.'}
+                                {feature.includes('Instant downloads') && 'Download files immediately after purchase without waiting.'}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     ))}
                   </div>

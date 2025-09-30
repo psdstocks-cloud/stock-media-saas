@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Button, Typography, Badge } from '@/components/ui'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Check, Zap, Crown, Star, LogIn, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -228,12 +229,26 @@ export const SubscriptionPlansSection: React.FC = () => {
                 </CardTitle>
                 
                 <div className="mt-4">
-                  <Typography variant="h3" className="text-3xl font-bold text-[hsl(var(--foreground))]">
-                    {formatCurrency(plan.price, plan.currency)}
-                  </Typography>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Typography variant="h3" className="text-3xl font-bold text-[hsl(var(--foreground))]">
+                      {formatCurrency(plan.price, plan.currency)}
+                    </Typography>
+                    {/* Annual Discount Badge */}
+                    {plan.name?.toLowerCase().includes('pro') && (
+                      <Badge className="bg-green-500 text-white text-xs px-2 py-1">
+                        Save 20%
+                      </Badge>
+                    )}
+                  </div>
                   <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                     per {getBillingCycleText(plan.billingCycle)}
                   </Typography>
+                  {/* Annual Pricing Display */}
+                  {plan.name?.toLowerCase().includes('pro') && (
+                    <Typography variant="body-sm" className="text-green-600 dark:text-green-400 mt-1">
+                      ${(plan.price * 12 * 0.8).toFixed(0)}/year (20% off)
+                    </Typography>
+                  )}
                 </div>
               </CardHeader>
 
@@ -258,34 +273,79 @@ export const SubscriptionPlansSection: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
-                      {plan.points.toLocaleString()} premium points
-                    </Typography>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
+                            {plan.points.toLocaleString()} premium points
+                          </Typography>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Each download costs 10 points. Points never expire and can be used anytime.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
-                      Access to all stock sites
-                    </Typography>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
+                            Access to all stock sites
+                          </Typography>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Download from 25+ premium stock sites including Shutterstock, Adobe Stock, Freepik, and more.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
-                      Commercial license included
-                    </Typography>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
+                            Commercial license included
+                          </Typography>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Use downloaded content in client projects, marketing materials, and commercial applications without restrictions.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
-                      {plan.rolloverLimit}% rollover limit
-                    </Typography>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
+                            {plan.rolloverLimit}% rollover limit
+                          </Typography>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Unused points roll over to the next month up to {plan.rolloverLimit}% of your monthly allocation.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   {isPopular && (
                     <div className="flex items-center">
                       <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                      <Typography variant="body-sm" className="text-[hsl(var(--foreground))]">
-                        Priority support
-                      </Typography>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
+                              Priority support
+                            </Typography>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Get faster response times and dedicated support for your account.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   )}
                 </div>

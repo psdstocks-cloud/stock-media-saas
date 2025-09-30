@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tawk.to Chat Test</title>
+</head>
+<body>
+    <h1>Testing Tawk.to Chat Widget</h1>
+    <p>This page tests if Tawk.to loads correctly with your Property ID.</p>
+    
+    <div id="status">Loading...</div>
+    
+    <script>
+        // Test environment variable
+        const propertyId = '68dbe99ee69f4b194f45a80c/1j6dgh6bb';
+        console.log('Testing Tawk.to with Property ID:', propertyId);
+        
+        // Load Tawk.to script
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function(){
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/' + propertyId;
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+        
+        // Check if Tawk loads
+        setTimeout(() => {
+            if (window.Tawk_API) {
+                document.getElementById('status').innerHTML = '✅ Tawk.to loaded successfully! Chat widget should be visible.';
+                console.log('✅ Tawk.to loaded successfully!');
+            } else {
+                document.getElementById('status').innerHTML = '❌ Tawk.to failed to load. Check console for errors.';
+                console.log('❌ Tawk.to failed to load');
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
