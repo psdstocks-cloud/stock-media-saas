@@ -187,6 +187,70 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
 
   return (
     <div className={cn("w-full max-w-5xl mx-auto", className)}>
+      <style jsx>{`
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .rotate-x-1 {
+          transform: rotateX(1deg);
+        }
+        .rotate-x-2 {
+          transform: rotateX(2deg);
+        }
+        .rotate-x-3 {
+          transform: rotateX(3deg);
+        }
+        .rotate-12 {
+          transform: rotate(12deg);
+        }
+        .-rotate-12 {
+          transform: rotate(-12deg);
+        }
+        .slider-3d-track {
+          background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 50%, #9ca3af 100%);
+          box-shadow: 
+            inset 0 2px 4px rgba(0,0,0,0.1),
+            0 4px 8px rgba(0,0,0,0.2),
+            0 8px 16px rgba(0,0,0,0.1);
+        }
+        .slider-3d-progress {
+          background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%);
+          box-shadow: 
+            inset 0 2px 4px rgba(255,255,255,0.3),
+            0 4px 8px rgba(0,0,0,0.3),
+            0 8px 16px rgba(0,0,0,0.2);
+        }
+        .tier-marker-3d {
+          box-shadow: 
+            0 4px 8px rgba(0,0,0,0.2),
+            0 8px 16px rgba(0,0,0,0.1),
+            inset 0 1px 2px rgba(255,255,255,0.3);
+        }
+        .tier-marker-active {
+          box-shadow: 
+            0 6px 12px rgba(0,0,0,0.3),
+            0 12px 24px rgba(0,0,0,0.2),
+            inset 0 2px 4px rgba(255,255,255,0.4);
+        }
+        .rotate-y-1 {
+          transform: rotateY(1deg);
+        }
+        .rotate-y-2 {
+          transform: rotateY(2deg);
+        }
+        .-rotate-y-2 {
+          transform: rotateY(-2deg);
+        }
+        .rotate-24 {
+          transform: rotate(24deg);
+        }
+        .-rotate-24 {
+          transform: rotate(-24deg);
+        }
+        .rotate-1 {
+          transform: rotate(1deg);
+        }
+      `}</style>
       <Card className="bg-gradient-to-br from-white via-gray-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 border-2 border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden relative">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-blue-500/5 pointer-events-none" />
@@ -219,52 +283,113 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
               </Typography>
             </div>
 
-            {/* Slider */}
-            <div className="space-y-6">
-              <div className="relative bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-inner">
-                <input
-                  id="points-slider"
-                  type="range"
-                  min="1"
-                  max="500"
-                  value={points}
-                  onChange={handleSliderChange}
-                  className={cn(
-                    "w-full h-4 rounded-xl appearance-none cursor-pointer",
-                    "bg-transparent",
-                    "focus:outline-none focus:ring-4 focus:ring-orange-500/30"
-                  )}
-                  style={{
-                    background: `linear-gradient(to right, ${getSliderColor()} 0%, ${getSliderColor()} ${(points / 500) * 100}%, transparent ${(points / 500) * 100}%, transparent 100%)`
-                  }}
-                />
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-4 font-medium">
-                  <span className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    1 point
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                    500+ points
-                  </span>
+            {/* 3D Slider */}
+            <div className="space-y-8">
+              <div className="relative">
+                {/* 3D Slider Container */}
+                <div className="relative bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-3xl p-8 shadow-2xl transform perspective-1000">
+                  {/* 3D Track Background */}
+                  <div className="absolute inset-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 dark:from-gray-700 dark:via-gray-600 dark:to-gray-500 rounded-2xl shadow-inner transform rotate-x-2"></div>
+                  
+                  {/* 3D Track with Depth */}
+                  <div className="relative slider-3d-track rounded-2xl h-8 transform rotate-x-1">
+                    {/* Progress Fill with 3D Effect */}
+                    <div 
+                      className="absolute top-0 left-0 h-full rounded-2xl slider-3d-progress transform rotate-x-1 transition-all duration-500"
+                      style={{
+                        width: `${(points / 500) * 100}%`,
+                        background: currentTier ? `linear-gradient(135deg, ${currentTier.color.replace('from-', '').replace('to-', '')} 0%, ${currentTier.color.replace('from-', '').replace('to-', '')} 50%, ${currentTier.color.replace('from-', '').replace('to-', '')} 100%)` : 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%)'
+                      }}
+                    />
+                    
+                    {/* 3D Slider Input */}
+                    <input
+                      id="points-slider"
+                      type="range"
+                      min="1"
+                      max="500"
+                      value={points}
+                      onChange={handleSliderChange}
+                      className={cn(
+                        "absolute top-0 left-0 w-full h-full appearance-none cursor-pointer",
+                        "bg-transparent z-10",
+                        "focus:outline-none focus:ring-4 focus:ring-orange-500/30"
+                      )}
+                    />
+                    
+                    {/* 3D Tier Markers */}
+                    <div className="absolute inset-0 flex justify-between items-center px-2">
+                      {pricingTiers.map((tier, index) => (
+                        <div
+                          key={tier.label}
+                          className="flex flex-col items-center transform transition-all duration-300"
+                          style={{
+                            left: `${((tier.min + tier.max) / 2 / 500) * 100}%`,
+                            transform: `translateX(-50%) ${points >= tier.min && points <= tier.max ? 'scale(1.2) translateY(-2px)' : 'scale(1)'}`
+                          }}
+                        >
+                          {/* 3D Marker */}
+                          <div className={cn(
+                            "w-5 h-5 rounded-full transform transition-all duration-500",
+                            points >= tier.min && points <= tier.max 
+                              ? `bg-gradient-to-br ${tier.color} tier-marker-active scale-125` 
+                              : "bg-gray-400 dark:bg-gray-500 tier-marker-3d"
+                          )} />
+                          
+                          {/* Tier Label */}
+                          <div className={cn(
+                            "text-xs font-bold mt-3 px-3 py-2 rounded-full transition-all duration-500 transform",
+                            points >= tier.min && points <= tier.max
+                              ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-xl scale-110 rotate-1"
+                              : "text-gray-500 dark:text-gray-400 shadow-md"
+                          )} style={{
+                            boxShadow: points >= tier.min && points <= tier.max 
+                              ? '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3)'
+                              : '0 2px 4px rgba(0,0,0,0.1)'
+                          }}>
+                            {tier.label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* 3D Endpoint Indicators */}
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-8 font-medium">
+                    <div className="flex items-center gap-3 transform hover:scale-110 transition-all duration-300 group">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-xl transform rotate-12 group-hover:rotate-24 transition-transform duration-300 tier-marker-3d"></div>
+                      <span className="font-bold text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">1 point</span>
+                    </div>
+                    <div className="flex items-center gap-3 transform hover:scale-110 transition-all duration-300 group">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-xl transform -rotate-12 group-hover:-rotate-24 transition-transform duration-300 tier-marker-3d"></div>
+                      <span className="font-bold text-lg group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">500+ points</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Manual Input */}
-              <div className="flex items-center justify-center space-x-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-                <Label htmlFor="points-input" className="text-lg font-semibold text-[hsl(var(--foreground))]">
+              {/* 3D Manual Input */}
+              <div className="flex items-center justify-center space-x-6 bg-gradient-to-r from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-2xl p-6 shadow-2xl border-2 border-gray-200 dark:border-gray-700 transform perspective-1000">
+                <Label htmlFor="points-input" className="text-xl font-bold text-[hsl(var(--foreground))] transform rotate-y-2">
                   Points:
                 </Label>
-                <Input
-                  id="points-input"
-                  type="number"
-                  min="1"
-                  max="500"
-                  value={points}
-                  onChange={handleInputChange}
-                  className="w-32 text-center font-bold text-xl border-2 border-orange-200 dark:border-orange-800 focus:border-orange-500 dark:focus:border-orange-400 rounded-lg"
-                />
-                <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] font-medium">
+                <div className="relative">
+                  <Input
+                    id="points-input"
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={points}
+                    onChange={handleInputChange}
+                    className="w-40 text-center font-bold text-2xl border-3 border-orange-300 dark:border-orange-700 focus:border-orange-500 dark:focus:border-orange-400 rounded-xl shadow-lg transform rotate-y-1 hover:scale-105 transition-all duration-300"
+                    style={{
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,0.3)'
+                    }}
+                  />
+                  {/* 3D Input Glow Effect */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/20 to-red-500/20 blur-sm -z-10 transform scale-110"></div>
+                </div>
+                <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] font-bold text-xl transform -rotate-y-2">
                   points
                 </Typography>
               </div>
