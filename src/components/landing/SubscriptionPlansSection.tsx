@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Check, Zap, Crown, Star, LogIn, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import PricingTestimonials from '@/components/landing/PricingTestimonials'
 
 interface SubscriptionPlan {
   id: string
@@ -200,37 +201,39 @@ export const SubscriptionPlansSection: React.FC = () => {
             <Card
               key={plan.id}
               className={cn(
-                "relative group hover:shadow-lg transition-all duration-200 cursor-pointer bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border-[hsl(var(--border))]",
-                isPopular && "ring-2 ring-orange-500 shadow-lg scale-105"
+                "relative group hover:shadow-2xl transition-all duration-500 cursor-pointer bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 text-[hsl(var(--card-foreground))] border-2 overflow-hidden",
+                isPopular 
+                  ? "border-orange-500 shadow-2xl scale-105 ring-4 ring-orange-100 dark:ring-orange-900/30" 
+                  : "border-gray-200 dark:border-gray-700 hover:border-orange-300 hover:-translate-y-3 hover:shadow-xl"
               )}
             >
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-orange-500 text-white px-3 py-1">
-                    Most Popular
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 text-sm font-bold shadow-lg animate-pulse">
+                    ⭐ Most Popular
                   </Badge>
                 </div>
               )}
               
-              <CardHeader className="text-center pb-4">
-                <div className="flex justify-center mb-4">
+              <CardHeader className="text-center pb-6 pt-8">
+                <div className="flex justify-center mb-6">
                   <div className={cn(
-                    "p-3 rounded-full",
+                    "p-4 rounded-3xl shadow-lg group-hover:scale-110 transition-transform duration-300",
                     isPopular 
-                      ? "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" 
-                      : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" 
+                      : "bg-gradient-to-r from-gray-600 to-gray-700 text-white"
                   )}>
-                    <IconComponent className="h-6 w-6" />
+                    <IconComponent className="h-8 w-8 drop-shadow-sm" />
                   </div>
                 </div>
                 
-                <CardTitle className="text-xl font-bold text-[hsl(var(--foreground))]">
+                <CardTitle className="text-2xl font-bold text-[hsl(var(--foreground))] mb-2">
                   {plan.name}
                 </CardTitle>
                 
-                <div className="mt-4">
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Typography variant="h3" className="text-3xl font-bold text-[hsl(var(--foreground))]">
+                    <Typography variant="h3" className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                       {formatCurrency(plan.price, plan.currency)}
                     </Typography>
                     {/* Annual Discount Badge */}
@@ -240,114 +243,132 @@ export const SubscriptionPlansSection: React.FC = () => {
                       </Badge>
                     )}
                   </div>
-                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-lg font-semibold">
                     per {getBillingCycleText(plan.billingCycle)}
                   </Typography>
                   {/* Annual Pricing Display */}
                   {plan.name?.toLowerCase().includes('pro') && (
-                    <Typography variant="body-sm" className="text-green-600 dark:text-green-400 mt-1">
+                    <Typography variant="body-sm" className="text-green-600 dark:text-green-400 mt-1 font-medium">
                       ${(plan.price * 12 * 0.8).toFixed(0)}/year (20% off)
                     </Typography>
                   )}
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 px-6">
                 {plan.description && (
-                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-center">
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-center text-sm font-medium">
                     {plan.description}
                   </Typography>
                 )}
 
                 {/* Points Display */}
-                <div className="text-center py-4 bg-[hsl(var(--muted))] rounded-lg">
-                  <Typography variant="h4" className="font-bold text-orange-600 dark:text-orange-400">
+                <div className="text-center py-6 bg-gradient-to-r from-orange-50 to-blue-50 dark:from-orange-900/20 dark:to-blue-900/20 rounded-2xl border border-orange-200 dark:border-orange-800">
+                  <Typography variant="h4" className="font-bold text-3xl text-orange-600 dark:text-orange-400 mb-2">
                     {plan.points.toLocaleString()} Points
                   </Typography>
-                  <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
+                  <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))] font-semibold">
                     Monthly allocation
                   </Typography>
+                  <div className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">
+                    {Math.round(plan.points / plan.price)} points per dollar
+                  </div>
                 </div>
 
                 {/* Features */}
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
-                            {plan.points.toLocaleString()} premium points
-                          </Typography>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Each download costs 10 points. Points never expire and can be used anytime.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="flex items-center">
-                    <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
-                            Access to all stock sites
-                          </Typography>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Download from 25+ premium stock sites including Shutterstock, Adobe Stock, Freepik, and more.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="flex items-center">
-                    <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
-                            Commercial license included
-                          </Typography>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Use downloaded content in client projects, marketing materials, and commercial applications without restrictions.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="flex items-center">
-                    <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
-                            {plan.rolloverLimit}% rollover limit
-                          </Typography>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Unused points roll over to the next month up to {plan.rolloverLimit}% of your monthly allocation.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  {isPopular && (
-                    <div className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                <div className="space-y-4">
+                  <Typography variant="h4" className="text-lg font-semibold text-[hsl(var(--foreground))] mb-4">
+                    What's Included
+                  </Typography>
+                  <div className="space-y-3">
+                    <div className="flex items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                      <div className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help">
-                              Priority support
+                            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help font-medium">
+                              {plan.points.toLocaleString()} premium points
                             </Typography>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Get faster response times and dedicated support for your account.</p>
+                            <p>Each download costs 10 points. Points never expire and can be used anytime.</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                  )}
+                    <div className="flex items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                      <div className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help font-medium">
+                              Access to all stock sites
+                            </Typography>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Download from 25+ premium stock sites including Shutterstock, Adobe Stock, Freepik, and more.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <div className="flex items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                      <div className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help font-medium">
+                              Commercial license included
+                            </Typography>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Use downloaded content in client projects, marketing materials, and commercial applications without restrictions.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <div className="flex items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                      <div className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help font-medium">
+                              {plan.rolloverLimit}% rollover limit
+                            </Typography>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Unused points roll over to the next month up to {plan.rolloverLimit}% of your monthly allocation.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    {isPopular && (
+                      <div className="flex items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                        <div className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help font-medium">
+                                Priority support
+                              </Typography>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Get faster response times and dedicated support for your account.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Subscribe Button */}
@@ -355,10 +376,10 @@ export const SubscriptionPlansSection: React.FC = () => {
                   onClick={() => handleSubscribe(plan)}
                   disabled={isAuthLoading || isProcessing}
                   className={cn(
-                    "w-full group-hover:scale-105 transition-transform duration-200",
+                    "w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl",
                     isPopular
-                      ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
-                      : "bg-gray-900 hover:bg-gray-800 text-white"
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                      : "bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white"
                   )}
                 >
                   {isAuthLoading || isProcessing ? (
@@ -378,6 +399,12 @@ export const SubscriptionPlansSection: React.FC = () => {
                     </>
                   )}
                 </Button>
+
+                {/* Customer Testimonial */}
+                <PricingTestimonials 
+                  planType={plan.name?.toLowerCase().includes('pro') ? 'professional' : 
+                           plan.name?.toLowerCase().includes('enterprise') ? 'enterprise' : 'starter'} 
+                />
               </CardContent>
             </Card>
           )

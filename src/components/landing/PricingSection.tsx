@@ -8,6 +8,7 @@ import { BrandButton } from '@/components/ui/brand-button'
 import { Check, Zap, Crown, Star, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VirtualPurchaseModal from '@/components/modals/VirtualPurchaseModal'
+import PricingTestimonials from '@/components/landing/PricingTestimonials'
 
 interface PointPack {
   id: string
@@ -263,61 +264,69 @@ export const PricingSection: React.FC = () => {
               <Card 
                 key={pack.id}
                 className={cn(
-                  "relative group hover:shadow-2xl transition-all duration-300 border-2 bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]",
+                  "relative group hover:shadow-2xl transition-all duration-500 border-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 text-[hsl(var(--card-foreground))] overflow-hidden",
                   pack.isPopular 
-                    ? "border-orange-500 shadow-xl scale-105" 
-                    : "border-gray-200 hover:border-orange-300 hover:-translate-y-2"
+                    ? "border-orange-500 shadow-2xl scale-105 ring-4 ring-orange-100 dark:ring-orange-900/30" 
+                    : "border-gray-200 dark:border-gray-700 hover:border-orange-300 hover:-translate-y-3 hover:shadow-xl"
                 )}
               >
                 {/* Popular Badge */}
                 {pack.isPopular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-1 text-sm font-semibold">
-                      Most Popular
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 text-sm font-bold shadow-lg animate-pulse">
+                      ⭐ Most Popular
                     </Badge>
                   </div>
                 )}
 
-                <CardHeader className="text-center pb-4">
+                <CardHeader className="text-center pb-6 pt-8">
                   <div className={cn(
-                    "inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r mx-auto mb-4",
+                    "inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300",
                     colorClass
                   )}>
-                    <Icon className="h-8 w-8 text-white" />
+                    <Icon className="h-10 w-10 text-white drop-shadow-sm" />
                   </div>
                   
-                  <CardTitle className="text-2xl font-bold text-[hsl(var(--foreground))]">
+                  <CardTitle className="text-3xl font-bold text-[hsl(var(--foreground))] mb-2">
                     {pack.name}
                   </CardTitle>
                   
                   {pack.description && (
-                    <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mt-2">
+                    <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-sm font-medium">
                       {pack.description}
                     </Typography>
                   )}
                 </CardHeader>
 
-                <CardContent className="text-center space-y-6">
+                <CardContent className="text-center space-y-8 px-6">
                   {/* Price */}
-                  <div>
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-5xl font-bold text-[hsl(var(--foreground))]">${pack.price}</span>
-                      <span className="text-lg text-[hsl(var(--muted-foreground))] ml-2">one-time</span>
+                  <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-baseline justify-center mb-2">
+                      <span className="text-6xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">${pack.price}</span>
+                      <span className="text-lg text-[hsl(var(--muted-foreground))] ml-2 font-medium">one-time</span>
                     </div>
-                    <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mt-2">
-                      {pack.points} premium points
+                    <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-lg font-semibold">
+                      {pack.points.toLocaleString()} premium points
                     </Typography>
+                    <div className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">
+                      {Math.round(pack.points / pack.price)} points per dollar
+                    </div>
                   </div>
 
                   {/* Features */}
-                  <div className="space-y-3">
+                  <div className="space-y-4">
+                    <Typography variant="h4" className="text-lg font-semibold text-[hsl(var(--foreground))] mb-4">
+                      What's Included
+                    </Typography>
                     {pack.features?.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center space-x-3">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <div key={featureIndex} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                        <div className="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))] cursor-help">
+                              <Typography variant="body-sm" className="text-[hsl(var(--foreground))] cursor-help font-medium">
                                 {feature}
                               </Typography>
                             </TooltipTrigger>
@@ -345,7 +354,12 @@ export const PricingSection: React.FC = () => {
                   <BrandButton
                     onClick={() => handlePurchase(pack)}
                     disabled={isAuthLoading}
-                    className="w-full"
+                    className={cn(
+                      "w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl",
+                      pack.isPopular 
+                        ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white" 
+                        : "bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white"
+                    )}
                     variant={pack.isPopular ? 'dark' : 'light'}
                   >
                     {isAuthLoading ? (
@@ -379,6 +393,11 @@ export const PricingSection: React.FC = () => {
                       )
                     )}
                   </BrandButton>
+
+                  {/* Customer Testimonial */}
+                  <PricingTestimonials 
+                    planType={pack.id as 'starter' | 'professional' | 'enterprise'} 
+                  />
                 </CardContent>
               </Card>
             )
