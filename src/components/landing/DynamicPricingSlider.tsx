@@ -336,16 +336,16 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
                               : "bg-gray-400 dark:bg-gray-500 tier-marker-3d"
                           )} />
                           
-                          {/* Tier Label */}
+                          {/* Tier Label - Enhanced Readability */}
                           <div className={cn(
-                            "text-xs font-bold mt-3 px-3 py-2 rounded-full transition-all duration-500 transform",
+                            "text-sm font-bold mt-3 px-4 py-2 rounded-full transition-all duration-500 transform",
                             points >= tier.min && points <= tier.max
-                              ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-xl scale-110 rotate-1"
-                              : "text-gray-500 dark:text-gray-400 shadow-md"
+                              ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-xl scale-110 rotate-1 border-2 border-orange-300 dark:border-orange-400"
+                              : "bg-gray-800 dark:bg-gray-700 text-white dark:text-gray-100 shadow-lg border border-gray-600 dark:border-gray-500"
                           )} style={{
                             boxShadow: points >= tier.min && points <= tier.max 
-                              ? '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3)'
-                              : '0 2px 4px rgba(0,0,0,0.1)'
+                              ? '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3)'
+                              : '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1)'
                           }}>
                             {tier.label}
                           </div>

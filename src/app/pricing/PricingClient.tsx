@@ -6,6 +6,7 @@ import { Check, Star, Users, Zap, Crown, CreditCard, Calendar } from "lucide-rea
 import { PricingSection } from "@/components/landing/PricingSection"
 import { SubscriptionPlansSection } from "@/components/landing/SubscriptionPlansSection"
 import { DynamicPricingSlider } from "@/components/landing/DynamicPricingSlider"
+import { PricingComparisonTable } from "@/components/landing/PricingComparisonTable"
 
 export default function PricingClient() {
   const [pricingMode, setPricingMode] = useState<'pay-as-you-go' | 'subscriptions' | 'dynamic'>('dynamic')
@@ -188,6 +189,11 @@ export default function PricingClient() {
             <SubscriptionPlansSection />
           )}
         </div>
+
+        {/* 3D Comparison Table */}
+        <section className="mt-24">
+          <PricingComparisonTable />
+        </section>
 
         {/* FAQ Section */}
         <section className="mt-24">
