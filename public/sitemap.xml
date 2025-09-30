@@ -1,91 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
   <!-- Homepage -->
   <url>
     <loc>https://stock-media-saas.vercel.app/</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  
+  <!-- Public Pages -->
+  <url>
+    <loc>https://stock-media-saas.vercel.app/pricing</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/about</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/contact</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/how-it-works</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/supported-platforms</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/help</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/status</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://stock-media-saas.vercel.app/terms</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/privacy</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/security</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://stock-media-saas.vercel.app/accessibility</loc>
+    <lastmod>2025-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   
   <!-- Authentication Pages -->
   <url>
     <loc>https://stock-media-saas.vercel.app/login</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2025-09-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
     <loc>https://stock-media-saas.vercel.app/register</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2025-09-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
-  <!-- Dashboard Pages (Protected) -->
   <url>
-    <loc>https://stock-media-saas.vercel.app/dashboard</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  
-  <url>
-    <loc>https://stock-media-saas.vercel.app/dashboard/browse</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>https://stock-media-saas.vercel.app/dashboard/orders</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>https://stock-media-saas.vercel.app/dashboard/profile</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <!-- Admin Pages -->
-  <url>
-    <loc>https://stock-media-saas.vercel.app/admin</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://stock-media-saas.vercel.app/admin/webhooks</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>https://stock-media-saas.vercel.app/forgot-password</loc>
+    <lastmod>2025-09-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  
-  <!-- API Endpoints (for documentation) -->
-  <url>
-    <loc>https://stock-media-saas.vercel.app/api/health</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.3</priority>
-  </url>
-  
-  <url>
-    <loc>https://stock-media-saas.vercel.app/api/subscription-plans</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   
-  <url>
-    <loc>https://stock-media-saas.vercel.app/api/stock-sites</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
 </urlset>

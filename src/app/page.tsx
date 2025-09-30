@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { Button, Typography } from "@/components/ui"
 import { User, LogIn } from "lucide-react"
 import { HeroSection } from "@/components/landing/HeroSection"
@@ -7,9 +8,83 @@ import { CTASection } from "@/components/landing/CTASection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { ProductShowcaseSection } from "@/components/landing/ProductShowcaseSection"
 import { FAQSection } from "@/components/landing/FAQSection"
+import { TrustBadgesSection } from "@/components/landing/TrustBadgesSection"
 import Footer from "@/components/Footer"
 
 export const revalidate = 120
+
+// Enhanced SEO Metadata for Homepage
+export const metadata: Metadata = {
+  title: "Stock Media SaaS - Access 25+ Premium Stock Sites with One Subscription",
+  description: "Download premium stock photos, videos, vectors, and music from 25+ sites including Shutterstock, Adobe Stock, and Freepik. Point-based system with smart rollover. Start free!",
+  keywords: [
+    "stock media",
+    "stock photos",
+    "stock videos",
+    "stock music",
+    "shutterstock alternative",
+    "adobe stock",
+    "freepik",
+    "subscription",
+    "point system",
+    "creative assets",
+    "royalty free",
+    "commercial license"
+  ],
+  authors: [{ name: "Stock Media SaaS Team" }],
+  creator: "Stock Media SaaS",
+  publisher: "Stock Media SaaS",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://stock-media-saas.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "Stock Media SaaS - Access 25+ Premium Stock Sites",
+    description: "Download premium stock photos, videos, vectors from Shutterstock, Adobe Stock, Freepik & more. Point-based subscription with smart rollover. Try free!",
+    url: '/',
+    siteName: 'Stock Media SaaS',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Stock Media SaaS - Access Premium Stock Media',
+        type: 'image/jpeg',
+      }
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Stock Media SaaS - 25+ Premium Stock Sites",
+    description: "Download from Shutterstock, Adobe Stock, Freepik & more with one subscription. Smart point system with rollover.",
+    images: ['/og-image.jpg'],
+    creator: '@stockmediasaas',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code', // Replace with actual code
+    // yandex: 'your-yandex-code',
+    // bing: 'your-bing-code',
+  },
+}
 
 export default function HomePage() {
   return (
@@ -47,6 +122,7 @@ export default function HomePage() {
 
       {/* Landing Page Sections */}
       <HeroSection />
+      <TrustBadgesSection />
       <HowItWorksSection />
       <FeatureSection />
       <ProductShowcaseSection />

@@ -1,17 +1,38 @@
+# Robots.txt for Stock Media SaaS
+# Updated: September 30, 2025
+
+# Allow all crawlers
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://stock-media-saas.vercel.app/sitemap.xml
-
-# Disallow admin and API routes for better SEO
-Disallow: /api/
+# Disallow admin and user-specific pages
 Disallow: /admin/
 Disallow: /dashboard/
+Disallow: /api/
+Disallow: /test-*
 Disallow: /_next/
-Disallow: /login
-Disallow: /register
+Disallow: /verify-email
 
-# Allow important pages
-Allow: /
-Allow: /sitemap.xml
+# Allow specific API endpoints for documentation
+Allow: /api/health
+Allow: /api/stock-sites
+Allow: /api/subscription-plans
+
+# Sitemaps
+Sitemap: https://stock-media-saas.vercel.app/sitemap.xml
+
+# Crawl-delay for polite bots
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

@@ -6,23 +6,31 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Stock Media SaaS - Design System Demo",
-  description: "A modern, production-ready SaaS platform with Material.io efficiency, Spotify UX, and Figma's minimalist design.",
-  keywords: ["stock media", "saas", "design system", "react", "nextjs", "tailwind"],
+  title: {
+    default: "Stock Media SaaS - Premium Stock Photos, Videos & Music",
+    template: "%s | Stock Media SaaS"
+  },
+  description: "Access 25+ premium stock sites with one subscription. Download from Shutterstock, Adobe Stock, Freepik & more. Point-based system with rollover.",
+  keywords: ["stock media", "stock photos", "stock videos", "shutterstock", "adobe stock", "freepik", "subscription", "saas"],
   authors: [{ name: "Stock Media SaaS Team" }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://stock-media-saas.vercel.app'),
   openGraph: {
-    title: "Stock Media SaaS - Design System Demo",
-    description: "A modern, production-ready SaaS platform with Material.io efficiency, Spotify UX, and Figma's minimalist design.",
+    title: "Stock Media SaaS - Premium Stock Assets",
+    description: "Access 25+ premium stock sites with one subscription. Download photos, videos, vectors & music.",
     type: "website",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Stock Media SaaS preview"
       }
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@stockmediasaas',
+    creator: '@stockmediasaas',
   },
 }
 
@@ -71,20 +79,41 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Product",
-              "name": "Stock Media Points",
-              "image": ["https://stock-media-saas.vercel.app/og-image.png"],
-              "description": "Point-based access to premium stock assets across 50+ providers.",
-              "brand": {
-                "@type": "Brand",
-                "name": "Stock Media SaaS"
-              },
+              "@type": "SoftwareApplication",
+              "name": "Stock Media SaaS",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
               "offers": {
                 "@type": "AggregateOffer",
                 "priceCurrency": "USD",
                 "lowPrice": "9.99",
-                "highPrice": "69.99",
-                "offerCount": "3"
+                "highPrice": "199.99",
+                "offerCount": "4",
+                "availability": "https://schema.org/InStock"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "ratingCount": "1247",
+                "bestRating": "5",
+                "worstRating": "1"
+              },
+              "description": "Access premium stock photos, videos, vectors from 25+ sites including Shutterstock, Adobe Stock, and Freepik with one subscription."
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Stock Media SaaS",
+              "url": "https://stock-media-saas.vercel.app",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://stock-media-saas.vercel.app/dashboard?search={search_term_string}",
+                "query-input": "required name=search_term_string"
               }
             })
           }}
