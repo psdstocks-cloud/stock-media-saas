@@ -120,7 +120,7 @@ export default function PricingClient() {
                 </div>
                 <div>
                   <Typography variant="h3" className="text-xl md:text-2xl font-bold text-green-800 dark:text-green-200">
-                    Start with 100 Free Points
+                    Start with 10 Free Points
                   </Typography>
                   <Typography variant="body" className="text-green-700 dark:text-green-300 text-sm md:text-base">
                     No credit card required • Try all features
@@ -130,7 +130,7 @@ export default function PricingClient() {
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                   <Check className="h-4 w-4" />
-                  <span className="text-sm">10 free downloads</span>
+                  <span className="text-sm">1 free download</span>
                 </div>
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                   <Check className="h-4 w-4" />
@@ -212,7 +212,7 @@ export default function PricingClient() {
                 Is there a free trial?
               </Typography>
               <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
-                Yes! New users get 100 free points to try our platform. You can explore our entire library and 
+                Yes! New users get 10 free points to try our platform. You can explore our entire library and 
                 download content without any commitment. No credit card required.
               </Typography>
             </div>
@@ -387,7 +387,7 @@ export default function PricingClient() {
           </Typography>
           <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] mb-6 md:mb-8 max-w-2xl mx-auto text-sm md:text-base">
             Join thousands of creators who trust our platform for their content needs. 
-            Start with 100 free points and see the difference.
+            Start with 10 free points and see the difference.
           </Typography>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
             <a 
