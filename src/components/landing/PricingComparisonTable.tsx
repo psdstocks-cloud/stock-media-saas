@@ -171,7 +171,7 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
                             <Typography variant="body-sm" className="text-green-600 dark:text-green-400 font-semibold">
                               {tier.savings}% savings
                             </Typography>
-                            <Typography variant="body-xs" className="text-[hsl(var(--muted-foreground))] mt-2">
+                            <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))] mt-2">
                               {tier.description}
                             </Typography>
                           </div>
