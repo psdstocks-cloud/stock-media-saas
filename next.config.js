@@ -92,7 +92,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://api.nehtw.com https://vitals.vercel-insights.com https://api.resend.com https://embed.tawk.to ws: wss:",
+              "connect-src 'self' https://api.nehtw.com https://vitals.vercel-insights.com https://api.resend.com https://embed.tawk.to https://va.tawk.to ws: wss:",
               "frame-src 'self' https://js.stripe.com https://embed.tawk.to",
               "object-src 'none'",
               "base-uri 'self'",
