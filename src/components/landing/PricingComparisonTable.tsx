@@ -21,19 +21,20 @@ const tierIcons = {
   'Enterprise': Building2
 }
 
+// Focus on 3 key tiers for easier comparison
+const keyTiers = [
+  { label: 'Starter', min: 1, max: 10, pricePerPoint: 0.50, savings: 0, color: 'from-red-500 to-red-600', icon: Zap, description: 'Perfect for individual creators' },
+  { label: 'Popular', min: 51, max: 100, pricePerPoint: 0.30, savings: 40, color: 'from-yellow-500 to-yellow-600', icon: Star, description: 'Best for regular users', popular: true },
+  { label: 'Pro', min: 171, max: 400, pricePerPoint: 0.26, savings: 48, color: 'from-blue-500 to-blue-600', icon: Crown, description: 'Ideal for professional teams' }
+]
+
 const tierFeatures = {
   'Starter': [
     '1-10 points',
     'Basic support',
     'Standard downloads',
-    'Commercial license'
-  ],
-  'Growth': [
-    '11-50 points',
-    'Email support',
-    'Priority downloads',
     'Commercial license',
-    'Download history'
+    '30-day validity'
   ],
   'Popular': [
     '51-100 points',
@@ -41,16 +42,8 @@ const tierFeatures = {
     'Fast downloads',
     'Commercial license',
     'Download history',
-    'Bulk downloads'
-  ],
-  'Business': [
-    '101-170 points',
-    'Priority support',
-    'Fast downloads',
-    'Commercial license',
-    'Download history',
     'Bulk downloads',
-    'Team sharing'
+    '30-day validity'
   ],
   'Pro': [
     '171-400 points',
@@ -60,45 +53,54 @@ const tierFeatures = {
     'Download history',
     'Bulk downloads',
     'Team sharing',
-    'API access'
-  ],
-  'Enterprise': [
-    '401-500 points',
-    'Dedicated support',
-    'Fast downloads',
-    'Commercial license',
-    'Download history',
-    'Bulk downloads',
-    'Team sharing',
     'API access',
-    'Custom integrations'
+    '60-day validity'
   ]
 }
 
 export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
   className
 }) => {
-  // Define all unique features across all tiers
+  // Define features for the 3 key tiers
   const allFeatures = [
-    'Basic support',
-    'Email support', 
-    'Priority support',
-    'Dedicated support',
-    'Standard downloads',
-    'Priority downloads',
-    'Fast downloads',
+    'Points range',
+    'Support level',
+    'Download speed',
     'Commercial license',
     'Download history',
     'Bulk downloads',
     'Team sharing',
     'API access',
-    'Custom integrations'
+    'Validity period'
   ]
 
-  // Check if a tier has a specific feature
-  const hasFeature = (tierLabel: string, feature: string) => {
-    const tierFeatureList = tierFeatures[tierLabel as keyof typeof tierFeatures] || []
-    return tierFeatureList.includes(feature)
+  // Get feature value for a specific tier
+  const getFeatureValue = (tierLabel: string, feature: string) => {
+    const tier = keyTiers.find(t => t.label === tierLabel)
+    if (!tier) return ''
+    
+    switch (feature) {
+      case 'Points range':
+        return `${tier.min}-${tier.max} points`
+      case 'Support level':
+        return tierLabel === 'Starter' ? 'Basic' : 'Priority'
+      case 'Download speed':
+        return tierLabel === 'Starter' ? 'Standard' : 'Fast'
+      case 'Commercial license':
+        return '✓'
+      case 'Download history':
+        return tierLabel === 'Starter' ? '✗' : '✓'
+      case 'Bulk downloads':
+        return tierLabel === 'Starter' ? '✗' : '✓'
+      case 'Team sharing':
+        return tierLabel === 'Pro' ? '✓' : '✗'
+      case 'API access':
+        return tierLabel === 'Pro' ? '✓' : '✗'
+      case 'Validity period':
+        return tierLabel === 'Pro' ? '60 days' : '30 days'
+      default:
+        return ''
+    }
   }
 
   return (
@@ -111,10 +113,10 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
             </div>
           </div>
           <CardTitle className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-orange-600 to-blue-600 dark:from-white dark:via-orange-400 dark:to-blue-400 bg-clip-text text-transparent mb-4">
-            Compare All Pricing Tiers
+            Choose Your Perfect Plan
           </CardTitle>
           <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-xl max-w-3xl mx-auto leading-relaxed">
-            See exactly what's included in each tier at a glance
+            Compare our 3 main tiers and find the one that fits your needs
           </Typography>
         </CardHeader>
 
@@ -128,8 +130,8 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
                   <th className="text-left p-4 font-semibold text-[hsl(var(--foreground))]">
                     Features
                   </th>
-                  {PRICING_TIERS.map((tier) => {
-                    const IconComponent = tierIcons[tier.label as keyof typeof tierIcons]
+                  {keyTiers.map((tier) => {
+                    const IconComponent = tier.icon
                     const isPopular = tier.popular
                     
                     return (
@@ -169,6 +171,9 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
                             <Typography variant="body-sm" className="text-green-600 dark:text-green-400 font-semibold">
                               {tier.savings}% savings
                             </Typography>
+                            <Typography variant="body-xs" className="text-[hsl(var(--muted-foreground))] mt-2">
+                              {tier.description}
+                            </Typography>
                           </div>
                         </div>
                       </th>
@@ -187,20 +192,26 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
                     <td className="p-4 font-medium text-[hsl(var(--foreground))]">
                       {feature}
                     </td>
-                    {PRICING_TIERS.map((tier) => {
-                      const hasThisFeature = hasFeature(tier.label, feature)
+                    {keyTiers.map((tier) => {
+                      const featureValue = getFeatureValue(tier.label, feature)
+                      const isCheckmark = featureValue === '✓'
+                      const isXMark = featureValue === '✗'
                       
                       return (
                         <td key={`${tier.label}-${feature}`} className="p-4 text-center">
                           <div className="flex items-center justify-center">
-                            {hasThisFeature ? (
+                            {isCheckmark ? (
                               <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
                                 <Check className="h-5 w-5 text-white" />
                               </div>
-                            ) : (
+                            ) : isXMark ? (
                               <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                                 <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-500"></div>
                               </div>
+                            ) : (
+                              <Typography variant="body-sm" className="font-medium text-[hsl(var(--foreground))]">
+                                {featureValue}
+                              </Typography>
                             )}
                           </div>
                         </td>
@@ -214,39 +225,39 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
 
           {/* Summary Section */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-800">
+            <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-red-200 dark:border-red-800">
               <div className="flex items-center mb-4">
-                <Zap className="h-6 w-6 text-orange-600 dark:text-orange-400 mr-3" />
+                <Zap className="h-6 w-6 text-red-600 dark:text-red-400 mr-3" />
                 <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
-                  Best Value
+                  Starter
                 </Typography>
               </div>
               <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
-                The <strong>Popular</strong> tier offers the best balance of features and savings for most users.
+                Perfect for <strong>individual creators</strong> who need occasional downloads. Great for testing our platform.
+              </Typography>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-yellow-200 dark:border-yellow-800">
+              <div className="flex items-center mb-4">
+                <Star className="h-6 w-6 text-yellow-600 dark:text-yellow-400 mr-3" />
+                <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
+                  Popular ⭐
+                </Typography>
+              </div>
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                <strong>Most popular choice</strong> for regular users. Best balance of features and savings with 40% off.
               </Typography>
             </div>
 
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
               <div className="flex items-center mb-4">
-                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
+                <Crown className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
                 <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
-                  Team Features
+                  Pro
                 </Typography>
               </div>
               <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
-                <strong>Business</strong> and higher tiers include team sharing and collaboration features.
-              </Typography>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
-              <div className="flex items-center mb-4">
-                <Crown className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-3" />
-                <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
-                  Enterprise
-                </Typography>
-              </div>
-              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
-                Need 500+ points? Contact our sales team for custom enterprise pricing.
+                Ideal for <strong>professional teams</strong> with team sharing, API access, and extended validity.
               </Typography>
             </div>
           </div>
