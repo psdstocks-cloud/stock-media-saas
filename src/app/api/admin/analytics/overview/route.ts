@@ -15,7 +15,7 @@ export async function GET() {
     const today = new Date();
     const thirtyDaysAgo = subDays(today, 30);
     const sevenDaysAgo = subDays(today, 7);
-    const threeMonthsAgo = subMonths(today, 3);
+    const _threeMonthsAgo = subMonths(today, 3);
 
     // Get all the data in parallel for better performance
     const [

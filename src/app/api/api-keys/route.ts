@@ -5,7 +5,7 @@ import { auth } from "@/auth"
 import { prisma } from '@/lib/prisma'
 import { randomBytes } from 'crypto'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth()
     
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await auth()
     

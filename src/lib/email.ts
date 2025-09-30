@@ -1,5 +1,4 @@
 import { Resend } from 'resend';
-import { User } from '@prisma/client';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 

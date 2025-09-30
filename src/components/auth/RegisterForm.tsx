@@ -37,7 +37,7 @@ export default function RegisterForm() {
   const router = useRouter()
 
   // Email validation hook
-  const { checkEmail, isChecking: isEmailChecking, result: emailResult, isValid: isEmailValid, isInvalid: isEmailInvalid, message: emailMessage } = useEmailValidation()
+  const { checkEmail, isChecking: isEmailChecking, result: _emailResult, isValid: isEmailValid, isInvalid: isEmailInvalid, message: emailMessage } = useEmailValidation()
 
   const {
     register,
@@ -76,7 +76,7 @@ export default function RegisterForm() {
     // This catches passwords like "Password123" or "Abc123!@" that meet requirements but are predictable
     if (metCount === totalCount) {
       // Check for common weak patterns even when all requirements are met
-      const weakPatterns = [
+      const _weakPatterns = [
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,  // All requirements met
       ]
       

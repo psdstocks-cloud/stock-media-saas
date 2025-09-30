@@ -44,7 +44,7 @@ function cleanupExpiredTokens(): void {
 }
 
 // Get CSRF token for a session
-export function getCSRFToken(sessionId: string): string {
+export function getCSRFToken(_sessionId: string): string {
   // In a real implementation, you'd store this in the database
   // For now, we'll generate a new token each time
   return generateCSRFToken()

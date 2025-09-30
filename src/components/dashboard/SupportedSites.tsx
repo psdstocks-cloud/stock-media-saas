@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ExternalLink, Globe, Coins, Star } from 'lucide-react'
+import { Globe, Coins, Star } from 'lucide-react'
 
 interface StockSite {
   id: string
@@ -83,12 +83,12 @@ export default function SupportedSites({
     }
   }
 
-  const getCostBadgeVariant = (cost: number): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "brand" => {
+  const getCostBadgeVariant = (_cost: number): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "brand" => {
     // Unified 10-point system - all sites use the same pricing
     return 'success' // Use success variant for the unified 10-point system
   }
 
-  const getCostBadgeColor = (cost: number) => {
+  const getCostBadgeColor = (_cost: number) => {
     // Unified 10-point system - consistent green styling for all sites
     return 'bg-green-500/20 text-green-400 border-green-500/30'
   }

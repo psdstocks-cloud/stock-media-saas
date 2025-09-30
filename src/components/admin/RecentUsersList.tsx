@@ -14,8 +14,7 @@ import {
   ExternalLink,
   User,
   Shield,
-  Mail,
-  Clock
+  Mail
 } from 'lucide-react'
 
 interface UserData {

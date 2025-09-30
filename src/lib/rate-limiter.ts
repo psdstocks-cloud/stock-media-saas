@@ -108,7 +108,7 @@ export class RateLimiter {
     }
   }
 
-  async getResetTime(identifier: string): Promise<number> {
+  async getResetTime(_identifier: string): Promise<number> {
     const window = Math.floor(Date.now() / this.options.windowMs)
     return (window + 1) * this.options.windowMs
   }

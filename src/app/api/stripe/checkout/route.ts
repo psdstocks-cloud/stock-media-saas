@@ -3,7 +3,7 @@ import { auth } from "@/auth"
 import { getUserFromRequest } from '@/lib/jwt-auth'
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
-import { SubscriptionPlan, PointPack } from '@prisma/client'
+import type { SubscriptionPlan as _SubscriptionPlan, PointPack as _PointPack } from '@prisma/client'
 
 // Hardcoded pricing plans to match the frontend
 const PRICING_PLANS = {

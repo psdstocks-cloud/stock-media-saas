@@ -1,12 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { 
   Modal, 
-  ModalContent, 
-  ModalHeader, 
-  ModalTitle, 
-  ModalDescription,
+  ModalContent,
   Button, 
   Card, 
   CardContent, 

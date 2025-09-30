@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q') || ''
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const sort = searchParams.get('sort') || 'relevance'
+    const _limit = parseInt(searchParams.get('limit') || '20')
+    const _sort = searchParams.get('sort') || 'relevance'
     
     // Parse filters from query parameters
     const filters = {

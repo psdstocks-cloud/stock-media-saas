@@ -49,7 +49,7 @@ export class NehtwAPI {
   /**
    * Get stock information
    */
-  async getStockInfo(site: string, id: string, url?: string): Promise<NehtwStockInfo> {
+  async getStockInfo(site: string, id: string, _url?: string): Promise<NehtwStockInfo> {
     const requestUrl = `${this.baseUrl}/stockinfo/${site}/${id}`;
     
     const response = await fetch(requestUrl, {
@@ -420,7 +420,7 @@ export default class NehtwApi {
     this.baseUrl = 'https://nehtw.com/api'; 
   }
   
-  async placeOrder(site: string, id: string, url?: string): Promise<any> {
+  async placeOrder(site: string, id: string, _url?: string): Promise<any> {
     // CORRECTED: The request URL must be clean and not contain any query parameters.
     const requestUrl = `${this.baseUrl}/stockorder/${site}/${id}`;
 

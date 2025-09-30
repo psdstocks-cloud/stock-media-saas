@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BrandButton } from '@/components/ui/brand-button';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import useUserStore from '@/stores/userStore';
@@ -13,13 +13,11 @@ import { toast } from 'react-hot-toast';
 import { officialParseStockUrl } from '@/lib/official-url-parser';
 import { 
   ShoppingCart, 
-  Download, 
   ExternalLink, 
   CheckCircle, 
   Clock, 
   AlertCircle,
   Plus,
-  Trash2,
   RefreshCw,
   Search,
   Copy,
@@ -336,7 +334,7 @@ export default function OrderV3Page() {
       }
 
       if (duplicates.length > 0) {
-        toast((t) => (
+        toast((_t) => (
           <span>
             Found {duplicates.length} duplicate URL(s). We kept {uniques.length} unique.
           </span>
@@ -698,7 +696,7 @@ export default function OrderV3Page() {
     }
   }
 
-  const processAllOrders = async () => {
+  const _processAllOrders = async () => {
     const readyItems = items.filter(item => item.status === 'ready');
     const totalCost = readyItems.reduce((sum, item) => sum + item.cost, 0);
     
@@ -724,7 +722,7 @@ export default function OrderV3Page() {
     removeCartItem?.(itemId)
   };
 
-  const getStatusIcon = (status: OrderItem['status']) => {
+  const _getStatusIcon = (status: OrderItem['status']) => {
     switch (status) {
       case 'ready': return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'processing': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
@@ -734,7 +732,7 @@ export default function OrderV3Page() {
     }
   };
 
-  const getStatusColor = (status: OrderItem['status']) => {
+  const _getStatusColor = (status: OrderItem['status']) => {
     switch (status) {
       case 'ready': return 'bg-green-100 text-green-800';
       case 'processing': return 'bg-blue-100 text-blue-800';

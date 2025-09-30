@@ -6,7 +6,6 @@ import { Button, Typography } from '@/components/ui'
 import { BrandButton } from '@/components/ui/brand-button'
 import { ArrowRight, Play, Download, Zap } from 'lucide-react'
 import DemoVideoModal from '@/components/modals/DemoVideoModal'
-import { cn } from '@/lib/utils'
 
 export const HeroSection: React.FC = () => {
   const router = useRouter()
@@ -16,7 +15,7 @@ export const HeroSection: React.FC = () => {
     router.push('/register')
   }
 
-  const handleViewPricing = () => {
+  const _handleViewPricing = () => {
     router.push('/pricing')
   }
 

@@ -150,7 +150,7 @@ async function handleOneTimePayment(session: Stripe.Checkout.Session) {
   }
 }
 
-async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
+async function _handleSubscriptionCreated(session: Stripe.Checkout.Session) {
   const { userId, planId } = session.metadata!
   const subscriptionId = session.subscription as string
 

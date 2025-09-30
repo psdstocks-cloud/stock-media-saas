@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, Button, Typography, Badge } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, Typography, Badge } from '@/components/ui'
 import { BrandButton } from '@/components/ui/brand-button'
-import { Check, Zap, Crown, Star, ArrowRight, User, LogIn } from 'lucide-react'
+import { Check, Zap, Crown, Star, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VirtualPurchaseModal from '@/components/modals/VirtualPurchaseModal'
 
@@ -254,7 +254,7 @@ export const PricingSection: React.FC = () => {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {pointPacks.map((pack, index) => {
+          {pointPacks.map((pack, _index) => {
             const Icon = getPackIcon(pack)
             const colorClass = getPackColor(pack)
             

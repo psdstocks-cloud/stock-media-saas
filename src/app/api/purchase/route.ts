@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { mediaId, mediaType, points, price } = body
+    const { mediaId, mediaType, points, price: _price } = body
 
     if (!mediaId || !mediaType || points === undefined) {
       return NextResponse.json({ 

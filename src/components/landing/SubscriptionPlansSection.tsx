@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Button, Typography, Badge } from '@/components/ui'
-import { Check, Zap, Crown, Star, ArrowRight, User, LogIn, Loader2, RefreshCw } from 'lucide-react'
+import { Check, Zap, Crown, Star, LogIn, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -26,7 +26,7 @@ export const SubscriptionPlansSection: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null)
+  const [_selectedPlan, _setSelectedPlan] = useState<SubscriptionPlan | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
   // Check authentication status

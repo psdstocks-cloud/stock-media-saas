@@ -44,7 +44,7 @@ export default function UserManagementClient() {
   const { has } = usePermissions()
   const canView = has('users.view')
   const canEdit = has('users.edit')
-  const canImpersonate = has('users.impersonate')
+  const _canImpersonate = has('users.impersonate')
   const [users, setUsers] = useState<UserData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')

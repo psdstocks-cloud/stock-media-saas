@@ -4,7 +4,6 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Typography } from '@/components/ui'
 import { ArrowRight, Sparkles, Users, Download, Star } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export const CTASection: React.FC = () => {
   const router = useRouter()

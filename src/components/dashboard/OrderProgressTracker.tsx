@@ -46,7 +46,7 @@ export default function OrderProgressTracker({
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
   const maxRetries = 10 // Stop polling after 10 attempts (about 2 minutes)
 
   const fetchOrderStatus = async (showLoading = false) => {

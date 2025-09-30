@@ -15,7 +15,6 @@ import {
   Calendar,
   TrendingUp,
   TrendingDown,
-  Loader2,
   RefreshCw,
   AlertCircle
 } from 'lucide-react'

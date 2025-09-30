@@ -5,8 +5,7 @@ import {
   CheckCircle, 
   Loader2, 
   AlertCircle, 
-  Clock,
-  Download
+  Clock
 } from 'lucide-react'
 // Define the OrderStatus type locally to avoid circular imports
 type OrderStatus = 'PENDING' | 'PROCESSING' | 'READY' | 'COMPLETED' | 'FAILED' | 'INITIAL' | 'LOADING_INFO'

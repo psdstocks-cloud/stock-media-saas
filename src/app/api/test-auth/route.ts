@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createJWT } from '@/lib/jwt-auth';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Create a test user token using an existing user from the database
     const testUser = {

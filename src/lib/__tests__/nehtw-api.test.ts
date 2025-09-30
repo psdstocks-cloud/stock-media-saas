@@ -1,4 +1,4 @@
-import { NehtwAPI, OrderManager } from '../nehtw-api'
+import { NehtwAPI } from '../nehtw-api'
 
 // Mock fetch globally
 global.fetch = jest.fn()

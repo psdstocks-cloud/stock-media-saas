@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/rbac'
 import { approveRequest, rejectRequest } from '@/lib/dualControl'
 

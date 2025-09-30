@@ -9,11 +9,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { 
   CreditCard, 
-  Calendar, 
-  DollarSign, 
   AlertCircle, 
-  CheckCircle, 
-  Clock,
+  CheckCircle,
   Crown,
   Star,
   Zap,

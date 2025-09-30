@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const mrr = activeSubscriptions.reduce((sum, subscription) => {
+    const _mrr = activeSubscriptions.reduce((sum, subscription) => {
       return sum + (subscription.plan.price || 0);
     }, 0);
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 4. Active Subscriptions
-    const activeSubscriptionsCount = await prisma.subscription.count({
+    const _activeSubscriptionsCount = await prisma.subscription.count({
       where: { status: 'ACTIVE' },
     });
     
@@ -75,17 +75,17 @@ export async function GET(request: NextRequest) {
     const totalUsersCount = await prisma.user.count();
 
     // 6. Additional KPIs for better insights
-    const totalPointsInCirculation = await prisma.pointsBalance.aggregate({
+    const _totalPointsInCirculation = await prisma.pointsBalance.aggregate({
       _sum: { currentPoints: true },
     });
 
-    const totalPointsPurchased = await prisma.pointsBalance.aggregate({
+    const _totalPointsPurchased = await prisma.pointsBalance.aggregate({
       _sum: { totalPurchased: true },
     });
 
     const totalOrdersCount = await prisma.order.count();
 
-    const completedOrdersCount = await prisma.order.count({
+    const _completedOrdersCount = await prisma.order.count({
       where: { status: { in: ['READY', 'COMPLETED'] } },
     });
 

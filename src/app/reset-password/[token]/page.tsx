@@ -1,5 +1,4 @@
 import { Typography } from '@/components/ui/typography'
-import type { Metadata } from 'next'
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm'
 
 interface ResetPasswordPageProps {

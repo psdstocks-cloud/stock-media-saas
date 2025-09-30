@@ -130,7 +130,7 @@ const formatRelativeDate = (date: Date) => {
 
 export const OrderRow: React.FC<OrderRowProps> = ({
   order,
-  onDownload,
+  onDownload: _onDownload,
   onSelect,
   isSelected = false,
   showSelection = false,

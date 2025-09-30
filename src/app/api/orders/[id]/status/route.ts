@@ -104,7 +104,7 @@ export async function PATCH(
 ) {
   try {
     const { id: orderId } = await params
-    const { status, downloadUrl, error } = await request.json()
+    const { status, downloadUrl, error: _error } = await request.json()
 
     // Validate status
     const validStatuses = ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']

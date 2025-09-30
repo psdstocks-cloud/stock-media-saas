@@ -12,7 +12,7 @@ export function BrandButton({
   className,
   children,
   variant = "dark",
-  loading = false,
+  loading: _loading = false,
   ...props
 }: BrandButtonProps) {
   const base =

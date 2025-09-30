@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, Download, CreditCard, AlertCircle, CheckCircle, Clock, User, Star, Tag } from 'lucide-react'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Typography, Badge, Separator, Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription } from '@/components/ui'
+import { X, Download, AlertCircle, CheckCircle, User, Star, Tag } from 'lucide-react'
+import { Button, Card, CardContent, Typography, Badge, Separator, Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription } from '@/components/ui'
 // MediaItem interface
 interface MediaItem {
   id: string
@@ -46,9 +46,9 @@ export const PurchaseConfirmationModal: React.FC<PurchaseConfirmationModalProps>
   onConfirm,
   media,
   userPoints,
-  isLoading = false
+  isLoading: _isLoading = false
 }) => {
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [_isProcessing, setIsProcessing] = useState(false)
 
   if (!media) return null
 

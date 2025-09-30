@@ -3,7 +3,6 @@
 import React from 'react'
 import { Button, Typography } from '@/components/ui'
 import { Heart, Share2, Twitter, Linkedin, Github, Mail } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export default function Footer() {
   return (

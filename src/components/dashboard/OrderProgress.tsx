@@ -49,7 +49,7 @@ const OrderProgress: React.FC<OrderProgressProps> = ({ order, onStatusUpdate }) 
           const data = await response.json()
 
           if (data.success && data.order) {
-            const { status, downloadUrl, error, isProcessing, canDownload, estimatedTime } = data.order
+            const { status, downloadUrl, error, isProcessing: _isProcessing, canDownload: _canDownload, estimatedTime: _estimatedTime } = data.order
             
             // Update local state
             setCurrentStatus(status)

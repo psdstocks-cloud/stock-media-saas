@@ -36,7 +36,7 @@ interface OrderHistory {
 }
 
 export default function HistoryV3Page() {
-  const { points: currentPoints } = useUserStore();
+  const { points: _currentPoints } = useUserStore();
   const [orders, setOrders] = useState<OrderHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

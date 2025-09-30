@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Typography } from '@/components/ui/typography'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ExternalLink, Globe, Coins, ChevronDown, ChevronUp } from 'lucide-react'
+import { Globe, Coins, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface StockSite {
@@ -24,7 +24,7 @@ export function SupportedSitesSidebar() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [_isExpanded, _setIsExpanded] = useState(false)
 
   useEffect(() => {
     fetchStockSites()
@@ -80,11 +80,11 @@ export function SupportedSitesSidebar() {
     }
   }
 
-  const getCostBadgeVariant = (cost: number) => {
+  const _getCostBadgeVariant = (_cost: number) => {
     return 'success' as const
   }
 
-  const getCostBadgeColor = (cost: number) => {
+  const getCostBadgeColor = (_cost: number) => {
     return 'bg-green-500/20 text-green-300 border-green-500/30'
   }
 

@@ -13,8 +13,6 @@ import {
   Download, 
   RefreshCw,
   Search,
-  Filter,
-  ExternalLink,
   Clock,
   CheckCircle,
   XCircle,

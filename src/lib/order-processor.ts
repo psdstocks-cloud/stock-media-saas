@@ -46,7 +46,7 @@ export class OrderProcessor {
     apiKey: string,
     site: string,
     id: string,
-    url?: string
+    _url?: string
   ): Promise<void> {
     try {
       const api = new NehtwAPI(apiKey)

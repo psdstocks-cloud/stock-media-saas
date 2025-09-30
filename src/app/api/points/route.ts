@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
-    const [balance, history, rolloverRecords] = await Promise.all([
+    const [balance, _history, rolloverRecords] = await Promise.all([
       PointsManager.getBalance(finalUserId),
       PointsManager.getHistory(finalUserId, 50),
       PointsManager.getRolloverRecords(finalUserId),

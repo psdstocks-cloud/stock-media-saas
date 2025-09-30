@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button'
 import { 
   Link as LinkIcon, 
   FileImage, 
-  AlertCircle,
-  RefreshCw
+  AlertCircle
 } from 'lucide-react'
 
 interface EmptyStateProps {

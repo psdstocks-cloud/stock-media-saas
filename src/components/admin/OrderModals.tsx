@@ -20,14 +20,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { 
-  ShoppingCart, 
   Eye, 
   Download, 
   ExternalLink,
   AlertTriangle,
-  CheckCircle,
-  Clock,
-  X,
   FileText
 } from 'lucide-react'
 

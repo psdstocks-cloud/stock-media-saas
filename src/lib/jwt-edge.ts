@@ -90,7 +90,7 @@ export function verifyJWTSync(token: string): JWTPayload | null {
       return null
     }
 
-    const [header, payload, signature] = parts
+    const [_header, payload, _signature] = parts
 
     // Decode payload without signature verification (for Edge Runtime compatibility)
     const decodedPayload = JSON.parse(base64UrlDecode(payload))

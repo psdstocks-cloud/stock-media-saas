@@ -16,7 +16,7 @@ function VerifyEmailForm() {
     status: 'idle',
     message: ''
   })
-  const [isLoading, setIsLoading] = useState(false)
+  const [_isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams.get('token')

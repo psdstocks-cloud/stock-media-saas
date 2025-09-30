@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NehtwAPI } from '@/lib/nehtw-api'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const rawApiKey = process.env.NEHTW_API_KEY
     const apiKey = rawApiKey ? rawApiKey.replace(/[{}]/g, '') : null // Remove curly braces

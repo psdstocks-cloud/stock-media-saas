@@ -3,24 +3,6 @@
  */
 
 /**
- * Lazy load component with loading fallback
- */
-export function lazyLoadComponent<T extends React.ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ReactNode
-) {
-  const LazyComponent = React.lazy(importFunc)
-  
-  return (props: React.ComponentProps<T>) => (
-    <React.Suspense fallback={fallback || <div>Loading...</div>}>
-      <LazyComponent {...props} />
-    </React.Suspense>
-  )
-}
-
-import React from 'react'
-
-/**
  * Debounce function for performance optimization
  */
 export function debounce<T extends (...args: any[]) => any>(
@@ -109,29 +91,31 @@ export function prefetchRoute(router: any, path: string) {
 
 /**
  * Intersection Observer hook for lazy loading
+ * Note: This should be moved to a .tsx file if you need to use React hooks
  */
-export function useIntersectionObserver(
-  ref: React.RefObject<Element>,
-  options: IntersectionObserverInit = {}
-): boolean {
-  const [isIntersecting, setIsIntersecting] = React.useState(false)
-
-  React.useEffect(() => {
-    if (!ref.current) return
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting)
-    }, options)
-
-    observer.observe(ref.current)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [ref, options])
-
-  return isIntersecting
-}
+// Commented out to avoid JSX parsing errors in .ts file
+// export function useIntersectionObserver(
+//   ref: React.RefObject<Element>,
+//   options: IntersectionObserverInit = {}
+// ): boolean {
+//   const [isIntersecting, setIsIntersecting] = React.useState(false)
+//
+//   React.useEffect(() => {
+//     if (!ref.current) return
+//
+//     const observer = new IntersectionObserver(([entry]) => {
+//       setIsIntersecting(entry.isIntersecting)
+//     }, options)
+//
+//     observer.observe(ref.current)
+//
+//     return () => {
+//       observer.disconnect()
+//     }
+//   }, [ref, options])
+//
+//   return isIntersecting
+// }
 
 /**
  * Load script dynamically

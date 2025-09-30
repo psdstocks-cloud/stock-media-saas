@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
     console.log('Returning mock data for source:', source);
     
     // Enhanced mock data for all supported sites
-    const mockData: Record<string, { title: string; image: string; points: number; price: number }> = {
+    const _mockData: Record<string, { title: string; image: string; points: number; price: number }> = {
       dreamstime: {
         title: "Freelance people work in comfortable conditions set vector flat illustration. Freelancer character working from home or",
         image: "https://thumbs.dreamstime.com/l/freelance-people-work-comfortable-conditions-set-vector-flat-illustration-freelancer-character-working-home-freelance-169271221.jpg",

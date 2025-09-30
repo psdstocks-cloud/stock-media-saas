@@ -9,12 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   CreditCard, 
-  Calendar, 
   RefreshCw,
   ExternalLink,
   Crown,
   TrendingUp,
-  Settings,
   AlertTriangle,
   CheckCircle
 } from 'lucide-react'
