@@ -1,15 +1,38 @@
 import type { Metadata } from 'next'
-import { Button, Typography } from "@/components/ui"
+import dynamic from 'next/dynamic'
+import { Typography } from "@/components/ui"
 import { User, LogIn } from "lucide-react"
 import { HeroSection } from "@/components/landing/HeroSection"
-import { FeatureSection } from "@/components/landing/FeatureSection"
-import { PricingSection } from "@/components/landing/PricingSection"
-import { CTASection } from "@/components/landing/CTASection"
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
-import { ProductShowcaseSection } from "@/components/landing/ProductShowcaseSection"
-import { FAQSection } from "@/components/landing/FAQSection"
 import { TrustBadgesSection } from "@/components/landing/TrustBadgesSection"
-import Footer from "@/components/Footer"
+
+// Lazy load below-the-fold components for better initial load performance
+const HowItWorksSection = dynamic(() => import('@/components/landing/HowItWorksSection').then(mod => ({ default: mod.HowItWorksSection })), {
+  loading: () => <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div></div>
+})
+
+const FeatureSection = dynamic(() => import('@/components/landing/FeatureSection').then(mod => ({ default: mod.FeatureSection })), {
+  loading: () => <div className="min-h-[400px]"></div>
+})
+
+const ProductShowcaseSection = dynamic(() => import('@/components/landing/ProductShowcaseSection').then(mod => ({ default: mod.ProductShowcaseSection })), {
+  loading: () => <div className="min-h-[400px]"></div>
+})
+
+const PricingSection = dynamic(() => import('@/components/landing/PricingSection').then(mod => ({ default: mod.PricingSection })), {
+  loading: () => <div className="min-h-[600px]"></div>
+})
+
+const FAQSection = dynamic(() => import('@/components/landing/FAQSection').then(mod => ({ default: mod.FAQSection })), {
+  loading: () => <div className="min-h-[400px]"></div>
+})
+
+const CTASection = dynamic(() => import('@/components/landing/CTASection').then(mod => ({ default: mod.CTASection })), {
+  loading: () => <div className="min-h-[300px]"></div>
+})
+
+const Footer = dynamic(() => import('@/components/Footer'), {
+  loading: () => <div className="min-h-[200px]"></div>
+})
 
 export const revalidate = 120
 

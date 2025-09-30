@@ -9,12 +9,47 @@ const nextConfig = {
     // Keep TypeScript checking enabled
     ignoreBuildErrors: false,
   },
-  // Optimize CSS loading to prevent preload warnings
-  // experimental: {
-  //   optimizeCss: true, // Disabled due to critters dependency issue
-  // },
-  // Improve client-side hydration
+  
+  // Performance Optimizations
   reactStrictMode: true,
+  
+  // Image Optimization
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.vercel.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.shutterstock.com',
+      },
+    ],
+  },
+
+  // Compression
+  compress: true,
+
+  // Power Pack (production only)
+  poweredByHeader: false,
+
+  // Generate ETags for browser caching
+  generateEtags: true,
+
+  // Production Source Maps (disabled for performance)
+  productionBrowserSourceMaps: false,
+
   async headers() {
     return [
       {
@@ -67,9 +102,40 @@ const nextConfig = {
             ].join('; ')
           }
         ]
-      }
+      },
+      {
+        // Cache static assets aggressively
+        source: '/assets/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Cache images
+        source: '/:path*.{jpg,jpeg,png,gif,webp,avif,ico,svg}',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Preload critical resources
+        source: '/',
+        headers: [
+          {
+            key: 'Link',
+            value: '<https://fonts.gstatic.com>; rel=preconnect; crossorigin',
+          },
+        ],
+      },
     ]
   },
+
   async redirects() {
     return [
       {

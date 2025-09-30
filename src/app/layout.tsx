@@ -2,8 +2,14 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { WebVitals } from "@/components/WebVitals"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+})
 
 export const metadata: Metadata = {
   title: {
@@ -120,6 +126,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <WebVitals />
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
           Skip to content
         </a>
