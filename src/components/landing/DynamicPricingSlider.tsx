@@ -268,7 +268,7 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
                 )}>
                   {currentTier.popular && "⭐ "}
                   {currentTier.label} Tier
-                  {currentTier.savings > 0 && ` (${currentTier.savings}% savings)`}
+                  {currentTier.savings && currentTier.savings > 0 && ` (${currentTier.savings}% savings)`}
                 </Badge>
               </div>
             )}
@@ -304,7 +304,7 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
                   {option.popular && (
                     <Badge className="mt-1 text-xs">Popular</Badge>
                   )}
-                  <Typography variant="body-xs" className="text-[hsl(var(--muted-foreground))] mt-1">
+                  <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))] mt-1">
                     {option.description}
                   </Typography>
                 </button>

@@ -120,7 +120,7 @@ export const PricingTestimonials: React.FC<PricingTestimonialsProps> = ({
               <Typography variant="body-sm" className="font-semibold text-gray-900 dark:text-gray-100">
                 {testimonial.name}
               </Typography>
-              <Typography variant="body-xs" className="text-gray-600 dark:text-gray-400">
+              <Typography variant="body-sm" className="text-gray-600 dark:text-gray-400">
                 {testimonial.role} at {testimonial.company}
               </Typography>
             </div>
