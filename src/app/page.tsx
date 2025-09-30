@@ -4,6 +4,9 @@ import { Typography } from "@/components/ui"
 import { User, LogIn } from "lucide-react"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { TrustBadgesSection } from "@/components/landing/TrustBadgesSection"
+import { CustomerLogosSection } from "@/components/landing/CustomerLogosSection"
+import { NewsletterSection } from "@/components/landing/NewsletterSection"
+import { ExitIntentPopup } from "@/components/ExitIntentPopup"
 
 // Lazy load below-the-fold components for better initial load performance
 const HowItWorksSection = dynamic(() => import('@/components/landing/HowItWorksSection').then(mod => ({ default: mod.HowItWorksSection })), {
@@ -112,6 +115,9 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      {/* Exit Intent Popup */}
+      <ExitIntentPopup />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[hsl(var(--background))]/80 backdrop-blur border-b border-[hsl(var(--border))]" role="banner">
         <div className="container mx-auto px-4 py-6">
@@ -146,11 +152,13 @@ export default function HomePage() {
       {/* Landing Page Sections */}
       <HeroSection />
       <TrustBadgesSection />
+      <CustomerLogosSection />
       <HowItWorksSection />
       <FeatureSection />
       <ProductShowcaseSection />
       <PricingSection />
       <FAQSection />
+      <NewsletterSection />
       <CTASection />
       
       {/* Footer */}
