@@ -78,47 +78,32 @@ const tierFeatures = {
 export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
   className
 }) => {
+  // Define all unique features across all tiers
+  const allFeatures = [
+    'Basic support',
+    'Email support', 
+    'Priority support',
+    'Dedicated support',
+    'Standard downloads',
+    'Priority downloads',
+    'Fast downloads',
+    'Commercial license',
+    'Download history',
+    'Bulk downloads',
+    'Team sharing',
+    'API access',
+    'Custom integrations'
+  ]
+
+  // Check if a tier has a specific feature
+  const hasFeature = (tierLabel: string, feature: string) => {
+    const tierFeatureList = tierFeatures[tierLabel as keyof typeof tierFeatures] || []
+    return tierFeatureList.includes(feature)
+  }
+
   return (
-    <div className={cn("w-full max-w-7xl mx-auto", className)}>
-      <style jsx>{`
-        .glassmorphism {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .glassmorphism-dark {
-          background: rgba(0, 0, 0, 0.3);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .table-3d {
-          transform: perspective(1000px) rotateX(5deg);
-        }
-        .tier-card-3d {
-          transform: perspective(1000px) rotateY(0deg);
-          transition: all 0.3s ease;
-        }
-        .tier-card-3d:hover {
-          transform: perspective(1000px) rotateY(5deg) translateZ(20px);
-        }
-        .feature-row-3d {
-          transform: perspective(1000px) rotateX(2deg);
-        }
-        .shadow-3d {
-          box-shadow: 
-            0 20px 40px rgba(0, 0, 0, 0.1),
-            0 10px 20px rgba(0, 0, 0, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-        .shadow-3d-dark {
-          box-shadow: 
-            0 20px 40px rgba(0, 0, 0, 0.3),
-            0 10px 20px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-      `}</style>
-      
-      <Card className="glassmorphism dark:glassmorphism-dark shadow-3d dark:shadow-3d-dark rounded-3xl overflow-hidden border-0">
+    <div className={cn("w-full max-w-6xl mx-auto", className)}>
+      <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-2xl rounded-3xl overflow-hidden">
         <CardHeader className="text-center pb-8 pt-12">
           <div className="flex items-center justify-center mb-6">
             <div className="p-4 rounded-3xl bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white shadow-2xl">
@@ -126,158 +111,161 @@ export const PricingComparisonTable: React.FC<PricingComparisonTableProps> = ({
             </div>
           </div>
           <CardTitle className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-orange-600 to-blue-600 dark:from-white dark:via-orange-400 dark:to-blue-400 bg-clip-text text-transparent mb-4">
-            Pricing Tiers Comparison
+            Compare All Pricing Tiers
           </CardTitle>
           <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-xl max-w-3xl mx-auto leading-relaxed">
-            Compare all pricing tiers and find the perfect plan for your needs
+            See exactly what's included in each tier at a glance
           </Typography>
         </CardHeader>
 
-        <CardContent className="px-8 pb-12">
-          {/* 3D Comparison Table */}
-          <div className="table-3d">
-            {/* Header Row */}
-            <div className="grid grid-cols-7 gap-4 mb-6">
-              <div className="col-span-2"></div>
-              {PRICING_TIERS.map((tier) => {
-                const IconComponent = tierIcons[tier.label as keyof typeof tierIcons]
-                const isPopular = tier.popular
-                
-                return (
-                  <div
-                    key={tier.label}
-                    className={cn(
-                      "tier-card-3d glassmorphism dark:glassmorphism-dark rounded-2xl p-6 text-center shadow-3d dark:shadow-3d-dark",
-                      isPopular && "ring-2 ring-orange-400 dark:ring-orange-500 scale-105"
-                    )}
-                  >
-                    <div className="flex items-center justify-center mb-4">
-                      <div className={cn(
-                        "p-3 rounded-2xl shadow-lg",
-                        `bg-gradient-to-r ${tier.color} text-white`
-                      )}>
-                        <IconComponent className="h-6 w-6" />
-                      </div>
-                    </div>
+        <CardContent className="px-6 pb-12">
+          {/* Clean Comparison Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              {/* Header Row */}
+              <thead>
+                <tr>
+                  <th className="text-left p-4 font-semibold text-[hsl(var(--foreground))]">
+                    Features
+                  </th>
+                  {PRICING_TIERS.map((tier) => {
+                    const IconComponent = tierIcons[tier.label as keyof typeof tierIcons]
+                    const isPopular = tier.popular
                     
-                    <Typography variant="h4" className="font-bold text-white dark:text-white mb-2">
-                      {tier.label}
-                    </Typography>
-                    
-                    {isPopular && (
-                      <Badge className="bg-orange-500 text-white px-3 py-1 mb-3 animate-pulse">
-                        ⭐ Most Popular
-                      </Badge>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Typography variant="h3" className="text-2xl font-bold text-orange-400 dark:text-orange-300">
-                        ${tier.pricePerPoint.toFixed(3)}
-                      </Typography>
-                      <Typography variant="body-sm" className="text-gray-300 dark:text-gray-300">
-                        per point
-                      </Typography>
-                      <Typography variant="body-sm" className="text-green-400 dark:text-green-300 font-semibold">
-                        {tier.savings}% savings
-                      </Typography>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                    return (
+                      <th key={tier.label} className="text-center p-4">
+                        <div className={cn(
+                          "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-lg border-2 transition-all duration-300 hover:shadow-xl",
+                          isPopular 
+                            ? "border-orange-500 dark:border-orange-400 scale-105" 
+                            : "border-gray-200 dark:border-gray-600"
+                        )}>
+                          <div className="flex items-center justify-center mb-3">
+                            <div className={cn(
+                              "p-3 rounded-xl shadow-lg",
+                              `bg-gradient-to-r ${tier.color} text-white`
+                            )}>
+                              <IconComponent className="h-6 w-6" />
+                            </div>
+                          </div>
+                          
+                          <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))] mb-2">
+                            {tier.label}
+                          </Typography>
+                          
+                          {isPopular && (
+                            <Badge className="bg-orange-500 text-white px-3 py-1 mb-3 text-xs">
+                              ⭐ Most Popular
+                            </Badge>
+                          )}
+                          
+                          <div className="space-y-1">
+                            <Typography variant="h3" className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                              ${tier.pricePerPoint.toFixed(3)}
+                            </Typography>
+                            <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
+                              per point
+                            </Typography>
+                            <Typography variant="body-sm" className="text-green-600 dark:text-green-400 font-semibold">
+                              {tier.savings}% savings
+                            </Typography>
+                          </div>
+                        </div>
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
 
-            {/* Feature Rows */}
-            <div className="space-y-4">
-              {Object.entries(tierFeatures).map(([tierName, features], featureIndex) => (
-                <div key={tierName} className="feature-row-3d">
-                  <div className="grid grid-cols-7 gap-4">
-                    {/* Feature Label */}
-                    <div className="col-span-2 flex items-center">
-                      <Typography variant="h4" className="text-lg font-semibold text-white dark:text-white">
-                        {tierName} Features
-                      </Typography>
-                    </div>
-                    
-                    {/* Feature Checkmarks */}
+              {/* Feature Rows */}
+              <tbody>
+                {allFeatures.map((feature, index) => (
+                  <tr key={feature} className={cn(
+                    "border-b border-gray-200 dark:border-gray-700",
+                    index % 2 === 0 ? "bg-gray-50/50 dark:bg-gray-800/50" : ""
+                  )}>
+                    <td className="p-4 font-medium text-[hsl(var(--foreground))]">
+                      {feature}
+                    </td>
                     {PRICING_TIERS.map((tier) => {
-                      const tierFeatureList = tierFeatures[tier.label as keyof typeof tierFeatures] || []
-                      const isCurrentTier = tier.label === tierName
+                      const hasThisFeature = hasFeature(tier.label, feature)
                       
                       return (
-                        <div
-                          key={`${tier.label}-${tierName}`}
-                          className={cn(
-                            "tier-card-3d glassmorphism dark:glassmorphism-dark rounded-xl p-4 text-center shadow-3d dark:shadow-3d-dark",
-                            isCurrentTier && "ring-2 ring-orange-400 dark:ring-orange-500"
-                          )}
-                        >
-                          {tierFeatureList.map((feature, index) => (
-                            <div key={index} className="flex items-center justify-center mb-2">
-                              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-2 shadow-lg">
-                                <Check className="h-4 w-4 text-white" />
+                        <td key={`${tier.label}-${feature}`} className="p-4 text-center">
+                          <div className="flex items-center justify-center">
+                            {hasThisFeature ? (
+                              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                                <Check className="h-5 w-5 text-white" />
                               </div>
-                              <Typography variant="body-sm" className="text-gray-300 dark:text-gray-300 font-medium">
-                                {feature}
-                              </Typography>
-                            </div>
-                          ))}
-                        </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-500"></div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
                       )
                     })}
-                  </div>
-                </div>
-              ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Summary Section */}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-800">
+              <div className="flex items-center mb-4">
+                <Zap className="h-6 w-6 text-orange-600 dark:text-orange-400 mr-3" />
+                <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
+                  Best Value
+                </Typography>
+              </div>
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                The <strong>Popular</strong> tier offers the best balance of features and savings for most users.
+              </Typography>
             </div>
 
-            {/* Pricing Summary Row */}
-            <div className="mt-8 feature-row-3d">
-              <div className="grid grid-cols-7 gap-4">
-                <div className="col-span-2 flex items-center">
-                  <Typography variant="h4" className="text-lg font-semibold text-white dark:text-white">
-                    Best For
-                  </Typography>
-                </div>
-                
-                {PRICING_TIERS.map((tier) => {
-                  const descriptions = {
-                    'Starter': 'Individual creators',
-                    'Growth': 'Small businesses',
-                    'Popular': 'Regular users',
-                    'Business': 'Growing teams',
-                    'Pro': 'Professional teams',
-                    'Enterprise': 'Large organizations'
-                  }
-                  
-                  return (
-                    <div
-                      key={tier.label}
-                      className="tier-card-3d glassmorphism dark:glassmorphism-dark rounded-xl p-4 text-center shadow-3d dark:shadow-3d-dark"
-                    >
-                      <Typography variant="body-sm" className="text-gray-300 dark:text-gray-300 font-medium">
-                        {descriptions[tier.label as keyof typeof descriptions]}
-                      </Typography>
-                    </div>
-                  )
-                })}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center mb-4">
+                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
+                <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
+                  Team Features
+                </Typography>
               </div>
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                <strong>Business</strong> and higher tiers include team sharing and collaboration features.
+              </Typography>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center mb-4">
+                <Crown className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-3" />
+                <Typography variant="h4" className="font-bold text-[hsl(var(--foreground))]">
+                  Enterprise
+                </Typography>
+              </div>
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                Need 500+ points? Contact our sales team for custom enterprise pricing.
+              </Typography>
             </div>
           </div>
 
           {/* Call to Action */}
           <div className="mt-12 text-center">
-            <div className="glassmorphism dark:glassmorphism-dark rounded-2xl p-8 shadow-3d dark:shadow-3d-dark">
-              <Typography variant="h3" className="text-2xl font-bold text-white dark:text-white mb-4">
-                Ready to Choose Your Plan?
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
+              <Typography variant="h3" className="text-2xl font-bold text-[hsl(var(--foreground))] mb-4">
+                Ready to Get Started?
               </Typography>
-              <Typography variant="body" className="text-gray-300 dark:text-gray-300 mb-6">
-                Start with our dynamic pricing slider to find the perfect tier for your needs
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mb-6">
+                Use our dynamic pricing slider to find the perfect tier for your needs
               </Typography>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <Zap className="h-5 w-5 inline mr-2" />
                   Try Dynamic Pricing
                 </button>
-                <button className="px-8 py-4 glassmorphism dark:glassmorphism-dark text-white dark:text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-orange-400 dark:border-orange-500">
+                <button className="px-8 py-4 border-2 border-orange-500 text-orange-600 dark:text-orange-400 font-bold rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-300">
                   <Users className="h-5 w-5 inline mr-2" />
                   Contact Sales
                 </button>
