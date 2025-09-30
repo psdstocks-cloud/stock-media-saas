@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import { safeAuth } from '@/auth'
+import { auth } from '@/auth'
 import RegisterClient from './RegisterClient'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function RegisterPage() {
   try {
-    const session = await safeAuth()
+    const session = await auth()
 
     // Only redirect if we have a valid session with a user
     if (session && session.user && session.user.id) {

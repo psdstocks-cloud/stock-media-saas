@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     
     // Try JWT authentication first (for dashboard)
     const jwtUser = getUserFromRequest(request)
-    let userId = jwtUser?.id
+    let userId: string | undefined = jwtUser?.id
     
     // Fallback to NextAuth session if no JWT user
     if (!userId) {
@@ -24,6 +24,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
       userId = session.user.id
+    }
+    
+    // TypeScript guard: userId is guaranteed to be defined here
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID not found' }, { status: 401 })
     }
 
     const requestData = await request.json()

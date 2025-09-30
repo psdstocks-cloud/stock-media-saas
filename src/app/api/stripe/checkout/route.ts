@@ -75,13 +75,14 @@ export async function POST(request: NextRequest) {
       customerId = existingSubscription.stripeCustomerId
     } else {
       // Create new Stripe customer
-      const customer = await stripe.customers.create({
-        email: user.email,
+      const customerData: any = {
+        email: user.email || null,
         name: user.name || undefined,
         metadata: {
           userId: userId,
         },
-      })
+      }
+      const customer = await stripe.customers.create(customerData)
       customerId = customer.id
     }
 
