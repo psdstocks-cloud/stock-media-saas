@@ -89,8 +89,8 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://embed.tawk.to",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: https: blob:",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to https://va.tawk.to",
+              "img-src 'self' data: https: blob: https://embed.tawk.to https://va.tawk.to",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://api.nehtw.com https://vitals.vercel-insights.com https://api.resend.com https://embed.tawk.to https://va.tawk.to ws: wss:",
               "frame-src 'self' https://js.stripe.com https://embed.tawk.to",
