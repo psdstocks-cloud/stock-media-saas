@@ -123,36 +123,6 @@ export default function HomePage() {
       {/* Social Proof Ticker */}
       <SocialProofTicker />
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[hsl(var(--background))]/80 backdrop-blur border-b border-[hsl(var(--border))]" role="banner">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
-              </div>
-              <Typography variant="h4" className="font-bold">
-                Stock Media SaaS
-              </Typography>
-            </div>
-            <nav className="flex items-center space-x-6" aria-label="Main">
-              <a href="#how-it-works" className="text-sm hover:opacity-80 transition-colors">How it works</a>
-              <a href="#pricing" className="text-sm hover:opacity-80 transition-colors">Pricing</a>
-              <a href="/login" className="inline-flex items-center h-9 rounded-md px-3 text-sm hover:opacity-80 transition-colors">
-                <User className="h-4 w-4 mr-2" />
-                Sign In
-              </a>
-              <a 
-                href="/register" 
-                className="inline-flex items-center h-9 rounded-md px-3 border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))] transition-colors text-sm"
-              >
-                <LogIn className="h-4 w-4 mr-2" />
-                Get Started
-              </a>
-            </nav>
-          </div>
-        </div>
-      </header>
 
       {/* Landing Page Sections */}
       <HeroSection />

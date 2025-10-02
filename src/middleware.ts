@@ -1,52 +1,65 @@
-// src/middleware.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyJWTSync } from '@/lib/jwt-edge';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { auth } from '@/auth'
 
-export default function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+// Define protected routes that require authentication
+const protectedRoutes = [
+  '/payment',
+  '/dashboard',
+  '/admin'
+]
+
+// Define public routes that should redirect to dashboard if already authenticated
+const publicRoutes = [
+  '/login',
+  '/register'
+]
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
   
-  // Get the auth token from cookies
-  const token = req.cookies.get('auth-token')?.value;
-  let user = null;
+  // Get session
+  const session = await auth()
+  const isAuthenticated = !!session?.user
+
+  // Check if the current path is protected
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   
-  if (token) {
-    try {
-      user = verifyJWTSync(token);
-    } catch (error) {
-      // Invalid token, treat as not authenticated
-      user = null;
+  // Check if the current path is public (login/register)
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+
+  // Handle protected routes
+  if (isProtectedRoute && !isAuthenticated) {
+    // Redirect to login with return URL
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // Handle public routes when already authenticated
+  if (isPublicRoute && isAuthenticated) {
+    // Check if there's a redirect parameter
+    const redirectUrl = request.nextUrl.searchParams.get('redirect')
+    if (redirectUrl) {
+      return NextResponse.redirect(new URL(redirectUrl, request.url))
     }
+    // Default redirect to dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  const isLoggedIn = !!user;
-
-  // Allow access to admin login page without authentication
-  if (pathname === '/admin/login') {
-    return NextResponse.next();
-  }
-
-  // Allow access to regular login page without authentication
-  if (pathname === '/login') {
-    return NextResponse.next();
-  }
-
-  // Protect admin routes (except login)
-  if (pathname.startsWith('/admin')) {
-    if (!isLoggedIn || (user?.role !== 'admin' && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN')) {
-      const loginUrl = new URL('/admin/login', req.url);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // Protect dashboard routes
-  if (pathname.startsWith('/dashboard') && !isLoggedIn) {
-    const loginUrl = new URL('/login', req.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return NextResponse.next();
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/:path*'],
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (images, etc.)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)',
+  ],
+}

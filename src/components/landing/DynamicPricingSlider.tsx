@@ -178,16 +178,8 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
     handlePointsChange(newPoints)
   }
 
-  // Handle purchase with authentication check
+  // Handle purchase
   const handlePurchase = () => {
-    // Check if user is authenticated using session
-    if (!session?.user) {
-      // Redirect to login with return URL
-      const returnUrl = encodeURIComponent(`/pricing?points=${points}&validity=${validity}`)
-      router.push(`/login?redirect=${returnUrl}`)
-      return
-    }
-
     if (onPurchase) {
       onPurchase(points, validity, totalPrice)
     } else {
@@ -576,27 +568,11 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
             <div className="text-center">
               <Button
                 onClick={handlePurchase}
-                disabled={status === 'loading'}
-                className="w-full md:w-auto px-12 py-6 text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full md:w-auto px-12 py-6 text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
               >
-                {status === 'loading' ? (
-                  <>
-                    <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                    Loading...
-                  </>
-                ) : !session?.user ? (
-                  <>
-                    <Lock className="h-6 w-6 mr-3" />
-                    Sign In to Purchase {points} Points
-                    <ArrowRight className="h-6 w-6 ml-3" />
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-6 w-6 mr-3" />
-                    Purchase {points} Points
-                    <ArrowRight className="h-6 w-6 ml-3" />
-                  </>
-                )}
+                <Zap className="h-6 w-6 mr-3" />
+                Purchase {points} Points
+                <ArrowRight className="h-6 w-6 ml-3" />
               </Button>
             </div>
           )}
