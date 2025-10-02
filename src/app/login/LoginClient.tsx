@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { 
   Button, 
   Card, 
@@ -102,33 +103,26 @@ function LoginForm() {
         return
       }
 
-      const response = await fetch('/api/auth/direct-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password })
+      // Use NextAuth signIn method
+      const redirectUrl = searchParams.get('redirect')
+      const callbackUrl = redirectUrl ? decodeURIComponent(redirectUrl) : '/dashboard'
+      
+      const result = await signIn('credentials', {
+        email: email.trim(),
+        password,
+        redirect: false,
+        callbackUrl
       })
-      const data = await response.json()
-      if (response.ok) {
-        // Check for redirect parameter
-        const redirectUrl = searchParams.get('redirect')
-        
-        if (redirectUrl) {
-          // Decode and redirect to the original URL
-          router.push(decodeURIComponent(redirectUrl))
-        } else if (data.user.role === 'admin') {
-          router.push('/admin/dashboard')
-        } else {
-          router.push('/dashboard')
-        }
+
+      if (result?.ok) {
+        // Successful login, redirect to the callback URL
+        router.push(callbackUrl)
       } else {
-        if (data.type === 'ACCOUNT_LOCKED') {
-          setError('Account is temporarily locked. Please try again later.')
-        } else if (data.type === 'RATE_LIMIT_EXCEEDED') {
-          setError('Too many login attempts. Please try again later.')
-        } else if (data.type === 'OAUTH_ONLY_ACCOUNT') {
-          setError('This account uses social login. Please use the appropriate login method.')
+        // Handle login errors
+        if (result?.error === 'CredentialsSignin') {
+          setError('Invalid email or password')
         } else {
-          setError(data.error || 'Invalid email or password')
+          setError(result?.error || 'Login failed. Please try again.')
         }
       }
     } catch (_err) {
@@ -144,24 +138,22 @@ function LoginForm() {
     setIsLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/auth/direct-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'demo@example.com', password: 'demo123' })
+      // Use NextAuth signIn method for demo login
+      const redirectUrl = searchParams.get('redirect')
+      const callbackUrl = redirectUrl ? decodeURIComponent(redirectUrl) : '/dashboard'
+      
+      const result = await signIn('credentials', {
+        email: 'demo@example.com',
+        password: 'demo123',
+        redirect: false,
+        callbackUrl
       })
-      const data = await response.json()
-      if (response.ok) {
-        // Check for redirect parameter
-        const redirectUrl = searchParams.get('redirect')
-        
-        if (redirectUrl) {
-          // Decode and redirect to the original URL
-          router.push(decodeURIComponent(redirectUrl))
-        } else {
-          router.push('/dashboard')
-        }
+
+      if (result?.ok) {
+        // Successful login, redirect to the callback URL
+        router.push(callbackUrl)
       } else {
-        setError(data.error || 'Demo account login failed')
+        setError('Demo account login failed')
       }
     } catch (_err) {
       setError('An error occurred. Please try again.')
