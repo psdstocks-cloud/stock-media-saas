@@ -22,8 +22,7 @@ import {
   ArrowRight,
   CheckCircle,
   Trophy,
-  Medal,
-  Certificate
+  Medal
 } from "lucide-react"
 
 export default function AboutPage() {
@@ -375,7 +374,7 @@ export default function AboutPage() {
             <Card className="text-center hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Certificate className="h-10 w-10 text-white" />
+                  <Award className="h-10 w-10 text-white" />
                 </div>
                 <Typography variant="h3" className="text-lg font-bold mb-2">
                   ISO 27001
