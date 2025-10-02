@@ -72,7 +72,7 @@ export default function DashboardPage() {
                   Stock Media SaaS
                 </Typography>
                 <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-sm">
-                  Welcome back, {user.name}
+                  Welcome back, {user?.name || 'User'}
                 </Typography>
               </div>
             </div>
@@ -80,9 +80,9 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-[hsl(var(--muted-foreground))]">
                 <User className="h-4 w-4" aria-hidden="true" />
-                <span className="text-sm">{user.role}</span>
+                <span className="text-sm">{user?.role || 'user'}</span>
               </div>
-              {user.role === 'admin' || user.role === 'SUPER_ADMIN' ? (
+              {user?.role === 'admin' || user?.role === 'SUPER_ADMIN' ? (
                 <Button
                   onClick={() => router.push('/admin/dashboard')}
                   variant="outline"
