@@ -166,18 +166,18 @@ export default function AboutPage() {
               {/* 2020 - Founded */}
               <div className="flex items-center">
                 <div className="w-1/2 pr-8 text-right">
-                  <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+                  <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-end mb-3">
-                        <Calendar className="h-5 w-5 text-orange-600 mr-2" />
-                        <Typography variant="body-sm" className="text-orange-600 font-semibold">
+                        <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400 mr-2" />
+                        <Typography variant="body-sm" className="text-orange-600 dark:text-orange-400 font-semibold">
                           January 2020
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
                         Company Founded
                       </Typography>
-                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                      <Typography variant="body" className="text-gray-700 dark:text-gray-300">
                         Stock Media SaaS was founded by Ahmed Abdelghany with a vision to democratize 
                         access to premium stock media through innovative pricing models.
                       </Typography>
@@ -197,18 +197,18 @@ export default function AboutPage() {
                   <TrendingUp className="h-4 w-4 text-white" />
                 </div>
                 <div className="w-1/2 pl-8">
-                  <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+                  <Card className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
                     <CardContent className="p-6">
                       <div className="flex items-center mb-3">
-                        <Calendar className="h-5 w-5 text-purple-600 mr-2" />
-                        <Typography variant="body-sm" className="text-purple-600 font-semibold">
+                        <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-2" />
+                        <Typography variant="body-sm" className="text-purple-600 dark:text-purple-400 font-semibold">
                           March 2021
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
                         Seed Funding Round
                       </Typography>
-                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                      <Typography variant="body" className="text-gray-700 dark:text-gray-300">
                         Raised $2M in seed funding to build our core platform and establish 
                         partnerships with major stock media providers.
                       </Typography>
@@ -220,18 +220,18 @@ export default function AboutPage() {
               {/* 2022 - Platform Launch */}
               <div className="flex items-center">
                 <div className="w-1/2 pr-8 text-right">
-                  <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                  <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-end mb-3">
-                        <Calendar className="h-5 w-5 text-blue-600 mr-2" />
-                        <Typography variant="body-sm" className="text-blue-600 font-semibold">
+                        <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                        <Typography variant="body-sm" className="text-blue-600 dark:text-blue-400 font-semibold">
                           June 2022
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
                         Platform Launch
                       </Typography>
-                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                      <Typography variant="body" className="text-gray-700 dark:text-gray-300">
                         Launched our beta platform with 10 stock media partners and 1,000+ 
                         early adopters. Introduced our revolutionary point-based pricing system.
                       </Typography>
@@ -251,18 +251,18 @@ export default function AboutPage() {
                   <Trophy className="h-4 w-4 text-white" />
                 </div>
                 <div className="w-1/2 pl-8">
-                  <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+                  <Card className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
                     <CardContent className="p-6">
                       <div className="flex items-center mb-3">
-                        <Calendar className="h-5 w-5 text-green-600 mr-2" />
-                        <Typography variant="body-sm" className="text-green-600 font-semibold">
+                        <Calendar className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+                        <Typography variant="body-sm" className="text-green-600 dark:text-green-400 font-semibold">
                           September 2023
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
                         Series A Funding
                       </Typography>
-                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                      <Typography variant="body" className="text-gray-700 dark:text-gray-300">
                         Raised $8M Series A to scale operations, expand our partner network to 25+ 
                         platforms, and grow our team to 20+ members.
                       </Typography>
@@ -274,18 +274,18 @@ export default function AboutPage() {
               {/* 2024 - Current */}
               <div className="flex items-center">
                 <div className="w-1/2 pr-8 text-right">
-                  <Card className="bg-gradient-to-r from-indigo-50 to-indigo-100 border-indigo-200">
+                  <Card className="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-end mb-3">
-                        <Calendar className="h-5 w-5 text-indigo-600 mr-2" />
-                        <Typography variant="body-sm" className="text-indigo-600 font-semibold">
+                        <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+                        <Typography variant="body-sm" className="text-indigo-600 dark:text-indigo-400 font-semibold">
                           Present
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
                         Global Expansion
                       </Typography>
-                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
+                      <Typography variant="body" className="text-gray-700 dark:text-gray-300">
                         Serving 10,000+ creators worldwide with 2M+ premium assets across 50+ 
                         stock media platforms. Expanding into new markets and launching AI-powered features.
                       </Typography>
