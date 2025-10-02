@@ -11,7 +11,12 @@ import {
   CreditCard, 
   Menu,
   X,
-  Zap
+  Zap,
+  Home,
+  Link as LinkIcon,
+  History,
+  Download,
+  ChevronDown
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -34,9 +39,11 @@ export function Header() {
   ]
 
   const userNavigation = session?.user ? [
-    { name: 'Dashboard', href: '/dashboard', icon: User },
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Order from URL', href: '/dashboard/order', icon: LinkIcon },
+    { name: 'History', href: '/dashboard/history', icon: History },
     { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings }
+    { name: 'Downloads', href: '/dashboard/downloads', icon: Download },
   ] : []
 
   return (
@@ -76,57 +83,47 @@ export function Header() {
                 </Typography>
               </div>
             ) : session?.user ? (
-              <div className="flex items-center space-x-4">
-                {/* User Greeting */}
-                <div className="flex items-center space-x-2">
+              {/* User Dropdown Menu */}
+              <div className="relative group">
+                <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
                   <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
                     <User className="h-4 w-4 text-white" />
                   </div>
-                  <div>
-                    <Typography variant="body-sm" className="text-gray-600 dark:text-gray-400">
+                  <div className="text-left">
+                    <Typography variant="body-sm" className="text-gray-600 dark:text-gray-400 leading-none">
                       Hi,
                     </Typography>
-                    <Typography variant="body" className="font-medium text-gray-900 dark:text-white">
+                    <Typography variant="body" className="font-medium text-gray-900 dark:text-white leading-none">
                       {session.user.name?.split(' ')[0] || session.user.email?.split('@')[0]}
                     </Typography>
                   </div>
-                </div>
-
-                {/* User Menu */}
-                <div className="relative group">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  
-                  {/* Dropdown Menu */}
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="py-2">
-                      {userNavigation.map((item) => {
-                        const IconComponent = item.icon
-                        return (
-                          <Link
-                            key={item.name}
-                            href={item.href}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                          >
-                            <IconComponent className="h-4 w-4 mr-3" />
-                            {item.name}
-                          </Link>
-                        )
-                      })}
-                      <hr className="my-2 border-gray-200 dark:border-gray-700" />
-                      <button
-                        onClick={handleSignOut}
-                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                      >
-                        <LogOut className="h-4 w-4 mr-3" />
-                        Sign Out
-                      </button>
-                    </div>
+                  <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                </button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-2">
+                    {userNavigation.map((item) => {
+                      const IconComponent = item.icon
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                        >
+                          <IconComponent className="h-4 w-4 mr-3 text-gray-500 dark:text-gray-400" />
+                          {item.name}
+                        </Link>
+                      )
+                    })}
+                    <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                      <LogOut className="h-4 w-4 mr-3" />
+                      Logout
+                    </button>
                   </div>
                 </div>
               </div>
@@ -194,13 +191,16 @@ export function Header() {
               ) : session?.user ? (
                 <div className="space-y-2">
                   {/* Mobile User Greeting */}
-                  <div className="flex items-center px-4 py-2">
+                  <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg mx-2">
                     <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3">
                       <User className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <Typography variant="body-sm" className="text-gray-600 dark:text-gray-400">
-                        Hi, {session.user.name?.split(' ')[0] || session.user.email?.split('@')[0]}
+                        Hi,
+                      </Typography>
+                      <Typography variant="body" className="font-medium text-gray-900 dark:text-white">
+                        {session.user.name?.split(' ')[0] || session.user.email?.split('@')[0]}
                       </Typography>
                     </div>
                   </div>
@@ -212,10 +212,10 @@ export function Header() {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                        className="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <IconComponent className="h-4 w-4 mr-3" />
+                        <IconComponent className="h-4 w-4 mr-3 text-gray-500 dark:text-gray-400" />
                         {item.name}
                       </Link>
                     )
@@ -226,10 +226,10 @@ export function Header() {
                       handleSignOut()
                       setIsMobileMenuOpen(false)
                     }}
-                    className="flex items-center w-full px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                    className="flex items-center w-full px-4 py-3 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
                   >
                     <LogOut className="h-4 w-4 mr-3" />
-                    Sign Out
+                    Logout
                   </button>
                 </div>
               ) : (
