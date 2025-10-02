@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
+import { AuthGuard } from '@/components/AuthGuard'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/components/ui'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PointsOverview from '@/components/dashboard/PointsOverview'
@@ -24,100 +26,38 @@ interface DashboardUser {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<DashboardUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
   
   // Use centralized store for points
   const { points: userPoints } = useUserStore()
 
-  useEffect(() => {
-    const verifyAuth = async () => {
-      try {
-        if (process.env.NODE_ENV !== 'production') console.log('Verifying authentication...')
-        const response = await fetch('/api/auth/verify-token')
-        if (process.env.NODE_ENV !== 'production') console.log('Auth verification response status:', response.status)
-        
-        if (!response.ok) {
-          console.log('Auth verification failed, redirecting to login')
-          router.push('/login')
-          return
-        }
-        
-        const data = await response.json()
-        if (process.env.NODE_ENV !== 'production') console.log('Auth verification data:', data)
-        
-        if (data && data.valid && data.user) {
-          if (process.env.NODE_ENV !== 'production') console.log('User authenticated:', data.user)
-          setUser(data.user)
-        } else {
-          if (process.env.NODE_ENV !== 'production') console.log('Invalid auth data, redirecting to login')
-          router.push('/login')
-        }
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') console.error('Auth verification error:', error)
-        router.push('/login')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    verifyAuth()
-  }, [router])
+  // Convert NextAuth session to dashboard user format
+  const user = session?.user ? {
+    id: session.user.id || '',
+    email: session.user.email || '',
+    name: session.user.name || session.user.email || '',
+    role: (session.user as any).role || 'user'
+  } : null
 
   // Points are now managed by the centralized store via PointsInitializer
 
   const handleLogout = async () => {
     try {
-      if (process.env.NODE_ENV !== 'production') console.log('Logging out...')
-      await fetch('/api/auth/logout', { method: 'POST' })
-      if (process.env.NODE_ENV !== 'production') console.log('Logout successful, redirecting to login')
-      router.push('/login')
+      await signOut({ redirect: false })
+      router.push('/')
     } catch (error) {
-      if (process.env.NODE_ENV !== 'production') console.error('Logout error:', error)
-      router.push('/login')
+      console.error('Logout error:', error)
+      router.push('/')
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <Typography variant="body" className="text-white/70">Loading...</Typography>
-        </div>
-      </div>
-    )
   }
 
   // Onboarding: show gentle empty state if no user points and overview tab
   const showOnboarding = userPoints === 0 && activeTab === 'overview'
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex items-center justify-center">
-        <Card className="w-full max-w-md surface-card shadow-2xl">
-          <CardHeader className="text-center">
-            <CardTitle className="text-white">Authentication Required</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Typography variant="body" className="text-white/70 mb-4">
-              Please log in to access the dashboard.
-            </Typography>
-            <Button 
-              onClick={() => router.push('/login')}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-            >
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   return (
+    <AuthGuard requireAuth={true}>
     <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       {/* Header */}
       <div className="border-b border-[hsl(var(--border))]">
@@ -331,5 +271,6 @@ export default function DashboardPage() {
         </Tabs>
       </div>
     </div>
+    </AuthGuard>
   )
 }
