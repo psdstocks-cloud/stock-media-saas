@@ -1,6 +1,7 @@
 "use client"
 import * as React from "react"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 // import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Menu, User } from "lucide-react"
@@ -19,7 +20,8 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
     const [isScrolled, setIsScrolled] = React.useState(false)
     const [mobileOpen, setMobileOpen] = React.useState(false)
     const pathname = usePathname?.() || ""
-    const [isAuthed, setIsAuthed] = React.useState(false)
+    const { data: session, status } = useSession()
+    const isAuthed = !!session?.user
 
     React.useEffect(() => {
       const onScroll = () => {
@@ -28,22 +30,6 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
       onScroll()
       window.addEventListener('scroll', onScroll, { passive: true })
       return () => window.removeEventListener('scroll', onScroll)
-    }, [])
-
-    React.useEffect(() => {
-      // Lightweight auth check to toggle Sign In vs Avatar
-      const check = async () => {
-        try {
-          const res = await fetch('/api/auth/verify-token')
-          if (res.ok) {
-            const data = await res.json()
-            setIsAuthed(Boolean(data?.user))
-          }
-        } catch (_e) {
-          setIsAuthed(false)
-        }
-      }
-      check()
     }, [])
 
     const isResourcesActive = [
@@ -177,7 +163,9 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
                 <a href="/supported-platforms" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Supported platforms</a>
                 <a href="/help" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Help</a>
                 <a href="/pricing" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Pricing</a>
-                <a href="/login" className="mt-2 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-primary to-secondary text-white h-10">Sign In</a>
+                {!isAuthed && (
+                  <a href="/login" className="mt-2 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-primary to-secondary text-white h-10">Sign In</a>
+                )}
               </nav>
             </div>
           </div>
