@@ -81,42 +81,14 @@ export const SubscriptionPlansSection: React.FC = () => {
     if (isAuthLoading) return // Don't allow clicks while checking auth
     
     if (user) {
-      // User is logged in, create subscription
-      try {
-        setIsProcessing(true)
-        
-        const response = await fetch('/api/subscriptions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ planId: plan.id })
-        })
-
-        const data = await response.json()
-
-        if (data.success) {
-          toast.success(data.message, {
-            duration: 4000,
-            icon: '🎉'
-          })
-          // Redirect to dashboard to see the new subscription
-          router.push('/dashboard')
-        } else {
-          toast.error(data.error || 'Subscription failed', {
-            duration: 5000,
-            icon: '❌'
-          })
-        }
-      } catch (error) {
-        console.error('Subscription error:', error)
-        toast.error('Failed to create subscription. Please try again.', {
-          duration: 5000,
-          icon: '❌'
-        })
-      } finally {
-        setIsProcessing(false)
-      }
+      // User is logged in, redirect to payment page for subscription
+      const params = new URLSearchParams({
+        points: plan.points.toString(),
+        validity: '30', // Monthly subscriptions
+        type: 'subscription',
+        planId: plan.id
+      })
+      router.push(`/payment?${params.toString()}`)
     } else {
       // User is not logged in, redirect to login with return URL
       router.push(`/login?redirect=${encodeURIComponent('/pricing')}`)

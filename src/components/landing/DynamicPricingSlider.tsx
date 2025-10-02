@@ -176,6 +176,13 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
   const handlePurchase = () => {
     if (onPurchase) {
       onPurchase(points, validity, totalPrice)
+    } else {
+      // Redirect to payment page with parameters
+      const params = new URLSearchParams({
+        points: points.toString(),
+        validity: validity.toString()
+      })
+      window.location.href = `/payment?${params.toString()}`
     }
   }
 

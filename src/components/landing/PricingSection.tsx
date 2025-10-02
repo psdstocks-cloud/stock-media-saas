@@ -172,9 +172,12 @@ export const PricingSection: React.FC = () => {
     if (isAuthLoading) return // Don't allow clicks while checking auth
     
     if (user) {
-      // User is logged in, show virtual purchase modal
-      setSelectedPack(pack)
-      setShowVirtualModal(true)
+      // User is logged in, redirect to payment page
+      const params = new URLSearchParams({
+        points: pack.points.toString(),
+        validity: '30' // Default validity for point packs
+      })
+      router.push(`/payment?${params.toString()}`)
     } else {
       // User is not logged in, redirect to login with return URL
       router.push(`/login?redirect=${encodeURIComponent('/pricing')}`)
