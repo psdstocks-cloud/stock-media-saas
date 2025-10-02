@@ -130,21 +130,21 @@ export default function AboutPage() {
         {/* Story Section */}
         <section className="mb-16">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="bg-gradient-to-br from-orange-100 to-purple-100 rounded-2xl p-8">
+            <div className="bg-gradient-to-br from-orange-100 to-purple-100 dark:from-orange-900/30 dark:to-purple-900/30 rounded-2xl p-8 border border-orange-200 dark:border-orange-800">
               <div className="flex items-center justify-center h-64">
-                <Users className="h-32 w-32 text-purple-500" />
+                <Users className="h-32 w-32 text-purple-500 dark:text-purple-400" />
               </div>
             </div>
             <div>
-              <Typography variant="h2" className="text-3xl font-bold mb-6">
+              <Typography variant="h2" className="text-3xl font-bold mb-6 text-[hsl(var(--foreground))]">
                 Our Story
               </Typography>
-              <Typography variant="body-lg" className="text-muted-foreground mb-6">
+              <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] mb-6">
                 Stock Media SaaS was born out of frustration with traditional stock media platforms. 
                 Our founders, experienced creators themselves, were tired of expensive subscriptions, 
                 confusing licensing terms, and limited access to quality content.
               </Typography>
-              <Typography variant="body" className="text-muted-foreground">
+              <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                 We set out to create a platform that would give creators the freedom to access premium 
                 content on their terms, with transparent pricing and no hidden fees. Today, we're proud 
                 to serve thousands of creators worldwide with our innovative approach.
@@ -174,10 +174,10 @@ export default function AboutPage() {
                           January 2020
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
                         Company Founded
                       </Typography>
-                      <Typography variant="body" className="text-muted-foreground">
+                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                         Stock Media SaaS was founded by Ahmed Abdelghany with a vision to democratize 
                         access to premium stock media through innovative pricing models.
                       </Typography>
@@ -205,10 +205,10 @@ export default function AboutPage() {
                           March 2021
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
                         Seed Funding Round
                       </Typography>
-                      <Typography variant="body" className="text-muted-foreground">
+                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                         Raised $2M in seed funding to build our core platform and establish 
                         partnerships with major stock media providers.
                       </Typography>
@@ -228,10 +228,10 @@ export default function AboutPage() {
                           June 2022
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
                         Platform Launch
                       </Typography>
-                      <Typography variant="body" className="text-muted-foreground">
+                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                         Launched our beta platform with 10 stock media partners and 1,000+ 
                         early adopters. Introduced our revolutionary point-based pricing system.
                       </Typography>
@@ -259,10 +259,10 @@ export default function AboutPage() {
                           September 2023
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
                         Series A Funding
                       </Typography>
-                      <Typography variant="body" className="text-muted-foreground">
+                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                         Raised $8M Series A to scale operations, expand our partner network to 25+ 
                         platforms, and grow our team to 20+ members.
                       </Typography>
@@ -282,10 +282,10 @@ export default function AboutPage() {
                           Present
                         </Typography>
                       </div>
-                      <Typography variant="h3" className="text-xl font-bold mb-2">
+                      <Typography variant="h3" className="text-xl font-bold mb-2 text-[hsl(var(--foreground))]">
                         Global Expansion
                       </Typography>
-                      <Typography variant="body" className="text-muted-foreground">
+                      <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                         Serving 10,000+ creators worldwide with 2M+ premium assets across 50+ 
                         stock media platforms. Expanding into new markets and launching AI-powered features.
                       </Typography>
