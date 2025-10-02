@@ -78,12 +78,33 @@ export default function PaymentClient() {
     cvv: '',
     name: ''
   })
+  const [authStatus, setAuthStatus] = useState(null)
+
+  // Check authentication status
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth-check')
+      const result = await response.json()
+      setAuthStatus(result)
+      console.log('Auth status:', result)
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    }
+  }
 
   // Handle virtual payment processing
   const handlePayment = async () => {
     setIsProcessing(true)
     
     try {
+      console.log('Starting payment process...', {
+        points,
+        validity,
+        totalPrice,
+        paymentMethod: selectedPaymentMethod,
+        tier: tier?.label
+      })
+      
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000))
       
@@ -102,18 +123,24 @@ export default function PaymentClient() {
         })
       })
       
+      const result = await response.json()
+      console.log('Payment API response:', { status: response.status, result })
+      
       if (response.ok) {
+        console.log('Payment successful!', result)
         setOrderComplete(true)
         // Redirect to success page after 3 seconds
         setTimeout(() => {
-          router.push('/payment/success?points=' + points)
+          router.push('/payment/success?points=' + points + '&transactionId=' + result.transactionId)
         }, 3000)
       } else {
-        throw new Error('Payment failed')
+        console.error('Payment failed:', result)
+        throw new Error(result.error || 'Payment failed')
       }
     } catch (error) {
       console.error('Payment error:', error)
-      alert('Payment failed. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Payment failed: ${errorMessage}. Please try again.`)
     } finally {
       setIsProcessing(false)
     }
@@ -397,6 +424,24 @@ export default function PaymentClient() {
                       ${totalPrice.toFixed(2)}
                     </Typography>
                   </div>
+                </div>
+
+                {/* Debug Section */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2">
+                  <Typography variant="body-sm" className="font-semibold">Debug Info:</Typography>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={checkAuth}
+                    className="w-full"
+                  >
+                    Check Authentication Status
+                  </Button>
+                  {authStatus && (
+                    <div className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded">
+                      <pre>{JSON.stringify(authStatus, null, 2)}</pre>
+                    </div>
+                  )}
                 </div>
 
                 {/* Purchase Button */}

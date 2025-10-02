@@ -4,16 +4,22 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Virtual payment API called')
     const session = await auth()
+    console.log('Session check:', { hasSession: !!session, userId: session?.user?.id })
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('Unauthorized: No session or user ID')
+      return NextResponse.json({ error: 'Unauthorized - Please log in to make a payment' }, { status: 401 })
     }
 
-    const { points, validity, totalPrice, paymentMethod, tier } = await request.json()
+    const body = await request.json()
+    console.log('Payment request body:', body)
+    const { points, validity, totalPrice, paymentMethod, tier } = body
 
     // Validate input
     if (!points || !validity || !totalPrice || !paymentMethod) {
+      console.log('Missing required fields:', { points, validity, totalPrice, paymentMethod })
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -52,13 +58,16 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({
+    const response = {
       success: true,
       transactionId: transactionId,
       pointsHistoryId: pointsHistory.id,
       points: points,
       message: 'Virtual payment completed successfully'
-    })
+    }
+    
+    console.log('Payment successful, returning:', response)
+    return NextResponse.json(response)
 
   } catch (error) {
     console.error('Virtual payment error:', error)
