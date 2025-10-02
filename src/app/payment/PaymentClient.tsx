@@ -14,12 +14,11 @@ import {
   Star,
   Loader2,
   AlertCircle,
-  PaypalIcon as PayPal,
   Apple,
   Smartphone
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { calculatePrice, validityOptions } from '@/lib/pricing-calculator'
+import { calculatePricing, VALIDITY_OPTIONS } from '@/lib/pricing-calculator'
 
 interface PaymentMethod {
   id: string
@@ -40,7 +39,7 @@ const paymentMethods: PaymentMethod[] = [
   {
     id: 'paypal',
     name: 'PayPal',
-    icon: PayPal,
+    icon: CreditCard,
     description: 'Pay with your PayPal account'
   },
   {
@@ -66,8 +65,8 @@ export default function PaymentClient() {
   const validity = parseInt(searchParams.get('validity') || '30')
   
   // Calculate pricing
-  const { totalPrice, pricePerPoint, savings, currentTier } = calculatePrice(points, validity)
-  const validityOption = validityOptions.find(v => v.days === validity)
+  const { totalPrice, pricePerPoint, savings, tier } = calculatePricing(points, validity)
+  const validityOption = VALIDITY_OPTIONS.find(v => v.days === validity)
   
   // Component state
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('card')
@@ -99,7 +98,7 @@ export default function PaymentClient() {
           validity,
           totalPrice,
           paymentMethod: selectedPaymentMethod,
-          tier: currentTier?.label
+          tier: tier?.label
         })
       })
       
@@ -323,13 +322,13 @@ export default function PaymentClient() {
                         {points} Points
                       </Typography>
                     </div>
-                    {currentTier && (
+                    {tier && (
                       <Badge className={cn(
                         "text-white",
-                        currentTier.popular ? "bg-orange-500" : "bg-gray-500"
+                        tier.popular ? "bg-orange-500" : "bg-gray-500"
                       )}>
-                        {currentTier.label}
-                        {currentTier.popular && " ⭐"}
+                        {tier.label}
+                        {tier.popular && " ⭐"}
                       </Badge>
                     )}
                   </div>

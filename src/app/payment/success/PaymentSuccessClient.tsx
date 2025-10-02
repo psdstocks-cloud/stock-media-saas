@@ -71,7 +71,7 @@ export default function PaymentSuccessClient() {
                 <Typography variant="body-sm" className="font-medium text-blue-800 dark:text-blue-200">
                   Browse Stock Sites
                 </Typography>
-                <Typography variant="body-xs" className="text-blue-600 dark:text-blue-400">
+                <Typography variant="body-sm" className="text-blue-600 dark:text-blue-400">
                   Explore 25+ platforms
                 </Typography>
               </div>
@@ -82,7 +82,7 @@ export default function PaymentSuccessClient() {
                 <Typography variant="body-sm" className="font-medium text-blue-800 dark:text-blue-200">
                   Find Your Content
                 </Typography>
-                <Typography variant="body-xs" className="text-blue-600 dark:text-blue-400">
+                <Typography variant="body-sm" className="text-blue-600 dark:text-blue-400">
                   Search & select media
                 </Typography>
               </div>
@@ -93,7 +93,7 @@ export default function PaymentSuccessClient() {
                 <Typography variant="body-sm" className="font-medium text-blue-800 dark:text-blue-200">
                   Download Instantly
                 </Typography>
-                <Typography variant="body-xs" className="text-blue-600 dark:text-blue-400">
+                <Typography variant="body-sm" className="text-blue-600 dark:text-blue-400">
                   High-quality files
                 </Typography>
               </div>
@@ -135,7 +135,7 @@ export default function PaymentSuccessClient() {
           </div>
 
           {/* Receipt Info */}
-          <Typography variant="body-xs" className="text-muted-foreground mt-6">
+          <Typography variant="body-sm" className="text-muted-foreground mt-6">
             A receipt has been sent to your email address.
             <br />
             Order ID: #{Date.now().toString().slice(-8)}
