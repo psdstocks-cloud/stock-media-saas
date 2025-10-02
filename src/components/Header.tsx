@@ -7,11 +7,11 @@ import { Typography, Button } from '@/components/ui'
 import { 
   User, 
   LogOut, 
-  Settings, 
+  // Settings, 
   CreditCard, 
   Menu,
   X,
-  Zap,
+  // Zap,
   Home,
   Link as LinkIcon,
   History,
@@ -19,7 +19,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+// import { cn } from '@/lib/utils'
 
 export function Header() {
   const { data: session, status } = useSession()
@@ -83,7 +83,7 @@ export function Header() {
                 </Typography>
               </div>
             ) : session?.user ? (
-              {/* User Dropdown Menu */}
+              // User Dropdown Menu
               <div className="relative group">
                 <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
                   <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
-import { Typography } from "@/components/ui"
-import { User, LogIn } from "lucide-react"
+// import { Typography } from "@/components/ui"
+// import { User, LogIn } from "lucide-react"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { TrustBadgesSection } from "@/components/landing/TrustBadgesSection"
 import { CustomerLogosSection } from "@/components/landing/CustomerLogosSection"

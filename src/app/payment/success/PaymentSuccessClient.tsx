@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Typography, Button, Card, CardContent } from '@/components/ui'
-import { CheckCircle, ArrowRight, Download, Zap, Home } from 'lucide-react'
+import { CheckCircle, Download, Zap, Home } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function PaymentSuccessClient() {

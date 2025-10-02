@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Typography } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
-import { Badge } from '@/components/ui'
+// import { Badge } from '@/components/ui'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
@@ -15,9 +15,9 @@ import {
   Clock, 
   Calculator, 
   ArrowRight,
-  Loader2,
-  Lock,
-  CheckCircle,
+  // Loader2, 
+  // Lock, 
+  // CheckCircle,
   Star,
   Users,
   Crown
@@ -139,7 +139,7 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
   className
 }) => {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: _session, status: _status } = useSession()
   const [points, setPoints] = useState(100)
   const [validity, setValidity] = useState(30)
   const [isEnterprise, setIsEnterprise] = useState(false)
@@ -193,7 +193,7 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
   }
 
   // Get tier color for slider
-  const getSliderColor = () => {
+  const _getSliderColor = () => {
     if (!currentTier) return 'bg-gray-300'
     return `bg-gradient-to-r ${currentTier.color}`
   }
@@ -332,7 +332,7 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
                     
                     {/* 3D Tier Markers */}
                     <div className="absolute inset-0 flex justify-between items-center px-2">
-                      {pricingTiers.map((tier, index) => (
+                      {pricingTiers.map((tier, _index) => (
                         <div
                           key={tier.label}
                           className="flex flex-col items-center transform transition-all duration-300"

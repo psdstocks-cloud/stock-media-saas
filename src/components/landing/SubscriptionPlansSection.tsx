@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Typography, Badge } f
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Check, Zap, Crown, Star, LogIn, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import toast from 'react-hot-toast'
+// import toast from 'react-hot-toast'
 import PricingTestimonials from '@/components/landing/PricingTestimonials'
 
 interface SubscriptionPlan {
@@ -29,7 +29,7 @@ export const SubscriptionPlansSection: React.FC = () => {
   const [user, setUser] = useState<any>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [_selectedPlan, _setSelectedPlan] = useState<SubscriptionPlan | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [_isProcessing, _setIsProcessing] = useState(false)
 
   // Check authentication status
   useEffect(() => {
@@ -347,7 +347,7 @@ export const SubscriptionPlansSection: React.FC = () => {
                 {/* Subscribe Button */}
                 <Button
                   onClick={() => handleSubscribe(plan)}
-                  disabled={isAuthLoading || isProcessing}
+                  disabled={isAuthLoading || _isProcessing}
                   className={cn(
                     "w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl",
                     isPopular
@@ -355,10 +355,10 @@ export const SubscriptionPlansSection: React.FC = () => {
                       : "bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white"
                   )}
                 >
-                  {isAuthLoading || isProcessing ? (
+                  {isAuthLoading || _isProcessing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {isProcessing ? 'Processing...' : 'Loading...'}
+                      {_isProcessing ? 'Processing...' : 'Loading...'}
                     </>
                   ) : user ? (
                     <>

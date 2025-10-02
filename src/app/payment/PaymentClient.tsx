@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Typography, Button, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui'
 import { 
@@ -11,9 +11,9 @@ import {
   ArrowLeft, 
   Zap, 
   Clock, 
-  Star,
+  // Star,
   Loader2,
-  AlertCircle,
+  // AlertCircle,
   Apple,
   Smartphone
 } from 'lucide-react'
