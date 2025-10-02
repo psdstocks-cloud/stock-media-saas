@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Typography } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
@@ -138,11 +139,10 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
   className
 }) => {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [points, setPoints] = useState(100)
   const [validity, setValidity] = useState(30)
   const [isEnterprise, setIsEnterprise] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
-  const [isCheckingAuth, setIsCheckingAuth] = useState(false)
 
   // Calculate current tier and pricing
   const currentTier = pricingTiers.find(tier => points >= tier.min && points <= tier.max)
@@ -178,29 +178,10 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
     handlePointsChange(newPoints)
   }
 
-  // Check authentication status
-  const checkAuthentication = async () => {
-    setIsCheckingAuth(true)
-    try {
-      const response = await fetch('/api/auth-check')
-      const result = await response.json()
-      setIsAuthenticated(result.authenticated)
-      return result.authenticated
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      setIsAuthenticated(false)
-      return false
-    } finally {
-      setIsCheckingAuth(false)
-    }
-  }
-
   // Handle purchase with authentication check
-  const handlePurchase = async () => {
-    // Check authentication first
-    const authenticated = await checkAuthentication()
-    
-    if (!authenticated) {
+  const handlePurchase = () => {
+    // Check if user is authenticated using session
+    if (!session?.user) {
       // Redirect to login with return URL
       const returnUrl = encodeURIComponent(`/pricing?points=${points}&validity=${validity}`)
       router.push(`/login?redirect=${returnUrl}`)
@@ -595,15 +576,15 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
             <div className="text-center">
               <Button
                 onClick={handlePurchase}
-                disabled={isCheckingAuth}
+                disabled={status === 'loading'}
                 className="w-full md:w-auto px-12 py-6 text-xl font-bold bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isCheckingAuth ? (
+                {status === 'loading' ? (
                   <>
                     <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                    Checking Authentication...
+                    Loading...
                   </>
-                ) : isAuthenticated === false ? (
+                ) : !session?.user ? (
                   <>
                     <Lock className="h-6 w-6 mr-3" />
                     Sign In to Purchase {points} Points

@@ -77,31 +77,20 @@ export const SubscriptionPlansSection: React.FC = () => {
     fetchPlans()
   }, [])
 
-  const handleSubscribe = async (plan: SubscriptionPlan) => {
+  const handleSubscribe = (plan: SubscriptionPlan) => {
     if (isAuthLoading) return // Don't allow clicks while checking auth
     
-    // Always check authentication first
-    try {
-      const response = await fetch('/api/auth-check')
-      const result = await response.json()
-      
-      if (result.authenticated) {
-        // User is authenticated, redirect to payment page for subscription
-        const params = new URLSearchParams({
-          points: plan.points.toString(),
-          validity: '30', // Monthly subscriptions
-          type: 'subscription',
-          planId: plan.id
-        })
-        router.push(`/payment?${params.toString()}`)
-      } else {
-        // User is not authenticated, redirect to login with return URL
-        const returnUrl = encodeURIComponent(`/pricing?plan=${plan.id}`)
-        router.push(`/login?redirect=${returnUrl}`)
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      // Fallback to login page
+    if (user) {
+      // User is authenticated, redirect to payment page for subscription
+      const params = new URLSearchParams({
+        points: plan.points.toString(),
+        validity: '30', // Monthly subscriptions
+        type: 'subscription',
+        planId: plan.id
+      })
+      router.push(`/payment?${params.toString()}`)
+    } else {
+      // User is not authenticated, redirect to login with return URL
       const returnUrl = encodeURIComponent(`/pricing?plan=${plan.id}`)
       router.push(`/login?redirect=${returnUrl}`)
     }
