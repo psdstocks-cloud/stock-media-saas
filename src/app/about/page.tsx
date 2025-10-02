@@ -10,14 +10,11 @@ import {
   Globe, 
   Zap, 
   Calendar,
-  MapPin,
   ExternalLink,
-  Briefcase,
   TrendingUp,
   Shield,
   Star,
   Clock,
-  Building,
   FileText,
   ArrowRight,
   CheckCircle,
@@ -808,167 +805,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Careers Section */}
-        <section className="mb-16">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12 border border-blue-200 dark:border-blue-800">
-            <div className="text-center mb-8">
-              <Typography variant="h2" className="text-3xl font-bold mb-4 text-[hsl(var(--foreground))]">
-                Join Our Team
-              </Typography>
-              <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto">
-                We're always looking for talented individuals who share our passion for empowering creators. 
-                Join our remote-first team and help us build the future of stock media.
-              </Typography>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
-                <Briefcase className="h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
-                  8
-                </Typography>
-                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
-                  Open Positions
-                </Typography>
-              </div>
-              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
-                <Globe className="h-12 w-12 text-purple-600 dark:text-purple-400 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
-                  12
-                </Typography>
-                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
-                  Countries
-                </Typography>
-              </div>
-              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
-                <Heart className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
-                  4.9/5
-                </Typography>
-                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
-                  Employee Rating
-                </Typography>
-              </div>
-              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
-                <TrendingUp className="h-12 w-12 text-orange-600 dark:text-orange-400 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
-                  100%
-              </Typography>
-                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
-                  Remote Work
-              </Typography>
-              </div>
-            </div>
-            <div className="text-center">
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white mr-4">
-                View Open Positions
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
-              <Button variant="outline" className="border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
-                Learn About Our Culture
-              </Button>
-            </div>
-              </div>
-        </section>
-
-        {/* Investor Information Section */}
-        <section className="mb-16">
-          <Typography variant="h2" className="text-3xl font-bold text-center mb-12">
-            Investor Information
-          </Typography>
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <Typography variant="h3" className="text-2xl font-bold mb-6">
-                Our Investors
-              </Typography>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <Typography variant="h4" className="font-bold">
-                      Sequoia Capital
-                    </Typography>
-                    <Typography variant="body-sm" className="text-muted-foreground">
-                      Series A Lead Investor
-                    </Typography>
-                  </div>
-                  <Badge className="bg-green-100 text-green-800">
-                    Lead
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <Typography variant="h4" className="font-bold">
-                      Andreessen Horowitz
-                    </Typography>
-                    <Typography variant="body-sm" className="text-muted-foreground">
-                      Seed & Series A Participant
-                    </Typography>
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-800">
-                    Participant
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <Typography variant="h4" className="font-bold">
-                      Y Combinator
-                    </Typography>
-                    <Typography variant="body-sm" className="text-muted-foreground">
-                      Accelerator Program
-                    </Typography>
-                  </div>
-                  <Badge className="bg-orange-100 text-orange-800">
-                    Accelerator
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <div>
-              <Typography variant="h3" className="text-2xl font-bold mb-6">
-                Financial Highlights
-              </Typography>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
-                  <Typography variant="body" className="font-semibold">
-                    Total Funding Raised
-                  </Typography>
-                  <Typography variant="h4" className="font-bold text-green-600">
-                    $10M
-                  </Typography>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-                  <Typography variant="body" className="font-semibold">
-                    Annual Recurring Revenue
-                  </Typography>
-                  <Typography variant="h4" className="font-bold text-blue-600">
-                    $2.5M
-                  </Typography>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
-                  <Typography variant="body" className="font-semibold">
-                    Customer Growth (YoY)
-                  </Typography>
-                  <Typography variant="h4" className="font-bold text-purple-600">
-                    +150%
-                  </Typography>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg">
-                  <Typography variant="body" className="font-semibold">
-                    Revenue Growth (YoY)
-                  </Typography>
-                  <Typography variant="h4" className="font-bold text-orange-600">
-                    +200%
-                  </Typography>
-                </div>
-              </div>
-              <div className="mt-6">
-                <Button variant="outline" className="w-full">
-                  Download Investor Deck
-                  <ExternalLink className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* CTA Section */}
         <section className="text-center bg-gradient-to-r from-purple-50 to-orange-50 rounded-2xl p-12">
