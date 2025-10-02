@@ -787,11 +787,11 @@ export default function AboutPage() {
 
 
         {/* CTA Section */}
-        <section className="text-center bg-gradient-to-r from-purple-50 to-orange-50 rounded-2xl p-12">
-          <Typography variant="h2" className="text-3xl font-bold mb-6">
+        <section className="text-center bg-gradient-to-r from-purple-50 to-orange-50 dark:from-purple-900/20 dark:to-orange-900/20 rounded-2xl p-12 border border-purple-200 dark:border-purple-800">
+          <Typography variant="h2" className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
             Ready to Join Our Community?
           </Typography>
-          <Typography variant="body-lg" className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <Typography variant="body-lg" className="text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
             Become part of a growing community of creators who are revolutionizing how we access 
             and use stock media. Start your creative journey with us today.
           </Typography>
@@ -804,7 +804,7 @@ export default function AboutPage() {
             </a>
             <a 
               href="/contact" 
-              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all duration-200"
+              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
             >
               Contact Us
             </a>
