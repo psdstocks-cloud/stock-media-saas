@@ -168,19 +168,31 @@ export const PricingSection: React.FC = () => {
     fetchPointPacks()
   }, [])
 
-  const handlePurchase = (pack: PointPack) => {
+  const handlePurchase = async (pack: PointPack) => {
     if (isAuthLoading) return // Don't allow clicks while checking auth
     
-    if (user) {
-      // User is logged in, redirect to payment page
-      const params = new URLSearchParams({
-        points: pack.points.toString(),
-        validity: '30' // Default validity for point packs
-      })
-      router.push(`/payment?${params.toString()}`)
-    } else {
-      // User is not logged in, redirect to login with return URL
-      router.push(`/login?redirect=${encodeURIComponent('/pricing')}`)
+    // Always check authentication first
+    try {
+      const response = await fetch('/api/auth-check')
+      const result = await response.json()
+      
+      if (result.authenticated) {
+        // User is authenticated, redirect to payment page
+        const params = new URLSearchParams({
+          points: pack.points.toString(),
+          validity: '30' // Default validity for point packs
+        })
+        router.push(`/payment?${params.toString()}`)
+      } else {
+        // User is not authenticated, redirect to login with return URL
+        const returnUrl = encodeURIComponent(`/pricing?pack=${pack.id}`)
+        router.push(`/login?redirect=${returnUrl}`)
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      // Fallback to login page
+      const returnUrl = encodeURIComponent(`/pricing?pack=${pack.id}`)
+      router.push(`/login?redirect=${returnUrl}`)
     }
   }
 

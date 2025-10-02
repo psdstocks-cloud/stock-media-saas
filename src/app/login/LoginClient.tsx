@@ -109,7 +109,13 @@ function LoginForm() {
       })
       const data = await response.json()
       if (response.ok) {
-        if (data.user.role === 'admin') {
+        // Check for redirect parameter
+        const redirectUrl = searchParams.get('redirect')
+        
+        if (redirectUrl) {
+          // Decode and redirect to the original URL
+          router.push(decodeURIComponent(redirectUrl))
+        } else if (data.user.role === 'admin') {
           router.push('/admin/dashboard')
         } else {
           router.push('/dashboard')
@@ -145,7 +151,15 @@ function LoginForm() {
       })
       const data = await response.json()
       if (response.ok) {
-        router.push('/dashboard')
+        // Check for redirect parameter
+        const redirectUrl = searchParams.get('redirect')
+        
+        if (redirectUrl) {
+          // Decode and redirect to the original URL
+          router.push(decodeURIComponent(redirectUrl))
+        } else {
+          router.push('/dashboard')
+        }
       } else {
         setError(data.error || 'Demo account login failed')
       }
