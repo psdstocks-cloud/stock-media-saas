@@ -25,26 +25,6 @@ import {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
-              </div>
-              <Typography variant="h4" className="font-bold">
-                Stock Media SaaS
-              </Typography>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Typography variant="body-sm" className="text-muted-foreground">
-                About Us
-              </Typography>
-            </div>
-          </div>
-        </div>
-      </header>
 
       <main className="container mx-auto px-4 py-16">
         {/* Hero Section */}
