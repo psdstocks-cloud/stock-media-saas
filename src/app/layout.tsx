@@ -5,6 +5,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { WebVitals } from "@/components/WebVitals"
 import { ChatWidget } from "@/components/ChatWidget"
 import { AuthProvider } from "@/components/AuthProvider"
+import { ThemeProvider } from "@/contexts/ThemeContext"
 import { Header } from "@/components/Header"
 
 const inter = Inter({ 
@@ -59,8 +60,16 @@ export default function RootLayout({
     try {
       var stored = localStorage.getItem('theme');
       var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var useDark = stored ? stored === 'dark' : prefersDark;
-      if (useDark) { document.documentElement.classList.add('dark'); }
+      
+      if (stored === 'dark' || (stored === 'system' && prefersDark) || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      } else if (stored === 'light') {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // Set CSS custom property for theme
+      var theme = stored || 'system';
+      document.documentElement.style.setProperty('--theme', theme);
     } catch (e) { /* no-op */ }
   })();
           `}}
@@ -129,19 +138,21 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <AuthProvider>
-          <WebVitals />
-          <ChatWidget />
-          <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
-            Skip to content
-          </a>
-          <Header />
-          <ErrorBoundary>
-            <main id="main" role="main">
-              {children}
-            </main>
-          </ErrorBoundary>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <WebVitals />
+            <ChatWidget />
+            <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
+              Skip to content
+            </a>
+            <Header />
+            <ErrorBoundary>
+              <main id="main" role="main">
+                {children}
+              </main>
+            </ErrorBoundary>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

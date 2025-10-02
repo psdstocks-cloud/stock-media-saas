@@ -4,6 +4,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Typography, Button } from '@/components/ui'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { 
   User, 
   LogOut, 
@@ -75,6 +76,9 @@ export function Header() {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {status === 'loading' ? (
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -166,6 +170,11 @@ export function Header() {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4">
+            {/* Mobile Theme Toggle */}
+            <div className="flex justify-center mb-4">
+              <ThemeToggle />
+            </div>
+            
             <nav className="space-y-2">
               {navigation.map((item) => (
                 <Link
