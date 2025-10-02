@@ -469,79 +469,79 @@ export default function AboutPage() {
 
         {/* Office Culture Section */}
         <section className="mb-16">
-          <Typography variant="h2" className="text-3xl font-bold text-center mb-12">
+          <Typography variant="h2" className="text-3xl font-bold text-center mb-12 text-[hsl(var(--foreground))]">
             Our Culture
           </Typography>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <Typography variant="h3" className="text-2xl font-bold mb-6">
+              <Typography variant="h3" className="text-2xl font-bold mb-6 text-[hsl(var(--foreground))]">
                 Remote-First, Values-Driven
               </Typography>
-              <Typography variant="body-lg" className="text-muted-foreground mb-6">
+              <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] mb-6">
                 We're a distributed team of 25+ passionate individuals across 12 countries. 
                 Our culture is built on trust, transparency, and a shared commitment to empowering creators.
               </Typography>
               <div className="space-y-4">
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  <Typography variant="body" className="text-muted-foreground">
+                  <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                     Flexible work hours and unlimited PTO
                   </Typography>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  <Typography variant="body" className="text-muted-foreground">
+                  <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                     Annual team retreats and virtual events
                   </Typography>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  <Typography variant="body" className="text-muted-foreground">
+                  <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                     Learning and development budget for all team members
                   </Typography>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  <Typography variant="body" className="text-muted-foreground">
+                  <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                  <Typography variant="body" className="text-[hsl(var(--muted-foreground))]">
                     Equity participation for all employees
                   </Typography>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl p-6 text-center">
-                <Users className="h-12 w-12 text-orange-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold text-orange-800 mb-1">
+              <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl p-6 text-center border border-orange-200 dark:border-orange-800">
+                <Users className="h-12 w-12 text-orange-600 dark:text-orange-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold text-orange-800 dark:text-orange-200 mb-1">
                   25+
                 </Typography>
-                <Typography variant="body-sm" className="text-orange-700">
+                <Typography variant="body-sm" className="text-orange-700 dark:text-orange-300">
                   Team Members
                 </Typography>
               </div>
-              <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl p-6 text-center">
-                <Globe className="h-12 w-12 text-purple-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold text-purple-800 mb-1">
+              <div className="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 rounded-2xl p-6 text-center border border-purple-200 dark:border-purple-800">
+                <Globe className="h-12 w-12 text-purple-600 dark:text-purple-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold text-purple-800 dark:text-purple-200 mb-1">
                   12
                 </Typography>
-                <Typography variant="body-sm" className="text-purple-700">
+                <Typography variant="body-sm" className="text-purple-700 dark:text-purple-300">
                   Countries
                 </Typography>
               </div>
-              <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-6 text-center">
-                <Clock className="h-12 w-12 text-blue-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold text-blue-800 mb-1">
+              <div className="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-2xl p-6 text-center border border-blue-200 dark:border-blue-800">
+                <Clock className="h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold text-blue-800 dark:text-blue-200 mb-1">
                   100%
                 </Typography>
-                <Typography variant="body-sm" className="text-blue-700">
+                <Typography variant="body-sm" className="text-blue-700 dark:text-blue-300">
                   Remote
                 </Typography>
               </div>
-              <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl p-6 text-center">
-                <Heart className="h-12 w-12 text-green-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold text-green-800 mb-1">
+              <div className="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl p-6 text-center border border-green-200 dark:border-green-800">
+                <Heart className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold text-green-800 dark:text-green-200 mb-1">
                   4.9/5
                 </Typography>
-                <Typography variant="body-sm" className="text-green-700">
+                <Typography variant="body-sm" className="text-green-700 dark:text-green-300">
                   Team Satisfaction
                 </Typography>
               </div>
@@ -710,8 +710,8 @@ export default function AboutPage() {
                   <Badge className="absolute -top-2 -right-2 bg-indigo-500 text-white">
                     Success
                   </Badge>
-                </div>
-                <Typography variant="h3" className="text-xl font-bold mb-2">
+              </div>
+              <Typography variant="h3" className="text-xl font-bold mb-2">
                   James Thompson
                 </Typography>
                 <Typography variant="body-sm" className="text-indigo-600 font-semibold mb-3">
@@ -810,52 +810,52 @@ export default function AboutPage() {
 
         {/* Careers Section */}
         <section className="mb-16">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-12">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12 border border-blue-200 dark:border-blue-800">
             <div className="text-center mb-8">
-              <Typography variant="h2" className="text-3xl font-bold mb-4">
+              <Typography variant="h2" className="text-3xl font-bold mb-4 text-[hsl(var(--foreground))]">
                 Join Our Team
               </Typography>
-              <Typography variant="body-lg" className="text-muted-foreground max-w-2xl mx-auto">
+              <Typography variant="body-lg" className="text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto">
                 We're always looking for talented individuals who share our passion for empowering creators. 
                 Join our remote-first team and help us build the future of stock media.
               </Typography>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="text-center">
-                <Briefcase className="h-12 w-12 text-blue-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2">
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
+                <Briefcase className="h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
                   8
                 </Typography>
-                <Typography variant="body-sm" className="text-muted-foreground">
+                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                   Open Positions
                 </Typography>
               </div>
-              <div className="text-center">
-                <Globe className="h-12 w-12 text-purple-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2">
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
+                <Globe className="h-12 w-12 text-purple-600 dark:text-purple-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
                   12
                 </Typography>
-                <Typography variant="body-sm" className="text-muted-foreground">
+                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                   Countries
                 </Typography>
               </div>
-              <div className="text-center">
-                <Heart className="h-12 w-12 text-green-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2">
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
+                <Heart className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
                   4.9/5
                 </Typography>
-                <Typography variant="body-sm" className="text-muted-foreground">
+                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                   Employee Rating
                 </Typography>
               </div>
-              <div className="text-center">
-                <TrendingUp className="h-12 w-12 text-orange-600 mx-auto mb-3" />
-                <Typography variant="h4" className="font-bold mb-2">
+              <div className="text-center bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
+                <TrendingUp className="h-12 w-12 text-orange-600 dark:text-orange-400 mx-auto mb-3" />
+                <Typography variant="h4" className="font-bold mb-2 text-[hsl(var(--foreground))]">
                   100%
-                </Typography>
-                <Typography variant="body-sm" className="text-muted-foreground">
+              </Typography>
+                <Typography variant="body-sm" className="text-[hsl(var(--muted-foreground))]">
                   Remote Work
-                </Typography>
+              </Typography>
               </div>
             </div>
             <div className="text-center">
@@ -863,11 +863,11 @@ export default function AboutPage() {
                 View Open Positions
                 <ExternalLink className="h-4 w-4 ml-2" />
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]">
                 Learn About Our Culture
               </Button>
             </div>
-          </div>
+              </div>
         </section>
 
         {/* Investor Information Section */}
