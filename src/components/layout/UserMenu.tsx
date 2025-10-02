@@ -1,44 +1,39 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { User, LogOut, CreditCard, History, ShoppingCart, Download } from 'lucide-react'
 
 export default function UserMenu() {
-  const [user, setUser] = useState<any>(null)
+  const { data: session, status } = useSession()
 
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const res = await fetch('/api/auth/verify-token')
-        if (res.ok) {
-          const data = await res.json()
-          if (data?.user) setUser(data.user)
-        }
-      } catch (_err) {
-        // Ignore network/auth errors silently for unauthenticated users
-        return
-      }
-    }
-    check()
-  }, [])
-
-  if (!user) {
+  if (status === 'loading') {
     return null
   }
 
+  if (!session?.user) {
+    return null
+  }
+
+  const user = session.user
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="inline-flex items-center">
-          <div className="h-8 w-8 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center mr-2">
-            <User className="h-4 w-4" />
-          </div>
-          <span className="hidden sm:inline">{user.name || 'Account'}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+    <div className="relative">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="inline-flex items-center relative z-[51]">
+            <div className="h-8 w-8 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center mr-2">
+              <User className="h-4 w-4" />
+            </div>
+            <span className="hidden sm:inline">{user.name || 'Account'}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end" 
+          className="z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg min-w-[200px] mt-2"
+          sideOffset={5}
+        >
         <DropdownMenuItem onClick={() => (window.location.href = '/dashboard')}>Dashboard</DropdownMenuItem>
         <DropdownMenuItem onClick={() => (window.location.href = '/dashboard/order-v3')}>
           <ShoppingCart className="h-4 w-4 mr-2" /> Order from URL
@@ -52,11 +47,12 @@ export default function UserMenu() {
         <DropdownMenuItem onClick={() => (window.location.href = '/dashboard/downloads')}>
           <Download className="h-4 w-4 mr-2" /> Downloads
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => fetch('/api/auth/logout', { method: 'POST' }).then(() => (window.location.href = '/login'))}>
+        <DropdownMenuItem onClick={() => signOut({ redirect: false }).then(() => (window.location.href = '/'))}>
           <LogOut className="h-4 w-4 mr-2" /> Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenu>
+    </div>
   )
 }
 
