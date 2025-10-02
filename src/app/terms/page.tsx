@@ -1,3 +1,5 @@
+"use client"
+
 import { Typography } from "@/components/ui"
 
 export default function TermsPage() {

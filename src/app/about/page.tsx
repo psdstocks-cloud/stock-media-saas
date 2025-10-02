@@ -1,3 +1,5 @@
+"use client"
+
 import { Typography } from "@/components/ui"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui"
 import { Button } from "@/components/ui"
