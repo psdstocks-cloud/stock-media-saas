@@ -5,7 +5,7 @@ import TicketsManagementClient from './TicketsManagementClient'
 export default async function AdminTicketsPage() {
   const session = await auth()
 
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+  if (!session || !(session as any).user || ((session as any).user.role !== 'ADMIN' && (session as any).user.role !== 'SUPER_ADMIN')) {
     redirect('/admin/auth/signin')
   }
 

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
     if (accessToken) {
@@ -21,11 +21,11 @@ export async function POST(request: NextRequest) {
         // Audit log
         await prisma.adminAuditLog.create({
           data: {
-            userId: payload.sub,
+            adminId: payload.sub,
             action: 'LOGOUT',
-            details: { success: true },
-            ipAddress: request.ip || 'unknown',
-            userAgent: request.headers.get('user-agent') || 'unknown',
+            resourceType: 'AUTH',
+            newValues: JSON.stringify({ success: true }),
+            reason: 'Admin logout successful',
           },
         })
       } catch (error) {

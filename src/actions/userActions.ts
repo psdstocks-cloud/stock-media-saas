@@ -12,15 +12,15 @@ type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN'
 async function verifySuperAdmin() {
     const session = await auth()
   
-  if (!session?.user) {
+  if (!session || !(session as any).user) {
     redirect('/admin/login')
   }
   
-  if (session.user.role !== 'SUPER_ADMIN') {
+  if ((session as any).user.role !== 'SUPER_ADMIN') {
     throw new Error('Unauthorized: Super admin access required')
   }
   
-  return session.user
+  return (session as any).user
 }
 
 // Update user role
