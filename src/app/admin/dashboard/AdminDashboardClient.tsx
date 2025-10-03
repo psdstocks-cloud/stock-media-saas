@@ -1,26 +1,15 @@
 'use client'
 
 import React from 'react'
-import { signOut } from 'next-auth/react'
 import { Typography } from '@/components/ui/typography'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LogOut, User, Shield } from 'lucide-react'
+import { Shield } from 'lucide-react'
 import KPICards from '@/components/admin/KPICards'
 import RevenueChart from '@/components/admin/RevenueChart'
 import RecentOrdersList from '@/components/admin/RecentOrdersList'
 import RecentUsersList from '@/components/admin/RecentUsersList'
 
-interface Props {
-  user: {
-    id: string
-    email: string
-    name?: string
-    role: string
-  }
-}
-
-export default function AdminDashboardClient({ user }: Props) {
+export default function AdminDashboardClient() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Header */}
@@ -30,26 +19,15 @@ export default function AdminDashboardClient({ user }: Props) {
             Admin Dashboard
           </Typography>
           <Typography variant="body" color="muted" className="mt-2">
-            Welcome back, {user.name || user.email}!
+            Welcome to the admin panel
           </Typography>
         </div>
         
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-            <User className="h-4 w-4" />
-            <span>{user.email}</span>
-            <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 rounded text-xs">
-              {user.role}
-            </span>
+            <Shield className="h-4 w-4" />
+            <span>Admin Panel</span>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="flex items-center space-x-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
-          </Button>
         </div>
       </div>
 
