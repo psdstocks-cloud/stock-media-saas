@@ -5,37 +5,28 @@ const prisma = new PrismaClient()
 
 async function createAdmin() {
   try {
-    // Generate secure password
-    const password = 'Admin123!@#'
-    const hashedPassword = await bcrypt.hash(password, 12)
+    const hashedPassword = await bcrypt.hash('admin123', 10)
     
-    // Create admin user
-    const admin = await prisma.user.create({
-      data: {
-        email: 'admin@stockmediasaas.com',
-        name: 'System Administrator',
+    const admin = await prisma.user.upsert({
+      where: { email: 'admin@test.com' },
+      update: {
         password: hashedPassword,
-        role: 'SUPER_ADMIN',
-        emailVerified: new Date(),
-        onboardingCompleted: true,
-        onboardingCompletedAt: new Date()
+        role: 'ADMIN'
+      },
+      create: {
+        email: 'admin@test.com',
+        name: 'Test Admin',
+        password: hashedPassword,
+        role: 'ADMIN',
+        emailVerified: new Date()
       }
     })
     
-    console.log('✅ Admin user created successfully!')
-    console.log('📧 Email: admin@stockmediasaas.com')
-    console.log('🔑 Password: Admin123!@#')
-    console.log('👤 Role: SUPER_ADMIN')
-    console.log('🆔 User ID:', admin.id)
-    
+    console.log('✅ Admin user created:', admin.email)
+    console.log('📧 Email: admin@test.com')
+    console.log('🔑 Password: admin123')
   } catch (error) {
-    if (error.code === 'P2002') {
-      console.log('⚠️  Admin user already exists!')
-      console.log('📧 Email: admin@stockmediasaas.com')
-      console.log('🔑 Password: Admin123!@#')
-    } else {
-      console.error('❌ Error creating admin user:', error)
-    }
+    console.error('❌ Error creating admin:', error)
   } finally {
     await prisma.$disconnect()
   }

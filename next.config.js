@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
   eslint: {
     // Disable ESLint during builds due to Next.js 15.5.3 compatibility issues
     // Use separate lint script for CI/CD: npm run lint
@@ -142,6 +143,11 @@ const nextConfig = {
         source: '/home',
         destination: '/',
         permanent: true,
+      },
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: false,
       },
     ]
   },
