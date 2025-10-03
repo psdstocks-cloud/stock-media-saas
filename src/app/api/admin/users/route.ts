@@ -1,157 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyJWT } from '@/lib/jwt-auth'
+import { cookies } from 'next/headers'
+import { verifyToken } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
-import { requirePermission } from '@/lib/rbac'
-
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get admin token from cookies
-    const adminToken = request.cookies.get('auth-token')?.value;
-    if (!adminToken) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'Authentication required. Please log in again.' 
-      }, { status: 401 });
+    console.log('👥 Users List API called')
+    
+    // Verify authentication
+    const cookieStore = cookies()
+    const accessToken = cookieStore.get('admin_access_token')?.value
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    // Verify JWT token
-    const user = verifyJWT(adminToken);
-    const guard = await requirePermission(request, user?.id, 'users.view')
-    if (guard) return guard
+    const payload = await verifyToken(accessToken)
+    
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+    })
 
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      )
+    }
+
+    // Parse query parameters
     const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '10')
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
+    const orderBy = searchParams.get('orderBy') || 'desc'
     const search = searchParams.get('search')
-    const role = searchParams.get('role')
-    const status = searchParams.get('status')
-    const sortBy = searchParams.get('sortBy') || 'createdAt'
-    const sortOrder = searchParams.get('sortOrder') || 'desc'
 
-    const skip = (page - 1) * limit
-
-    const where: any = {}
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
+    // Build where clause
+    const where = search ? {
+      OR: [
         { email: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } }
       ]
-    }
-    if (role) {
-      where.role = role
-    }
-    if (status) {
-      if (status === 'active') {
-        where.lastLoginAt = {
-          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        }
-      } else if (status === 'inactive') {
-        where.OR = [
-          { lastLoginAt: null },
-          { lastLoginAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }
-        ]
-      } else if (status === 'locked') {
-        where.lockedUntil = {
-          gt: new Date()
-        }
-      }
-    }
+    } : {}
 
-    // Build orderBy clause
-    const orderBy: any = {}
-    if (sortBy === 'name') {
-      orderBy.name = sortOrder
-    } else if (sortBy === 'email') {
-      orderBy.email = sortOrder
-    } else if (sortBy === 'role') {
-      orderBy.role = sortOrder
-    } else if (sortBy === 'lastLoginAt') {
-      orderBy.lastLoginAt = sortOrder
-    } else {
-      orderBy.createdAt = sortOrder
-    }
+    // Get users with pagination
+    const users = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        emailVerified: true,
+        _count: {
+          select: {
+            orders: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: orderBy === 'desc' ? 'desc' : 'asc'
+      },
+      skip: (page - 1) * limit,
+      take: limit
+    })
 
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-        include: {
-          pointsBalance: true,
-          subscriptions: {
-            include: { plan: true },
-          },
-          _count: {
-            select: { orders: true },
-          },
-        },
-      }),
-      prisma.user.count({ where }),
-    ])
+    // Get total count
+    const totalUsers = await prisma.user.count({ where })
+
+    console.log('👥 Found', users.length, 'users out of', totalUsers, 'total')
 
     return NextResponse.json({
       success: true,
-      users,
+      data: users.map(user => ({
+        ...user,
+        orderCount: user._count.orders
+      })),
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+        total: totalUsers,
+        pages: Math.ceil(totalUsers / limit)
+      }
     })
   } catch (error) {
-    console.error('Error fetching users:', error)
-    return NextResponse.json({ 
-      success: false,
-      error: 'Failed to fetch users' 
-    }, { status: 500 })
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  try {
-    // Get admin token from cookies
-    const adminToken = request.cookies.get('auth-token')?.value;
-    if (!adminToken) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'Authentication required. Please log in again.' 
-      }, { status: 401 });
-    }
-
-    // Verify JWT token
-    const user = verifyJWT(adminToken);
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const { userId, role, isActive } = await request.json()
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-    }
-
-    const updateData: any = {}
-    if (role) updateData.role = role
-    if (typeof isActive === 'boolean') updateData.isActive = isActive
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      include: {
-        pointsBalance: true,
-        subscriptions: {
-          include: { plan: true },
-        },
+    console.error('❌ Users List error:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch users',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       },
-    })
-
-    return NextResponse.json({ user: updatedUser })
-  } catch (error) {
-    console.error('Error updating user:', error)
-    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
+      { status: 500 }
+    )
   }
 }

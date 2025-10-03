@@ -1,132 +1,89 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyJWT } from '@/lib/jwt-auth'
+import { cookies } from 'next/headers'
+import { verifyToken } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
-import { createAuditLog } from '@/lib/audit-log'
-import { requirePermission } from '@/lib/rbac'
-
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get admin token from cookies
-    const adminToken = request.cookies.get('auth-token')?.value;
-    if (!adminToken) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'Authentication required. Please log in again.' 
-      }, { status: 401 });
+    console.log('🛒 Orders List API called')
+    
+    // Verify authentication
+    const cookieStore = cookies()
+    const accessToken = cookieStore.get('admin_access_token')?.value
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    // Verify JWT token
-    const user = verifyJWT(adminToken);
-    if (!user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const guard = await requirePermission(request, user.id, 'orders.view')
-    if (guard) return guard
+    const payload = await verifyToken(accessToken)
+    
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+    })
 
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      )
+    }
+
+    // Parse query parameters
     const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '10')
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
+    const orderBy = searchParams.get('orderBy') || 'desc'
     const status = searchParams.get('status')
-    const userId = searchParams.get('userId')
 
-    const skip = (page - 1) * limit
+    // Build where clause
+    const where = status ? { status } : {}
 
-    const where: any = {}
-    if (status) where.status = status
-    if (userId) where.userId = userId
+    // Get orders with pagination
+    const orders = await prisma.order.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            email: true,
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: orderBy === 'desc' ? 'desc' : 'asc'
+      },
+      skip: (page - 1) * limit,
+      take: limit
+    })
 
-    const [orders, total] = await Promise.all([
-      prisma.order.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: {
-            select: { id: true, name: true, email: true },
-          },
-          stockSite: true,
-        },
-      }),
-      prisma.order.count({ where }),
-    ])
+    // Get total count
+    const totalOrders = await prisma.order.count({ where })
+
+    console.log('🛒 Found', orders.length, 'orders out of', totalOrders, 'total')
 
     return NextResponse.json({
       success: true,
-      orders,
+      data: orders,
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+        total: totalOrders,
+        pages: Math.ceil(totalOrders / limit)
+      }
     })
   } catch (error) {
-    console.error('Error fetching orders:', error)
-    return NextResponse.json({ 
-      success: false,
-      error: 'Failed to fetch orders' 
-    }, { status: 500 })
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  try {
-    // Get admin token from cookies
-    const adminToken = request.cookies.get('auth-token')?.value;
-    if (!adminToken) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'Authentication required. Please log in again.' 
-      }, { status: 401 });
-    }
-
-    // Verify JWT token
-    const user = verifyJWT(adminToken);
-    if (!user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const guard = await requirePermission(request, user.id, 'orders.manage')
-    if (guard) return guard
-
-    const { orderId, status, notes } = await request.json()
-
-    if (!orderId || !status) {
-      return NextResponse.json({ error: 'Order ID and status required' }, { status: 400 })
-    }
-
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: { status },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        stockSite: true,
+    console.error('❌ Orders List error:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch orders',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       },
-    })
-
-    // Audit log
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
-    await createAuditLog({
-      adminId: user.id,
-      action: 'UPDATE',
-      resourceType: 'order',
-      resourceId: orderId,
-      newValues: { status, notes },
-      permission: 'orders.manage',
-      reason: 'Admin updated order status',
-      permissionSnapshot: { permissions: ['orders.manage'] },
-      ipAddress: clientIP,
-      userAgent,
-    })
-
-    return NextResponse.json({ order: updatedOrder })
-  } catch (error) {
-    console.error('Error updating order:', error)
-    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
+      { status: 500 }
+    )
   }
 }
