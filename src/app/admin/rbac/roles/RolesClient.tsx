@@ -34,7 +34,9 @@ export default function RolesClient() {
       if (!listRes.ok) throw new Error('Failed to fetch roles')
       const listData = await listRes.json()
       setRoles(listData.roles || [])
-      const permRes = await fetch('/api/admin/rbac/permissions')
+      const permRes = await fetch('/api/admin/rbac/permissions', {
+        credentials: 'include'
+      })
       if (permRes.ok) {
         const pd = await permRes.json()
         setAllPermissions(pd.permissions || [])
@@ -77,7 +79,10 @@ export default function RolesClient() {
 
   const createRole = async () => {
     const res = await fetch('/api/admin/rbac/roles', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName, description: newDesc })
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      credentials: 'include',
+      body: JSON.stringify({ name: newName, description: newDesc })
     })
     if (res.ok) { setNewName(''); setNewDesc(''); setCreateOpen(false); load() } else { alert('Failed to create role') }
   }
@@ -196,14 +201,24 @@ export default function RolesClient() {
             <Button onClick={async ()=>{
               try {
                 const roles = JSON.parse(importText).roles
-                const res = await fetch('/api/admin/rbac/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ roles, dryRun:true }) })
+                const res = await fetch('/api/admin/rbac/import', { 
+                  method:'POST', 
+                  headers:{'Content-Type':'application/json'}, 
+                  credentials: 'include',
+                  body: JSON.stringify({ roles, dryRun:true }) 
+                })
                 const data = await res.json(); setImportDryRun(data)
               } catch { alert('Invalid JSON') }
             }}>Dry‑run</Button>
             <Button variant="secondary" onClick={async ()=>{
               try {
                 const roles = JSON.parse(importText).roles
-                const res = await fetch('/api/admin/rbac/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ roles, dryRun:false }) })
+                const res = await fetch('/api/admin/rbac/import', { 
+                  method:'POST', 
+                  headers:{'Content-Type':'application/json'}, 
+                  credentials: 'include',
+                  body: JSON.stringify({ roles, dryRun:false }) 
+                })
                 if (!res.ok) alert('Import failed'); else { setImportOpen(false); setImportDryRun(null); setImportText(''); load() }
               } catch { alert('Invalid JSON') }
             }}>Apply</Button>

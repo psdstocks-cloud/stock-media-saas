@@ -25,7 +25,9 @@ export default function AdminSetupPage() {
     setError(null)
     
     try {
-      const response = await fetch('/api/admin/setup-super-admin')
+      const response = await fetch('/api/admin/setup-super-admin', {
+        credentials: 'include'
+      })
       const data = await response.json()
       setAdminStatus(data)
     } catch (err) {
@@ -47,6 +49,7 @@ export default function AdminSetupPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       })
 

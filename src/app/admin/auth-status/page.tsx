@@ -17,7 +17,9 @@ export default function AuthStatusPage() {
     setError(null)
     
     try {
-      const response = await fetch('/api/admin/auth-test')
+      const response = await fetch('/api/admin/auth-test', {
+        credentials: 'include'
+      })
       const data = await response.json()
       
       if (response.ok) {

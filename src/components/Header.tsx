@@ -38,7 +38,10 @@ export function Header() {
     if (isAdminAuthenticated) {
       // Admin logout
       try {
-        await fetch('/api/admin/logout', { method: 'POST' })
+        await fetch('/api/admin/logout', { 
+          method: 'POST',
+          credentials: 'include'
+        })
         router.push('/admin/login')
       } catch (error) {
         console.error('Admin logout error:', error)

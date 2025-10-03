@@ -139,7 +139,9 @@ export default function TicketManagementClient() {
   const fetchTickets = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/tickets')
+      const response = await fetch('/api/admin/tickets', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const data = await response.json()
         setTickets(data.tickets || [])

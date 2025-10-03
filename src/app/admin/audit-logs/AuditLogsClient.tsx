@@ -65,6 +65,7 @@ export default function AuditLogsClient() {
     const res = await fetch('/api/admin/audit-logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ format, filters: { adminId, action, resourceType, startDate, endDate } })
     })
     if (!res.ok) return
