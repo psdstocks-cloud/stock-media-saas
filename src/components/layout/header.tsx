@@ -20,7 +20,7 @@ const Header = React.forwardRef<HTMLElement, HeaderProps>(
     const [isScrolled, setIsScrolled] = React.useState(false)
     const [mobileOpen, setMobileOpen] = React.useState(false)
     const pathname = usePathname?.() || ""
-    const { data: session, status } = useSession()
+    const { data: session } = useSession()
     const isAuthed = !!session?.user
 
     React.useEffect(() => {

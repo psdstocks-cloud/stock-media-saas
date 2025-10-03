@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Search, 
   Filter, 
@@ -15,16 +15,12 @@ import {
   MessageSquare, 
   Clock, 
   User, 
-  Mail, 
   Calendar,
   AlertCircle,
   CheckCircle,
   XCircle,
   MoreHorizontal,
-  Eye,
-  Edit,
-  Archive,
-  Reply
+  Eye
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -85,12 +81,12 @@ const STATUS_COLORS = {
   CLOSED: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
 }
 
-const STATUS_ICONS = {
-  OPEN: AlertCircle,
-  IN_PROGRESS: Clock,
-  RESOLVED: CheckCircle,
-  CLOSED: XCircle
-}
+// const STATUS_ICONS = {
+//   OPEN: AlertCircle,
+//   IN_PROGRESS: Clock,
+//   RESOLVED: CheckCircle,
+//   CLOSED: XCircle
+// }
 
 export default function TicketManagementClient() {
   const [tickets, setTickets] = useState<SupportTicket[]>([])
@@ -101,7 +97,7 @@ export default function TicketManagementClient() {
   const [priorityFilter, setPriorityFilter] = useState('ALL')
   const [departmentFilter, setDepartmentFilter] = useState('ALL')
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null)
-  const [activeTab, setActiveTab] = useState('all')
+  // const [activeTab, setActiveTab] = useState('all')
 
   // Fetch tickets
   useEffect(() => {
@@ -174,26 +170,26 @@ export default function TicketManagementClient() {
     }
   }
 
-  const assignTicket = async (ticketId: string, assignedTo: string) => {
-    try {
-      const response = await fetch(`/api/admin/tickets/${ticketId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ assignedTo }),
-      })
+  // const assignTicket = async (ticketId: string, assignedTo: string) => {
+  //   try {
+  //     const response = await fetch(`/api/admin/tickets/${ticketId}`, {
+  //       method: 'PATCH',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ assignedTo }),
+  //     })
 
-      if (response.ok) {
-        await fetchTickets()
-        if (selectedTicket?.id === ticketId) {
-          setSelectedTicket({ ...selectedTicket, assignedTo })
-        }
-      }
-    } catch (error) {
-      console.error('Error assigning ticket:', error)
-    }
-  }
+  //     if (response.ok) {
+  //       await fetchTickets()
+  //       if (selectedTicket?.id === ticketId) {
+  //         setSelectedTicket({ ...selectedTicket, assignedTo })
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error assigning ticket:', error)
+  //   }
+  // }
 
   const getTicketStats = () => {
     const total = tickets.length
@@ -393,7 +389,7 @@ export default function TicketManagementClient() {
             <CardContent className="p-0">
               <div className="space-y-0">
                 {filteredTickets.map((ticket) => {
-                  const StatusIcon = STATUS_ICONS[ticket.status as keyof typeof STATUS_ICONS]
+                  // const StatusIcon = STATUS_ICONS[ticket.status as keyof typeof STATUS_ICONS]
                   return (
                     <div
                       key={ticket.id}

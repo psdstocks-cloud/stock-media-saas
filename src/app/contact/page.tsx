@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Typography, Card, CardContent, Input, Textarea, Button, Alert, AlertDescription, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label } from "@/components/ui"
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Clock, MapPin as MapPinIcon, MessageCircle, Users, CreditCard, Wrench, Upload, X, File } from "lucide-react"
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Clock, MessageCircle, Users, CreditCard, Wrench, Upload, X, File } from "lucide-react"
 import { z } from 'zod'
 
 const contactSchema = z.object({

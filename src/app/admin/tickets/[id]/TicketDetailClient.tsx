@@ -18,10 +18,10 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  MoreHorizontal,
+  // MoreHorizontal,
   Send,
-  Edit,
-  Trash2,
+  // Edit,
+  // Trash2,
   Paperclip,
   Download,
   RefreshCw

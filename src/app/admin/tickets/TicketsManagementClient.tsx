@@ -14,16 +14,16 @@ import {
   Filter, 
   RefreshCw, 
   Eye, 
-  Edit, 
-  Trash2,
+  // Edit, 
+  // Trash2,
   Clock,
   User,
   Mail,
   Calendar,
   AlertCircle,
   CheckCircle,
-  XCircle,
-  MoreHorizontal
+  XCircle
+  // MoreHorizontal
 } from 'lucide-react'
 import Link from 'next/link'
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -18,15 +18,15 @@ import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, 
 import useUserStore from '@/stores/userStore'
 import EmptyState from '@/components/dashboard/EmptyState'
 
-interface DashboardUser {
-  id: string
-  email: string
-  name: string
-  role: string
-}
+// interface DashboardUser {
+//   id: string
+//   email: string
+//   name: string
+//   role: string
+// }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
   

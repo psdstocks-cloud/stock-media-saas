@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-interface User {
+interface UserData {
   id: string
   email: string
   name: string | null
@@ -41,7 +41,7 @@ interface RoleConfig {
 }
 
 export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<UserData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
