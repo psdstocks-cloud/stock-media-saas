@@ -32,12 +32,14 @@ interface UserData {
   id: string
   email: string
   name: string | null
-  currentPoints: number
-  totalUsed: number
   role: string
   emailVerified: boolean
   createdAt: string
   lastLoginAt: string | null
+  pointsBalance?: {
+    currentPoints: number
+    totalUsed: number
+  } | null
 }
 
 export default function UserManagementClient() {
@@ -137,13 +139,15 @@ export default function UserManagementClient() {
       header: 'Points',
       cell: ({ row }) => {
         const user = row.original
+        const currentPoints = user.pointsBalance?.currentPoints ?? 0
+        const totalUsed = user.pointsBalance?.totalUsed ?? 0
         return (
           <div>
             <Typography variant="body" className="font-medium">
-              {user.currentPoints.toLocaleString()} pts
+              {currentPoints.toLocaleString()} pts
             </Typography>
             <Typography variant="caption" color="muted">
-              Used: {user.totalUsed.toLocaleString()}
+              Used: {totalUsed.toLocaleString()}
             </Typography>
           </div>
         )

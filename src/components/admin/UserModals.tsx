@@ -32,11 +32,13 @@ interface UserData {
   email: string
   name: string | null
   role: string
-  currentPoints: number
-  totalUsed: number
   emailVerified: boolean
   createdAt: string
   lastLoginAt: string | null
+  pointsBalance?: {
+    currentPoints: number
+    totalUsed: number
+  } | null
 }
 
 interface CreateUserModalProps {
@@ -229,7 +231,7 @@ export function EditUserModal({ isOpen, onClose, user, onSuccess }: EditUserModa
         email: user.email,
         name: user.name || '',
         role: user.role,
-        points: user.currentPoints,
+        points: user.pointsBalance?.currentPoints ?? 0,
         isActive: true // Assuming active if editable
       })
     }
@@ -514,13 +516,13 @@ export function ViewUserModal({ isOpen, onClose, user }: ViewUserModalProps) {
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Current Points</Label>
                   <Typography variant="body" className="font-medium">
-                    {user.currentPoints.toLocaleString()} pts
+                    {(user.pointsBalance?.currentPoints ?? 0).toLocaleString()} pts
                   </Typography>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Total Used</Label>
                   <Typography variant="body" className="font-medium">
-                    {user.totalUsed.toLocaleString()} pts
+                    {(user.pointsBalance?.totalUsed ?? 0).toLocaleString()} pts
                   </Typography>
                 </div>
               </div>
