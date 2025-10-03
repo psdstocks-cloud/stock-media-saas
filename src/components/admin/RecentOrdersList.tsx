@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,8 +15,10 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  XCircle
+  XCircle,
+  AlertTriangle
 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 
 interface Order {
   id: string
@@ -36,58 +38,155 @@ interface RecentOrdersListProps {
   limit?: number
 }
 
+interface StatusConfig {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  className: string
+}
+
 export function RecentOrdersList({ className, limit = 5 }: RecentOrdersListProps) {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
-  const fetchRecentOrders = async () => {
+  const fetchRecentOrders = useCallback(async (isRetry = false) => {
+    if (isRetry) {
+      setRetryCount(prev => prev + 1)
+    }
+    
     setIsLoading(true)
-    setError('')
+    setError(null)
+    
     try {
       const response = await fetch(`/api/admin/orders?limit=${limit}&sort=createdAt&order=desc`, {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
       })
-      if (response.ok) {
-        const result = await response.json()
-        setOrders(result.orders || [])
-      } else {
-        setError('Failed to fetch recent orders')
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.')
+        } else if (response.status === 403) {
+          throw new Error('Insufficient permissions to view orders.')
+        } else if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.')
+        } else {
+          throw new Error(`Failed to fetch recent orders (${response.status})`)
+        }
       }
-    } catch (error) {
-      setError('An error occurred while fetching recent orders')
+
+      const result = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch recent orders')
+      }
+
+      setOrders(result.orders || [])
+      setError(null)
+      
+      if (isRetry) {
+        toast.success('Recent orders refreshed successfully!')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setError(errorMessage)
+      console.error('Error fetching recent orders:', err)
+      
+      if (!isRetry) {
+        toast.error(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [limit])
 
   useEffect(() => {
     fetchRecentOrders()
-  }, [limit])
+  }, [fetchRecentOrders])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     })
-  }
+  }, [])
 
-  const getStatusBadge = (status: string) => {
+  const formatPoints = useCallback((points: number): string => {
+    return points.toLocaleString() + ' pts'
+  }, [])
+
+  const getStatusConfig = useCallback((status: string): StatusConfig => {
     switch (status) {
       case 'COMPLETED':
-        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>
+        return {
+          label: 'Completed',
+          icon: CheckCircle,
+          className: 'bg-green-500 text-white'
+        }
       case 'PROCESSING':
-        return <Badge className="bg-yellow-500"><Clock className="h-3 w-3 mr-1" />Processing</Badge>
+        return {
+          label: 'Processing',
+          icon: Clock,
+          className: 'bg-yellow-500 text-white'
+        }
       case 'PENDING':
-        return <Badge className="bg-blue-500"><Clock className="h-3 w-3 mr-1" />Pending</Badge>
+        return {
+          label: 'Pending',
+          icon: Clock,
+          className: 'bg-blue-500 text-white'
+        }
       case 'FAILED':
-        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Failed</Badge>
+        return {
+          label: 'Failed',
+          icon: XCircle,
+          className: 'bg-red-500 text-white'
+        }
+      case 'CANCELLED':
+        return {
+          label: 'Cancelled',
+          icon: XCircle,
+          className: 'bg-gray-500 text-white'
+        }
       default:
-        return <Badge variant="outline"><AlertCircle className="h-3 w-3 mr-1" />{status}</Badge>
+        return {
+          label: status,
+          icon: AlertCircle,
+          className: 'bg-gray-500 text-white'
+        }
     }
-  }
+  }, [])
+
+  const getStatusBadge = useCallback((status: string) => {
+    const config = getStatusConfig(status)
+    const Icon = config.icon
+    
+    return (
+      <Badge className={config.className}>
+        <Icon className="h-3 w-3 mr-1" />
+        {config.label}
+      </Badge>
+    )
+  }, [getStatusConfig])
+
+  const handleRetry = useCallback(() => {
+    fetchRecentOrders(true)
+  }, [fetchRecentOrders])
+
+  const orderItems = useMemo(() => {
+    return orders.map((order) => ({
+      ...order,
+      formattedDate: formatDate(order.createdAt),
+      formattedPoints: formatPoints(order.cost),
+      statusConfig: getStatusConfig(order.status)
+    }))
+  }, [orders, formatDate, formatPoints, getStatusConfig])
 
   if (error) {
     return (
@@ -98,21 +197,26 @@ export function RecentOrdersList({ className, limit = 5 }: RecentOrdersListProps
             Recent Orders
           </CardTitle>
           <CardDescription>
-            Latest orders from the platform
+            Latest {limit} orders from the platform
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRetry}
+                disabled={isLoading}
+                className="ml-4"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Retry {retryCount > 0 && `(${retryCount})`}
+              </Button>
+            </AlertDescription>
           </Alert>
-          <Button 
-            variant="outline" 
-            onClick={fetchRecentOrders}
-            className="mt-4"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
         </CardContent>
       </Card>
     )
@@ -135,7 +239,7 @@ export function RecentOrdersList({ className, limit = 5 }: RecentOrdersListProps
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchRecentOrders}
+              onClick={handleRetry}
               disabled={isLoading}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -175,8 +279,11 @@ export function RecentOrdersList({ className, limit = 5 }: RecentOrdersListProps
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            {orderItems.map((order) => (
+              <div 
+                key={order.id} 
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
                 <div className="flex items-center space-x-4 flex-1">
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -193,10 +300,10 @@ export function RecentOrdersList({ className, limit = 5 }: RecentOrdersListProps
                       </Typography>
                     </div>
                     <Typography variant="caption" color="muted" className="block">
-                      {order.userName || order.userEmail} • {order.cost} pts
+                      {order.userName || order.userEmail} • {order.formattedPoints}
                     </Typography>
                     <Typography variant="caption" color="muted">
-                      {formatDate(order.createdAt)}
+                      {order.formattedDate}
                     </Typography>
                   </div>
                 </div>

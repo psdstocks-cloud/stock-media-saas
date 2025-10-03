@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,17 +13,18 @@ import {
   RefreshCw, 
   ExternalLink,
   User,
+  Mail,
+  Calendar,
   Shield,
-  Mail
+  AlertTriangle
 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 
-interface UserData {
+interface User {
   id: string
   email: string
   name: string | null
   role: string
-  currentPoints: number
-  totalUsed: number
   emailVerified: boolean
   createdAt: string
   lastLoginAt: string | null
@@ -34,63 +35,141 @@ interface RecentUsersListProps {
   limit?: number
 }
 
-export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) {
-  const [users, setUsers] = useState<UserData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+interface RoleConfig {
+  label: string
+  className: string
+}
 
-  const fetchRecentUsers = async () => {
+export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) {
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+
+  const fetchRecentUsers = useCallback(async (isRetry = false) => {
+    if (isRetry) {
+      setRetryCount(prev => prev + 1)
+    }
+    
     setIsLoading(true)
-    setError('')
+    setError(null)
+    
     try {
-      const response = await fetch(`/api/admin/users?limit=${limit}&sort=createdAt&order=desc`)
-      if (response.ok) {
-        const result = await response.json()
-        setUsers(result.users || [])
-      } else {
-        setError('Failed to fetch recent users')
+      const response = await fetch(`/api/admin/users?limit=${limit}&sort=createdAt&order=desc`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.')
+        } else if (response.status === 403) {
+          throw new Error('Insufficient permissions to view users.')
+        } else if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.')
+        } else {
+          throw new Error(`Failed to fetch recent users (${response.status})`)
+        }
       }
-    } catch (error) {
-      setError('An error occurred while fetching recent users')
+
+      const result = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch recent users')
+      }
+
+      setUsers(result.users || [])
+      setError(null)
+      
+      if (isRetry) {
+        toast.success('Recent users refreshed successfully!')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setError(errorMessage)
+      console.error('Error fetching recent users:', err)
+      
+      if (!isRetry) {
+        toast.error(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [limit])
 
   useEffect(() => {
     fetchRecentUsers()
-  }, [limit])
+  }, [fetchRecentUsers])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     })
-  }
+  }, [])
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'admin':
-      case 'ADMIN':
-        return <Badge variant="destructive" className="bg-red-500"><Shield className="h-3 w-3 mr-1" />Admin</Badge>
+  const formatLastLogin = useCallback((dateString: string | null): string => {
+    if (!dateString) return 'Never'
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    })
+  }, [])
+
+  const getRoleConfig = useCallback((role: string): RoleConfig => {
+    switch (role.toUpperCase()) {
       case 'SUPER_ADMIN':
-        return <Badge variant="destructive" className="bg-purple-500"><Shield className="h-3 w-3 mr-1" />Super Admin</Badge>
-      case 'user':
+        return {
+          label: 'Super Admin',
+          className: 'bg-red-500 text-white'
+        }
+      case 'ADMIN':
+        return {
+          label: 'Admin',
+          className: 'bg-purple-500 text-white'
+        }
       case 'USER':
-        return <Badge variant="secondary"><User className="h-3 w-3 mr-1" />User</Badge>
+        return {
+          label: 'User',
+          className: 'bg-blue-500 text-white'
+        }
       default:
-        return <Badge variant="outline">{role}</Badge>
+        return {
+          label: role,
+          className: 'bg-gray-500 text-white'
+        }
     }
-  }
+  }, [])
 
-  const getInitials = (name: string | null, email: string) => {
-    if (name) {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    }
-    return email.slice(0, 2).toUpperCase()
-  }
+  const getRoleBadge = useCallback((role: string) => {
+    const config = getRoleConfig(role)
+    
+    return (
+      <Badge className={config.className}>
+        <Shield className="h-3 w-3 mr-1" />
+        {config.label}
+      </Badge>
+    )
+  }, [getRoleConfig])
+
+  const handleRetry = useCallback(() => {
+    fetchRecentUsers(true)
+  }, [fetchRecentUsers])
+
+  const userItems = useMemo(() => {
+    return users.map((user) => ({
+      ...user,
+      formattedCreatedAt: formatDate(user.createdAt),
+      formattedLastLogin: formatLastLogin(user.lastLoginAt),
+      roleConfig: getRoleConfig(user.role)
+    }))
+  }, [users, formatDate, formatLastLogin, getRoleConfig])
 
   if (error) {
     return (
@@ -98,24 +177,29 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
         <CardHeader>
           <CardTitle className="flex items-center">
             <Users className="h-5 w-5 mr-2" />
-            New Users
+            Recent Users
           </CardTitle>
           <CardDescription>
-            Recently registered users
+            Latest {limit} registered users
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRetry}
+                disabled={isLoading}
+                className="ml-4"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Retry {retryCount > 0 && `(${retryCount})`}
+              </Button>
+            </AlertDescription>
           </Alert>
-          <Button 
-            variant="outline" 
-            onClick={fetchRecentUsers}
-            className="mt-4"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
         </CardContent>
       </Card>
     )
@@ -128,7 +212,7 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
           <div>
             <CardTitle className="flex items-center">
               <Users className="h-5 w-5 mr-2" />
-              New Users
+              Recent Users
             </CardTitle>
             <CardDescription>
               Latest {limit} registered users
@@ -138,7 +222,7 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchRecentUsers}
+              onClick={handleRetry}
               disabled={isLoading}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -162,7 +246,7 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
                 </div>
-                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-6 w-20" />
               </div>
             ))}
           </div>
@@ -173,30 +257,31 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
               No Recent Users
             </Typography>
             <Typography variant="body" color="muted">
-              New user registrations will appear here
+              Users will appear here once they register
             </Typography>
           </div>
         ) : (
           <div className="space-y-4">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            {userItems.map((user) => (
+              <div 
+                key={user.id} 
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
                 <div className="flex items-center space-x-4 flex-1">
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Typography variant="caption" className="font-medium text-primary">
-                        {getInitials(user.name, user.email)}
-                      </Typography>
+                      <User className="h-5 w-5 text-primary" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
                       <Typography variant="body" className="font-medium truncate">
-                        {user.name || 'No name'}
+                        {user.name || 'Unnamed User'}
                       </Typography>
-                      {!user.emailVerified && (
-                        <Badge variant="outline" className="text-xs">
+                      {user.emailVerified && (
+                        <Badge variant="outline" className="text-green-600 border-green-600">
                           <Mail className="h-3 w-3 mr-1" />
-                          Unverified
+                          Verified
                         </Badge>
                       )}
                     </div>
@@ -204,13 +289,18 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
                       {user.email}
                     </Typography>
                     <div className="flex items-center space-x-2 mt-1">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
                       <Typography variant="caption" color="muted">
-                        {user.currentPoints.toLocaleString()} pts
+                        Joined {user.formattedCreatedAt}
                       </Typography>
-                      <Typography variant="caption" color="muted">•</Typography>
-                      <Typography variant="caption" color="muted">
-                        {formatDate(user.createdAt)}
-                      </Typography>
+                      {user.lastLoginAt && (
+                        <>
+                          <span className="text-muted-foreground">•</span>
+                          <Typography variant="caption" color="muted">
+                            Last login {user.formattedLastLogin}
+                          </Typography>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

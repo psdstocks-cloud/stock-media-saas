@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Typography } from '@/components/ui/typography'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { 
   LineChart, 
   Line, 
@@ -20,9 +21,12 @@ import {
   TrendingUp, 
   TrendingDown, 
   DollarSign,
-  RefreshCw
+  RefreshCw,
+  AlertCircle,
+  BarChart3,
+  LineChart as LineChartIcon
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { toast } from 'react-hot-toast'
 
 interface RevenueData {
   date: string
@@ -34,69 +38,111 @@ interface RevenueChartProps {
   className?: string
 }
 
+interface ChartTooltipProps {
+  active?: boolean
+  payload?: any[]
+  label?: string
+}
+
 export function RevenueChart({ className }: RevenueChartProps) {
   const [data, setData] = useState<RevenueData[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [chartType, setChartType] = useState<'line' | 'bar'>('line')
+  const [retryCount, setRetryCount] = useState(0)
 
-  const fetchRevenueData = async () => {
+  const fetchRevenueData = useCallback(async (isRetry = false) => {
+    if (isRetry) {
+      setRetryCount(prev => prev + 1)
+    }
+    
     setIsLoading(true)
-    setError('')
+    setError(null)
+    
     try {
       const response = await fetch('/api/admin/analytics/revenue-chart', {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
       })
-      if (response.ok) {
-        const result = await response.json()
-        setData(result.data || [])
-      } else {
-        setError('Failed to fetch revenue data')
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.')
+        } else if (response.status === 403) {
+          throw new Error('Insufficient permissions to view revenue data.')
+        } else if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.')
+        } else {
+          throw new Error(`Failed to fetch revenue data (${response.status})`)
+        }
       }
-    } catch (error) {
-      setError('An error occurred while fetching revenue data')
+
+      const result = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch revenue data')
+      }
+
+      setData(result.data || [])
+      setError(null)
+      
+      if (isRetry) {
+        toast.success('Revenue data refreshed successfully!')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setError(errorMessage)
+      console.error('Error fetching revenue data:', err)
+      
+      if (!isRetry) {
+        toast.error(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchRevenueData()
-  }, [])
+  }, [fetchRevenueData])
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = useCallback((value: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value)
-  }
+  }, [])
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
     })
-  }
+  }, [])
 
-  const calculateTotalRevenue = () => {
+  const calculateTotalRevenue = useCallback((): number => {
     return data.reduce((sum, item) => sum + item.revenue, 0)
-  }
+  }, [data])
 
-  const calculateGrowth = () => {
+  const calculateGrowth = useCallback((): number => {
     if (data.length < 2) return 0
     const firstWeek = data.slice(0, 7).reduce((sum, item) => sum + item.revenue, 0)
     const lastWeek = data.slice(-7).reduce((sum, item) => sum + item.revenue, 0)
     return firstWeek > 0 ? ((lastWeek - firstWeek) / firstWeek) * 100 : 0
-  }
+  }, [data])
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = useCallback(({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
           <Typography variant="body" className="font-medium mb-2">
-            {formatDate(label)}
+            {formatDate(label || '')}
           </Typography>
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
@@ -116,7 +162,22 @@ export function RevenueChart({ className }: RevenueChartProps) {
       )
     }
     return null
-  }
+  }, [formatCurrency, formatDate])
+
+  const chartData = useMemo(() => {
+    return data.map(item => ({
+      ...item,
+      formattedDate: formatDate(item.date)
+    }))
+  }, [data, formatDate])
+
+  const handleRetry = useCallback(() => {
+    fetchRevenueData(true)
+  }, [fetchRevenueData])
+
+  const handleChartTypeChange = useCallback((type: 'line' | 'bar') => {
+    setChartType(type)
+  }, [])
 
   if (error) {
     return (
@@ -132,16 +193,21 @@ export function RevenueChart({ className }: RevenueChartProps) {
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRetry}
+                disabled={isLoading}
+                className="ml-4"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Retry {retryCount > 0 && `(${retryCount})`}
+              </Button>
+            </AlertDescription>
           </Alert>
-          <Button 
-            variant="outline" 
-            onClick={fetchRevenueData}
-            className="mt-4"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
         </CardContent>
       </Card>
     )
@@ -164,21 +230,23 @@ export function RevenueChart({ className }: RevenueChartProps) {
             <Button
               variant={chartType === 'line' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setChartType('line')}
+              onClick={() => handleChartTypeChange('line')}
             >
+              <LineChartIcon className="h-4 w-4 mr-1" />
               Line
             </Button>
             <Button
               variant={chartType === 'bar' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setChartType('bar')}
+              onClick={() => handleChartTypeChange('bar')}
             >
+              <BarChart3 className="h-4 w-4 mr-1" />
               Bar
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchRevenueData}
+              onClick={handleRetry}
               disabled={isLoading}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -253,11 +321,10 @@ export function RevenueChart({ className }: RevenueChartProps) {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               {chartType === 'line' ? (
-                <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis 
-                    dataKey="date" 
-                    tickFormatter={formatDate}
+                    dataKey="formattedDate" 
                     className="text-xs"
                   />
                   <YAxis 
@@ -275,11 +342,10 @@ export function RevenueChart({ className }: RevenueChartProps) {
                   />
                 </LineChart>
               ) : (
-                <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis 
-                    dataKey="date" 
-                    tickFormatter={formatDate}
+                    dataKey="formattedDate" 
                     className="text-xs"
                   />
                   <YAxis 
