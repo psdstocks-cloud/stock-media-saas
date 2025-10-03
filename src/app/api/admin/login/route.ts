@@ -74,16 +74,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { 
-        lastLoginAt: new Date(),
-        loginAttempts: 0,
-        lockedUntil: null
-      },
-    });
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { 
+          lastLoginAt: new Date(),
+          loginAttempts: 0,
+          lockedUntil: null
+        },
+      });
+      console.log('✅ User login data updated');
+    } catch (dbError) {
+      console.error('❌ Database update failed:', dbError);
+      // Continue with login even if update fails
+    }
 
     // Create JWT token for admin session
+    const jwtSecret = process.env.NEXTAUTH_SECRET;
+    if (!jwtSecret) {
+      console.error('❌ NEXTAUTH_SECRET is not set');
+      return NextResponse.json(
+        { 
+          success: false,
+          message: 'Server configuration error',
+          error: 'JWT_SECRET_MISSING'
+        },
+        { status: 500 }
+      );
+    }
+
     const token = jwt.sign(
       { 
         id: user.id, 
@@ -91,42 +110,73 @@ export async function POST(request: NextRequest) {
         role: user.role,
         name: user.name 
       },
-      process.env.NEXTAUTH_SECRET!,
+      jwtSecret,
       { expiresIn: '24h' }
     );
 
     console.log('🎫 JWT token created for user:', user.email);
 
     // Set HTTP-only cookie with the token
-    const response = NextResponse.json({ 
-      success: true, 
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      }
-    });
+    try {
+      const response = NextResponse.json({ 
+        success: true, 
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      });
 
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60, // 24 hours
-      path: '/'
-    });
+      response.cookies.set('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60, // 24 hours
+        path: '/'
+      });
 
-    console.log('✅ Admin login successful, cookie set');
-    return response;
+      console.log('✅ Admin login successful, cookie set');
+      return response;
+    } catch (cookieError) {
+      console.error('❌ Cookie setting failed:', cookieError);
+      // Return success response even if cookie fails
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Login successful (cookie setting failed)',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      });
+    }
 
   } catch (error) {
     console.error('Admin login error:', error);
+    
+    // Provide more specific error information
+    let errorMessage = 'Internal server error';
+    let errorType = 'INTERNAL_ERROR';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      if (error.message.includes('JWT')) {
+        errorType = 'JWT_ERROR';
+      } else if (error.message.includes('database') || error.message.includes('prisma')) {
+        errorType = 'DATABASE_ERROR';
+      } else if (error.message.includes('bcrypt')) {
+        errorType = 'PASSWORD_ERROR';
+      }
+    }
+    
     return NextResponse.json(
       { 
         success: false,
-        message: 'Internal server error',
-        error: 'INTERNAL_ERROR'
+        message: errorMessage,
+        error: errorType
       },
       { status: 500 }
     );
