@@ -23,19 +23,34 @@ export default function SimpleAdminLoginPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/admin/auth-test', {
-          credentials: 'include'
-        })
+        // Check if we have an auth-token cookie
+        const hasAuthToken = document.cookie.includes('auth-token=')
         
-        if (response.ok) {
-          const data = await response.json()
-          if (data.authenticated && data.user && (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN')) {
-            console.log('✅ User already authenticated, redirecting...')
-            window.location.href = '/admin/dashboard'
+        if (hasAuthToken) {
+          console.log('✅ Auth token found, redirecting to dashboard...')
+          
+          // Method 1: window.location.replace (most reliable)
+          try {
+            window.location.replace('/admin/dashboard')
+            console.log('✅ Initial redirect: window.location.replace executed')
+          } catch (e) {
+            console.log('❌ Initial redirect failed:', e)
           }
+          
+          // Method 2: window.location.href (fallback)
+          setTimeout(() => {
+            try {
+              window.location.href = '/admin/dashboard'
+              console.log('✅ Initial redirect: window.location.href executed')
+            } catch (e) {
+              console.log('❌ Initial redirect fallback failed:', e)
+            }
+          }, 50)
+        } else {
+          console.log('🔍 No auth token found, showing login form')
         }
       } catch (error) {
-        console.log('🔍 Auth check failed (user not authenticated):', error)
+        console.log('🔍 Auth check failed:', error)
       }
     }
 
@@ -67,19 +82,36 @@ export default function SimpleAdminLoginPage() {
           console.log('✅ Login successful, redirecting to dashboard...')
           console.log('🔍 User data:', data.user)
           
-          // Redirect to admin dashboard
+          // Redirect to admin dashboard with multiple methods
+          console.log('🔄 Attempting redirect to /admin/dashboard...')
+          
+          // Method 1: window.location.replace (most reliable)
           try {
-            console.log('🔄 Attempting redirect to /admin/dashboard...')
-            window.location.href = '/admin/dashboard'
-            console.log('✅ Redirect command executed')
-          } catch (error) {
-            console.log('❌ Redirect failed, trying alternative method:', error)
-            // Fallback redirect
-            setTimeout(() => {
-              console.log('🔄 Trying fallback redirect...')
-              window.location.replace('/admin/dashboard')
-            }, 100)
+            window.location.replace('/admin/dashboard')
+            console.log('✅ Method 1: window.location.replace executed')
+          } catch (e) {
+            console.log('❌ Method 1 failed:', e)
           }
+          
+          // Method 2: window.location.href (fallback)
+          setTimeout(() => {
+            try {
+              window.location.href = '/admin/dashboard'
+              console.log('✅ Method 2: window.location.href executed')
+            } catch (e) {
+              console.log('❌ Method 2 failed:', e)
+            }
+          }, 50)
+          
+          // Method 3: router.push (last resort)
+          setTimeout(() => {
+            try {
+              router.push('/admin/dashboard')
+              console.log('✅ Method 3: router.push executed')
+            } catch (e) {
+              console.log('❌ Method 3 failed:', e)
+            }
+          }, 100)
         } else {
           console.log('❌ User does not have admin role:', data.user.role)
           setError('Access denied. Admin privileges required.')

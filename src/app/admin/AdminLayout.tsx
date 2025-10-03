@@ -18,15 +18,12 @@ export default function AdminLayout({
   const { user, authenticated, loading, error, logout, refresh } = useAdminAuth()
   const router = useRouter()
 
-  // Redirect to login if not authenticated (but only after we've actually tried to authenticate)
+  // Redirect to login if not authenticated
   useEffect(() => {
-    if (!loading && !authenticated && !error) {
-      // Only redirect if we're not on the login page already
-      if (window.location.pathname !== '/admin/login') {
-        router.push('/admin/login')
-      }
+    if (!loading && !authenticated) {
+      router.push('/admin/login')
     }
-  }, [authenticated, loading, error, router])
+  }, [authenticated, loading, router])
 
   const handleLogout = async () => {
     await logout()
