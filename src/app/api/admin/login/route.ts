@@ -7,13 +7,20 @@ import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    console.log('🔍 Admin login attempt - raw body:', body);
+    
+    const { email, password } = body;
     console.log('🔍 Admin login attempt:', { email, password: '***' });
 
     if (!email || !password) {
-      console.log('❌ Missing credentials');
+      console.log('❌ Missing credentials:', { email: !!email, password: !!password });
       return NextResponse.json(
-        { message: 'Email and password are required' },
+        { 
+          success: false,
+          message: 'Email and password are required',
+          error: 'MISSING_CREDENTIALS'
+        },
         { status: 400 }
       );
     }
@@ -28,7 +35,11 @@ export async function POST(request: NextRequest) {
     if (!user || !user.password) {
       console.log('❌ User not found or no password');
       return NextResponse.json(
-        { message: 'Invalid email or password' },
+        { 
+          success: false,
+          message: 'Invalid email or password',
+          error: 'INVALID_CREDENTIALS'
+        },
         { status: 401 }
       );
     }
@@ -37,7 +48,11 @@ export async function POST(request: NextRequest) {
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       console.log('❌ User is not admin:', user.role);
       return NextResponse.json(
-        { message: 'Access denied. Admin privileges required.' },
+        { 
+          success: false,
+          message: 'Access denied. Admin privileges required.',
+          error: 'ACCESS_DENIED'
+        },
         { status: 403 }
       );
     }
@@ -49,7 +64,11 @@ export async function POST(request: NextRequest) {
     if (!isValid) {
       console.log('❌ Invalid password');
       return NextResponse.json(
-        { message: 'Invalid email or password' },
+        { 
+          success: false,
+          message: 'Invalid email or password',
+          error: 'INVALID_CREDENTIALS'
+        },
         { status: 401 }
       );
     }
@@ -104,7 +123,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Admin login error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { 
+        success: false,
+        message: 'Internal server error',
+        error: 'INTERNAL_ERROR'
+      },
       { status: 500 }
     );
   }

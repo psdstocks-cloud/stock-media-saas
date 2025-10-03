@@ -1,63 +1,53 @@
-import { prisma } from '../src/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+
+const prisma = new PrismaClient()
 
 async function testAdminLogin() {
   try {
-    console.log('Testing admin login...')
+    console.log('🔍 Testing admin login process...')
     
-    // Find the admin user
+    const email = 'admin@stockmediapro.com'
+    const password = 'admin123'
+    
+    // Find user
     const user = await prisma.user.findUnique({
-      where: { email: 'admin@stockmedia.com' },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        password: true
-      }
+      where: { email: email.toLowerCase() }
     })
-
-    if (!user) {
-      console.log('❌ Admin user not found')
-      return
-    }
-
-    console.log('✅ Admin user found:', {
+    
+    console.log('👤 User found:', user ? {
       id: user.id,
       email: user.email,
-      name: user.name,
       role: user.role,
-      hasPassword: !!user.password
-    })
-
-    // Test password
-    const testPassword = 'AdminSecure2024!'
-    const isValidPassword = user.password ? await bcrypt.compare(testPassword, user.password) : false
-
-    console.log('Password test:', {
-      testPassword,
-      isValidPassword
-    })
-
-    if (isValidPassword) {
-      console.log('✅ Password is correct')
-    } else {
-      console.log('❌ Password is incorrect')
-      
-      // Try to update the password
-      console.log('Updating password...')
-      const hashedPassword = await bcrypt.hash(testPassword, 12)
-      
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { password: hashedPassword }
-      })
-      
-      console.log('✅ Password updated successfully')
+      hasPassword: !!user.password,
+      emailVerified: user.emailVerified
+    } : 'Not found')
+    
+    if (!user || !user.password) {
+      console.log('❌ User not found or no password')
+      return
     }
-
+    
+    // Check role
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      console.log('❌ User is not admin:', user.role)
+      return
+    }
+    
+    console.log('✅ User has admin role:', user.role)
+    
+    // Test password
+    const isValid = await bcrypt.compare(password, user.password)
+    console.log('🔐 Password valid:', isValid)
+    
+    if (isValid) {
+      console.log('✅ Login would succeed!')
+    } else {
+      console.log('❌ Password verification failed')
+    }
+    
   } catch (error) {
-    console.error('Error testing admin login:', error)
+    console.error('❌ Error:', error)
   } finally {
     await prisma.$disconnect()
   }
