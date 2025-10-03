@@ -29,6 +29,15 @@ export default function SimpleAdminLoginPage() {
       try {
         setHasCheckedAuth(true)
         
+        // Check if we're coming from a redirect (avoid immediate re-check)
+        const isRedirect = document.referrer.includes('/admin/dashboard') || 
+                          window.location.search.includes('redirected=true')
+        
+        if (isRedirect) {
+          console.log('🔍 Detected redirect, skipping auth check to prevent loop')
+          return
+        }
+        
         // Check if we have an auth-token cookie
         let hasAuthToken = false
         try {

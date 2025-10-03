@@ -88,8 +88,30 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      // For now, let's trust the global session and skip the API call
-      // This prevents the authentication loop
+      // Check if we have an admin JWT token first
+      try {
+        const response = await fetch('/api/admin/auth-test', {
+          credentials: 'include'
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            setState({
+              user: data.user,
+              loading: false,
+              error: null,
+              authenticated: true,
+              isAdmin: true
+            })
+            return
+          }
+        }
+      } catch (apiError) {
+        console.log('🔍 JWT auth check failed, falling back to global session')
+      }
+
+      // Fallback to global session if JWT auth fails
       setState({
         user: {
           id: (session.user as any).id || 'unknown',
