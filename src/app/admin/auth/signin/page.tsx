@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Shield, Mail, Lock, ArrowLeft } from 'lucide-react'
+import { Shield, Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminSignIn() {
@@ -15,7 +15,22 @@ export default function AdminSignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
+  
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Check if already authenticated
+  useEffect(() => {
+    if (status === 'loading') return
+
+    if (session?.user && (session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN')) {
+      router.replace('/admin/dashboard')
+      return
+    }
+
+    setIsCheckingSession(false)
+  }, [session, status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,17 +45,39 @@ export default function AdminSignIn() {
       })
 
       if (result?.error) {
-        setError('Invalid credentials or insufficient privileges')
+        setError('Invalid credentials or insufficient admin privileges')
         return
       }
 
-      // Redirect to admin dashboard
-      router.push('/admin/dashboard')
+      if (result?.ok) {
+        // Wait a moment for session to be established
+        setTimeout(() => {
+          router.push('/admin/dashboard')
+        }, 100)
+      }
     } catch (error) {
+      console.error('Sign in error:', error)
       setError('An error occurred during login')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading while checking session
+  if (isCheckingSession || status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <Card className="backdrop-blur-sm bg-white/10 border-white/20 shadow-2xl">
+          <CardContent className="flex items-center space-x-4 p-8">
+            <Loader2 className="h-8 w-8 text-orange-400 animate-spin" />
+            <div>
+              <h4 className="text-white font-semibold text-lg">Checking Authentication...</h4>
+              <p className="text-white/70 mt-1">Please wait</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -73,6 +110,7 @@ export default function AdminSignIn() {
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 pl-4 pr-10"
                     placeholder="admin@example.com"
                     required
+                    disabled={isLoading}
                   />
                   <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
                 </div>
@@ -88,6 +126,7 @@ export default function AdminSignIn() {
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 pl-4 pr-10"
                     placeholder="Enter password"
                     required
+                    disabled={isLoading}
                   />
                   <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
                 </div>
@@ -104,7 +143,14 @@ export default function AdminSignIn() {
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </form>
           </CardContent>

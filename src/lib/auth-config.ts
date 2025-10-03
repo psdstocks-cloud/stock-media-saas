@@ -33,6 +33,11 @@ export const authConfig: NextAuthConfig = {
           return null
         }
 
+        // Check if user has admin privileges
+        if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+          return null
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -48,24 +53,34 @@ export const authConfig: NextAuthConfig = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Persist the OAuth access_token and role to the token right after signin
       if (user) {
         token.role = user.role
       }
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub
-        session.user.role = token.role
+      // Send properties to the client
+      if (session.user && token) {
+        session.user.id = token.sub!
+        session.user.role = token.role as string
       }
       return session
     },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl + "/admin/dashboard"
+    }
   },
   pages: {
     signIn: '/admin/auth/signin',
     error: '/admin/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
