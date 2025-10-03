@@ -1,10 +1,5 @@
-import { AdminAuthProvider } from '@/contexts/AdminAuthContext'
-import AdminLoginPage from './AdminLoginPage'
+import SimpleAdminLoginPage from './SimpleAdminLoginPage'
 
 export default function AdminLoginPageWrapper() {
-  return (
-    <AdminAuthProvider>
-      <AdminLoginPage />
-    </AdminAuthProvider>
-  )
+  return <SimpleAdminLoginPage />
 }

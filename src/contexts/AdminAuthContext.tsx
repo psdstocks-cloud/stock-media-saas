@@ -74,35 +74,48 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      // Verify admin authentication with backend
-      const response = await fetch('/api/admin/auth-test', {
-        credentials: 'include'
-      })
+      // Only verify admin authentication with backend if we have a session
+      // and the user appears to be an admin
+      try {
+        const response = await fetch('/api/admin/auth-test', {
+          credentials: 'include'
+        })
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.authenticated && data.user) {
-          setState({
-            user: data.user,
-            loading: false,
-            error: null,
-            authenticated: true,
-            isAdmin: true
-          })
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            setState({
+              user: data.user,
+              loading: false,
+              error: null,
+              authenticated: true,
+              isAdmin: true
+            })
+          } else {
+            setState({
+              user: null,
+              loading: false,
+              error: 'Admin authentication required',
+              authenticated: false,
+              isAdmin: false
+            })
+          }
         } else {
           setState({
             user: null,
             loading: false,
-            error: 'Admin authentication required',
+            error: 'Admin authentication failed',
             authenticated: false,
             isAdmin: false
           })
         }
-      } else {
+      } catch (apiError) {
+        // If API call fails, still show the user as not authenticated
+        // but don't show an error - they just need to log in
         setState({
           user: null,
           loading: false,
-          error: 'Admin authentication failed',
+          error: null,
           authenticated: false,
           isAdmin: false
         })
@@ -112,7 +125,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       setState({
         user: null,
         loading: false,
-        error: 'Network error during authentication',
+        error: null, // Don't show error on login page
         authenticated: false,
         isAdmin: false
       })
