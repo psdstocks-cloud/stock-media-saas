@@ -1,5 +1,6 @@
 import { AdminAuthProvider } from '@/contexts/AdminAuthContext'
 import AdminLayout from './AdminLayout'
+import ConditionalAdminWrapper from './ConditionalAdminWrapper'
 
 export default function AdminLayoutWrapper({
   children,
@@ -7,10 +8,8 @@ export default function AdminLayoutWrapper({
   children: React.ReactNode
 }) {
   return (
-    <AdminAuthProvider>
-      <AdminLayout>
-        {children}
-      </AdminLayout>
-    </AdminAuthProvider>
+    <ConditionalAdminWrapper>
+      {children}
+    </ConditionalAdminWrapper>
   )
 }
