@@ -93,6 +93,7 @@ export async function GET(request: NextRequest) {
     ])
 
     return NextResponse.json({
+      success: true,
       users,
       pagination: {
         page,
@@ -103,7 +104,10 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching users:', error)
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
+    return NextResponse.json({ 
+      success: false,
+      error: 'Failed to fetch users' 
+    }, { status: 500 })
   }
 }
 
