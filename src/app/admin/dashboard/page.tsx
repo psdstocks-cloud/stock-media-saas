@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
   }
 
   // Redirect if not authenticated or not admin
-  if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
     redirect('/admin/login')
   }
 

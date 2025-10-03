@@ -40,7 +40,7 @@ export default function AdminLoginClient() {
 
       if (response.ok && data.success) {
         // Check if user has admin role
-        if (data.user.role === 'admin' || data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
+        if (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
           // Redirect to admin dashboard
           router.push('/admin/dashboard')
         } else {

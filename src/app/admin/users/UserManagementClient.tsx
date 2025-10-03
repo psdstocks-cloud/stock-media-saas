@@ -222,7 +222,7 @@ export default function UserManagementClient() {
             >
               Adjust points
             </Button>
-            {user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
+            {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
               <Button
                 variant="outline"
                 size="sm"

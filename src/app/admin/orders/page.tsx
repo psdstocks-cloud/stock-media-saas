@@ -10,7 +10,7 @@ export default async function AdminOrdersPage() {
   const token = cookieStore.get('auth-token')?.value
   if (!token) redirect('/admin/login')
   const user = verifyJWT(token)
-  if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) redirect('/admin/login')
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) redirect('/admin/login')
 
   return (
     <div className="min-h-screen bg-background">
