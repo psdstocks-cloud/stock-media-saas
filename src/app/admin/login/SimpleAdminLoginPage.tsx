@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,29 @@ export default function SimpleAdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+
+  // Check if user is already authenticated on page load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/auth-test', {
+          credentials: 'include'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user && (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN')) {
+            console.log('✅ User already authenticated, redirecting...')
+            window.location.href = '/admin/dashboard'
+          }
+        }
+      } catch (error) {
+        console.log('🔍 Auth check failed (user not authenticated):', error)
+      }
+    }
+
+    checkAuth()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,13 +65,18 @@ export default function SimpleAdminLoginPage() {
         // Check if user has admin role
         if (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
           console.log('✅ Login successful, redirecting to dashboard...')
+          console.log('🔍 User data:', data.user)
+          
           // Redirect to admin dashboard
           try {
+            console.log('🔄 Attempting redirect to /admin/dashboard...')
             window.location.href = '/admin/dashboard'
+            console.log('✅ Redirect command executed')
           } catch (error) {
             console.log('❌ Redirect failed, trying alternative method:', error)
             // Fallback redirect
             setTimeout(() => {
+              console.log('🔄 Trying fallback redirect...')
               window.location.replace('/admin/dashboard')
             }, 100)
           }
