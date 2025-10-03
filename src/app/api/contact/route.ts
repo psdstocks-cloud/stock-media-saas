@@ -4,7 +4,7 @@ import { csrfMiddleware } from '@/lib/csrf'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const formData = await request.formData()
     
     // Validate CSRF token
     const csrfCheck = csrfMiddleware(request)
@@ -15,6 +15,17 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Extract form data
+    const body = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      department: formData.get('department') as string,
+      subject: formData.get('subject') as string,
+      priority: formData.get('priority') as string,
+      orderReference: formData.get('orderReference') as string || undefined,
+      message: formData.get('message') as string
+    }
+    
     // Validate form data
     const validatedData = contactSchema.parse(body)
     
@@ -22,16 +33,37 @@ export async function POST(request: NextRequest) {
     const sanitizedData = {
       name: sanitizeString(validatedData.name),
       email: sanitizeString(validatedData.email),
+      department: validatedData.department,
       subject: sanitizeString(validatedData.subject),
+      priority: validatedData.priority,
+      orderReference: validatedData.orderReference ? sanitizeString(validatedData.orderReference) : undefined,
       message: sanitizeString(validatedData.message)
     }
     
+    // Handle file attachments
+    const attachments: { name: string; size: number; type: string }[] = []
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith('attachment_') && value instanceof File) {
+        attachments.push({
+          name: value.name,
+          size: value.size,
+          type: value.type
+        })
+        // In production, you would save the file to cloud storage or local filesystem
+        console.log(`Attachment: ${value.name} (${value.size} bytes, ${value.type})`)
+      }
+    }
+
     // Log the contact form submission (in production, save to database)
     console.log('Contact form submission:', {
       name: sanitizedData.name,
       email: sanitizedData.email,
+      department: sanitizedData.department,
       subject: sanitizedData.subject,
+      priority: sanitizedData.priority,
+      orderReference: sanitizedData.orderReference,
       message: sanitizedData.message,
+      attachments: attachments,
       timestamp: new Date().toISOString(),
       ip: request.headers.get('x-forwarded-for') || 'unknown'
     })

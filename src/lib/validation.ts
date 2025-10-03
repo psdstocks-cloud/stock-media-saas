@@ -95,12 +95,21 @@ export const contactSchema = z.object({
     .max(100, 'Name must be less than 100 characters')
     .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
   email: emailSchema,
+  department: z.enum(['general', 'sales', 'support', 'billing'], {
+    errorMap: () => ({ message: 'Please select a valid department' })
+  }),
   subject: z.string()
     .min(5, 'Subject must be at least 5 characters')
     .max(200, 'Subject must be less than 200 characters'),
+  priority: z.enum(['low', 'medium', 'high', 'urgent'], {
+    errorMap: () => ({ message: 'Please select a valid priority level' })
+  }),
+  orderReference: z.string()
+    .max(50, 'Order reference must be less than 50 characters')
+    .optional(),
   message: z.string()
     .min(10, 'Message must be at least 10 characters')
-    .max(2000, 'Message must be less than 2000 characters')
+    .max(1000, 'Message must be less than 1000 characters')
 })
 
 // Review validation
