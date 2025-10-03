@@ -1,15 +1,10 @@
 'use client'
 
-import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react'
-
+// Simplified session provider - NextAuth removed
 export default function SessionProvider({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <NextAuthSessionProvider>
-      {children}
-    </NextAuthSessionProvider>
-  )
+  return <>{children}</>
 }

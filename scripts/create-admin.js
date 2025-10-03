@@ -5,6 +5,8 @@ const prisma = new PrismaClient()
 
 async function createAdmin() {
   try {
+    console.log('Creating admin user...')
+    
     const hashedPassword = await bcrypt.hash('admin123', 10)
     
     const admin = await prisma.user.upsert({
@@ -22,11 +24,12 @@ async function createAdmin() {
       }
     })
     
-    console.log('✅ Admin user created:', admin.email)
+    console.log('✅ Admin user created/updated:')
     console.log('📧 Email: admin@test.com')
     console.log('🔑 Password: admin123')
+    console.log('👤 Role:', admin.role)
   } catch (error) {
-    console.error('❌ Error creating admin:', error)
+    console.error('❌ Error:', error)
   } finally {
     await prisma.$disconnect()
   }

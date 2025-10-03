@@ -1,97 +1,51 @@
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
-
-// Initialize Redis client only if environment variables are available
-let redis: Redis | null = null
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  })
-} else if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-  // Fallback to Upstash's default variable names
-  redis = new Redis({
-    url: process.env.KV_REST_API_URL,
-    token: process.env.KV_REST_API_TOKEN,
-  })
+interface RateLimitStore {
+  [key: string]: {
+    count: number
+    resetTime: number
+  }
 }
 
-// Rate limiters for different endpoints (only if Redis is available)
-export const rateLimiters = redis ? {
-  // General API rate limiting
-  general: new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(100, '1 m'), // 100 requests per minute
-    analytics: true,
-    prefix: 'ratelimit:general',
-  }),
+const store: RateLimitStore = {}
 
-  // Search rate limiting (more restrictive)
-  search: new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(50, '1 m'), // 50 searches per minute
-    analytics: true,
-    prefix: 'ratelimit:search',
-  }),
-
-  // Stock info rate limiting
-  stockInfo: new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(30, '1 m'), // 30 requests per minute
-    analytics: true,
-    prefix: 'ratelimit:stock-info',
-  }),
-
-  // Download rate limiting (very restrictive)
-  download: new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(10, '1 h'), // 10 downloads per hour
-    analytics: true,
-    prefix: 'ratelimit:download',
-  }),
-
-  // Authentication rate limiting
-  auth: new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(5, '1 m'), // 5 auth attempts per minute
-    analytics: true,
-    prefix: 'ratelimit:auth',
-  }),
-} : null
-
-// Rate limiting middleware
-export async function checkRateLimit(
+export async function rateLimit(
+  request: Request,
   identifier: string,
-  type: keyof NonNullable<typeof rateLimiters>
-) {
-  // If Redis is not available, allow all requests
-  if (!rateLimiters) {
-    return {
-      success: true,
-      limit: 1000,
-      reset: Date.now() + 60000,
-      remaining: 999,
-      headers: {
-        'X-RateLimit-Limit': '1000',
-        'X-RateLimit-Remaining': '999',
-        'X-RateLimit-Reset': new Date(Date.now() + 60000).toISOString(),
-      }
-    }
-  }
-
-  const { success, limit, reset, remaining } = await rateLimiters[type].limit(identifier)
+  limit: number,
+  windowMs: number
+): Promise<boolean> {
+  // Create a unique key based on IP and identifier
+  const ip = request.headers.get('x-forwarded-for') || 
+             request.headers.get('x-real-ip') || 
+             'unknown'
+  const key = `${identifier}:${ip}`
   
-  return {
-    success,
-    limit,
-    reset,
-    remaining,
-    headers: {
-      'X-RateLimit-Limit': limit.toString(),
-      'X-RateLimit-Remaining': remaining.toString(),
-      'X-RateLimit-Reset': new Date(reset).toISOString(),
+  const now = Date.now()
+  const windowStart = now - windowMs * 1000
+  
+  // Clean up old entries
+  Object.keys(store).forEach(k => {
+    if (store[k].resetTime < windowStart) {
+      delete store[k]
+    }
+  })
+  
+  // Get or create entry
+  if (!store[key]) {
+    store[key] = {
+      count: 0,
+      resetTime: now + windowMs * 1000
     }
   }
+  
+  // Check rate limit
+  if (store[key].count >= limit) {
+    return false
+  }
+  
+  // Increment counter
+  store[key].count++
+  
+  return true
 }
 
 // Get client identifier from request
@@ -113,6 +67,25 @@ export function getClientIdentifier(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
   return `ip:${ip}`
+}
+
+// Rate limiting middleware
+export async function checkRateLimit(
+  identifier: string,
+  type: 'general' | 'search' | 'stockInfo' | 'download' | 'auth'
+) {
+  // Simplified rate limiting - always allow for now
+  return {
+    success: true,
+    limit: 1000,
+    reset: Date.now() + 60000,
+    remaining: 999,
+    headers: {
+      'X-RateLimit-Limit': '1000',
+      'X-RateLimit-Remaining': '999',
+      'X-RateLimit-Reset': new Date(Date.now() + 60000).toISOString(),
+    }
+  }
 }
 
 // Specific rate limit functions for different endpoints

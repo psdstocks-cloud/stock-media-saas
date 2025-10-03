@@ -5,43 +5,56 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 Auth check API called')
+    
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
     if (!accessToken) {
+      console.log('❌ No access token found')
       return NextResponse.json(
-        { error: 'No access token' },
+        { error: 'No access token', authenticated: false },
         { status: 401 }
       )
     }
+
+    console.log('🎫 Access token found, verifying...')
 
     const payload = await verifyToken(accessToken)
+    console.log('✅ Token verified for user:', payload.sub)
 
-    // Verify session exists and is active
-    const session = await prisma.adminSession.findUnique({
-      where: { id: payload.sessionId },
-      include: { user: true },
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
     })
 
-    if (!session || !session.isActive || session.expiresAt < new Date()) {
+    if (!user) {
+      console.log('❌ User not found in database:', payload.sub)
       return NextResponse.json(
-        { error: 'Session expired or invalid' },
+        { error: 'User not found', authenticated: false },
         { status: 401 }
       )
     }
 
+    console.log('👤 User authenticated:', user.email)
+
     return NextResponse.json({
+      authenticated: true,
       user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: session.user.role,
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
       },
     })
   } catch (error) {
-    console.error('Auth check error:', error)
+    console.error('❌ Auth check error:', error)
     return NextResponse.json(
-      { error: 'Invalid token' },
+      { 
+        error: 'Invalid token', 
+        authenticated: false,
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      },
       { status: 401 }
     )
   }

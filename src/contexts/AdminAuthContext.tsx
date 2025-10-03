@@ -1,7 +1,6 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -29,7 +28,6 @@ interface AdminAuthContextType extends AdminAuthState {
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [state, setState] = useState<AdminAuthState>({
     user: null,
@@ -57,94 +55,53 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
       
-      // First check if we have a global session
-      if (status === 'loading') {
-        return // Still loading global session
-      }
-
-      if (!session?.user) {
-        setState({
-          user: null,
-          loading: false,
-          error: null,
-          authenticated: false,
-          isAdmin: false
-        })
-        return
-      }
-
-      // Check if the global session user is an admin
-      const userRole = (session.user as any).role
-      const isAdminRole = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN'
-      
-      if (!isAdminRole) {
-        setState({
-          user: null,
-          loading: false,
-          error: 'Access denied. Admin privileges required.',
-          authenticated: false,
-          isAdmin: false
-        })
-        return
-      }
-
-      // Check if we have an admin JWT token first
-      try {
-        const response = await fetch('/api/admin/auth-test', {
-          credentials: 'include'
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          if (data.authenticated && data.user) {
-            setState({
-              user: data.user,
-              loading: false,
-              error: null,
-              authenticated: true,
-              isAdmin: true
-            })
-            return
-          }
+      // Check admin authentication via our custom API
+      const response = await fetch('/api/admin/auth/me', {
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache'
         }
-      } catch (apiError) {
-        console.log('🔍 JWT auth check failed, falling back to global session')
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.authenticated && data.user) {
+          setState({
+            user: data.user,
+            loading: false,
+            error: null,
+            authenticated: true,
+            isAdmin: data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN'
+          })
+          return
+        }
       }
 
-      // Fallback to global session if JWT auth fails
-      setState({
-        user: {
-          id: (session.user as any).id || 'unknown',
-          email: session.user.email || '',
-          name: session.user.name || '',
-          role: userRole
-        },
-        loading: false,
-        error: null,
-        authenticated: true,
-        isAdmin: true
-      })
-    } catch (error) {
-      console.error('Admin auth check error:', error)
+      // Not authenticated
       setState({
         user: null,
         loading: false,
-        error: null, // Don't show error on login page
+        error: null,
+        authenticated: false,
+        isAdmin: false
+      })
+    } catch (error) {
+      console.error('Admin auth check failed:', error)
+      setState({
+        user: null,
+        loading: false,
+        error: 'Authentication check failed',
         authenticated: false,
         isAdmin: false
       })
     }
-  }, [session, status, pathname])
+  }, [pathname])
 
-  useEffect(() => {
-    checkAdminStatus()
-  }, [checkAdminStatus])
-
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
       
-      const response = await fetch('/api/admin/login', {
+      const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,32 +113,24 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        // Check if user has admin role
-        if (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
-          setState({
-            user: data.user,
-            loading: false,
-            error: null,
-            authenticated: true,
-            isAdmin: true
-          })
-          toast.success('Admin login successful!')
-          return true
-        } else {
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            error: 'Access denied. Admin privileges required.'
-          }))
-          return false
-        }
+        setState({
+          user: data.user,
+          loading: false,
+          error: null,
+          authenticated: true,
+          isAdmin: data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN'
+        })
+        toast.success('Login successful!')
+        return true
       } else {
-        const errorMessage = data.error || 'Login failed'
         setState(prev => ({
           ...prev,
           loading: false,
-          error: errorMessage
+          error: data.error || 'Login failed',
+          authenticated: false,
+          isAdmin: false
         }))
+        toast.error(data.error || 'Login failed')
         return false
       }
     } catch (error) {
@@ -189,17 +138,22 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       setState(prev => ({
         ...prev,
         loading: false,
-        error: 'Network error during login'
+        error: 'Network error',
+        authenticated: false,
+        isAdmin: false
       }))
+      toast.error('Network error')
       return false
     }
-  }
+  }, [])
 
-  const logout = async (): Promise<void> => {
+  const logout = useCallback(async () => {
     try {
-      await fetch('/api/admin/logout', {
+      setState(prev => ({ ...prev, loading: true }))
+      
+      await fetch('/api/admin/auth/logout', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
       })
     } catch (error) {
       console.error('Logout error:', error)
@@ -214,21 +168,23 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       toast.success('Logged out successfully')
       router.push('/admin/login')
     }
-  }
+  }, [router])
 
-  const refresh = async (): Promise<void> => {
+  const refresh = useCallback(async () => {
     await checkAdminStatus()
-  }
+  }, [checkAdminStatus])
 
-  const value: AdminAuthContextType = {
-    ...state,
-    login,
-    logout,
-    refresh
-  }
+  useEffect(() => {
+    checkAdminStatus()
+  }, [checkAdminStatus])
 
   return (
-    <AdminAuthContext.Provider value={value}>
+    <AdminAuthContext.Provider value={{
+      ...state,
+      login,
+      logout,
+      refresh
+    }}>
       {children}
     </AdminAuthContext.Provider>
   )
