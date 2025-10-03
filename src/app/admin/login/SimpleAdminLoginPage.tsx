@@ -17,14 +17,26 @@ export default function SimpleAdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
   const router = useRouter()
 
   // Check if user is already authenticated on page load
   useEffect(() => {
+    // Prevent multiple executions
+    if (hasCheckedAuth) return
+    
     const checkAuth = async () => {
       try {
+        setHasCheckedAuth(true)
+        
         // Check if we have an auth-token cookie
-        const hasAuthToken = document.cookie.includes('auth-token=')
+        let hasAuthToken = false
+        try {
+          hasAuthToken = !!(document.cookie && document.cookie.includes('auth-token='))
+        } catch (cookieError) {
+          console.log('🔍 Cookie check failed:', cookieError)
+          hasAuthToken = false
+        }
         
         if (hasAuthToken) {
           console.log('✅ Auth token found, redirecting to dashboard...')
@@ -113,7 +125,7 @@ export default function SimpleAdminLoginPage() {
     }
 
     checkAuth()
-  }, [])
+  }, [hasCheckedAuth])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
