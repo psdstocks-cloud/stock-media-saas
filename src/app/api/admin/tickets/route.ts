@@ -16,8 +16,11 @@ export async function GET(request: NextRequest) {
     }
 
     const user = verifyJWT(token)
-    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+    if (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -36,20 +39,24 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {}
     
-    if (status) {
+    if (status && status !== 'all') {
       where.status = status
     }
     
-    if (priority) {
+    if (priority && priority !== 'all') {
       where.priority = priority
     }
     
-    if (department) {
+    if (department && department !== 'all') {
       where.department = department
     }
     
-    if (assignedTo) {
-      where.assignedTo = assignedTo
+    if (assignedTo && assignedTo !== 'all') {
+      if (assignedTo === 'unassigned') {
+        where.assignedTo = null
+      } else {
+        where.assignedTo = assignedTo
+      }
     }
     
     if (search) {
@@ -145,8 +152,11 @@ export async function POST(request: NextRequest) {
     }
 
     const user = verifyJWT(token)
-    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+    if (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
     const body = await request.json()

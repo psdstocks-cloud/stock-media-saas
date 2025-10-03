@@ -95,15 +95,29 @@ export default function TicketsManagementClient() {
   const fetchTickets = async () => {
     try {
       setLoading(true)
+      setError(null)
+      
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
-        ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value))
+        ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value && value !== 'all'))
       })
 
+      console.log('Fetching tickets with params:', params.toString())
+      
       const response = await fetch(`/api/admin/tickets?${params}`)
+      
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in again.')
+      }
+      
+      if (response.status === 403) {
+        throw new Error('Insufficient permissions to view tickets.')
+      }
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch tickets')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Failed to fetch tickets (${response.status})`)
       }
 
       const data: TicketsResponse = await response.json()
@@ -111,6 +125,7 @@ export default function TicketsManagementClient() {
       setPagination(data.pagination)
       setError(null)
     } catch (err) {
+      console.error('Error fetching tickets:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
@@ -233,7 +248,7 @@ export default function TicketsManagementClient() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="OPEN">Open</SelectItem>
                   <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                   <SelectItem value="RESOLVED">Resolved</SelectItem>
@@ -249,7 +264,7 @@ export default function TicketsManagementClient() {
                   <SelectValue placeholder="All priorities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All priorities</SelectItem>
+                  <SelectItem value="all">All priorities</SelectItem>
                   <SelectItem value="URGENT">Urgent</SelectItem>
                   <SelectItem value="HIGH">High</SelectItem>
                   <SelectItem value="MEDIUM">Medium</SelectItem>
@@ -265,7 +280,7 @@ export default function TicketsManagementClient() {
                   <SelectValue placeholder="All departments" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All departments</SelectItem>
+                  <SelectItem value="all">All departments</SelectItem>
                   <SelectItem value="general">General</SelectItem>
                   <SelectItem value="sales">Sales</SelectItem>
                   <SelectItem value="support">Support</SelectItem>
@@ -281,7 +296,7 @@ export default function TicketsManagementClient() {
                   <SelectValue placeholder="All assignees" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All assignees</SelectItem>
+                  <SelectItem value="all">All assignees</SelectItem>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                 </SelectContent>
               </Select>
