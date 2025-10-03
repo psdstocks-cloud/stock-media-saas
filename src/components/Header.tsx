@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Typography, Button } from '@/components/ui'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
 import { 
   User, 
   LogOut, 
@@ -17,19 +18,37 @@ import {
   Link as LinkIcon,
   History,
   Download,
-  ChevronDown
+  ChevronDown,
+  Shield
 } from 'lucide-react'
 import { useState } from 'react'
 // import { cn } from '@/lib/utils'
 
 export function Header() {
   const { data: session, status } = useSession()
+  const { user: adminUser, authenticated: isAdminAuthenticated } = useAdminAuth()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  // Check if user is authenticated (either regular user or admin)
+  const isAuthenticated = session?.user || isAdminAuthenticated
+  const currentUser = session?.user || adminUser
+
   const handleSignOut = async () => {
-    await signOut({ redirect: false })
-    router.push('/')
+    if (isAdminAuthenticated) {
+      // Admin logout
+      try {
+        await fetch('/api/admin/logout', { method: 'POST' })
+        router.push('/admin/login')
+      } catch (error) {
+        console.error('Admin logout error:', error)
+        router.push('/admin/login')
+      }
+    } else {
+      // Regular user logout
+      await signOut({ redirect: false })
+      router.push('/')
+    }
   }
 
   const navigation = [
@@ -39,12 +58,17 @@ export function Header() {
     { name: 'Contact', href: '/contact' }
   ]
 
-  const userNavigation = session?.user ? [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Order from URL', href: '/dashboard/order', icon: LinkIcon },
-    { name: 'History', href: '/dashboard/history', icon: History },
-    { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
-    { name: 'Downloads', href: '/dashboard/downloads', icon: Download },
+  const userNavigation = isAuthenticated ? [
+    ...(session?.user ? [
+      { name: 'Dashboard', href: '/dashboard', icon: Home },
+      { name: 'Order from URL', href: '/dashboard/order', icon: LinkIcon },
+      { name: 'History', href: '/dashboard/history', icon: History },
+      { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
+      { name: 'Downloads', href: '/dashboard/downloads', icon: Download },
+    ] : []),
+    ...(isAdminAuthenticated ? [
+      { name: 'Admin Panel', href: '/admin/dashboard', icon: Shield },
+    ] : [])
   ] : []
 
   return (
@@ -86,20 +110,33 @@ export function Header() {
                   Loading...
                 </Typography>
               </div>
-            ) : session?.user ? (
+            ) : isAuthenticated ? (
               // User Dropdown Menu
               <div className="relative group">
                 <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    isAdminAuthenticated 
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600' 
+                      : 'bg-gradient-to-r from-green-500 to-blue-500'
+                  }`}>
+                    {isAdminAuthenticated ? (
+                      <Shield className="h-4 w-4 text-white" />
+                    ) : (
+                      <User className="h-4 w-4 text-white" />
+                    )}
                   </div>
                   <div className="text-left">
                     <Typography variant="body-sm" className="text-gray-600 dark:text-gray-400 leading-none">
                       Hi,
                     </Typography>
                     <Typography variant="body" className="font-medium text-gray-900 dark:text-white leading-none">
-                      {session.user.name?.split(' ')[0] || session.user.email?.split('@')[0]}
+                      {currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0]}
                     </Typography>
+                    {isAdminAuthenticated && (
+                      <Typography variant="caption" className="text-purple-600 dark:text-purple-400 text-xs">
+                        Admin
+                      </Typography>
+                    )}
                   </div>
                   <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </button>
@@ -197,20 +234,33 @@ export function Header() {
                     Loading...
                   </Typography>
                 </div>
-              ) : session?.user ? (
+              ) : isAuthenticated ? (
                 <div className="space-y-2">
                   {/* Mobile User Greeting */}
                   <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg mx-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3">
-                      <User className="h-4 w-4 text-white" />
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                      isAdminAuthenticated 
+                        ? 'bg-gradient-to-r from-purple-500 to-purple-600' 
+                        : 'bg-gradient-to-r from-green-500 to-blue-500'
+                    }`}>
+                      {isAdminAuthenticated ? (
+                        <Shield className="h-4 w-4 text-white" />
+                      ) : (
+                        <User className="h-4 w-4 text-white" />
+                      )}
                     </div>
                     <div>
                       <Typography variant="body-sm" className="text-gray-600 dark:text-gray-400">
                         Hi,
                       </Typography>
                       <Typography variant="body" className="font-medium text-gray-900 dark:text-white">
-                        {session.user.name?.split(' ')[0] || session.user.email?.split('@')[0]}
+                        {currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0]}
                       </Typography>
+                      {isAdminAuthenticated && (
+                        <Typography variant="caption" className="text-purple-600 dark:text-purple-400 text-xs">
+                          Admin
+                        </Typography>
+                      )}
                     </div>
                   </div>
 
