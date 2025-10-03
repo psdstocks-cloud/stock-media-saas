@@ -67,7 +67,9 @@ export default function UserManagementClient() {
     setIsLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/admin/users')
+      const response = await fetch('/api/admin/users', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const data = await response.json()
         setUsers(data.users || [])
@@ -440,6 +442,7 @@ export default function UserManagementClient() {
               setAdjustMessage('Submitting…')
               try {
                 const res = await fetch('/api/admin/points/adjust', {
+                  credentials: 'include',
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ userId: selectedUser.id, amount: amt, reason: adjustReason })

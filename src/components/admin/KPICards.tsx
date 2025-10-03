@@ -40,7 +40,9 @@ export function KPICards({ className }: KPICardsProps) {
     setIsLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/admin/analytics/kpis')
+      const response = await fetch('/api/admin/analytics/kpis', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const result = await response.json()
         setData(result.data || null)

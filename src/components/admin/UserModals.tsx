@@ -87,6 +87,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       })
 

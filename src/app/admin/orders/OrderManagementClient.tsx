@@ -63,7 +63,9 @@ export default function OrderManagementClient() {
     setIsLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/admin/orders')
+      const response = await fetch('/api/admin/orders', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const data = await response.json()
         setOrders(data.orders || [])
@@ -419,6 +421,7 @@ export default function OrderManagementClient() {
               setRefundMessage('Submitting…')
               try {
                 const res = await fetch('/api/admin/orders/refund', {
+                  credentials: 'include',
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ orderId: selectedOrder.id, amount: amt, reason: refundReason })

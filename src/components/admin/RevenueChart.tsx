@@ -44,7 +44,9 @@ export function RevenueChart({ className }: RevenueChartProps) {
     setIsLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/admin/analytics/revenue-chart')
+      const response = await fetch('/api/admin/analytics/revenue-chart', {
+        credentials: 'include'
+      })
       if (response.ok) {
         const result = await response.json()
         setData(result.data || [])

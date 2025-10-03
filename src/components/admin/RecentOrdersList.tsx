@@ -45,7 +45,9 @@ export function RecentOrdersList({ className, limit = 5 }: RecentOrdersListProps
     setIsLoading(true)
     setError('')
     try {
-      const response = await fetch(`/api/admin/orders?limit=${limit}&sort=createdAt&order=desc`)
+      const response = await fetch(`/api/admin/orders?limit=${limit}&sort=createdAt&order=desc`, {
+        credentials: 'include'
+      })
       if (response.ok) {
         const result = await response.json()
         setOrders(result.orders || [])

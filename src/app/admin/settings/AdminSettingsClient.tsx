@@ -25,7 +25,10 @@ export default function AdminSettingsClient() {
     async function load() {
       try {
         setLoading(true)
-        const res = await fetch('/api/admin/settings', { cache: 'no-store' })
+        const res = await fetch('/api/admin/settings', { 
+          cache: 'no-store',
+          credentials: 'include'
+        })
         if (!res.ok) throw new Error('Failed to load settings')
         const data = await res.json()
         if (!cancelled) setSettings((data.settings || []).map((s: any) => ({ key: s.key, value: s.value, type: s.type })))
@@ -47,6 +50,7 @@ export default function AdminSettingsClient() {
     const res = await fetch('/api/admin/settings', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ key: item.key, value: item.value }),
     })
     if (!res.ok) {

@@ -29,7 +29,10 @@ export default function FeatureFlagsClient() {
     async function load() {
       try {
         setLoading(true)
-        const res = await fetch('/api/admin/feature-flags', { cache: 'no-store' })
+        const res = await fetch('/api/admin/feature-flags', { 
+          cache: 'no-store',
+          credentials: 'include'
+        })
         if (!res.ok) throw new Error('Failed to load flags')
         const data = await res.json()
         if (!cancelled) setFlags(data.featureFlags || [])
