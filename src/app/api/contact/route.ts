@@ -54,8 +54,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Log the contact form submission (in production, save to database)
+    // Create support ticket in database
+    const { prisma } = await import('@/lib/prisma')
+    
+    // Generate ticket number
+    const ticketNumber = `ST-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+    
+    // Create ticket
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        ticketNumber,
+        subject: sanitizedData.subject,
+        category: sanitizedData.department, // Using department as category
+        department: sanitizedData.department,
+        message: sanitizedData.message,
+        priority: sanitizedData.priority.toUpperCase(),
+        status: 'OPEN',
+        userId: 'anonymous', // For non-authenticated users
+        userEmail: sanitizedData.email,
+        userName: sanitizedData.name,
+        orderReference: sanitizedData.orderReference,
+        attachments: attachments.length > 0 ? attachments : null,
+        slaDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours SLA
+      }
+    })
+
+    // Log the contact form submission
     console.log('Contact form submission:', {
+      ticketId: ticket.id,
+      ticketNumber: ticket.ticketNumber,
       name: sanitizedData.name,
       email: sanitizedData.email,
       department: sanitizedData.department,
@@ -68,10 +95,10 @@ export async function POST(request: NextRequest) {
       ip: request.headers.get('x-forwarded-for') || 'unknown'
     })
     
-    // In production, you would:
-    // 1. Save to database
-    // 2. Send email notification
-    // 3. Send auto-reply to user
+    // TODO: In production, you would:
+    // 1. Send email notification to support team
+    // 2. Send auto-reply to user with ticket number
+    // 3. Create webhook for external integrations
     
     return NextResponse.json({ 
       success: true,

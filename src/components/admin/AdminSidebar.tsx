@@ -13,7 +13,8 @@ import {
   LogOut,
   Shield,
   CheckSquare,
-  Flag
+  Flag,
+  MessageSquare
 } from 'lucide-react'
 import { usePermissions } from '@/lib/hooks/usePermissions'
 
@@ -34,6 +35,12 @@ const navigation = [
     href: '/admin/orders',
     icon: ShoppingCart,
     permission: 'orders.view',
+  },
+  {
+    name: 'Tickets',
+    href: '/admin/tickets',
+    icon: MessageSquare,
+    permission: 'tickets.view',
   },
   {
     name: 'Approvals',
