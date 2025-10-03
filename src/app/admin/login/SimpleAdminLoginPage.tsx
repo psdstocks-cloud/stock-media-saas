@@ -152,36 +152,45 @@ export default function SimpleAdminLoginPage() {
           console.log('✅ Login successful, redirecting to dashboard...')
           console.log('🔍 User data:', data.user)
           
-          // Redirect to admin dashboard with multiple methods
-          console.log('🔄 Attempting redirect to /admin/dashboard...')
+          // Wait a moment for cookie to be set, then redirect
+          console.log('🔄 Waiting for cookie to be set, then redirecting...')
           
-          // Method 1: window.location.replace (most reliable)
-          try {
-            window.location.replace('/admin/dashboard')
-            console.log('✅ Method 1: window.location.replace executed')
-          } catch (e) {
-            console.log('❌ Method 1 failed:', e)
-          }
-          
-          // Method 2: window.location.href (fallback)
           setTimeout(() => {
+            // Check if cookie was actually set
+            const cookieCheck = document.cookie.includes('auth-token=')
+            console.log('🔍 Cookie check after login:', cookieCheck)
+            console.log('🔍 All cookies:', document.cookie)
+            
+            console.log('🔄 Attempting redirect to /admin/dashboard...')
+            
+            // Method 1: window.location.replace (most reliable)
             try {
-              window.location.href = '/admin/dashboard'
-              console.log('✅ Method 2: window.location.href executed')
+              window.location.replace('/admin/dashboard')
+              console.log('✅ Method 1: window.location.replace executed')
             } catch (e) {
-              console.log('❌ Method 2 failed:', e)
+              console.log('❌ Method 1 failed:', e)
             }
-          }, 50)
-          
-          // Method 3: router.push (last resort)
-          setTimeout(() => {
-            try {
-              router.push('/admin/dashboard')
-              console.log('✅ Method 3: router.push executed')
-            } catch (e) {
-              console.log('❌ Method 3 failed:', e)
-            }
-          }, 100)
+            
+            // Method 2: window.location.href (fallback)
+            setTimeout(() => {
+              try {
+                window.location.href = '/admin/dashboard'
+                console.log('✅ Method 2: window.location.href executed')
+              } catch (e) {
+                console.log('❌ Method 2 failed:', e)
+              }
+            }, 100)
+            
+            // Method 3: router.push (last resort)
+            setTimeout(() => {
+              try {
+                router.push('/admin/dashboard')
+                console.log('✅ Method 3: router.push executed')
+              } catch (e) {
+                console.log('❌ Method 3 failed:', e)
+              }
+            }, 200)
+          }, 500) // Wait 500ms for cookie to be set
         } else {
           console.log('❌ User does not have admin role:', data.user.role)
           setError('Access denied. Admin privileges required.')

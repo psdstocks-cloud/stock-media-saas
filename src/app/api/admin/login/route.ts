@@ -131,10 +131,11 @@ export async function POST(request: NextRequest) {
 
       response.cookies.set('auth-token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Set to false for now to debug
         sameSite: 'lax',
         maxAge: 24 * 60 * 60, // 24 hours
-        path: '/'
+        path: '/',
+        domain: undefined // Let browser determine domain
       });
 
       console.log('✅ Admin login successful, cookie set');
