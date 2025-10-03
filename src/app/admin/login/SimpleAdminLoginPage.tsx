@@ -21,6 +21,7 @@ export default function SimpleAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🔍 Form submitted with:', { email, password: '***' })
     setIsLoading(true)
     setError('')
 
@@ -35,6 +36,7 @@ export default function SimpleAdminLoginPage() {
       })
 
       const data = await response.json()
+      console.log('🔍 API Response:', { status: response.status, data })
 
       if (response.ok && data.success) {
         // Check if user has admin role
