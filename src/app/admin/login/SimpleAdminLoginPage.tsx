@@ -41,9 +41,19 @@ export default function SimpleAdminLoginPage() {
       if (response.ok && data.success) {
         // Check if user has admin role
         if (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
+          console.log('✅ Login successful, redirecting to dashboard...')
           // Redirect to admin dashboard
-          router.push('/admin/dashboard')
+          try {
+            window.location.href = '/admin/dashboard'
+          } catch (error) {
+            console.log('❌ Redirect failed, trying alternative method:', error)
+            // Fallback redirect
+            setTimeout(() => {
+              window.location.replace('/admin/dashboard')
+            }, 100)
+          }
         } else {
+          console.log('❌ User does not have admin role:', data.user.role)
           setError('Access denied. Admin privileges required.')
         }
       } else {
