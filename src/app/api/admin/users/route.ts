@@ -8,9 +8,12 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // Get admin token from cookies
-    const adminToken = request.cookies.get('admin-token')?.value;
+    const adminToken = request.cookies.get('auth-token')?.value;
     if (!adminToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Authentication required. Please log in again.' 
+      }, { status: 401 });
     }
 
     // Verify JWT token
@@ -107,9 +110,12 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     // Get admin token from cookies
-    const adminToken = request.cookies.get('admin-token')?.value;
+    const adminToken = request.cookies.get('auth-token')?.value;
     if (!adminToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Authentication required. Please log in again.' 
+      }, { status: 401 });
     }
 
     // Verify JWT token

@@ -8,15 +8,21 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // Get admin token from cookies
-    const adminToken = request.cookies.get('admin-token')?.value;
+    const adminToken = request.cookies.get('auth-token')?.value;
     if (!adminToken) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Authentication required. Please log in again.' 
+      }, { status: 401 });
     }
 
     // Verify JWT token
     const user = verifyJWT(adminToken);
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-      return new NextResponse('Forbidden', { status: 403 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Insufficient permissions to view revenue data.' 
+      }, { status: 403 });
     }
     const twelveMonthsAgo = subMonths(new Date(), 12);
 
@@ -92,6 +98,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
+      success: true,
       data: sortedData.map(item => ({
         date: item.month,
         revenue: item.subscriptions + item.pointPacks,
@@ -100,6 +107,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[ADMIN_REVENUE_CHART_GET]', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ 
+      success: false,
+      error: 'Server error. Please try again later.' 
+    }, { status: 500 });
   }
 }
