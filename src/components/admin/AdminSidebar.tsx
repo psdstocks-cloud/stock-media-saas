@@ -16,7 +16,7 @@ import {
   Flag,
   MessageSquare
 } from 'lucide-react'
-import { usePermissions } from '@/lib/hooks/usePermissions'
+import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 
 const navigation = [
   {
@@ -88,7 +88,7 @@ const navigation = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
-  const { has, loading, permissions } = usePermissions()
+  const { has, loading, permissions } = useAdminPermissions()
 
   const handleLogout = () => {
     // Clear auth token and redirect to login

@@ -26,7 +26,7 @@ import {
   DeleteUserModal, 
   ViewUserModal 
 } from '@/components/admin/UserModals'
-import { usePermissions } from '@/lib/hooks/usePermissions'
+import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 
 interface UserData {
   id: string
@@ -41,7 +41,7 @@ interface UserData {
 }
 
 export default function UserManagementClient() {
-  const { has } = usePermissions()
+  const { has } = useAdminPermissions()
   const canView = has('users.view')
   const canEdit = has('users.edit')
   const _canImpersonate = has('users.impersonate')

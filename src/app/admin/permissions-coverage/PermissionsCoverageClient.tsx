@@ -1,6 +1,6 @@
 'use client'
 
-import { usePermissions } from '@/lib/hooks/usePermissions'
+import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 import { Typography } from '@/components/ui/typography'
 import { Badge } from '@/components/ui/badge'
 
@@ -13,7 +13,7 @@ const COVERAGE: { area: string; route: string; permissions: string[] }[] = [
 ]
 
 export default function PermissionsCoverageClient() {
-  const { permissions, has, loading, error } = usePermissions()
+  const { permissions, has, loading, error } = useAdminPermissions()
 
   return (
     <div className="p-6 space-y-6">

@@ -21,7 +21,7 @@ import {
   EditOrderModal, 
   BulkStatusModal 
 } from '@/components/admin/OrderModals'
-import { usePermissions } from '@/lib/hooks/usePermissions'
+import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 
 interface Order {
   id: string
@@ -38,7 +38,7 @@ interface Order {
 }
 
 export default function OrderManagementClient() {
-  const { has } = usePermissions()
+  const { has } = useAdminPermissions()
   const canView = has('orders.view')
   const canManage = has('orders.manage')
   const canRefund = has('orders.refund')

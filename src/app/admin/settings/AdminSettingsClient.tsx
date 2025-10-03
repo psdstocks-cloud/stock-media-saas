@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePermissions } from '@/lib/hooks/usePermissions'
+import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -14,7 +14,7 @@ interface SettingItem {
 }
 
 export default function AdminSettingsClient() {
-  const { has } = usePermissions()
+  const { has } = useAdminPermissions()
   const canWrite = has('settings.write')
   const [settings, setSettings] = useState<SettingItem[]>([])
   const [loading, setLoading] = useState(true)

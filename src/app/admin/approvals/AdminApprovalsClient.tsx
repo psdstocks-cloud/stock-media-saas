@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePermissions } from '@/lib/hooks/usePermissions'
+import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 import { Button } from '@/components/ui/button'
 import { Typography } from '@/components/ui/typography'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -25,7 +25,7 @@ const STATUS = ['PENDING','APPROVED','REJECTED'] as const
 type StatusKey = typeof STATUS[number]
 
 export default function AdminApprovalsClient() {
-  const { has } = usePermissions()
+  const { has } = useAdminPermissions()
   const canManage = has('approvals.manage')
 
   const [active, setActive] = useState<StatusKey>('PENDING')
