@@ -24,7 +24,7 @@ export default function AdminSignIn() {
   useEffect(() => {
     if (status === 'loading') return
 
-    if (session?.user && (session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN')) {
+    if (session?.user && ((session.user as any).role === 'ADMIN' || (session.user as any).role === 'SUPER_ADMIN')) {
       router.replace('/admin/dashboard')
       return
     }
