@@ -4,8 +4,15 @@ import type { NextRequest } from 'next/server'
 // Define protected routes that require authentication
 const protectedRoutes = [
   '/payment',
-  '/dashboard',
-  '/admin'
+  '/dashboard'
+]
+
+// Define admin routes that require admin authentication
+const adminRoutes = [
+  '/admin/dashboard',
+  '/admin/users',
+  '/admin/orders',
+  '/admin/settings'
 ]
 
 // Define public routes that should redirect to dashboard if already authenticated
@@ -17,6 +24,17 @@ const publicRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
+  // Skip middleware for admin login page to prevent loops
+  if (pathname.startsWith('/admin/login')) {
+    return NextResponse.next()
+  }
+  
+  // For admin routes, let the client-side authentication guard handle it
+  // This prevents middleware from interfering with the authentication flow
+  if (adminRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next()
+  }
+  
   // Check if the current path is protected
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   
@@ -26,7 +44,6 @@ export async function middleware(request: NextRequest) {
   // For protected routes, let NextAuth handle the authentication
   // We'll rely on the client-side session management instead of middleware
   if (isProtectedRoute) {
-    // Let the request pass through - NextAuth will handle session validation
     return NextResponse.next()
   }
 

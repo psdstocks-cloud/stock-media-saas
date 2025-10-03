@@ -29,107 +29,40 @@ export default function SimpleAdminLoginPage() {
       try {
         setHasCheckedAuth(true)
         
-        // Check if we're coming from a redirect (avoid immediate re-check)
-        const isRedirect = document.referrer.includes('/admin/dashboard') || 
-                          window.location.search.includes('redirected=true')
-        
-        if (isRedirect) {
-          console.log('🔍 Detected redirect, skipping auth check to prevent loop')
-          return
-        }
+        console.log('🔍 Login: Checking existing authentication...')
         
         // Check if we have an auth-token cookie
-        let hasAuthToken = false
-        try {
-          hasAuthToken = !!(document.cookie && document.cookie.includes('auth-token='))
-        } catch (cookieError) {
-          console.log('🔍 Cookie check failed:', cookieError)
-          hasAuthToken = false
-        }
+        const hasAuthToken = document.cookie.includes('auth-token=')
         
         if (hasAuthToken) {
-          console.log('✅ Auth token found, redirecting to dashboard...')
+          console.log('✅ Login: Auth token found, verifying session...')
           
-          // Method 1: window.location.replace (most reliable)
-          try {
-            window.location.replace('/admin/dashboard')
-            console.log('✅ Initial redirect: window.location.replace executed')
-          } catch (e) {
-            console.log('❌ Initial redirect failed:', e)
+          // Verify the session with the server
+          const response = await fetch('/api/admin/verify-session', {
+            credentials: 'include',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.success && data.user && (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN')) {
+              console.log('✅ Login: Valid admin session found, redirecting to dashboard...')
+              window.location.replace('/admin/dashboard')
+              return
+            }
           }
           
-          // Method 2: window.location.href (fallback)
-          setTimeout(() => {
-            try {
-              window.location.href = '/admin/dashboard'
-              console.log('✅ Initial redirect: window.location.href executed')
-            } catch (e) {
-              console.log('❌ Initial redirect fallback failed:', e)
-            }
-          }, 50)
-        } else {
-          console.log('🔍 No auth token found, checking global session...')
-          
-          // Check if user has a global session and is admin
-          try {
-            const response = await fetch('/api/auth/session', {
-              credentials: 'include'
-            })
-            
-            if (response.ok) {
-              const session = await response.json()
-              console.log('🔍 Global session:', session)
-              
-              if (session?.user && (session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN')) {
-                console.log('✅ Global admin session found, auto-logging into admin panel...')
-                
-                // Auto-login to admin panel using the new endpoint
-                const loginResponse = await fetch('/api/admin/auto-login', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  credentials: 'include'
-                })
-                
-                const loginData = await loginResponse.json()
-                console.log('🔍 Auto-login response:', loginResponse.status, loginData)
-                
-                if (loginResponse.ok && loginData.success) {
-                  console.log('✅ Auto-login successful, redirecting to dashboard...')
-                  
-                  // Redirect to dashboard
-                  try {
-                    window.location.replace('/admin/dashboard')
-                    console.log('✅ Auto-login redirect: window.location.replace executed')
-                  } catch (e) {
-                    console.log('❌ Auto-login redirect failed:', e)
-                  }
-                  
-                  // Fallback redirect
-                  setTimeout(() => {
-                    try {
-                      window.location.href = '/admin/dashboard'
-                      console.log('✅ Auto-login redirect: window.location.href executed')
-                    } catch (e) {
-                      console.log('❌ Auto-login redirect fallback failed:', e)
-                    }
-                  }, 50)
-                } else {
-                  console.log('❌ Auto-login failed:', loginData.message)
-                }
-              } else {
-                console.log('🔍 No admin session found, showing login form')
-              }
-            } else {
-              console.log('🔍 No global session found, showing login form')
-            }
-          } catch (error) {
-            console.log('🔍 Global session check failed:', error)
-          }
+          console.log('❌ Login: Invalid session, clearing token and showing login form')
+          // Clear invalid token
+          document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
         }
+        
+        console.log('🔍 Login: No valid authentication found, showing login form')
+        
       } catch (error) {
-        console.log('🔍 Auth check failed:', error)
+        console.log('🔍 Login: Auth check failed:', error)
       }
     }
 
