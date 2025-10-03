@@ -11,18 +11,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Shield, Mail, Lock, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth/useAuth'
-import { LoginCredentials } from '@/lib/auth/types'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 })
 
+interface LoginCredentials {
+  email: string
+  password: string
+}
+
 export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [authError, setAuthError] = useState<string | null>(null)
   const router = useRouter()
-  const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
 
   const {
     register,
@@ -32,25 +36,72 @@ export default function AdminLogin() {
     resolver: zodResolver(loginSchema),
   })
 
-  // Redirect if already authenticated
+  // Check if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
-      router.replace('/admin/dashboard')
+    const checkAuth = async () => {
+      try {
+        console.log('🔍 Checking existing authentication...')
+        
+        const response = await fetch('/api/admin/auth/me', {
+          credentials: 'include',
+          cache: 'no-cache'
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            console.log('✅ User already authenticated, redirecting...')
+            router.replace('/admin/dashboard')
+            return
+          }
+        }
+        
+        console.log('ℹ️ No existing authentication found')
+      } catch (error) {
+        console.log('🔍 Auth check failed:', error)
+      } finally {
+        setIsCheckingAuth(false)
+      }
     }
-  }, [isAuthenticated, isLoading, router])
+
+    checkAuth()
+  }, [router])
 
   const onSubmit = async (data: LoginCredentials) => {
     try {
-      clearError()
-      await login(data)
-      router.push('/admin/dashboard')
+      setAuthError(null)
+      console.log('🚀 Attempting login for:', data.email)
+
+      const response = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+      console.log('📋 Login response:', { status: response.status, success: result.success })
+
+      if (!response.ok) {
+        setAuthError(result.error || 'Login failed')
+        return
+      }
+
+      if (result.success) {
+        console.log('✅ Login successful, redirecting...')
+        // Small delay to ensure cookies are set
+        setTimeout(() => {
+          router.push('/admin/dashboard')
+        }, 100)
+      }
     } catch (err) {
-      // Error is handled by the store
+      console.error('💥 Login error:', err)
+      setAuthError('Network error. Please try again.')
     }
   }
 
   // Show loading while checking initial auth state
-  if (isLoading) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
         <Card className="backdrop-blur-sm bg-white/10 border-white/20 shadow-2xl">
@@ -104,7 +155,7 @@ export default function AdminLogin() {
                     type="email"
                     autoComplete="email"
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 pl-4 pr-10 h-12"
-                    placeholder="admin@example.com"
+                    placeholder="admin@test.com"
                   />
                   <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
                 </div>
@@ -145,10 +196,10 @@ export default function AdminLogin() {
                 )}
               </div>
 
-              {error && (
+              {authError && (
                 <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
                   <AlertDescription className="text-red-200">
-                    {error}
+                    {authError}
                   </AlertDescription>
                 </Alert>
               )}
@@ -171,7 +222,7 @@ export default function AdminLogin() {
 
             <div className="mt-6 text-center">
               <p className="text-white/50 text-sm">
-                Secure admin portal protected by enterprise-grade security
+                Test credentials: admin@test.com / admin123
               </p>
             </div>
           </CardContent>

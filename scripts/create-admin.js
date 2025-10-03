@@ -24,10 +24,9 @@ async function createAdmin() {
       }
     })
     
-    console.log('✅ Admin user created/updated:')
+    console.log('✅ Admin user ready:')
     console.log('📧 Email: admin@test.com')
     console.log('🔑 Password: admin123')
-    console.log('👤 Role:', admin.role)
   } catch (error) {
     console.error('❌ Error:', error)
   } finally {
