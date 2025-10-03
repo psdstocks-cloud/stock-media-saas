@@ -129,30 +129,28 @@ export async function POST(request: NextRequest) {
         }
       });
 
+      // Fix cookie settings for better compatibility
       response.cookies.set('auth-token', token, {
-        httpOnly: true,
-        secure: false, // Set to false for now to debug
+        httpOnly: false, // Change to false so client can read it for debugging
+        secure: process.env.NODE_ENV === 'production', // Only secure in production
         sameSite: 'lax',
         maxAge: 24 * 60 * 60, // 24 hours
-        path: '/',
-        domain: undefined // Let browser determine domain
+        path: '/'
       });
 
-      console.log('✅ Admin login successful, cookie set');
+      console.log('✅ Admin login successful, cookie set with token');
+      console.log('🔍 Token payload:', { id: user.id, email: user.email, role: user.role });
       return response;
     } catch (cookieError) {
       console.error('❌ Cookie setting failed:', cookieError);
-      // Return success response even if cookie fails
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Login successful (cookie setting failed)',
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        }
-      });
+      return NextResponse.json(
+        { 
+          success: false,
+          message: 'Cookie setting failed',
+          error: 'COOKIE_ERROR'
+        },
+        { status: 500 }
+      );
     }
 
   } catch (error) {
