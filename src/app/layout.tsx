@@ -6,6 +6,7 @@ import { WebVitals } from "@/components/WebVitals"
 import { ChatWidget } from "@/components/ChatWidget"
 import { AuthProvider } from "@/components/AuthProvider"
 import { ThemeProvider } from "@/contexts/ThemeContext"
+import SessionProvider from "@/components/providers/SessionProvider"
 import { Header } from "@/components/Header"
 
 const inter = Inter({ 
@@ -138,21 +139,23 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <AuthProvider>
-            <WebVitals />
-            <ChatWidget />
-            <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
-              Skip to content
-            </a>
-            <Header />
-            <ErrorBoundary>
-              <main id="main" role="main">
-                {children}
-              </main>
-            </ErrorBoundary>
-          </AuthProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <WebVitals />
+              <ChatWidget />
+              <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
+                Skip to content
+              </a>
+              <Header />
+              <ErrorBoundary>
+                <main id="main" role="main">
+                  {children}
+                </main>
+              </ErrorBoundary>
+            </AuthProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )

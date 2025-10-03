@@ -1,11 +1,17 @@
+import { auth } from '@/lib/auth-config'
+import { redirect } from 'next/navigation'
 import AdminDashboardClient from './AdminDashboardClient'
 
-export const dynamic = 'force-dynamic'
+export default async function AdminDashboardPage() {
+  const session = await auth()
 
-export default function AdminDashboardPage() {
+  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    redirect('/admin/auth/signin')
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <AdminDashboardClient />
+      <AdminDashboardClient user={session.user} />
     </div>
   )
 }

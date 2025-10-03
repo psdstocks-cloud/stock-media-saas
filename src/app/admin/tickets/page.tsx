@@ -1,8 +1,14 @@
+import { auth } from '@/lib/auth-config'
+import { redirect } from 'next/navigation'
 import TicketsManagementClient from './TicketsManagementClient'
 
-export const dynamic = 'force-dynamic'
+export default async function AdminTicketsPage() {
+  const session = await auth()
 
-export default function AdminTicketsPage() {
+  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    redirect('/admin/auth/signin')
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <TicketsManagementClient />
