@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 interface AdminUser {
@@ -39,9 +39,23 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     isAdmin: false
   })
 
+  const pathname = usePathname()
+  
   const checkAdminStatus = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
+      
+      // Don't make API calls on the login page
+      if (pathname === '/admin/login') {
+        setState({
+          user: null,
+          loading: false,
+          error: null,
+          authenticated: false,
+          isAdmin: false
+        })
+        return
+      }
       
       // First check if we have a global session
       if (status === 'loading') {
@@ -130,7 +144,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin: false
       })
     }
-  }, [session, status])
+  }, [session, status, pathname])
 
   useEffect(() => {
     checkAdminStatus()
