@@ -1,49 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyJWT } from '@/lib/jwt-auth'
+import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
+// GET /api/admin/tickets - List all tickets with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth()
-    if (!session?.user?.id) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (!user || !['admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    const user = verifyJWT(token)
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get query parameters
     const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
     const status = searchParams.get('status')
     const priority = searchParams.get('priority')
     const department = searchParams.get('department')
+    const assignedTo = searchParams.get('assignedTo')
     const search = searchParams.get('search')
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrder = searchParams.get('sortOrder') || 'desc'
+
+    const skip = (page - 1) * limit
 
     // Build where clause
     const where: any = {}
-
-    if (status && status !== 'ALL') {
+    
+    if (status) {
       where.status = status
     }
-
-    if (priority && priority !== 'ALL') {
+    
+    if (priority) {
       where.priority = priority
     }
-
-    if (department && department !== 'ALL') {
+    
+    if (department) {
       where.department = department
     }
-
+    
+    if (assignedTo) {
+      where.assignedTo = assignedTo
+    }
+    
     if (search) {
       where.OR = [
         { subject: { contains: search, mode: 'insensitive' } },
@@ -53,11 +61,25 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Fetch tickets with pagination
-    const [tickets, total] = await Promise.all([
+    // Build orderBy clause
+    const orderBy: any = {}
+    orderBy[sortBy] = sortOrder
+
+    const [tickets, totalCount] = await Promise.all([
       prisma.supportTicket.findMany({
         where,
+        orderBy,
+        skip,
+        take: limit,
         include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true
+            }
+          },
           assignedToUser: {
             select: {
               id: true,
@@ -67,48 +89,40 @@ export async function GET(request: NextRequest) {
           },
           responses: {
             orderBy: { createdAt: 'desc' },
-            take: 5
-          },
-          user: {
+            take: 1,
             select: {
               id: true,
-              name: true,
-              email: true
+              content: true,
+              createdAt: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true
+                }
+              }
+            }
+          },
+          _count: {
+            select: {
+              responses: true
             }
           }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit
+        }
       }),
       prisma.supportTicket.count({ where })
     ])
 
-    // Get ticket statistics
-    const stats = await prisma.supportTicket.groupBy({
-      by: ['status'],
-      _count: { status: true }
-    })
-
-    const statusStats = stats.reduce((acc, stat) => {
-      acc[stat.status] = stat._count.status
-      return acc
-    }, {} as Record<string, number>)
+    const totalPages = Math.ceil(totalCount / limit)
 
     return NextResponse.json({
       tickets,
       pagination: {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit)
-      },
-      stats: {
-        total,
-        open: statusStats.OPEN || 0,
-        inProgress: statusStats.IN_PROGRESS || 0,
-        resolved: statusStats.RESOLVED || 0,
-        closed: statusStats.CLOSED || 0
+        totalCount,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
       }
     })
   } catch (error) {
@@ -120,63 +134,83 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/admin/tickets - Create a new ticket (for admin use)
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth()
-    if (!session?.user?.id) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (!user || !['admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    const user = verifyJWT(token)
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
-    const { subject, category, department, message, priority, userEmail, userName, orderReference } = body
-
-    // Validate required fields
-    if (!subject || !category || !department || !message || !priority || !userEmail) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+    const {
+      subject,
+      department,
+      message,
+      priority,
+      userId,
+      userEmail,
+      userName,
+      orderReference,
+      assignedTo
+    } = body
 
     // Generate ticket number
-    const ticketNumber = `ST-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+    const ticketNumber = `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`
 
-    // Create ticket
+    // Calculate SLA due date based on priority
+    const slaDueDate = new Date()
+    switch (priority) {
+      case 'urgent':
+        slaDueDate.setHours(slaDueDate.getHours() + 4) // 4 hours
+        break
+      case 'high':
+        slaDueDate.setHours(slaDueDate.getHours() + 12) // 12 hours
+        break
+      case 'medium':
+        slaDueDate.setDate(slaDueDate.getDate() + 1) // 1 day
+        break
+      case 'low':
+        slaDueDate.setDate(slaDueDate.getDate() + 3) // 3 days
+        break
+      default:
+        slaDueDate.setDate(slaDueDate.getDate() + 1) // 1 day
+    }
+
     const ticket = await prisma.supportTicket.create({
       data: {
         ticketNumber,
         subject,
-        category,
+        category: department, // Using department as category
         department,
         message,
-        priority: priority.toUpperCase(),
+        priority,
         status: 'OPEN',
-        userId: session.user.id, // Admin creating ticket
+        userId,
         userEmail,
         userName,
         orderReference,
-        assignedTo: session.user.id // Assign to creator
+        assignedTo,
+        slaDueDate,
+        attachments: body.attachments || null
       },
       include: {
-        assignedToUser: {
+        user: {
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            image: true
           }
         },
-        user: {
+        assignedToUser: {
           select: {
             id: true,
             name: true,
@@ -186,7 +220,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ ticket }, { status: 201 })
+    return NextResponse.json(ticket, { status: 201 })
   } catch (error) {
     console.error('Error creating ticket:', error)
     return NextResponse.json(

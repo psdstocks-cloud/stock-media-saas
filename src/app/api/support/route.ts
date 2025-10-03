@@ -25,12 +25,15 @@ export async function POST(request: NextRequest) {
       data: {
         subject,
         category,
+        department: category, // Using category as department
         message,
         priority: priority.toUpperCase(),
         status: 'OPEN',
         userId,
         userEmail: userEmail || session.user.email || '',
-        ticketNumber: `ST-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+        userName: session.user.name || '',
+        ticketNumber: `ST-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+        slaDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours SLA
       }
     })
 

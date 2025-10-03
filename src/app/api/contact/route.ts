@@ -57,8 +57,43 @@ export async function POST(request: NextRequest) {
     // Create support ticket in database
     const { prisma } = await import('@/lib/prisma')
     
+    // Find or create user
+    let user = await prisma.user.findUnique({
+      where: { email: sanitizedData.email }
+    })
+
+    if (!user) {
+      // Create user if doesn't exist
+      user = await prisma.user.create({
+        data: {
+          email: sanitizedData.email,
+          name: sanitizedData.name,
+          role: 'USER'
+        }
+      })
+    }
+    
     // Generate ticket number
-    const ticketNumber = `ST-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+    const ticketNumber = `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`
+    
+    // Calculate SLA due date based on priority
+    const slaDueDate = new Date()
+    switch (sanitizedData.priority) {
+      case 'urgent':
+        slaDueDate.setHours(slaDueDate.getHours() + 4) // 4 hours
+        break
+      case 'high':
+        slaDueDate.setHours(slaDueDate.getHours() + 12) // 12 hours
+        break
+      case 'medium':
+        slaDueDate.setDate(slaDueDate.getDate() + 1) // 1 day
+        break
+      case 'low':
+        slaDueDate.setDate(slaDueDate.getDate() + 3) // 3 days
+        break
+      default:
+        slaDueDate.setDate(slaDueDate.getDate() + 1) // 1 day
+    }
     
     // Create ticket
     const ticket = await prisma.supportTicket.create({
@@ -70,12 +105,18 @@ export async function POST(request: NextRequest) {
         message: sanitizedData.message,
         priority: sanitizedData.priority.toUpperCase(),
         status: 'OPEN',
-        userId: 'anonymous', // For non-authenticated users
+        userId: user.id,
         userEmail: sanitizedData.email,
         userName: sanitizedData.name,
         orderReference: sanitizedData.orderReference,
-        attachments: attachments.length > 0 ? attachments : null,
-        slaDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours SLA
+        attachments: attachments.length > 0 ? {
+          files: attachments.map(att => ({
+            name: att.name,
+            size: att.size,
+            type: att.type
+          }))
+        } : undefined,
+        slaDueDate
       }
     })
 
@@ -102,7 +143,8 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ 
       success: true,
-      message: 'Message sent successfully' 
+      message: 'Message sent successfully',
+      ticketNumber: ticket.ticketNumber
     })
   } catch (error: any) {
     console.error('Contact form error:', error)

@@ -37,7 +37,7 @@ const navigation = [
     permission: 'orders.view',
   },
   {
-    name: 'Tickets',
+    name: 'Support Tickets',
     href: '/admin/tickets',
     icon: MessageSquare,
     permission: 'tickets.view',

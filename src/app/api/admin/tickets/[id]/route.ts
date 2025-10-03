@@ -1,32 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyJWT } from '@/lib/jwt-auth'
+import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
+// GET /api/admin/tickets/[id] - Get ticket details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    // Check authentication
-    const session = await auth()
-    if (!session?.user?.id) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (!user || !['admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    const user = verifyJWT(token)
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch ticket with all details
     const ticket = await prisma.supportTicket.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            createdAt: true,
+            lastLoginAt: true
+          }
+        },
         assignedToUser: {
           select: {
             id: true,
@@ -37,18 +47,14 @@ export async function GET(
         responses: {
           orderBy: { createdAt: 'asc' },
           include: {
-            ticket: {
+            user: {
               select: {
-                ticketNumber: true
+                id: true,
+                name: true,
+                email: true,
+                role: true
               }
             }
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
           }
         }
       }
@@ -58,7 +64,7 @@ export async function GET(
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ ticket })
+    return NextResponse.json(ticket)
   } catch (error) {
     console.error('Error fetching ticket:', error)
     return NextResponse.json(
@@ -68,73 +74,70 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+// PUT /api/admin/tickets/[id] - Update ticket
+export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    // Check authentication
-    const session = await auth()
-    if (!session?.user?.id) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (!user || !['admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    const user = verifyJWT(token)
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
-    const { status, assignedTo, priority, internalNotes, response } = body
+    const {
+      status,
+      priority,
+      assignedTo,
+      internalNotes,
+      response
+    } = body
 
-    // Build update data
     const updateData: any = {}
-
+    
     if (status) {
       updateData.status = status
-      
-      // Set timestamps based on status
       if (status === 'RESOLVED') {
         updateData.resolvedAt = new Date()
       } else if (status === 'CLOSED') {
         updateData.closedAt = new Date()
       }
     }
-
-    if (assignedTo !== undefined) {
-      updateData.assignedTo = assignedTo || null
-    }
-
+    
     if (priority) {
-      updateData.priority = priority.toUpperCase()
+      updateData.priority = priority
     }
-
+    
+    if (assignedTo !== undefined) {
+      updateData.assignedTo = assignedTo
+    }
+    
     if (internalNotes !== undefined) {
       updateData.internalNotes = internalNotes
     }
 
-    if (response) {
-      updateData.response = response
-    }
-
-    // Update ticket
     const ticket = await prisma.supportTicket.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
-        assignedToUser: {
+        user: {
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            image: true
           }
         },
-        user: {
+        assignedToUser: {
           select: {
             id: true,
             name: true,
@@ -144,21 +147,21 @@ export async function PATCH(
       }
     })
 
-    // If there's a response, create a ticket response
+    // If response is provided, create a ticket response
     if (response) {
       await prisma.ticketResponse.create({
         data: {
-          ticketId: params.id,
-          userId: session.user.id,
-          userEmail: session.user.email || '',
-          userName: session.user.name || '',
-          message: response,
+          ticketId: id,
+          userId: user.id,
+          userEmail: user.email,
+          userName: user.name,
+          content: response,
           isInternal: false
         }
       })
     }
 
-    return NextResponse.json({ ticket })
+    return NextResponse.json(ticket)
   } catch (error) {
     console.error('Error updating ticket:', error)
     return NextResponse.json(
@@ -168,33 +171,30 @@ export async function PATCH(
   }
 }
 
+// DELETE /api/admin/tickets/[id] - Delete ticket
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    // Check authentication
-    const session = await auth()
-    if (!session?.user?.id) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('auth-token')?.value
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    if (!user || !['admin', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    const user = verifyJWT(token)
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Delete ticket (cascade will delete responses)
     await prisma.supportTicket.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ message: 'Ticket deleted successfully' })
   } catch (error) {
     console.error('Error deleting ticket:', error)
     return NextResponse.json(

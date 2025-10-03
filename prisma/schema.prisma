@@ -39,6 +39,8 @@ model User {
   sessions                  Session[]
   subscriptions             Subscription[]
   supportTickets            SupportTicket[]
+  assignedTickets           SupportTicket[]      @relation("AssignedTickets")
+  ticketResponses           TicketResponse[]
   teamMemberships           TeamMembership[]     @relation("TeamMemberships")
   ownedTeams                Team[]               @relation("OwnedTeams")
 
@@ -476,12 +478,13 @@ model TicketResponse {
   userId      String
   userEmail   String
   userName    String?
-  message     String
+  content     String
   isInternal  Boolean       @default(false) // Internal admin notes
   attachments Json?         // File attachment metadata
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("ticket_responses")
 }

@@ -1,11 +1,16 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/jwt-auth'
-import TicketsManagementClient from './TicketsManagementClient'
+import TicketDetailClient from './TicketDetailClient'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminTicketsPage() {
+export default async function TicketDetailPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
   const cookieStore = await cookies()
   const token = cookieStore.get('auth-token')?.value
   
@@ -27,7 +32,7 @@ export default async function AdminTicketsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TicketsManagementClient />
+      <TicketDetailClient ticketId={id} />
     </div>
   )
 }
