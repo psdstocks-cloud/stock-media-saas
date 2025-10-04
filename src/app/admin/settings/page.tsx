@@ -1,12 +1,22 @@
-import AdminSettingsClient from './AdminSettingsClient'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AdminLayout from '@/components/admin/AdminLayout'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-config'
+import { redirect } from 'next/navigation'
+import SettingsManagement from './SettingsManagement'
 
-export const dynamic = 'force-dynamic'
+export default async function AdminSettingsPage() {
+  const session = await getServerSession(authOptions)
 
-export const metadata = {
-  title: 'Admin Settings • Stock Media SaaS',
-  description: 'Manage system settings',
-}
+  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    redirect('/admin/login')
+  }
 
-export default function AdminSettingsPage() {
-  return <AdminSettingsClient />
+  return (
+    <ProtectedRoute>
+      <AdminLayout user={session.user}>
+        <SettingsManagement />
+      </AdminLayout>
+    </ProtectedRoute>
+  )
 }

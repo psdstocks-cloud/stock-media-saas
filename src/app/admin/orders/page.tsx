@@ -1,11 +1,22 @@
-import OrderManagementClient from './OrderManagementClient'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AdminLayout from '@/components/admin/AdminLayout'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-config'
+import { redirect } from 'next/navigation'
+import OrdersManagement from './OrdersManagement'
 
-export const dynamic = 'force-dynamic'
+export default async function AdminOrdersPage() {
+  const session = await getServerSession(authOptions)
 
-export default function AdminOrdersPage() {
+  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    redirect('/admin/login')
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <OrderManagementClient />
-    </div>
+    <ProtectedRoute>
+      <AdminLayout user={session.user}>
+        <OrdersManagement />
+      </AdminLayout>
+    </ProtectedRoute>
   )
 }

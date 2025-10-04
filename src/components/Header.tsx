@@ -1,19 +1,14 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Typography, Button } from '@/components/ui'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
 import { 
   User, 
   LogOut, 
-  // Settings, 
-  CreditCard, 
   Menu,
   X,
-  // Zap,
   Home,
   Link as LinkIcon,
   History,
@@ -21,36 +16,59 @@ import {
   ChevronDown,
   Shield
 } from 'lucide-react'
-import { useState } from 'react'
-// import { cn } from '@/lib/utils'
+import { useState, useEffect } from 'react'
+
+interface AdminUser {
+  id: string
+  email: string
+  name?: string
+  role: string
+}
 
 export function Header() {
-  const { data: session, status } = useSession()
-  const { user: adminUser, authenticated: isAdminAuthenticated } = useAdminAuth()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<AdminUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Check if user is authenticated (either regular user or admin)
-  const isAuthenticated = session?.user || isAdminAuthenticated
-  const currentUser = session?.user || adminUser
+  useEffect(() => {
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/admin/auth/me', {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.authenticated) {
+          setIsAuthenticated(true)
+          setUser(data.user)
+        }
+      }
+    } catch (error) {
+      console.log('Auth check failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSignOut = async () => {
-    if (isAdminAuthenticated) {
-      // Admin logout
-      try {
-        await fetch('/api/admin/logout', { 
-          method: 'POST',
-          credentials: 'include'
-        })
-        router.push('/admin/login')
-      } catch (error) {
-        console.error('Admin logout error:', error)
-        router.push('/admin/login')
-      }
-    } else {
-      // Regular user logout
-      await signOut({ redirect: false })
-      router.push('/')
+    try {
+      await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      setIsAuthenticated(false)
+      setUser(null)
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Force redirect even if logout fails
+      window.location.href = '/'
     }
   }
 
@@ -62,16 +80,7 @@ export function Header() {
   ]
 
   const userNavigation = isAuthenticated ? [
-    ...(session?.user ? [
-      { name: 'Dashboard', href: '/dashboard', icon: Home },
-      { name: 'Order from URL', href: '/dashboard/order', icon: LinkIcon },
-      { name: 'History', href: '/dashboard/history', icon: History },
-      { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
-      { name: 'Downloads', href: '/dashboard/downloads', icon: Download },
-    ] : []),
-    ...(isAdminAuthenticated ? [
-      { name: 'Admin Panel', href: '/admin/dashboard', icon: Shield },
-    ] : [])
+    { name: 'Admin Panel', href: '/admin/dashboard', icon: Shield },
   ] : []
 
   return (
@@ -133,7 +142,7 @@ export function Header() {
                       Hi,
                     </Typography>
                     <Typography variant="body" className="font-medium text-gray-900 dark:text-white leading-none">
-                      {currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0]}
+                      {user?.name?.split(' ')[0] || user?.email?.split('@')[0]}
                     </Typography>
                     {isAdminAuthenticated && (
                       <Typography variant="caption" className="text-purple-600 dark:text-purple-400 text-xs">
@@ -257,7 +266,7 @@ export function Header() {
                         Hi,
                       </Typography>
                       <Typography variant="body" className="font-medium text-gray-900 dark:text-white">
-                        {currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0]}
+                        {user?.name?.split(' ')[0] || user?.email?.split('@')[0]}
                       </Typography>
                       {isAdminAuthenticated && (
                         <Typography variant="caption" className="text-purple-600 dark:text-purple-400 text-xs">

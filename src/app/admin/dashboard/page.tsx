@@ -1,9 +1,22 @@
-import AdminDashboardClient from './AdminDashboardClient'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import AdminLayout from '@/components/admin/AdminLayout'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-config'
+import { redirect } from 'next/navigation'
+import DashboardContent from './DashboardContent'
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const session = await getServerSession(authOptions)
+
+  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    redirect('/admin/login')
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <AdminDashboardClient />
-    </div>
+    <ProtectedRoute>
+      <AdminLayout user={session.user}>
+        <DashboardContent />
+      </AdminLayout>
+    </ProtectedRoute>
   )
 }
