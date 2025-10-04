@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, RefreshCw, Shield, Plus, Search } from 'lucide-react'
+import { ThemedIcon } from '@/components/admin/ThemedIcon'
 
 interface Role { 
   id: string
@@ -177,11 +178,14 @@ export default function RolesClient() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="space-y-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center space-y-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-            <Typography variant="body" className="text-gray-600">
+            <Typography 
+              variant="body"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               Loading roles and permissions...
             </Typography>
           </div>
@@ -192,24 +196,52 @@ export default function RolesClient() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center space-x-3">
-          <Shield className="h-8 w-8 text-orange-600" />
+          <ThemedIcon 
+            icon={Shield}
+            className="h-8 w-8" 
+            style={{ color: 'var(--admin-accent)' }}
+          />
           <div>
-            <Typography variant="h1" className="text-3xl font-bold">Roles & Permissions</Typography>
-            <Typography variant="body" className="text-gray-600">Error loading roles</Typography>
+            <Typography 
+              variant="h1" 
+              className="text-3xl font-bold"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
+              Roles & Permissions
+            </Typography>
+            <Typography 
+              variant="body"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
+              Error loading roles
+            </Typography>
           </div>
         </div>
 
-        <Card className="p-6 border-red-200 bg-red-50">
+        <Card 
+          className="p-6 border-red-200 bg-red-50"
+          style={{
+            backgroundColor: '#FEF2F2',
+            borderColor: '#FECACA',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <AlertCircle className="h-6 w-6 text-red-500" />
               <div>
-                <Typography variant="h3" className="text-red-700 font-semibold">
+                <Typography 
+                  variant="h3" 
+                  className="text-red-700 font-semibold"
+                >
                   Failed to load roles
                 </Typography>
-                <Typography variant="body" className="text-red-600 text-sm mt-1">
+                <Typography 
+                  variant="body" 
+                  className="text-red-600 text-sm mt-1"
+                >
                   {error}
                 </Typography>
               </div>
@@ -219,13 +251,23 @@ export default function RolesClient() {
               variant="outline" 
               className="border-red-300 text-red-700 hover:bg-red-100"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <ThemedIcon 
+                icon={RefreshCw}
+                className="h-4 w-4 mr-2"
+                style={{ color: '#DC2626' }}
+              />
               Retry ({retryCount})
             </Button>
           </div>
           
-          <div className="mt-4 p-4 bg-red-100 rounded-md">
-            <Typography variant="body" className="text-red-700 text-xs">
+          <div 
+            className="mt-4 p-4 bg-red-100 rounded-md"
+            style={{ backgroundColor: '#FEE2E2' }}
+          >
+            <Typography 
+              variant="body" 
+              className="text-red-700 text-xs"
+            >
               <strong>Troubleshooting:</strong><br />
               1. Check if you have admin permissions<br />
               2. Verify database connection<br />
@@ -239,27 +281,67 @@ export default function RolesClient() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Typography variant="h1" className="text-3xl font-bold">Roles & Permissions</Typography>
-          <Typography variant="body" className="text-gray-600 mt-2">Create roles, toggle permissions, and assign to users</Typography>
+          <Typography 
+            variant="h1" 
+            className="text-3xl font-bold"
+            style={{ color: 'var(--admin-text-primary)' }}
+          >
+            Roles & Permissions
+          </Typography>
+          <Typography 
+            variant="body" 
+            className="mt-2"
+            style={{ color: 'var(--admin-text-secondary)' }}
+          >
+            Create roles, toggle permissions, and assign to users
+          </Typography>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <ThemedIcon 
+              icon={Search}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" 
+              style={{ color: 'var(--admin-text-muted)' }}
+            />
             <Input 
               placeholder="Search roles..." 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
-              className="w-60 pl-10" 
+              className="w-60 pl-10"
+              style={{
+                backgroundColor: 'var(--admin-bg-secondary)',
+                borderColor: 'var(--admin-border)',
+                color: 'var(--admin-text-primary)'
+              }}
             />
           </div>
-          <Button onClick={() => setCreateOpen(true)} className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
+          <Button 
+            onClick={() => setCreateOpen(true)} 
+            className="flex items-center space-x-2"
+            style={{
+              backgroundColor: 'var(--admin-accent)',
+              color: 'white'
+            }}
+          >
+            <ThemedIcon 
+              icon={Plus}
+              className="h-4 w-4"
+              style={{ color: 'white' }}
+            />
             <span>New Role</span>
           </Button>
-          <Button variant="outline" onClick={() => window.open('/api/admin/rbac/export?includeUsers=1', '_blank')}>
+          <Button 
+            variant="outline" 
+            onClick={() => window.open('/api/admin/rbac/export?includeUsers=1', '_blank')}
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--admin-text-primary)',
+              borderColor: 'var(--admin-border)'
+            }}
+          >
             Export JSON
           </Button>
         </div>
@@ -267,21 +349,50 @@ export default function RolesClient() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Roles list */}
-        <Card className="lg:col-span-1">
+        <Card 
+          className="lg:col-span-1"
+          style={{
+            backgroundColor: 'var(--admin-bg-card)',
+            borderColor: 'var(--admin-border)',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Shield className="h-5 w-5" />
+            <CardTitle 
+              className="flex items-center space-x-2"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
+              <ThemedIcon 
+                icon={Shield}
+                className="h-5 w-5" 
+                style={{ color: 'var(--admin-accent)' }}
+              />
               <span>Roles ({roles.length})</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {roles.length === 0 ? (
               <div className="text-center py-8">
-                <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <Typography variant="body" className="text-gray-600 mb-4">
+                <ThemedIcon 
+                  icon={Shield}
+                  className="h-12 w-12 mx-auto mb-4"
+                  style={{ color: 'var(--admin-text-muted)' }}
+                />
+                <Typography 
+                  variant="body" 
+                  className="mb-4"
+                  style={{ color: 'var(--admin-text-secondary)' }}
+                >
                   No roles found
                 </Typography>
-                <Button onClick={() => setCreateOpen(true)} size="sm">
+                <Button 
+                  onClick={() => setCreateOpen(true)} 
+                  size="sm"
+                  style={{
+                    backgroundColor: 'var(--admin-accent)',
+                    color: 'white'
+                  }}
+                >
                   Create First Role
                 </Button>
               </div>
@@ -291,19 +402,62 @@ export default function RolesClient() {
                   <button 
                     key={r.id} 
                     onClick={() => onSelectRole(r)} 
-                    className={`w-full text-left px-3 py-3 rounded-md hover:bg-gray-50 transition-colors ${
-                      selected?.id === r.id ? 'ring-2 ring-orange-500 bg-orange-50' : 'border border-gray-200'
+                    className={`w-full text-left px-3 py-3 rounded-md transition-all duration-200 ${
+                      selected?.id === r.id ? 'ring-2 ring-orange-500' : 'border'
                     }`}
+                    style={{
+                      backgroundColor: selected?.id === r.id ? 'var(--admin-accent)' + '20' : 'transparent',
+                      borderColor: selected?.id === r.id ? 'var(--admin-accent)' : 'var(--admin-border)',
+                      color: 'var(--admin-text-primary)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selected?.id !== r.id) {
+                        e.currentTarget.style.backgroundColor = 'var(--admin-bg-secondary)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selected?.id !== r.id) {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }
+                    }}
                   >
-                    <div className="font-medium text-gray-900">{r.name}</div>
+                    <div 
+                      className="font-medium"
+                      style={{ 
+                        color: selected?.id === r.id ? 'var(--admin-accent)' : 'var(--admin-text-primary)' 
+                      }}
+                    >
+                      {r.name}
+                    </div>
                     {r.description && (
-                      <div className="text-xs text-gray-500 mt-1">{r.description}</div>
+                      <div 
+                        className="text-xs mt-1"
+                        style={{ color: 'var(--admin-text-secondary)' }}
+                      >
+                        {r.description}
+                      </div>
                     )}
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge 
+                        variant="secondary" 
+                        className="text-xs"
+                        style={{
+                          backgroundColor: 'var(--admin-bg-secondary)',
+                          color: 'var(--admin-text-primary)',
+                          borderColor: 'var(--admin-border)'
+                        }}
+                      >
                         {r.permissionCount || 0} perms
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs"
+                        style={{
+                          backgroundColor: 'transparent',
+                          color: 'var(--admin-text-primary)',
+                          borderColor: 'var(--admin-border)'
+                        }}
+                      >
                         {r.userCount || 0} users
                       </Badge>
                     </div>
@@ -315,15 +469,31 @@ export default function RolesClient() {
         </Card>
 
         {/* Role detail */}
-        <Card className="lg:col-span-2">
+        <Card 
+          className="lg:col-span-2"
+          style={{
+            backgroundColor: 'var(--admin-bg-card)',
+            borderColor: 'var(--admin-border)',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <CardHeader>
-            <CardTitle>Role Details</CardTitle>
+            <CardTitle style={{ color: 'var(--admin-text-primary)' }}>
+              Role Details
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {!selected ? (
               <div className="text-center py-12">
-                <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <Typography variant="body" className="text-gray-600">
+                <ThemedIcon 
+                  icon={Shield}
+                  className="h-16 w-16 mx-auto mb-4"
+                  style={{ color: 'var(--admin-text-muted)' }}
+                />
+                <Typography 
+                  variant="body"
+                  style={{ color: 'var(--admin-text-secondary)' }}
+                >
                   Select a role to edit permissions
                 </Typography>
               </div>
@@ -331,25 +501,60 @@ export default function RolesClient() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-lg font-semibold text-gray-900">{selected.name}</div>
+                    <div 
+                      className="text-lg font-semibold"
+                      style={{ color: 'var(--admin-text-primary)' }}
+                    >
+                      {selected.name}
+                    </div>
                     {selected.description && (
-                      <div className="text-sm text-gray-600 mt-1">{selected.description}</div>
+                      <div 
+                        className="text-sm mt-1"
+                        style={{ color: 'var(--admin-text-secondary)' }}
+                      >
+                        {selected.description}
+                      </div>
                     )}
                   </div>
-                  <Badge variant="secondary" className="text-sm">
+                  <Badge 
+                    variant="secondary" 
+                    className="text-sm"
+                    style={{
+                      backgroundColor: 'var(--admin-bg-secondary)',
+                      color: 'var(--admin-text-primary)',
+                      borderColor: 'var(--admin-border)'
+                    }}
+                  >
                     {permissions.length} permissions
                   </Badge>
                 </div>
                 
                 <div className="space-y-3">
-                  <Typography variant="h4" className="text-sm font-medium text-gray-700">
+                  <Typography 
+                    variant="h4" 
+                    className="text-sm font-medium"
+                    style={{ color: 'var(--admin-text-primary)' }}
+                  >
                     Permissions
                   </Typography>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[420px] overflow-auto pr-1 border rounded-md p-3">
+                  <div 
+                    className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[420px] overflow-auto pr-1 border rounded-md p-3"
+                    style={{
+                      borderColor: 'var(--admin-border)',
+                      backgroundColor: 'var(--admin-bg-secondary)'
+                    }}
+                  >
                     {allPermissions.map(key => (
                       <label 
                         key={key} 
-                        className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-colors hover:opacity-80"
+                        style={{ backgroundColor: 'transparent' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--admin-bg-card)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent'
+                        }}
                       >
                         <input 
                           type="checkbox" 
@@ -357,23 +562,39 @@ export default function RolesClient() {
                           onChange={() => togglePerm(key)}
                           className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                         />
-                        <span className="text-sm text-gray-700">{key}</span>
+                        <span 
+                          className="text-sm"
+                          style={{ color: 'var(--admin-text-primary)' }}
+                        >
+                          {key}
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 pt-4 border-t">
+                <div 
+                  className="flex items-center gap-2 pt-4 border-t"
+                  style={{ borderColor: 'var(--admin-border)' }}
+                >
                   <Button 
                     onClick={savePerms} 
                     className="bg-orange-600 hover:bg-orange-700"
                     disabled={!selected}
+                    style={{
+                      backgroundColor: 'var(--admin-accent)',
+                      color: 'white'
+                    }}
                   >
                     Save Permissions
                   </Button>
                   <a 
                     href={`/admin/rbac/effective?role=${encodeURIComponent(selected.name)}`} 
-                    className="text-sm text-orange-600 hover:text-orange-700 underline"
+                    className="text-sm underline"
+                    style={{ 
+                      color: 'var(--admin-accent)',
+                      textDecorationColor: 'var(--admin-accent)'
+                    }}
                   >
                     View effective access
                   </a>
@@ -386,17 +607,35 @@ export default function RolesClient() {
 
       {/* Create role modal */}
       {createOpen && (
-        <Card className="p-6 space-y-4 border-orange-200 bg-orange-50">
+        <Card 
+          className="p-6 space-y-4 border-orange-200"
+          style={{
+            backgroundColor: 'var(--admin-accent)' + '10',
+            borderColor: 'var(--admin-accent)',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <div className="flex items-center space-x-2">
-            <Plus className="h-5 w-5 text-orange-600" />
-            <Typography variant="h3" className="text-lg font-semibold text-orange-800">
+            <ThemedIcon 
+              icon={Plus}
+              className="h-5 w-5" 
+              style={{ color: 'var(--admin-accent)' }}
+            />
+            <Typography 
+              variant="h3" 
+              className="text-lg font-semibold"
+              style={{ color: 'var(--admin-accent)' }}
+            >
               Create New Role
             </Typography>
           </div>
           
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label 
+                className="block text-sm font-medium mb-1"
+                style={{ color: 'var(--admin-text-primary)' }}
+              >
                 Role Name *
               </label>
               <Input 
@@ -404,11 +643,19 @@ export default function RolesClient() {
                 value={newName} 
                 onChange={e => setNewName(e.target.value)} 
                 className="w-full"
+                style={{
+                  backgroundColor: 'var(--admin-bg-secondary)',
+                  borderColor: 'var(--admin-border)',
+                  color: 'var(--admin-text-primary)'
+                }}
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label 
+                className="block text-sm font-medium mb-1"
+                style={{ color: 'var(--admin-text-primary)' }}
+              >
                 Description (Optional)
               </label>
               <Input 
@@ -416,6 +663,11 @@ export default function RolesClient() {
                 value={newDesc} 
                 onChange={e => setNewDesc(e.target.value)} 
                 className="w-full"
+                style={{
+                  backgroundColor: 'var(--admin-bg-secondary)',
+                  borderColor: 'var(--admin-border)',
+                  color: 'var(--admin-text-primary)'
+                }}
               />
             </div>
           </div>
@@ -425,10 +677,22 @@ export default function RolesClient() {
               onClick={createRole} 
               disabled={!newName.trim()}
               className="bg-orange-600 hover:bg-orange-700"
+              style={{
+                backgroundColor: 'var(--admin-accent)',
+                color: 'white'
+              }}
             >
               Create Role
             </Button>
-            <Button variant="ghost" onClick={() => setCreateOpen(false)}>
+            <Button 
+              variant="ghost" 
+              onClick={() => setCreateOpen(false)}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--admin-text-primary)',
+                borderColor: 'var(--admin-border)'
+              }}
+            >
               Cancel
             </Button>
           </div>
