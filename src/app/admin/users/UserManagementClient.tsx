@@ -1,473 +1,283 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Typography } from '@/components/ui/typography'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { 
-  Users, 
-  Edit, 
-  Trash2, 
-  Shield,
-  User,
-  Eye,
-  Plus,
-  Download
-} from 'lucide-react'
-import { ColumnDef } from '@tanstack/react-table'
-import DataTable from '@/components/admin/DataTable'
-import { 
-  CreateUserModal, 
-  EditUserModal, 
-  DeleteUserModal, 
-  ViewUserModal 
-} from '@/components/admin/UserModals'
-import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
+import { Typography } from '@/components/ui/typography'
+import { Search, Plus, Users as UsersIcon, LogOut, User, Home, Menu, X } from 'lucide-react'
+import Link from 'next/link'
+
+interface AdminUser {
+  id: string
+  email: string
+  name?: string
+  role: string
+}
 
 interface UserData {
   id: string
   email: string
   name: string | null
   role: string
-  emailVerified: boolean
   createdAt: string
-  lastLoginAt: string | null
-  pointsBalance?: {
-    currentPoints: number
-    totalUsed: number
-  } | null
+  orderCount: number
 }
 
-export default function UserManagementClient() {
-  const { has } = useAdminPermissions()
-  const canView = has('users.view')
-  const canEdit = has('users.edit')
-  const _canImpersonate = has('users.impersonate')
-  const [users, setUsers] = useState<UserData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  
-  // Modal states
-  const [createModalOpen, setCreateModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [viewModalOpen, setViewModalOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
-  // Dual-control: Adjust points modal
-  const [adjustModalOpen, setAdjustModalOpen] = useState(false)
-  const [adjustAmount, setAdjustAmount] = useState<string>('')
-  const [adjustReason, setAdjustReason] = useState<string>('')
-  const [adjustSubmitting, setAdjustSubmitting] = useState(false)
-  const [adjustMessage, setAdjustMessage] = useState<string>('')
+const navigationItems = [
+  { href: '/admin/dashboard', label: 'Dashboard', icon: UsersIcon },
+  { href: '/admin/users', label: 'Users', icon: UsersIcon },
+  { href: '/admin/orders', label: 'Orders', icon: UsersIcon },
+  { href: '/admin/settings', label: 'Settings', icon: UsersIcon },
+  { href: '/admin/approvals', label: 'Approvals', icon: UsersIcon },
+]
 
-  const fetchUsers = async () => {
-    setIsLoading(true)
-    setError('')
-    try {
-      const response = await fetch('/api/admin/users', {
-        credentials: 'include'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.users || [])
-      } else {
-        setError('Failed to fetch users')
-      }
-    } catch (error) {
-      setError('An error occurred while fetching users')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+interface Props {
+  user: AdminUser
+}
+
+export default function UserManagementClient({ user }: Props) {
+  const router = useRouter()
+  const [users, setUsers] = useState<UserData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
     fetchUsers()
   }, [])
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'admin':
-      case 'ADMIN':
-        return <Badge variant="destructive" className="bg-red-500"><Shield className="h-3 w-3 mr-1" />Admin</Badge>
-      case 'SUPER_ADMIN':
-        return <Badge variant="destructive" className="bg-purple-500"><Shield className="h-3 w-3 mr-1" />Super Admin</Badge>
-      case 'user':
-      case 'USER':
-        return <Badge variant="secondary"><User className="h-3 w-3 mr-1" />User</Badge>
-      default:
-        return <Badge variant="outline">{role}</Badge>
-    }
-  }
-
-  // Define table columns
-  const columns: ColumnDef<UserData>[] = useMemo(() => [
-    {
-      accessorKey: 'user',
-      header: 'User',
-      cell: ({ row }) => {
-        const user = row.original
-        return (
-          <div>
-            <Typography variant="body" className="font-medium">
-              {user.name || 'No name'}
-            </Typography>
-            <Typography variant="caption" color="muted">
-              {user.email}
-            </Typography>
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: 'points',
-      header: 'Points',
-      cell: ({ row }) => {
-        const user = row.original
-        const currentPoints = user.pointsBalance?.currentPoints ?? 0
-        const totalUsed = user.pointsBalance?.totalUsed ?? 0
-        return (
-          <div>
-            <Typography variant="body" className="font-medium">
-              {currentPoints.toLocaleString()} pts
-            </Typography>
-            <Typography variant="caption" color="muted">
-              Used: {totalUsed.toLocaleString()}
-            </Typography>
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: 'role',
-      header: 'Role',
-      cell: ({ row }) => getRoleBadge(row.getValue('role')),
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Joined',
-      cell: ({ row }) => (
-        <Typography variant="body" className="text-sm">
-          {formatDate(row.getValue('createdAt'))}
-        </Typography>
-      ),
-    },
-    {
-      accessorKey: 'lastLoginAt',
-      header: 'Last Login',
-      cell: ({ row }) => (
-        <Typography variant="body" className="text-sm">
-          {formatDate(row.getValue('lastLoginAt'))}
-        </Typography>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => {
-        const user = row.original
-        return (
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedUser(user)
-                setViewModalOpen(true)
-              }}
-              disabled={!canView}
-              title={!canView ? 'Requires users.view' : undefined}
-            >
-              <Eye className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedUser(user)
-                setEditModalOpen(true)
-              }}
-              disabled={!canEdit}
-              title={!canEdit ? 'Requires users.edit' : undefined}
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedUser(user)
-                setAdjustAmount('')
-                setAdjustReason('')
-                setAdjustMessage('')
-                setAdjustModalOpen(true)
-              }}
-              disabled={!has('points.adjust')}
-              title={!has('points.adjust') ? 'Requires points.adjust' : undefined}
-            >
-              Adjust points
-            </Button>
-            {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedUser(user)
-                  setDeleteModalOpen(true)
-                }}
-                className="text-red-600 hover:text-red-700"
-                disabled={!canEdit}
-                title={!canEdit ? 'Requires users.edit' : undefined}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        )
-      },
-    },
-  ], [])
-
-  const handleCreateSuccess = (newUser: UserData) => {
-    setUsers(prev => [newUser, ...prev])
-    setCreateModalOpen(false)
-  }
-
-  const handleEditSuccess = (updatedUser: UserData) => {
-    setUsers(prev => prev.map(user => user.id === updatedUser.id ? updatedUser : user))
-    setEditModalOpen(false)
-    setSelectedUser(null)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedUser) return
-
+  const fetchUsers = async () => {
     try {
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
-        method: 'DELETE'
+      setLoading(true)
+      const response = await fetch('/api/admin/users', {
+        credentials: 'include'
       })
-
+      
       if (response.ok) {
-        setUsers(prev => prev.filter(user => user.id !== selectedUser.id))
-        setSelectedUsers(prev => prev.filter(id => id !== selectedUser.id))
-        setDeleteModalOpen(false)
-        setSelectedUser(null)
-        toast.success('User deleted successfully!')
-      } else {
-        setError('Failed to delete user')
-        toast.error('Failed to delete user')
+        const data = await response.json()
+        setUsers(data.data || [])
       }
     } catch (error) {
-      setError('An error occurred while deleting user')
-      toast.error('An error occurred while deleting user')
+      console.error('Failed to fetch users:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleBulkAction = (selectedIds: string[], action: string) => {
-    if (action === 'delete') {
-      // TODO: Implement bulk delete
-      console.log('Bulk delete users:', selectedIds)
-    } else if (action === 'export') {
-      // TODO: Implement bulk export
-      console.log('Bulk export users:', selectedIds)
-    }
-  }
-
-  const handleExport = () => {
-    // TODO: Implement export functionality
-    console.log('Export all users')
-  }
-
-  const handleFilterChange = (filters: Record<string, string>) => {
-    console.log('Filter changed:', filters)
-  }
-
-  // Generate filter options based on current data
-  const filterOptions = useMemo(() => {
-    const roleCounts = users.reduce((acc, user) => {
-      acc[user.role] = (acc[user.role] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    return [
-      {
-        key: 'role',
-        label: 'Role',
-        options: [
-          { value: 'user', label: 'User', count: roleCounts.user || 0 },
-          { value: 'admin', label: 'Admin', count: roleCounts.admin || 0 },
-          { value: 'SUPER_ADMIN', label: 'Super Admin', count: roleCounts.SUPER_ADMIN || 0 },
-        ]
+  const handleLogout = async () => {
+    if (isLoggingOut) return
+    
+    setIsLoggingOut(true)
+    try {
+      const response = await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        router.push('/')
       }
-    ]
-  }, [users])
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  const filteredUsers = users.filter(userData =>
+    userData.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (userData.name && userData.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Typography variant="h1" className="text-3xl font-bold">
-            User Management
-          </Typography>
-          <Typography variant="body" color="muted" className="mt-2">
-            Manage users, roles, and permissions
-          </Typography>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={handleExport} variant="outline" size="sm" disabled={!canView}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button onClick={() => setCreateModalOpen(true)} disabled={!canEdit}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create User
-          </Button>
-        </div>
-      </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Data Table */}
-      <DataTable
-        columns={columns}
-        data={users}
-        isLoading={isLoading}
-        error={error}
-        searchPlaceholder="Search users by name or email..."
-        showSearch={true}
-        showFilters={true}
-        filterOptions={filterOptions}
-        showBulkActions={canEdit}
-        showPagination={true}
-        pageSize={20}
-        emptyMessage="No users found"
-        emptyIcon={<Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
-        onRefresh={fetchUsers}
-        onExport={canView ? handleExport : undefined}
-        onBulkAction={canEdit ? handleBulkAction : undefined}
-        onFilterChange={handleFilterChange}
-        selectedRowIds={canEdit ? selectedUsers : []}
-        onSelectionChange={canEdit ? setSelectedUsers : undefined}
-        enableRowSelection={canEdit}
-      />
-
-      {/* Modals */}
-      <CreateUserModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onSuccess={handleCreateSuccess}
-      />
-
-      <EditUserModal
-        isOpen={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false)
-          setSelectedUser(null)
-        }}
-        user={selectedUser}
-        onSuccess={handleEditSuccess}
-      />
-
-      <DeleteUserModal
-        isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false)
-          setSelectedUser(null)
-        }}
-        user={selectedUser}
-        onConfirm={handleDeleteConfirm}
-      />
-
-      <ViewUserModal
-        isOpen={viewModalOpen}
-        onClose={() => {
-          setViewModalOpen(false)
-          setSelectedUser(null)
-        }}
-        user={selectedUser}
-      />
-
-      {/* Adjust Points Modal */}
-      <Dialog open={adjustModalOpen} onOpenChange={setAdjustModalOpen}>
-        <DialogContent aria-describedby="adjust-desc">
-          <DialogHeader>
-            <DialogTitle>Adjust points</DialogTitle>
-            <DialogDescription id="adjust-desc">
-              Request approval to adjust points for {selectedUser?.email}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label htmlFor="adjust-amount" className="text-sm">Amount (use negative to deduct)</label>
-              <Input id="adjust-amount" value={adjustAmount} onChange={e => setAdjustAmount(e.target.value)} placeholder="e.g. 10 or -5" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden"
+              >
+                {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+              
+              <Link href="/" className="flex items-center space-x-2 text-orange-600 hover:text-orange-700">
+                <Home className="h-5 w-5" />
+                <span className="font-semibold">Back to Site</span>
+              </Link>
+              
+              <div className="hidden lg:block w-px h-6 bg-gray-300" />
+              <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
             </div>
-            <div>
-              <label htmlFor="adjust-reason" className="text-sm">Reason</label>
-              <Input id="adjust-reason" value={adjustReason} onChange={e => setAdjustReason(e.target.value)} placeholder="Why are you adjusting points?" />
-            </div>
-            {adjustMessage && (
-              <div role="status" aria-live="polite" className="text-sm text-muted-foreground">
-                {adjustMessage} {adjustMessage.includes('Approval requested') && (
-                  <a href="/admin/approvals" className="underline">View in Approvals</a>
-                )}
+            
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
+                <User className="h-4 w-4" />
+                <span>{user.email}</span>
+                <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">
+                  {user.role}
+                </span>
               </div>
-            )}
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center space-x-2 text-red-600 hover:text-red-700"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>{isLoggingOut ? 'Signing out...' : 'Sign Out'}</span>
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setAdjustModalOpen(false)} disabled={adjustSubmitting}>Cancel</Button>
-            <Button onClick={async () => {
-              if (!selectedUser) return
-              const amt = Number(adjustAmount)
-              if (Number.isNaN(amt)) {
-                setAdjustMessage('Please enter a valid number for amount')
-                return
-              }
-              setAdjustSubmitting(true)
-              setAdjustMessage('Submitting…')
-              try {
-                const res = await fetch('/api/admin/points/adjust', {
-                  credentials: 'include',
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ userId: selectedUser.id, amount: amt, reason: adjustReason })
-                })
-                if (res.status === 202) {
-                  setAdjustMessage('Approval requested. Track it in Approvals.')
-                } else if (res.ok) {
-                  setAdjustMessage('Points updated successfully')
-                } else {
-                  const j = await res.json().catch(() => ({}))
-                  setAdjustMessage(j.error || 'Request failed')
-                }
-              } finally {
-                setAdjustSubmitting(false)
-              }
-            }} disabled={adjustSubmitting || !has('points.adjust')} title={!has('points.adjust') ? 'Requires points.adjust' : undefined}>
-              {adjustSubmitting ? 'Submitting…' : 'Request approval'}
+        </div>
+      </header>
+
+      <div className="flex">
+        {/* Sidebar Navigation */}
+        <aside className={`
+          w-64 bg-white border-r border-gray-200 min-h-screen
+          fixed lg:static inset-y-0 left-0 z-40 pt-16 lg:pt-0
+          transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0 transition-transform duration-200 ease-in-out
+        `}>
+          <nav className="p-6 space-y-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon
+              const isActive = window.location.pathname === item.href
+              
+              return (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start ${
+                      isActive 
+                        ? 'bg-orange-50 text-orange-700 border border-orange-200' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <Icon className="h-4 w-4 mr-3" />
+                    {item.label}
+                  </Button>
+                </Link>
+              )
+            })}
+          </nav>
+        </aside>
+
+        {/* Mobile Overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="h2" className="text-2xl font-bold">
+                Users Management
+              </Typography>
+              <Typography variant="body" color="muted" className="mt-1">
+                Manage user accounts, roles, and permissions
+              </Typography>
+            </div>
+            <Button className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Add User</span>
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+
+          {/* Users Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <UsersIcon className="h-5 w-5" />
+                <span>User Directory ({users.length} users)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search users by email or name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b text-left">
+                      <th className="pb-3 font-medium">User</th>
+                      <th className="pb-3 font-medium">Role</th>
+                      <th className="pb-3 font-medium">Orders</th>
+                      <th className="pb-3 font-medium">Joined</th>
+                      <th className="pb-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8">Loading users...</td>
+                      </tr>
+                    ) : filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 text-gray-500">No users found</td>
+                      </tr>
+                    ) : (
+                      filteredUsers.map((userData) => (
+                        <tr key={userData.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3">
+                            <div>
+                              <div className="font-medium">{userData.name || 'Unnamed User'}</div>
+                              <div className="text-sm text-gray-500">{userData.email}</div>
+                            </div>
+                          </td>
+                          <td className="py-3">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              userData.role === 'ADMIN' || userData.role === 'SUPER_ADMIN'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {userData.role}
+                            </span>
+                          </td>
+                          <td className="py-3">{userData.orderCount}</td>
+                          <td className="py-3">
+                            {new Date(userData.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="py-3">
+                            <Button variant="outline" size="sm">
+                              View
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
     </div>
   )
 }
