@@ -31,7 +31,7 @@ export function useAdminAuth() {
       try {
         setState(prev => ({ ...prev, loading: true, error: null }))
         
-        const response = await fetch('/api/admin/auth-test', {
+        const response = await fetch('/api/admin/auth/me', {
           cache: 'no-store',
           credentials: 'include'
         })
@@ -75,7 +75,7 @@ export function useAdminAuth() {
     setState(prev => ({ ...prev, loading: true, error: null }))
     
     try {
-      const response = await fetch('/api/admin/auth-test', {
+      const response = await fetch('/api/admin/auth/me', {
         cache: 'no-store',
         credentials: 'include'
       })

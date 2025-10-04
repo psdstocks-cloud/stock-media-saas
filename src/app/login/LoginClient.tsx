@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 import { 
   Button, 
   Card, 
@@ -103,27 +102,24 @@ function LoginForm() {
         return
       }
 
-      // Use NextAuth signIn method
+      // Use custom authentication
       const redirectUrl = searchParams.get('redirect')
       const callbackUrl = redirectUrl ? decodeURIComponent(redirectUrl) : '/dashboard'
       
-      const result = await signIn('credentials', {
-        email: email.trim(),
-        password,
-        redirect: false,
-        callbackUrl
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password })
       })
 
-      if (result?.ok) {
+      const loginData = await loginResponse.json()
+
+      if (loginResponse.ok && loginData.success) {
         // Successful login, redirect to the callback URL
         router.push(callbackUrl)
       } else {
         // Handle login errors
-        if (result?.error === 'CredentialsSignin') {
-          setError('Invalid email or password')
-        } else {
-          setError(result?.error || 'Login failed. Please try again.')
-        }
+        setError(loginData.error || 'Login failed. Please try again.')
       }
     } catch (_err) {
       setError('An error occurred. Please try again.')
@@ -138,22 +134,23 @@ function LoginForm() {
     setIsLoading(true)
     setError('')
     try {
-      // Use NextAuth signIn method for demo login
+      // Use custom authentication for demo login
       const redirectUrl = searchParams.get('redirect')
       const callbackUrl = redirectUrl ? decodeURIComponent(redirectUrl) : '/dashboard'
       
-      const result = await signIn('credentials', {
-        email: 'demo@example.com',
-        password: 'demo123',
-        redirect: false,
-        callbackUrl
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'demo@example.com', password: 'demo123' })
       })
 
-      if (result?.ok) {
+      const loginData = await loginResponse.json()
+
+      if (loginResponse.ok && loginData.success) {
         // Successful login, redirect to the callback URL
         router.push(callbackUrl)
       } else {
-        setError('Demo account login failed')
+        setError(loginData.error || 'Demo account login failed')
       }
     } catch (_err) {
       setError('An error occurred. Please try again.')
