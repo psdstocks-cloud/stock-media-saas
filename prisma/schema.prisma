@@ -49,6 +49,9 @@ model User {
 
   // Admin sessions
   adminSessions             AdminSession[]
+  
+  // Website status changes
+  websiteStatusChanges      StockSite[]         @relation("WebsiteStatusChanges")
 
   // Dual-control approvals
   approvalRequestsRequested ApprovalRequest[]   @relation("RequestedBy")
@@ -199,7 +202,20 @@ model StockSite {
   updatedAt   DateTime @updatedAt
   orders      Order[]
 
+  // Website status management
+  status      WebsiteStatus @default(AVAILABLE)
+  maintenanceMessage String?
+  lastStatusChange DateTime?
+  statusChangedBy   String?
+  statusChangedByUser User? @relation("WebsiteStatusChanges", fields: [statusChangedBy], references: [id])
+
   @@map("stock_sites")
+}
+
+enum WebsiteStatus {
+  AVAILABLE
+  MAINTENANCE
+  DISABLED
 }
 
 model Order {

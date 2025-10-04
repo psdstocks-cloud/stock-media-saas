@@ -14,7 +14,8 @@ import {
   Flag,
   Menu,
   X,
-  Home
+  Home,
+  Globe
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -29,6 +30,7 @@ const navigationItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/website-status', label: 'Website Status', icon: Globe },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
   { href: '/admin/approvals', label: 'Approvals', icon: Flag },
 ]

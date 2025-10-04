@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,7 @@ import {
 import { SUPPORTED_SITES, SupportedSite } from '@/lib/supported-sites'
 import RequestPlatformModal from '@/components/modals/RequestPlatformModal'
 import PlatformLogo from '@/components/ui/PlatformLogo'
+import WebsiteStatusBadge from '@/components/landing/WebsiteStatusBadge'
 
 interface EnhancedSite extends SupportedSite {
   logo?: string
@@ -37,6 +38,8 @@ interface EnhancedSite extends SupportedSite {
   lastUpdated: string
   isPopular: boolean
   isNew: boolean
+  status?: 'AVAILABLE' | 'MAINTENANCE' | 'DISABLED'
+  maintenanceMessage?: string
 }
 
 // Enhanced site data with additional metadata
@@ -74,6 +77,36 @@ export default function SupportedPlatformsClient() {
   const [sortBy, setSortBy] = useState<string>('popularity')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showRequestForm, setShowRequestForm] = useState(false)
+  const [websiteStatuses, setWebsiteStatuses] = useState<Record<string, { status: string; maintenanceMessage?: string }>>({})
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true)
+
+  // Fetch website statuses on component mount
+  useEffect(() => {
+    const fetchWebsiteStatuses = async () => {
+      try {
+        const response = await fetch('/api/website-status')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success) {
+            const statusMap: Record<string, { status: string; maintenanceMessage?: string }> = {}
+            data.data.forEach((site: any) => {
+              statusMap[site.name] = {
+                status: site.status,
+                maintenanceMessage: site.maintenanceMessage
+              }
+            })
+            setWebsiteStatuses(statusMap)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch website statuses:', error)
+      } finally {
+        setIsLoadingStatus(false)
+      }
+    }
+
+    fetchWebsiteStatuses()
+  }, [])
 
   const filteredSites = useMemo(() => {
     let filtered = ENHANCED_SITES
@@ -126,9 +159,12 @@ export default function SupportedPlatformsClient() {
 
   const SiteCard = ({ site }: { site: EnhancedSite }) => {
     const CategoryIcon = CATEGORY_ICONS[site.category] || Globe
+    const siteStatus = websiteStatuses[site.name] || { status: 'AVAILABLE' }
 
     return (
-      <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-orange-500/50">
+      <Card className={`group hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-orange-500/50 ${
+        siteStatus.status === 'DISABLED' ? 'opacity-60' : ''
+      }`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
@@ -144,6 +180,10 @@ export default function SupportedPlatformsClient() {
               </div>
             </div>
             <div className="flex flex-col items-end space-y-1">
+              <WebsiteStatusBadge 
+                status={siteStatus.status as any} 
+                maintenanceMessage={siteStatus.maintenanceMessage}
+              />
               {site.isPopular && (
                 <Badge variant="secondary" className="bg-orange-500/20 text-orange-600 border-orange-500/30">
                   <TrendingUp className="w-3 h-3 mr-1" />
@@ -208,9 +248,12 @@ export default function SupportedPlatformsClient() {
 
   const SiteListItem = ({ site }: { site: EnhancedSite }) => {
     const CategoryIcon = CATEGORY_ICONS[site.category] || Globe
+    const siteStatus = websiteStatuses[site.name] || { status: 'AVAILABLE' }
 
     return (
-      <Card className="group hover:shadow-md transition-all duration-200">
+      <Card className={`group hover:shadow-md transition-all duration-200 ${
+        siteStatus.status === 'DISABLED' ? 'opacity-60' : ''
+      }`}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -222,6 +265,10 @@ export default function SupportedPlatformsClient() {
                   </h3>
                   <CategoryIcon className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-500 capitalize">{site.category}</span>
+                  <WebsiteStatusBadge 
+                    status={siteStatus.status as any} 
+                    maintenanceMessage={siteStatus.maintenanceMessage}
+                  />
                   {site.isPopular && (
                     <Badge variant="secondary" className="bg-orange-500/20 text-orange-600 border-orange-500/30 text-xs">
                       Popular
