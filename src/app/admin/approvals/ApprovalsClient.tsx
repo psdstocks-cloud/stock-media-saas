@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, CheckSquare, Clock, RefreshCw, Shield } from 'lucide-react'
+import { ThemedIcon } from '@/components/admin/ThemedIcon'
 
 interface Approval {
   id: string
@@ -115,11 +116,11 @@ export default function ApprovalsClient() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800'
-      case 'APPROVED': return 'bg-green-100 text-green-800'
-      case 'REJECTED': return 'bg-red-100 text-red-800'
-      case 'EXECUTED': return 'bg-blue-100 text-blue-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'APPROVED': return 'bg-green-100 text-green-800 border-green-200'
+      case 'REJECTED': return 'bg-red-100 text-red-800 border-red-200'
+      case 'EXECUTED': return 'bg-blue-100 text-blue-800 border-blue-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
@@ -142,36 +143,68 @@ export default function ApprovalsClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <CheckSquare className="h-8 w-8 text-orange-600" />
+          <ThemedIcon 
+            icon={CheckSquare}
+            className="h-8 w-8" 
+            style={{ color: 'var(--admin-accent)' }}
+          />
           <div>
-            <Typography variant="h1" className="text-2xl font-bold text-gray-900">
+            <Typography 
+              variant="h1" 
+              className="text-2xl font-bold"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
               Dual-Control Approvals
             </Typography>
-            <Typography variant="body" className="text-gray-600">
+            <Typography 
+              variant="body"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               Review and approve high-risk administrative actions
             </Typography>
           </div>
         </div>
         
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleRetry} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button 
+            variant="outline" 
+            onClick={handleRetry} 
+            disabled={loading}
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--admin-text-primary)',
+              borderColor: 'var(--admin-border)'
+            }}
+          >
+            <ThemedIcon 
+              icon={RefreshCw}
+              className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+              style={{ color: 'var(--admin-text-primary)' }}
+            />
             Refresh {retryCount > 0 && `(${retryCount})`}
           </Button>
         </div>
       </div>
 
       {/* Status Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+      <div 
+        className="flex space-x-1 p-1 rounded-lg w-fit"
+        style={{ backgroundColor: 'var(--admin-bg-secondary)' }}
+      >
         {(['PENDING', 'APPROVED', 'REJECTED', 'EXECUTED'] as const).map(status => (
           <button
             key={status}
             onClick={() => setSelectedTab(status)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
               selectedTab === status
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'shadow-sm'
+                : 'hover:opacity-80'
             }`}
+            style={{
+              backgroundColor: selectedTab === status ? 'var(--admin-bg-card)' : 'transparent',
+              color: selectedTab === status ? 'var(--admin-text-primary)' : 'var(--admin-text-secondary)',
+              border: selectedTab === status ? '1px solid var(--admin-border)' : '1px solid transparent'
+            }}
           >
             {status.charAt(0) + status.slice(1).toLowerCase()}
           </button>
@@ -180,11 +213,20 @@ export default function ApprovalsClient() {
 
       {/* Loading State */}
       {loading && (
-        <Card>
+        <Card
+          style={{
+            backgroundColor: 'var(--admin-bg-card)',
+            borderColor: 'var(--admin-border)',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <CardContent className="flex items-center justify-center py-12">
             <div className="text-center space-y-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-              <Typography variant="body" className="text-gray-600">
+              <Typography 
+                variant="body"
+                style={{ color: 'var(--admin-text-secondary)' }}
+              >
                 Loading approvals...
               </Typography>
             </div>
@@ -194,16 +236,29 @@ export default function ApprovalsClient() {
 
       {/* Error State */}
       {error && !loading && (
-        <Card className="border-red-200 bg-red-50">
+        <Card 
+          className="border-red-200 bg-red-50"
+          style={{
+            backgroundColor: '#FEF2F2',
+            borderColor: '#FECACA',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <CardContent className="py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <AlertCircle className="h-6 w-6 text-red-500" />
                 <div>
-                  <Typography variant="h3" className="text-red-700 font-semibold">
+                  <Typography 
+                    variant="h3" 
+                    className="text-red-700 font-semibold"
+                  >
                     Failed to load approvals
                   </Typography>
-                  <Typography variant="body" className="text-red-600 text-sm mt-1">
+                  <Typography 
+                    variant="body" 
+                    className="text-red-600 text-sm mt-1"
+                  >
                     {error}
                   </Typography>
                 </div>
@@ -213,7 +268,11 @@ export default function ApprovalsClient() {
                 variant="outline" 
                 className="border-red-300 text-red-700 hover:bg-red-100"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <ThemedIcon 
+                  icon={RefreshCw}
+                  className="h-4 w-4 mr-2"
+                  style={{ color: '#DC2626' }}
+                />
                 Retry
               </Button>
             </div>
@@ -223,13 +282,31 @@ export default function ApprovalsClient() {
 
       {/* Empty State */}
       {!loading && !error && approvals.length === 0 && (
-        <Card>
+        <Card
+          style={{
+            backgroundColor: 'var(--admin-bg-card)',
+            borderColor: 'var(--admin-border)',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <CheckSquare className="h-16 w-16 text-gray-400 mb-4" />
-            <Typography variant="h3" className="text-gray-700 font-semibold mb-2">
+            <ThemedIcon 
+              icon={CheckSquare}
+              className="h-16 w-16 mb-4"
+              style={{ color: 'var(--admin-text-muted)' }}
+            />
+            <Typography 
+              variant="h3" 
+              className="font-semibold mb-2"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
               No {selectedTab.toLowerCase()} approvals
             </Typography>
-            <Typography variant="body" className="text-gray-500 text-center">
+            <Typography 
+              variant="body" 
+              className="text-center"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               {selectedTab === 'PENDING' 
                 ? 'All caught up! No pending approvals require your attention.'
                 : `No approvals with ${selectedTab.toLowerCase()} status found.`
@@ -243,21 +320,32 @@ export default function ApprovalsClient() {
       {!loading && !error && approvals.length > 0 && (
         <div className="space-y-4">
           {approvals.map((approval) => (
-            <Card key={approval.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={approval.id} 
+              className="transition-all duration-200 hover:shadow-lg"
+              style={{
+                backgroundColor: 'var(--admin-bg-card)',
+                borderColor: 'var(--admin-border)',
+                color: 'var(--admin-text-primary)'
+              }}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="text-2xl">{getTypeIcon(approval.type)}</div>
                     <div>
-                      <CardTitle className="text-lg font-semibold">
+                      <CardTitle 
+                        className="text-lg font-semibold"
+                        style={{ color: 'var(--admin-text-primary)' }}
+                      >
                         {approval.type.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription style={{ color: 'var(--admin-text-secondary)' }}>
                         Requested by {approval.requestedBy} • {new Date(approval.createdAt).toLocaleDateString()}
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(approval.status)}>
+                  <Badge className={`border ${getStatusColor(approval.status)}`}>
                     {approval.status}
                   </Badge>
                 </div>
@@ -266,11 +354,21 @@ export default function ApprovalsClient() {
               <CardContent>
                 <div className="space-y-3">
                   {/* Approval Details */}
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <Typography variant="body" className="text-sm font-medium text-gray-700 mb-2">
+                  <div 
+                    className="rounded-lg p-3"
+                    style={{ backgroundColor: 'var(--admin-bg-secondary)' }}
+                  >
+                    <Typography 
+                      variant="body" 
+                      className="text-sm font-medium mb-2"
+                      style={{ color: 'var(--admin-text-primary)' }}
+                    >
                       Request Details:
                     </Typography>
-                    <div className="text-sm text-gray-600">
+                    <div 
+                      className="text-sm"
+                      style={{ color: 'var(--admin-text-secondary)' }}
+                    >
                       {Object.entries(approval.data).map(([key, value]) => (
                         <div key={key} className="flex justify-between">
                           <span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
@@ -302,7 +400,13 @@ export default function ApprovalsClient() {
 
                   {/* Approval Info */}
                   {approval.approvedBy && (
-                    <div className="text-xs text-gray-500 pt-2 border-t">
+                    <div 
+                      className="text-xs pt-2 border-t"
+                      style={{ 
+                        color: 'var(--admin-text-muted)',
+                        borderColor: 'var(--admin-border)'
+                      }}
+                    >
                       {approval.status === 'APPROVED' ? 'Approved' : 'Rejected'} by {approval.approvedBy} 
                       {approval.approvedAt && ` on ${new Date(approval.approvedAt).toLocaleDateString()}`}
                     </div>
