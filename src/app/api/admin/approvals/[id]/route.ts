@@ -32,10 +32,11 @@ async function verifyAdmin(request: NextRequest) {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('✏️ Individual Approval PATCH API called for:', params.id)
+    const { id } = await params
+    console.log('✏️ Individual Approval PATCH API called for:', id)
     
     const user = await verifyAdmin(request)
     const { action, reason } = await request.json()
@@ -49,7 +50,7 @@ export async function PATCH(
       success: true,
       message: `Approval ${action}ed successfully`,
       approval: {
-        id: params.id,
+        id: id,
         status: newStatus,
         approvedBy: user.email,
         approvedAt: new Date().toISOString(),
