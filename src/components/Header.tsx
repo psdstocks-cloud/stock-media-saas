@@ -29,6 +29,7 @@ export function Header() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
   const [user, setUser] = useState<AdminUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -46,6 +47,7 @@ export function Header() {
         const data = await response.json()
         if (data.authenticated) {
           setIsAuthenticated(true)
+          setIsAdminAuthenticated(data.user?.role === 'ADMIN' || data.user?.role === 'SUPER_ADMIN')
           setUser(data.user)
         }
       }
@@ -115,7 +117,7 @@ export function Header() {
             {/* Theme Toggle */}
             <ThemeToggle />
             
-            {status === 'loading' ? (
+            {isLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                 <Typography variant="body-sm" className="text-gray-600 dark:text-gray-300">
@@ -239,7 +241,7 @@ export function Header() {
 
             {/* Mobile Auth Section */}
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              {status === 'loading' ? (
+              {isLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                   <Typography variant="body-sm" className="ml-2 text-gray-600 dark:text-gray-300">
