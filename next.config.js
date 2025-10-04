@@ -89,7 +89,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://embed.tawk.to https://va.tawk.to https://*.tawk.to https://cdn.tawk.to https://js.tawk.to https://widget.tawk.to",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://embed.tawk.to https://va.tawk.to https://*.tawk.to https://cdn.tawk.to https://js.tawk.to https://widget.tawk.to https://cdn.jsdelivr.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://embed.tawk.to https://va.tawk.to https://*.tawk.to https://cdn.tawk.to https://js.tawk.to https://widget.tawk.to",
               "img-src 'self' data: https: blob: https://embed.tawk.to https://va.tawk.to https://*.tawk.to https://cdn.tawk.to https://js.tawk.to https://widget.tawk.to",
               "font-src 'self' https://fonts.gstatic.com https://embed.tawk.to https://va.tawk.to https://*.tawk.to https://cdn.tawk.to https://js.tawk.to https://widget.tawk.to",
