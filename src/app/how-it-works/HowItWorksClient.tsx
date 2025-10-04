@@ -32,9 +32,18 @@ export default function HowItWorksClient() {
       cta: 'Sign Up Now',
       ctaLink: '/register',
       questions: [
-        'Is registration free?',
-        'What information do I need?',
-        'How quickly can I start using the platform?'
+        {
+          question: 'Is registration free?',
+          answer: 'Yes! Registration is completely free. You only pay for the points you use to download content.'
+        },
+        {
+          question: 'What information do I need?',
+          answer: 'Just your email address and a secure password. We also recommend verifying your email for account security.'
+        },
+        {
+          question: 'How quickly can I start using the platform?',
+          answer: 'Instantly! Once you complete registration and verify your email, you can start downloading content immediately.'
+        }
       ],
       demoSteps: [
         {
@@ -76,9 +85,18 @@ export default function HowItWorksClient() {
       cta: 'See Pricing',
       ctaLink: '/pricing',
       questions: [
-        'How are points calculated?',
-        'Can I cancel during processing?',
-        'What if processing fails?'
+        {
+          question: 'How are points calculated?',
+          answer: 'Most assets cost 10 points each. We calculate points based on the platform and content type, always showing the cost before you confirm.'
+        },
+        {
+          question: 'Can I cancel during processing?',
+          answer: 'Yes, you can cancel during processing and receive a full refund of your points. Processing usually takes 1-3 minutes.'
+        },
+        {
+          question: 'What if processing fails?',
+          answer: 'If processing fails, we automatically refund your points and notify you. You can try again or contact support for assistance.'
+        }
       ],
       demoSteps: [
         {
@@ -120,9 +138,18 @@ export default function HowItWorksClient() {
       cta: 'View History',
       ctaLink: '/dashboard/history',
       questions: [
-        'How long are links valid?',
-        'Can I re-download later?',
-        'What file formats are supported?'
+        {
+          question: 'How long are links valid?',
+          answer: 'Download links are valid indefinitely. We generate fresh links every time you access your downloads for maximum security.'
+        },
+        {
+          question: 'Can I re-download later?',
+          answer: 'Yes! You can re-download any completed item from your download history without using additional points.'
+        },
+        {
+          question: 'What file formats are supported?',
+          answer: 'We support all major formats: JPG, PNG, MP4, MOV, AI, EPS, and more. The format depends on the original content from the stock platform.'
+        }
       ],
       demoSteps: [
         {
@@ -433,11 +460,22 @@ export default function HowItWorksClient() {
                     Step {step.id}: {step.title}
                   </h3>
                   <div className="space-y-3">
-                    {step.questions.map((question, qIndex) => (
-                      <div key={qIndex} className="flex items-start gap-2">
-                        <HelpCircle className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                    {step.questions.map((qa, qIndex) => (
+                      <div key={qIndex} className="flex items-start gap-2 group relative">
+                        <div className="relative">
+                          <HelpCircle className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0 cursor-help hover:text-orange-500 transition-colors" />
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+                            <div className="text-center">
+                              <div className="font-semibold mb-1">{qa.question}</div>
+                              <div className="text-gray-200">{qa.answer}</div>
+                            </div>
+                            {/* Arrow */}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </div>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {question}
+                          {qa.question}
                         </span>
                       </div>
                     ))}
