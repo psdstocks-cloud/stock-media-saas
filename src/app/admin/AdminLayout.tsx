@@ -3,10 +3,9 @@
 import { Toaster } from 'react-hot-toast'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { useAdminAuth } from '@/contexts/AdminAuthContext'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Typography } from '@/components/ui/typography'
-import { LogOut, RefreshCw, Shield, User, AlertCircle } from 'lucide-react'
+import { AlertCircle, RefreshCw, Shield } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
@@ -15,7 +14,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, authenticated, loading, error, logout, refresh } = useAdminAuth()
+  const { user, authenticated, loading, error, refresh } = useAdminAuth()
   const router = useRouter()
 
   // Redirect to login if not authenticated
@@ -25,15 +24,11 @@ export default function AdminLayout({
     }
   }, [authenticated, loading, router])
 
-  const handleLogout = async () => {
-    await logout()
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
           <Typography variant="h3" className="text-foreground">
             Loading Admin Panel...
           </Typography>
@@ -72,52 +67,12 @@ export default function AdminLayout({
     return null // Will redirect to login
   }
 
-  const roleLabel = user.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin'
-  const roleColor = user.role === 'SUPER_ADMIN' ? 'bg-red-500' : 'bg-orange-500'
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <div className="flex">
         <AdminSidebar />
         <main className="flex-1">
-          {/* Admin Status Bar */}
-          <div className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Badge 
-                className={`${roleColor} text-white font-semibold px-3 py-1`}
-              >
-                <Shield className="h-3 w-3 mr-1" />
-                {roleLabel}
-              </Badge>
-              <Badge variant="outline" className="px-3 py-1">
-                <User className="h-3 w-3 mr-1" />
-                {user.email}
-              </Badge>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={refresh}
-                disabled={loading}
-                className="hover:bg-muted"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="hover:bg-destructive/10 hover:text-destructive"
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                Logout
-              </Button>
-            </div>
-          </div>
-
-          {/* Main Content */}
+          {/* Main Content - No more header here! */}
           <div className="p-6">
             {children}
           </div>
