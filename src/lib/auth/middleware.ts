@@ -4,7 +4,7 @@ import { verifyToken } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
 
 export async function requireAuth(request: NextRequest) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const accessToken = cookieStore.get('admin_access_token')?.value
 
   if (!accessToken) {

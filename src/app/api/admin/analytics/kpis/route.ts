@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     console.log('📊 KPI Analytics API called')
     
     // Verify authentication
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
     if (!accessToken) {
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to fetch KPI data',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       },
       { status: 500 }
     )
