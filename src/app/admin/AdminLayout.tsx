@@ -2,6 +2,7 @@
 
 import { Toaster } from 'react-hot-toast'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
+import { MobileSidebar } from '@/components/admin/MobileSidebar'
 import { useAdminAuth } from '@/contexts/AdminAuthContext'
 import { Typography } from '@/components/ui/typography'
 import { AlertCircle, RefreshCw, Shield } from 'lucide-react'
@@ -69,10 +70,34 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Single Header for Admin Area */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center space-x-4">
+            <MobileSidebar />
+            <h1 className="text-xl font-semibold text-gray-900">StockMedia Pro Admin</h1>
+            <div className="hidden sm:block text-sm text-gray-500">
+              Welcome back, <span className="font-medium text-orange-600">{user.email}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+              {user.role}
+            </span>
+            <a 
+              href="/" 
+              className="text-sm text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Back to Site
+            </a>
+          </div>
+        </div>
+      </header>
+
       <div className="flex">
         <AdminSidebar />
         <main className="flex-1">
-          {/* Main Content - No more header here! */}
           <div className="p-6">
             {children}
           </div>

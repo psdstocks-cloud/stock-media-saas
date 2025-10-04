@@ -16,7 +16,9 @@ import {
   Flag,
   MessageSquare,
   Globe,
-  Activity
+  Activity,
+  UserCheck,
+  Eye
 } from 'lucide-react'
 import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 
@@ -31,79 +33,89 @@ const navigation = [
     name: 'Users',
     href: '/admin/users',
     icon: Users,
-    permission: 'users.view',
     description: 'User Management'
   },
   {
     name: 'Orders',
     href: '/admin/orders',
     icon: ShoppingCart,
-    permission: 'orders.view',
+    description: 'Order Management'
   },
   {
     name: 'Support Tickets',
     href: '/admin/tickets',
     icon: MessageSquare,
-    permission: 'tickets.view',
+    description: 'Customer Support'
   },
   {
     name: 'Approvals',
     href: '/admin/approvals',
     icon: CheckSquare,
-    permission: 'approvals.manage',
+    description: 'Dual-Control Approvals'
   },
   {
     name: 'RBAC Roles',
     href: '/admin/rbac',
     icon: Shield,
-    permission: 'rbac.manage',
-  },
-  {
-    name: 'Effective Perms',
-    href: '/admin/rbac/effective',
-    icon: Shield,
-    permission: 'users.view',
-  },
-  {
-    name: 'Permissions',
-    href: '/admin/permissions-coverage',
-    icon: Shield,
-    permission: 'users.view',
+    description: 'Role Management'
   },
   {
     name: 'Audit Logs',
     href: '/admin/audit-logs',
-    icon: Shield,
-    permission: 'users.view',
+    icon: Activity,
+    description: 'System Audit Trail'
   },
   {
     name: 'Website Status',
     href: '/admin/website-status',
     icon: Globe,
-    permission: 'settings.write',
+    description: 'Site Health Monitor'
+  },
+  {
+    name: 'Permissions Coverage',
+    href: '/admin/permissions-coverage',
+    icon: UserCheck,
+    description: 'Permission Analysis'
   },
   {
     name: 'Settings',
     href: '/admin/settings',
     icon: Settings,
-    permission: 'settings.write',
+    description: 'System Configuration'
   },
   {
     name: 'Feature Flags',
     href: '/admin/settings/feature-flags',
     icon: Flag,
-    permission: 'flags.view',
-  },
+    description: 'Feature Toggles'
+  }
 ]
 
 export function AdminSidebar() {
   const pathname = usePathname()
-  const { has, loading, permissions } = useAdminPermissions()
 
-  const handleLogout = () => {
-    // Clear auth token and redirect to login
-    document.cookie = 'auth-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-    window.location.href = '/admin/login'
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        window.location.href = '/'
+      } else {
+        // Fallback: clear cookies manually
+        document.cookie = 'admin_access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        document.cookie = 'admin_refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        window.location.href = '/'
+      }
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Fallback: clear cookies and redirect
+      document.cookie = 'admin_access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      document.cookie = 'admin_refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      window.location.href = '/'
+    }
   }
 
   return (
@@ -118,53 +130,55 @@ export function AdminSidebar() {
         
         <div className="mt-8 flex-grow flex flex-col">
           <nav className="flex-1 px-2 pb-4 space-y-1">
-            {navigation
-              .filter(item => (!item.permission || has(item.permission)) || (!permissions && !loading))
-              .map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <Link key={item.name} href={item.href} aria-disabled={item.permission ? !has(item.permission) : false}>
-                    <Button
-                      variant={isActive ? "default" : "ghost"}
-                      className={cn(
-                        "w-full justify-start text-left h-auto py-3 px-3",
-                        isActive
-                          ? "bg-orange-600 text-white hover:bg-orange-700"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                      )}
-                      disabled={item.permission ? !has(item.permission) : false}
-                    >
-                      <div className="flex items-center w-full">
-                        <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                        <div className="flex-1 text-left">
-                          <div className="font-medium text-sm">{item.name}</div>
-                          {item.description && (
-                            <div className={cn(
-                              "text-xs mt-0.5",
-                              isActive ? "text-orange-100" : "text-gray-500"
-                            )}>
-                              {item.description}
-                            </div>
-                          )}
+            {navigation.map((item) => {
+              const isActive = pathname === item.href || 
+                             (item.href !== '/admin/dashboard' && pathname.startsWith(item.href))
+              
+              return (
+                <Link key={item.name} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start text-left h-auto py-3 px-3 rounded-lg",
+                      isActive
+                        ? "bg-orange-600 text-white hover:bg-orange-700 shadow-sm"
+                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                    )}
+                  >
+                    <div className="flex items-center w-full">
+                      <item.icon className={cn(
+                        "mr-3 h-5 w-5 flex-shrink-0",
+                        isActive ? "text-white" : "text-gray-500"
+                      )} />
+                      <div className="flex-1 text-left">
+                        <div className={cn(
+                          "font-medium text-sm",
+                          isActive ? "text-white" : "text-gray-900"
+                        )}>
+                          {item.name}
+                        </div>
+                        <div className={cn(
+                          "text-xs mt-0.5",
+                          isActive ? "text-orange-100" : "text-gray-500"
+                        )}>
+                          {item.description}
                         </div>
                       </div>
-                    </Button>
-                  </Link>
-                )
-              })}
-            {loading && (
-              <div className="text-xs text-muted-foreground px-2">Loading permissions…</div>
-            )}
+                    </div>
+                  </Button>
+                </Link>
+              )
+            })}
           </nav>
           
-          <div className="flex-shrink-0 flex border-t border-border p-4">
+          <div className="flex-shrink-0 border-t border-gray-200 p-4">
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full justify-start text-muted-foreground hover:text-foreground"
+              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 py-3"
             >
-              <LogOut className="mr-3 h-5 w-5" aria-hidden="true" />
-              Logout
+              <LogOut className="mr-3 h-5 w-5" />
+              <span className="font-medium">Sign Out</span>
             </Button>
           </div>
         </div>
