@@ -5,18 +5,21 @@ const prisma = new PrismaClient()
 
 async function createAdmin() {
   try {
-    console.log('Creating admin user...')
+    console.log('🚀 Creating admin user...')
     
-    const hashedPassword = await bcrypt.hash('admin123', 10)
+    const email = 'admin@test.com'
+    const password = 'admin123456' // Stronger password
+    const hashedPassword = await bcrypt.hash(password, 12)
     
-    const admin = await prisma.user.upsert({
-      where: { email: 'admin@test.com' },
-      update: {
-        password: hashedPassword,
-        role: 'ADMIN'
-      },
-      create: {
-        email: 'admin@test.com',
+    // Delete existing admin if exists
+    await prisma.user.deleteMany({
+      where: { email }
+    })
+    
+    // Create new admin
+    const admin = await prisma.user.create({
+      data: {
+        email,
         name: 'Test Admin',
         password: hashedPassword,
         role: 'ADMIN',
@@ -24,11 +27,15 @@ async function createAdmin() {
       }
     })
     
-    console.log('✅ Admin user ready:')
-    console.log('📧 Email: admin@test.com')
-    console.log('🔑 Password: admin123')
+    console.log('✅ Admin user created successfully!')
+    console.log(`📧 Email: ${admin.email}`)
+    console.log(`🔑 Password: ${password}`)
+    console.log(`👤 Role: ${admin.role}`)
+    console.log(`🆔 ID: ${admin.id}`)
+    console.log('\n🔗 Login at: https://stock-media-saas.vercel.app/admin/login')
+    
   } catch (error) {
-    console.error('❌ Error:', error)
+    console.error('❌ Error:', error.message)
   } finally {
     await prisma.$disconnect()
   }

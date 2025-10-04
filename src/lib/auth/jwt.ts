@@ -1,6 +1,17 @@
 import { SignJWT, jwtVerify } from 'jose'
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-key-minimum-32-characters-long')
+// More robust JWT_SECRET handling
+const getJWTSecret = () => {
+  const secret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-key-minimum-32-characters-long-for-development-only'
+  
+  if (process.env.NODE_ENV === 'production' && secret.includes('fallback')) {
+    console.error('🚨 CRITICAL: Using fallback JWT secret in production!')
+  }
+  
+  return new TextEncoder().encode(secret)
+}
+
+const JWT_SECRET = getJWTSecret()
 const JWT_ISSUER = 'stockmedia-admin'
 const JWT_AUDIENCE = 'stockmedia-admin'
 
@@ -15,9 +26,11 @@ export interface JWTPayload {
 }
 
 export async function signToken(payload: Omit<JWTPayload, 'type'>, type: 'access' | 'refresh') {
-  const expiresIn = type === 'access' ? '15m' : '7d'
+  const expiresIn = type === 'access' ? '1h' : '7d' // Increased access token time
   
   try {
+    console.log(`🔐 [JWT] Signing ${type} token for user:`, payload.sub)
+    
     return await new SignJWT({ ...payload, type })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
@@ -27,21 +40,37 @@ export async function signToken(payload: Omit<JWTPayload, 'type'>, type: 'access
       .sign(JWT_SECRET)
   } catch (error) {
     console.error('❌ JWT Sign Error:', error)
-    throw new Error('Token signing failed')
+    throw new Error(`Token signing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
 export async function verifyToken(token: string): Promise<JWTPayload> {
   try {
+    console.log('🔐 [JWT] Verifying token, length:', token.length)
+    
     const { payload } = await jwtVerify(token, JWT_SECRET, {
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
     })
     
+    console.log('✅ [JWT] Token verified for user:', (payload as any).sub)
     return payload as unknown as JWTPayload
   } catch (error) {
     console.error('❌ JWT Verify Error:', error)
-    throw new Error('Invalid or expired token')
+    
+    if (error instanceof Error) {
+      if (error.message.includes('exp')) {
+        throw new Error('Token has expired')
+      }
+      if (error.message.includes('aud')) {
+        throw new Error('Token audience mismatch')
+      }
+      if (error.message.includes('iss')) {
+        throw new Error('Token issuer mismatch')
+      }
+    }
+    
+    throw new Error(`Invalid or expired token: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 

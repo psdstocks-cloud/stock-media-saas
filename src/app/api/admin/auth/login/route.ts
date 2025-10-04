@@ -111,12 +111,12 @@ export async function POST(request: NextRequest) {
     // Set secure HTTP-only cookies
     const cookieStore = await cookies()
     
-    // Access token (15 minutes)
+    // Access token (1 hour)
     cookieStore.set('admin_access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60, // 15 minutes
+      maxAge: 60 * 60, // 1 hour
       path: '/',
     })
 

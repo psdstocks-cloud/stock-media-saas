@@ -4,35 +4,87 @@ import { verifyToken } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
+  const requestId = Date.now().toString(36) // Unique request ID for tracking
+  
   try {
-    console.log('🔍 [Auth Check] API called from:', request.headers.get('referer'))
+    console.log(`🔍 [Auth Check ${requestId}] Starting auth check`)
+    console.log(`📋 [Auth Check ${requestId}] Request from:`, request.headers.get('referer') || 'direct')
+    console.log(`🌍 [Auth Check ${requestId}] User Agent:`, request.headers.get('user-agent')?.slice(0, 100) || 'unknown')
     
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
+    const refreshToken = cookieStore.get('admin_refresh_token')?.value
+
+    console.log(`🍪 [Auth Check ${requestId}] Access token:`, accessToken ? `Found (${accessToken.length} chars)` : 'Not found')
+    console.log(`🍪 [Auth Check ${requestId}] Refresh token:`, refreshToken ? `Found (${refreshToken.length} chars)` : 'Not found')
 
     if (!accessToken) {
-      console.log('❌ [Auth Check] No access token found in cookies')
+      console.log(`❌ [Auth Check ${requestId}] No access token in cookies`)
+      
+      // Try to use refresh token to get new access token
+      if (refreshToken) {
+        console.log(`🔄 [Auth Check ${requestId}] Attempting to refresh token`)
+        
+        try {
+          const refreshPayload = await verifyToken(refreshToken)
+          
+          if (refreshPayload.type === 'refresh') {
+            console.log(`🎫 [Auth Check ${requestId}] Refresh token valid, generating new access token`)
+            
+            // Generate new access token
+            const { signToken } = await import('@/lib/auth/jwt')
+            const newAccessToken = await signToken({
+              sub: refreshPayload.sub,
+              email: refreshPayload.email,
+              role: refreshPayload.role,
+              sessionId: refreshPayload.sessionId
+            }, 'access')
+            
+            // Set new access token cookie
+            const response = NextResponse.json({
+              authenticated: true,
+              user: {
+                id: refreshPayload.sub,
+                email: refreshPayload.email,
+                role: refreshPayload.role,
+              }
+            })
+            
+            response.cookies.set('admin_access_token', newAccessToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              maxAge: 60 * 60, // 1 hour
+              path: '/',
+            })
+            
+            console.log(`✅ [Auth Check ${requestId}] Token refreshed successfully`)
+            return response
+          }
+        } catch (refreshError) {
+          console.log(`❌ [Auth Check ${requestId}] Refresh token invalid:`, (refreshError as Error).message)
+        }
+      }
+      
       return NextResponse.json(
         { 
           authenticated: false, 
           error: 'NO_TOKEN',
-          message: 'No access token found'
+          message: 'No valid authentication token found'
         },
         { status: 401 }
       )
     }
 
-    console.log('🎫 [Auth Check] Access token found, length:', accessToken.length)
-
-    // Verify JWT token
+    // Verify access token
     let payload
     try {
       payload = await verifyToken(accessToken)
-      console.log('✅ [Auth Check] Token verified for user:', payload.sub, 'role:', payload.role)
+      console.log(`✅ [Auth Check ${requestId}] Access token verified for:`, payload.email, `(${payload.role})`)
     } catch (tokenError) {
-      console.log('❌ [Auth Check] Token verification failed:', (tokenError as Error).message)
+      console.log(`❌ [Auth Check ${requestId}] Access token verification failed:`, (tokenError as Error).message)
       
-      // Clear invalid cookies
+      // Clear invalid cookies and return 401
       const response = NextResponse.json(
         { 
           authenticated: false, 
@@ -47,7 +99,9 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    // Check if user exists in database
+    // Verify user exists in database
+    console.log(`🔍 [Auth Check ${requestId}] Checking user in database:`, payload.sub)
+    
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -60,12 +114,12 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user) {
-      console.log('❌ [Auth Check] User not found in database:', payload.sub)
+      console.log(`❌ [Auth Check ${requestId}] User not found in database:`, payload.sub)
       return NextResponse.json(
         { 
           authenticated: false, 
           error: 'USER_NOT_FOUND',
-          message: 'User not found'
+          message: 'User account not found'
         },
         { status: 401 }
       )
@@ -73,7 +127,7 @@ export async function GET(request: NextRequest) {
 
     // Check admin permissions
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
-      console.log('❌ [Auth Check] User lacks admin privileges:', user.role)
+      console.log(`❌ [Auth Check ${requestId}] Insufficient privileges:`, user.role)
       return NextResponse.json(
         { 
           authenticated: false, 
@@ -84,9 +138,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('✅ [Auth Check] Admin authentication successful for:', user.email)
+    console.log(`🎉 [Auth Check ${requestId}] Authentication successful for:`, user.email, `(${user.role})`)
 
-    return NextResponse.json({
+    // Add cache headers to reduce repeated calls
+    const response = NextResponse.json({
       authenticated: true,
       user: {
         id: user.id,
@@ -95,14 +150,19 @@ export async function GET(request: NextRequest) {
         role: user.role,
       }
     })
+    
+    // Cache for 30 seconds to prevent excessive calls
+    response.headers.set('Cache-Control', 'private, max-age=30')
+    
+    return response
 
   } catch (error) {
-    console.error('💥 [Auth Check] Unexpected error:', error)
+    console.error(`💥 [Auth Check ${requestId}] Unexpected error:`, error)
     return NextResponse.json(
       { 
         authenticated: false, 
         error: 'INTERNAL_ERROR',
-        message: 'Authentication check failed',
+        message: 'Authentication check failed due to server error',
         details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       },
       { status: 500 }
