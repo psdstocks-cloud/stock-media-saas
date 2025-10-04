@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     // Create session (simplified - using user ID as session token for now)
     const sessionToken = `session_${user.id}_${Date.now()}`
-    const refreshToken = `refresh_${user.id}_${Date.now()}`
+          const _refreshToken = `refresh_${user.id}_${Date.now()}`
     
     // Generate tokens
     const accessToken = await signToken({

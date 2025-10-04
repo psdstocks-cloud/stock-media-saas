@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { verifyToken, signToken } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const cookieStore = await cookies()
     const refreshToken = cookieStore.get('admin_refresh_token')?.value

@@ -71,8 +71,8 @@ export function getClientIdentifier(request: Request): string {
 
 // Rate limiting middleware
 export async function checkRateLimit(
-  identifier: string,
-  type: 'general' | 'search' | 'stockInfo' | 'download' | 'auth'
+  _identifier: string,
+  _type: 'general' | 'search' | 'stockInfo' | 'download' | 'auth'
 ) {
   // Simplified rate limiting - always allow for now
   return {

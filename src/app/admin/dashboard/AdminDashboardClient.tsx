@@ -23,14 +23,7 @@ import RevenueChart from '@/components/admin/RevenueChart'
 import RecentOrdersList from '@/components/admin/RecentOrdersList'
 import RecentUsersList from '@/components/admin/RecentUsersList'
 
-interface Props {
-  user: {
-    id: string
-    email: string
-    name?: string
-    role: string
-  }
-}
+// Removed unused Props interface
 
 const navigationItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },

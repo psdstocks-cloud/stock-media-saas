@@ -1,6 +1,6 @@
 'use server';
 
-import { signIn, signOut } from '@/auth'; // <-- Correct import
+import { signIn as _signIn, signOut as _signOut } from '@/auth'; // <-- Correct import
 import { z } from 'zod';
 
 const loginSchema = z.object({

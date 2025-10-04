@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Typography } from '@/components/ui/typography'
-import { Search, ShoppingCart, Filter } from 'lucide-react'
+import { Search, ShoppingCart } from 'lucide-react'
 
 interface Order {
   id: string

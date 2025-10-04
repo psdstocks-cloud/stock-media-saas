@@ -2,12 +2,12 @@
 
 import React, { useState } from "react"
 import { Typography } from "@/components/ui"
-import { ArrowRight, ShoppingCart, Play, Clock, Users, Zap, CheckCircle2, Download, ChevronRight, ChevronLeft, ExternalLink, HelpCircle } from "lucide-react"
+import { ArrowRight, ShoppingCart, Play, Clock, Zap, CheckCircle2, Download, ChevronRight, ChevronLeft, ExternalLink, HelpCircle } from "lucide-react"
 import DemoVideoModal from "@/components/modals/DemoVideoModal"
 import InteractiveScreenshot from "@/components/landing/InteractiveScreenshot"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+// Removed unused Badge import
 
 export default function HowItWorksClient() {
   const [isDemoOpen, setIsDemoOpen] = useState(false)
@@ -312,7 +312,7 @@ export default function HowItWorksClient() {
                   <div>
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 flex items-center justify-center text-white">
-                        <steps[activeStep].icon className="w-6 h-6" />
+                        {React.createElement(steps[activeStep].icon, { className: "w-6 h-6" })}
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold">Step {steps[activeStep].id}</h3>
