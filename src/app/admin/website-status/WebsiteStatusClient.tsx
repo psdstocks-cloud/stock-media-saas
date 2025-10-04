@@ -43,6 +43,7 @@ export default function WebsiteStatusClient() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
+  const [isSeeding, setIsSeeding] = useState(false)
 
   const fetchSites = async () => {
     try {
@@ -61,6 +62,36 @@ export default function WebsiteStatusClient() {
       console.error('Failed to fetch website statuses:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const seedDatabase = async () => {
+    try {
+      setIsSeeding(true)
+      const response = await fetch('/api/admin/seed-stock-sites', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Seeding successful:', data)
+        // Refresh the sites list
+        await fetchSites()
+        alert(`Successfully seeded ${data.count} stock sites!`)
+      } else {
+        const errorData = await response.json()
+        console.error('Seeding failed:', errorData)
+        alert(`Seeding failed: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error seeding database:', error)
+      alert('Error seeding database. Please try again.')
+    } finally {
+      setIsSeeding(false)
     }
   }
 
@@ -251,12 +282,31 @@ export default function WebsiteStatusClient() {
             <CardContent className="p-12 text-center">
               <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-semibold text-white mb-2">No sites found</h3>
-              <p className="text-gray-400">
+              <p className="text-gray-400 mb-6">
                 {sites.length === 0 
                   ? "No websites are currently configured." 
                   : "No websites match your search criteria."
                 }
               </p>
+              {sites.length === 0 && (
+                <Button 
+                  onClick={seedDatabase}
+                  disabled={isSeeding}
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  {isSeeding ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Seeding Database...
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-4 h-4 mr-2" />
+                      Seed Database with Stock Sites
+                    </>
+                  )}
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
