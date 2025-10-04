@@ -103,10 +103,18 @@ export default function AdminDashboardClient() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <Typography variant="h2" className="text-2xl font-bold">
+        <Typography 
+          variant="h2" 
+          className="text-2xl font-bold"
+          style={{ color: 'var(--admin-text-primary)' }}
+        >
           Dashboard Overview
         </Typography>
-        <Typography variant="body" color="muted" className="mt-2">
+        <Typography 
+          variant="body" 
+          className="mt-2"
+          style={{ color: 'var(--admin-text-secondary)' }}
+        >
           Welcome back, {user.name || user.email}! Here's your platform overview.
         </Typography>
       </div>

@@ -27,6 +27,7 @@ import {
   LineChart as LineChartIcon
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { ThemedIcon } from './ThemedIcon'
 
 interface RevenueData {
   date: string
@@ -214,15 +215,29 @@ export function RevenueChart({ className }: RevenueChartProps) {
   }
 
   return (
-    <Card className={className}>
+    <Card 
+      className={className}
+      style={{
+        backgroundColor: 'var(--admin-bg-card)',
+        borderColor: 'var(--admin-border)',
+        color: 'var(--admin-text-primary)'
+      }}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center">
-              <DollarSign className="h-5 w-5 mr-2" />
+            <CardTitle 
+              className="flex items-center"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
+              <ThemedIcon 
+                icon={DollarSign}
+                className="h-5 w-5 mr-2" 
+                style={{ color: 'var(--admin-accent)' }}
+              />
               Revenue Analytics
             </CardTitle>
-            <CardDescription>
+            <CardDescription style={{ color: 'var(--admin-text-secondary)' }}>
               Revenue trends over the last 30 days
             </CardDescription>
           </div>
@@ -231,6 +246,14 @@ export function RevenueChart({ className }: RevenueChartProps) {
               variant={chartType === 'line' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleChartTypeChange('line')}
+              style={chartType === 'line' ? {
+                backgroundColor: 'var(--admin-accent)',
+                color: 'white'
+              } : {
+                backgroundColor: 'transparent',
+                color: 'var(--admin-text-primary)',
+                borderColor: 'var(--admin-border)'
+              }}
             >
               <LineChartIcon className="h-4 w-4 mr-1" />
               Line
@@ -239,6 +262,14 @@ export function RevenueChart({ className }: RevenueChartProps) {
               variant={chartType === 'bar' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleChartTypeChange('bar')}
+              style={chartType === 'bar' ? {
+                backgroundColor: 'var(--admin-accent)',
+                color: 'white'
+              } : {
+                backgroundColor: 'transparent',
+                color: 'var(--admin-text-primary)',
+                borderColor: 'var(--admin-border)'
+              }}
             >
               <BarChart3 className="h-4 w-4 mr-1" />
               Bar
@@ -248,6 +279,11 @@ export function RevenueChart({ className }: RevenueChartProps) {
               size="sm"
               onClick={handleRetry}
               disabled={isLoading}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--admin-text-primary)',
+                borderColor: 'var(--admin-border)'
+              }}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
@@ -257,10 +293,17 @@ export function RevenueChart({ className }: RevenueChartProps) {
         {/* Summary Stats */}
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="space-y-1">
-            <Typography variant="caption" color="muted">
+            <Typography 
+              variant="caption"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               Total Revenue (30 days)
             </Typography>
-            <Typography variant="h3" className="font-bold">
+            <Typography 
+              variant="h3" 
+              className="font-bold"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
               {isLoading ? (
                 <Skeleton className="h-8 w-24" />
               ) : (
@@ -269,7 +312,10 @@ export function RevenueChart({ className }: RevenueChartProps) {
             </Typography>
           </div>
           <div className="space-y-1">
-            <Typography variant="caption" color="muted">
+            <Typography 
+              variant="caption"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               Growth Rate
             </Typography>
             <div className="flex items-center space-x-1">
@@ -309,11 +355,22 @@ export function RevenueChart({ className }: RevenueChartProps) {
           </div>
         ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
-            <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
-            <Typography variant="h3" className="mb-2">
+            <ThemedIcon 
+              icon={DollarSign}
+              className="h-12 w-12 mb-4" 
+              style={{ color: 'var(--admin-text-muted)' }}
+            />
+            <Typography 
+              variant="h3" 
+              className="mb-2"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
               No Revenue Data
             </Typography>
-            <Typography variant="body" color="muted">
+            <Typography 
+              variant="body"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               Revenue data will appear here once orders are processed
             </Typography>
           </div>
@@ -322,40 +379,60 @@ export function RevenueChart({ className }: RevenueChartProps) {
             <ResponsiveContainer width="100%" height="100%">
               {chartType === 'line' ? (
                 <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    className="opacity-30"
+                    stroke="var(--admin-border)"
+                  />
                   <XAxis 
                     dataKey="formattedDate" 
                     className="text-xs"
+                    tick={{ fill: 'var(--admin-text-secondary)' }}
+                    axisLine={{ stroke: 'var(--admin-border)' }}
+                    tickLine={{ stroke: 'var(--admin-border)' }}
                   />
                   <YAxis 
                     tickFormatter={(value) => `$${value}`}
                     className="text-xs"
+                    tick={{ fill: 'var(--admin-text-secondary)' }}
+                    axisLine={{ stroke: 'var(--admin-border)' }}
+                    tickLine={{ stroke: 'var(--admin-border)' }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Line 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="hsl(var(--primary))" 
+                    stroke="var(--admin-accent)" 
                     strokeWidth={2}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+                    dot={{ fill: 'var(--admin-accent)', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: 'var(--admin-accent)', strokeWidth: 2 }}
                   />
                 </LineChart>
               ) : (
                 <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    className="opacity-30"
+                    stroke="var(--admin-border)"
+                  />
                   <XAxis 
                     dataKey="formattedDate" 
                     className="text-xs"
+                    tick={{ fill: 'var(--admin-text-secondary)' }}
+                    axisLine={{ stroke: 'var(--admin-border)' }}
+                    tickLine={{ stroke: 'var(--admin-border)' }}
                   />
                   <YAxis 
                     tickFormatter={(value) => `$${value}`}
                     className="text-xs"
+                    tick={{ fill: 'var(--admin-text-secondary)' }}
+                    axisLine={{ stroke: 'var(--admin-border)' }}
+                    tickLine={{ stroke: 'var(--admin-border)' }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar 
                     dataKey="revenue" 
-                    fill="hsl(var(--primary))"
+                    fill="var(--admin-accent)"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>

@@ -21,6 +21,7 @@ import {
   Eye
 } from 'lucide-react'
 import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
+import { ThemedIcon } from './ThemedIcon'
 
 const navigation = [
   {
@@ -120,10 +121,20 @@ export function AdminSidebar() {
 
   return (
     <div className="hidden md:flex md:w-64 md:flex-col">
-      <div className="flex flex-col flex-grow pt-5 bg-card border-r border-border overflow-y-auto">
+      <div 
+        className="flex flex-col flex-grow pt-5 overflow-y-auto border-r"
+        style={{
+          backgroundColor: 'var(--admin-bg-secondary)',
+          borderColor: 'var(--admin-border)'
+        }}
+      >
         <div className="flex items-center flex-shrink-0 px-4">
-          <Shield className="h-8 w-8 text-primary" />
-          <Typography variant="h3" className="ml-2 font-bold">
+          <ThemedIcon 
+            icon={Shield}
+            className="h-8 w-8" 
+            style={{ color: 'var(--admin-accent)' }}
+          />
+          <Typography variant="h3" className="ml-2 font-bold" style={{ color: 'var(--admin-text-primary)' }}>
             Admin Panel
           </Typography>
         </div>
@@ -139,28 +150,50 @@ export function AdminSidebar() {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start text-left h-auto py-3 px-3 rounded-lg",
+                      "w-full justify-start text-left h-auto py-3 px-3 rounded-lg transition-all duration-200",
                       isActive
-                        ? "bg-orange-600 text-white hover:bg-orange-700 shadow-sm"
-                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                        ? "shadow-sm"
+                        : "hover:opacity-80"
                     )}
+                    style={{
+                      backgroundColor: isActive ? 'var(--admin-accent)' : 'transparent',
+                      color: isActive ? 'white' : 'var(--admin-text-primary)',
+                      border: isActive ? 'none' : '1px solid transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'var(--admin-bg-card)'
+                        e.currentTarget.style.borderColor = 'var(--admin-border)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.borderColor = 'transparent'
+                      }
+                    }}
                   >
                     <div className="flex items-center w-full">
-                      <item.icon className={cn(
-                        "mr-3 h-5 w-5 flex-shrink-0",
-                        isActive ? "text-white" : "text-gray-500"
-                      )} />
+                      <ThemedIcon 
+                        icon={item.icon}
+                        className="mr-3 h-5 w-5 flex-shrink-0"
+                        style={{ color: isActive ? 'white' : 'var(--admin-text-secondary)' }}
+                      />
                       <div className="flex-1 text-left">
-                        <div className={cn(
-                          "font-medium text-sm",
-                          isActive ? "text-white" : "text-gray-900"
-                        )}>
+                        <div 
+                          className="font-medium text-sm"
+                          style={{ 
+                            color: isActive ? 'white' : 'var(--admin-text-primary)' 
+                          }}
+                        >
                           {item.name}
                         </div>
-                        <div className={cn(
-                          "text-xs mt-0.5",
-                          isActive ? "text-orange-100" : "text-gray-500"
-                        )}>
+                        <div 
+                          className="text-xs mt-0.5"
+                          style={{ 
+                            color: isActive ? 'rgba(255,255,255,0.8)' : 'var(--admin-text-muted)' 
+                          }}
+                        >
                           {item.description}
                         </div>
                       </div>
@@ -171,11 +204,26 @@ export function AdminSidebar() {
             })}
           </nav>
           
-          <div className="flex-shrink-0 border-t border-gray-200 p-4">
+          <div 
+            className="flex-shrink-0 border-t p-4"
+            style={{ borderColor: 'var(--admin-border)' }}
+          >
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 py-3"
+              className="w-full justify-start py-3 transition-all duration-200"
+              style={{
+                color: '#EF4444',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#FEF2F2'
+                e.currentTarget.style.color = '#DC2626'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#EF4444'
+              }}
             >
               <LogOut className="mr-3 h-5 w-5" />
               <span className="font-medium">Sign Out</span>

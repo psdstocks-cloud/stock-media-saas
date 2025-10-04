@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'react-hot-toast'
+import { ThemedIcon } from './ThemedIcon'
 
 interface KPIData {
   totalRevenue: number
@@ -238,12 +239,27 @@ export function KPICards({ className }: KPICardsProps) {
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${className}`}>
       {kpiItems.map((item, index) => (
-        <Card key={index} className="relative overflow-hidden hover:shadow-md transition-shadow">
+        <Card 
+          key={index} 
+          className="relative overflow-hidden transition-all duration-200 hover:shadow-lg"
+          style={{
+            backgroundColor: 'var(--admin-bg-card)',
+            borderColor: 'var(--admin-border)',
+            color: 'var(--admin-text-primary)'
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle 
+              className="text-sm font-medium"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               {item.title}
             </CardTitle>
-            <item.icon className={`h-4 w-4 ${item.color}`} />
+            <ThemedIcon 
+              icon={item.icon}
+              className="h-4 w-4"
+              style={{ color: 'var(--admin-accent)' }}
+            />
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -254,7 +270,11 @@ export function KPICards({ className }: KPICardsProps) {
                 </>
               ) : (
                 <>
-                  <Typography variant="h3" className="font-bold">
+                  <Typography 
+                    variant="h3" 
+                    className="font-bold"
+                    style={{ color: 'var(--admin-text-primary)' }}
+                  >
                     {item.value}
                   </Typography>
                   <div className="flex items-center space-x-1">
@@ -269,13 +289,20 @@ export function KPICards({ className }: KPICardsProps) {
                 </>
               )}
             </div>
-            <Typography variant="caption" color="muted" className="block mt-2">
+            <Typography 
+              variant="caption" 
+              className="block mt-2"
+              style={{ color: 'var(--admin-text-muted)' }}
+            >
               {item.description}
             </Typography>
           </CardContent>
           
           {/* Decorative gradient */}
-          <div className={`absolute top-0 right-0 w-32 h-32 opacity-5 ${item.color.replace('text-', 'bg-')} rounded-full -translate-y-16 translate-x-16`}></div>
+          <div 
+            className="absolute top-0 right-0 w-32 h-32 opacity-5 rounded-full -translate-y-16 translate-x-16"
+            style={{ backgroundColor: 'var(--admin-accent)' }}
+          ></div>
         </Card>
       ))}
     </div>

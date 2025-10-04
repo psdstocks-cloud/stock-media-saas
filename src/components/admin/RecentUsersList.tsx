@@ -19,6 +19,7 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { ThemedIcon } from './ThemedIcon'
 
 interface UserData {
   id: string
@@ -206,15 +207,29 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
   }
 
   return (
-    <Card className={className}>
+    <Card 
+      className={className}
+      style={{
+        backgroundColor: 'var(--admin-bg-card)',
+        borderColor: 'var(--admin-border)',
+        color: 'var(--admin-text-primary)'
+      }}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
+            <CardTitle 
+              className="flex items-center"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
+              <ThemedIcon 
+                icon={Users}
+                className="h-5 w-5 mr-2" 
+                style={{ color: 'var(--admin-accent)' }}
+              />
               Recent Users
             </CardTitle>
-            <CardDescription>
+            <CardDescription style={{ color: 'var(--admin-text-secondary)' }}>
               Latest {limit} registered users
             </CardDescription>
           </div>
@@ -224,11 +239,24 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
               size="sm"
               onClick={handleRetry}
               disabled={isLoading}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--admin-text-primary)',
+                borderColor: 'var(--admin-border)'
+              }}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
             <Link href="/admin/users">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'var(--admin-text-primary)',
+                  borderColor: 'var(--admin-border)'
+                }}
+              >
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </Link>
@@ -252,11 +280,22 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
           </div>
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Users className="h-12 w-12 text-muted-foreground mb-4" />
-            <Typography variant="h3" className="mb-2">
+            <ThemedIcon 
+              icon={Users}
+              className="h-12 w-12 mb-4" 
+              style={{ color: 'var(--admin-text-muted)' }}
+            />
+            <Typography 
+              variant="h3" 
+              className="mb-2"
+              style={{ color: 'var(--admin-text-primary)' }}
+            >
               No Recent Users
             </Typography>
-            <Typography variant="body" color="muted">
+            <Typography 
+              variant="body"
+              style={{ color: 'var(--admin-text-secondary)' }}
+            >
               Users will appear here once they register
             </Typography>
           </div>
@@ -265,38 +304,70 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
             {userItems.map((user) => (
               <div 
                 key={user.id} 
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-3 border rounded-lg transition-all duration-200 hover:opacity-80"
+                style={{
+                  borderColor: 'var(--admin-border)',
+                  backgroundColor: 'var(--admin-bg-secondary)'
+                }}
               >
                 <div className="flex items-center space-x-4 flex-1">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--admin-accent)' + '20' }}
+                    >
+                      <ThemedIcon 
+                        icon={User}
+                        className="h-5 w-5" 
+                        style={{ color: 'var(--admin-accent)' }}
+                      />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
-                      <Typography variant="body" className="font-medium truncate">
+                      <Typography 
+                        variant="body" 
+                        className="font-medium truncate"
+                        style={{ color: 'var(--admin-text-primary)' }}
+                      >
                         {user.name || 'Unnamed User'}
                       </Typography>
                       {user.emailVerified && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
+                        <Badge 
+                          variant="outline" 
+                          className="text-green-600 border-green-600"
+                        >
                           <Mail className="h-3 w-3 mr-1" />
                           Verified
                         </Badge>
                       )}
                     </div>
-                    <Typography variant="caption" color="muted" className="block">
+                    <Typography 
+                      variant="caption" 
+                      className="block"
+                      style={{ color: 'var(--admin-text-secondary)' }}
+                    >
                       {user.email}
                     </Typography>
                     <div className="flex items-center space-x-2 mt-1">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <Typography variant="caption" color="muted">
+                      <ThemedIcon 
+                        icon={Calendar}
+                        className="h-3 w-3" 
+                        style={{ color: 'var(--admin-text-muted)' }}
+                      />
+                      <Typography 
+                        variant="caption"
+                        style={{ color: 'var(--admin-text-muted)' }}
+                      >
                         Joined {user.formattedCreatedAt}
                       </Typography>
                       {user.lastLoginAt && (
                         <>
-                          <span className="text-muted-foreground">•</span>
-                          <Typography variant="caption" color="muted">
+                          <span style={{ color: 'var(--admin-text-muted)' }}>•</span>
+                          <Typography 
+                            variant="caption"
+                            style={{ color: 'var(--admin-text-muted)' }}
+                          >
                             Last login {user.formattedLastLogin}
                           </Typography>
                         </>
@@ -313,9 +384,20 @@ export function RecentUsersList({ className, limit = 5 }: RecentUsersListProps) 
         )}
 
         {!isLoading && users.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
+          <div 
+            className="mt-4 pt-4 border-t"
+            style={{ borderColor: 'var(--admin-border)' }}
+          >
             <Link href="/admin/users">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'var(--admin-text-primary)',
+                  borderColor: 'var(--admin-border)'
+                }}
+              >
                 View All Users
                 <ExternalLink className="h-4 w-4 ml-2" />
               </Button>
