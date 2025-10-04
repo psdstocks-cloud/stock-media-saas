@@ -194,15 +194,15 @@ export default function PlatformManagementModal({
       // Upload logo if new file is selected
       if (logoFile) {
         setIsUploading(true)
-        const formData = new FormData()
-        formData.append('logo', logoFile)
-        formData.append('platformName', formData.name)
-        formData.append('logoSize', formData.logoSize)
+        const uploadFormData = new FormData()
+        uploadFormData.append('logo', logoFile)
+        uploadFormData.append('platformName', formData.name)
+        uploadFormData.append('logoSize', formData.logoSize)
 
         const uploadResponse = await fetch('/api/admin/platforms/upload-logo', {
           method: 'POST',
           credentials: 'include',
-          body: formData
+          body: uploadFormData
         })
 
         if (uploadResponse.ok) {

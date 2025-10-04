@@ -50,7 +50,7 @@ export default function WebsiteStatusClient() {
   const [isSeeding, setIsSeeding] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
-  const [selectedPlatform, setSelectedPlatform] = useState<WebsiteStatus | null>(null)
+  const [selectedPlatform, setSelectedPlatform] = useState<any | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
   const fetchSites = async () => {
@@ -111,7 +111,21 @@ export default function WebsiteStatusClient() {
 
   const handleEditPlatform = (platform: WebsiteStatus) => {
     setModalMode('edit')
-    setSelectedPlatform(platform)
+    // Convert WebsiteStatus to Platform type for the modal
+    const platformForModal = {
+      id: platform.id,
+      name: platform.name,
+      displayName: platform.displayName,
+      website: '', // WebsiteStatus doesn't have website field
+      category: platform.category,
+      cost: 10, // Default cost since WebsiteStatus doesn't have cost
+      description: '', // WebsiteStatus doesn't have description
+      logo: '', // WebsiteStatus doesn't have logo
+      logoSize: 'medium' as const,
+      isActive: platform.isActive,
+      status: platform.status
+    }
+    setSelectedPlatform(platformForModal)
     setIsModalOpen(true)
   }
 
