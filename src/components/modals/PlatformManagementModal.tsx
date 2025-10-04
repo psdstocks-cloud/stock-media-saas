@@ -6,20 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { X, Upload } from 'lucide-react'
+import { X } from 'lucide-react'
 
 interface Platform {
   id?: string
   name: string
   displayName: string
-  website: string
   category: string
   cost: number
-  description: string
-  logo: string
-  logoSize: 'small' | 'medium' | 'large'
   isActive: boolean
   status?: string
 }
@@ -53,12 +48,8 @@ export default function PlatformManagementModal({
   const [formData, setFormData] = useState<Platform>({
     name: '',
     displayName: '',
-    website: '',
     category: 'other',
     cost: 1.0,
-    description: '',
-    logo: '',
-    logoSize: 'medium',
     isActive: true
   })
 
@@ -71,12 +62,8 @@ export default function PlatformManagementModal({
       setFormData({
         name: '',
         displayName: '',
-        website: '',
         category: 'other',
         cost: 1.0,
-        description: '',
-        logo: '',
-        logoSize: 'medium',
         isActive: true
       })
     }
@@ -91,22 +78,6 @@ export default function PlatformManagementModal({
     }
   }
 
-  const handleLogoUpload = async () => {
-    // Placeholder for logo upload functionality
-    try {
-      const response = await fetch('/api/admin/platforms/upload-logo', {
-        method: 'POST',
-        credentials: 'include',
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setFormData({ ...formData, logo: data.logoUrl })
-      }
-    } catch (error) {
-      console.error('Logo upload failed:', error)
-    }
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -147,16 +118,6 @@ export default function PlatformManagementModal({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="website" className="text-white">Website</Label>
-            <Input
-              id="website"
-              value={formData.website}
-              onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-              className="bg-gray-800 border-gray-600 text-white"
-              placeholder="https://www.example.com"
-            />
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -192,35 +153,6 @@ export default function PlatformManagementModal({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-white">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="bg-gray-800 border-gray-600 text-white"
-              placeholder="Platform description..."
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-white">Logo</Label>
-            <div className="flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleLogoUpload}
-                className="border-gray-600 text-white hover:bg-gray-800"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Logo
-              </Button>
-              {formData.logo && (
-                <span className="text-sm text-gray-400">Logo uploaded</span>
-              )}
-            </div>
-          </div>
 
           <div className="flex items-center space-x-2">
             <Switch

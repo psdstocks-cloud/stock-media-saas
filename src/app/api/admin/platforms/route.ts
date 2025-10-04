@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, displayName, category, cost, description, logo, logoSize, isActive } = body
+    const { name, displayName, category, cost, isActive } = body
 
     const platform = await prisma.stockSite.create({
       data: {
@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
         displayName: displayName || name,
         category: category || 'other',
         cost: cost || 1.0,
-        description: description || '',
         isActive: isActive !== undefined ? isActive : true,
       }
     })
@@ -133,7 +132,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, displayName, category, cost, description, isActive } = body
+    const { id, name, displayName, category, cost, isActive } = body
 
     const platform = await prisma.stockSite.update({
       where: { id },
@@ -142,7 +141,6 @@ export async function PUT(request: NextRequest) {
         displayName: displayName || name,
         category: category || 'other',
         cost: cost || 1.0,
-        description: description || '',
         isActive: isActive !== undefined ? isActive : true,
         updatedAt: new Date()
       }
