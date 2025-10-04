@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { User, LogOut, CreditCard, History, ShoppingCart, Download } from 'lucide-react'
+import { User as UserIcon, LogOut, CreditCard, History, ShoppingCart, Download } from 'lucide-react'
 
 interface User {
   id: string
@@ -64,7 +64,7 @@ export default function UserMenu() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="inline-flex items-center relative z-[51]">
             <div className="h-8 w-8 rounded-full bg-[hsl(var(--muted))] flex items-center justify-center mr-2">
-              <User className="h-4 w-4" />
+              <UserIcon className="h-4 w-4" />
             </div>
             <span className="hidden sm:inline">{user.name || 'Account'}</span>
           </Button>

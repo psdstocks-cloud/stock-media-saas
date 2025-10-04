@@ -13,7 +13,7 @@ const StockMediaSearch = dynamic(() => import('@/components/dashboard/StockMedia
 import ProfileSettings from '@/components/dashboard/ProfileSettings'
 import RecentActivity from '@/components/dashboard/RecentActivity'
 import BillingSummary from '@/components/dashboard/BillingSummary'
-import { User, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
+import { User as UserIcon, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
 import useUserStore from '@/stores/userStore'
 import EmptyState from '@/components/dashboard/EmptyState'
 
@@ -98,7 +98,7 @@ export default function DashboardPage() {
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-[hsl(var(--muted-foreground))]">
-                <User className="h-4 w-4" aria-hidden="true" />
+                <UserIcon className="h-4 w-4" aria-hidden="true" />
                 <span className="text-sm">{user?.role || 'user'}</span>
               </div>
               {user?.role === 'admin' || user?.role === 'SUPER_ADMIN' ? (
@@ -214,7 +214,7 @@ export default function DashboardPage() {
               <Card className="surface-card shadow-2xl">
                 <CardHeader>
                   <CardTitle className="text-[hsl(var(--card-foreground))] flex items-center">
-                    <User className="h-5 w-5 mr-2" />
+                    <UserIcon className="h-5 w-5 mr-2" />
                     Quick Actions
                   </CardTitle>
                 </CardHeader>

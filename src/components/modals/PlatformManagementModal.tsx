@@ -13,7 +13,6 @@ import {
   X, 
   Image as ImageIcon, 
   Globe, 
-  DollarSign,
   Tag,
   FileText,
   CheckCircle2,

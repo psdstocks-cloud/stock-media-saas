@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     console.log('📝 Form data received:', {
       hasLogo: !!logo,
       logoName: logo?.name,
-      logoSize: logo?.size,
+      logoFileSize: logo?.size,
       logoType: logo?.type,
       platformName,
       logoSize
