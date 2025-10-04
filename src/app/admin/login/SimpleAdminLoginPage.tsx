@@ -31,14 +31,14 @@ export default function SimpleAdminLoginPage() {
         
         console.log('🔍 Login: Checking existing authentication...')
         
-        // Check if we have an auth-token cookie
-        const hasAuthToken = document.cookie.includes('auth-token=')
+        // Check if we have an admin_access_token cookie
+        const hasAuthToken = document.cookie.includes('admin_access_token=')
         
         if (hasAuthToken) {
           console.log('✅ Login: Auth token found, verifying session...')
           
           // Verify the session with the server
-          const response = await fetch('/api/admin/verify-session', {
+          const response = await fetch('/api/admin/auth/me', {
             credentials: 'include',
             headers: {
               'Cache-Control': 'no-cache'
@@ -47,7 +47,7 @@ export default function SimpleAdminLoginPage() {
 
           if (response.ok) {
             const data = await response.json()
-            if (data.success && data.user && (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN')) {
+            if (data.authenticated && data.user && (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN')) {
               console.log('✅ Login: Valid admin session found, redirecting to dashboard...')
               window.location.replace('/admin/dashboard')
               return
@@ -56,7 +56,8 @@ export default function SimpleAdminLoginPage() {
           
           console.log('❌ Login: Invalid session, clearing token and showing login form')
           // Clear invalid token
-          document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+          document.cookie = 'admin_access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+          document.cookie = 'admin_refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
         }
         
         console.log('🔍 Login: No valid authentication found, showing login form')
@@ -76,7 +77,7 @@ export default function SimpleAdminLoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/admin/login', {
+      const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ export default function SimpleAdminLoginPage() {
           
           setTimeout(() => {
             // Check if cookie was actually set
-            const cookieCheck = document.cookie.includes('auth-token=')
+            const cookieCheck = document.cookie.includes('admin_access_token=')
             console.log('🔍 Cookie check after login:', cookieCheck)
             console.log('🔍 All cookies:', document.cookie)
             
