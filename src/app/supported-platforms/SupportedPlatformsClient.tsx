@@ -78,7 +78,7 @@ export default function SupportedPlatformsClient() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showRequestForm, setShowRequestForm] = useState(false)
   const [websiteStatuses, setWebsiteStatuses] = useState<Record<string, { status: string; maintenanceMessage?: string }>>({})
-  const [isLoadingStatus, setIsLoadingStatus] = useState(true)
+  const [_isLoadingStatus, setIsLoadingStatus] = useState(true)
 
   // Fetch website statuses on component mount
   useEffect(() => {

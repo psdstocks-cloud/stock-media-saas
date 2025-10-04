@@ -14,7 +14,8 @@ import {
   Shield,
   CheckSquare,
   Flag,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from 'lucide-react'
 import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 
@@ -71,6 +72,12 @@ const navigation = [
     href: '/admin/audit-logs',
     icon: Shield,
     permission: 'users.view',
+  },
+  {
+    name: 'Website Status',
+    href: '/admin/website-status',
+    icon: Globe,
+    permission: 'settings.write',
   },
   {
     name: 'Settings',
