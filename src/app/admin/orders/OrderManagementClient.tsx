@@ -35,11 +35,9 @@ const navigationItems = [
   { href: '/admin/approvals', label: 'Approvals', icon: ShoppingCart },
 ]
 
-interface Props {
-  user: AdminUser
-}
-
-export default function OrderManagementClient({ user }: Props) {
+export default function OrderManagementClient() {
+  const [user, setUser] = useState<AdminUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const [orders, setOrders] = useState<OrderData[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,9 +46,41 @@ export default function OrderManagementClient({ user }: Props) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
+  // Check authentication on component mount
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/auth/me', {
+          credentials: 'include',
+          cache: 'no-cache'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            setUser(data.user)
+          } else {
+            router.replace('/admin/login')
+          }
+        } else {
+          router.replace('/admin/login')
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        router.replace('/admin/login')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    checkAuth()
+  }, [router])
+
+  useEffect(() => {
+    if (user) {
+      fetchOrders()
+    }
+  }, [user])
 
   const fetchOrders = async () => {
     try {
@@ -108,6 +138,23 @@ export default function OrderManagementClient({ user }: Props) {
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show nothing if user is not authenticated (will redirect)
+  if (!user) {
+    return null
   }
 
   return (

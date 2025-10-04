@@ -1,179 +1,134 @@
-"use client"
-import * as React from "react"
-import { usePathname } from "next/navigation"
-import { useSession } from "next-auth/react"
-// import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Menu, User } from "lucide-react"
-import UserMenu from "@/components/layout/UserMenu"
-import NotificationsMenu from "@/components/layout/NotificationsMenu"
-import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+'use client'
 
-interface HeaderProps {
-  className?: string
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { LogOut, User, Settings } from 'lucide-react'
+
+interface AdminUser {
+  id: string
+  email: string
+  name?: string
+  role: string
 }
 
-const Header = React.forwardRef<HTMLElement, HeaderProps>(
-  ({ className, ...props }, ref) => {
-    const [isScrolled, setIsScrolled] = React.useState(false)
-    const [mobileOpen, setMobileOpen] = React.useState(false)
-    const pathname = usePathname?.() || ""
-    const { data: session } = useSession()
-    const isAuthed = !!session?.user
+export default function Header() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<AdminUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-    React.useEffect(() => {
-      const onScroll = () => {
-        setIsScrolled(window.scrollY > 4)
+  useEffect(() => {
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      console.log('🔍 Header: Checking auth status...')
+      
+      const response = await fetch('/api/admin/auth/me', {
+        credentials: 'include',
+        cache: 'no-cache'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.authenticated && data.user) {
+          console.log('✅ Header: Admin authenticated:', data.user.email)
+          setIsAuthenticated(true)
+          setUser(data.user)
+        } else {
+          console.log('ℹ️ Header: Not authenticated')
+          setIsAuthenticated(false)
+          setUser(null)
+        }
+      } else {
+        console.log('❌ Header: Auth check failed:', response.status)
+        setIsAuthenticated(false)
+        setUser(null)
       }
-      onScroll()
-      window.addEventListener('scroll', onScroll, { passive: true })
-      return () => window.removeEventListener('scroll', onScroll)
-    }, [])
+    } catch (error) {
+      console.log('❌ Header: Auth check error:', error)
+      setIsAuthenticated(false)
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-    const isResourcesActive = [
-      "/help",
-      "/supported-platforms",
-      "/status",
-      "/accessibility",
-      "/security",
-      "/changelog",
-    ].includes(pathname)
+  const handleLogout = async () => {
+    try {
+      console.log('🚪 Header: Logging out...')
+      
+      const response = await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        console.log('✅ Header: Logout successful')
+        setIsAuthenticated(false)
+        setUser(null)
+        // Redirect to home page
+        window.location.href = '/'
+      }
+    } catch (error) {
+      console.error('❌ Header: Logout error:', error)
+    }
+  }
 
-    return (
-      <header
-        ref={ref}
-        className={cn(
-          "sticky top-0 z-50 w-full border-b backdrop-blur transition-colors",
-          isScrolled
-            ? "bg-background/80 supports-[backdrop-filter]:bg-background/60 shadow-sm border-border/60"
-            : "bg-background/60 supports-[backdrop-filter]:bg-background/40 border-border/40",
-          className
-        )}
-        {...props}
-      >
-        {/* Skip to content for keyboard users */}
-        <a
-          href="#content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-foreground focus:shadow"
-        >
-          Skip to content
-        </a>
-            <div className="container flex h-16 items-center justify-between px-4">
+  return (
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg brand-gradient flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SM</span>
-              </div>
-              <span className="text-xl font-bold brand-text-gradient">
-                Stock Media
-              </span>
-            </div>
-            <Badge variant="brand" className="hidden sm:inline-flex">
-              SaaS Platform
-            </Badge>
-          </div>
-
+          <Link href="/" className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors">
+            StockMedia Pro
+          </Link>
+          
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-3">
-            <a href="/dashboard" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname.startsWith("/dashboard") ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
-              Dashboard
-            </a>
-            <a href="/dashboard/order" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname.includes("/dashboard/order") ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
-              Order Media
-            </a>
-            <a href="/dashboard/history" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname.includes("/dashboard/history") ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
-              History
-            </a>
-            <a href="/dashboard/approvals" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname.includes("/dashboard/approvals") ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
-              My Approvals
-            </a>
-            <a href="/how-it-works" className={`text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded ${pathname === "/how-it-works" ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
-              How it works
-            </a>
-            <DropdownMenu>
-              <DropdownMenuTrigger className={`text-sm font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${isResourcesActive ? "text-primary underline underline-offset-4" : "text-foreground/80 hover:text-primary"}`}>
-                Resources
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuItem asChild>
-                  <a href="/supported-platforms">Supported platforms</a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/help">Help Center</a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/status">Status</a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/accessibility">Accessibility</a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/security">Security</a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/changelog">Changelog</a>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <a href="/pricing" className={`glass-hover inline-flex h-9 items-center px-3 rounded-md ${pathname === "/pricing" ? "ring-1 ring-[hsl(var(--ring))]" : ""}`}>
-              Pricing
-            </a>
-          </nav>
-
-          {/* Actions (simplified; dashboard quick actions + notifications + theme) */}
-          <div className="flex items-center space-x-2">
-            {pathname.startsWith('/dashboard') && (
-              <div className="hidden lg:flex items-center space-x-2 mr-2">
-                <a href="/pricing" className="inline-flex h-9 items-center rounded-md px-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700">
-                  Buy Points
-                </a>
+          <div className="flex items-center space-x-4">
+            {isLoading ? (
+              <div className="text-sm text-gray-500 animate-pulse">Loading...</div>
+            ) : isAuthenticated && user ? (
+              // Admin is logged in
+              <div className="flex items-center space-x-3">
+                <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
+                  <User className="h-4 w-4" />
+                  <span>{user.email}</span>
+                  <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">
+                    {user.role}
+                  </span>
+                </div>
+                
+                <Link href="/admin/dashboard">
+                  <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                    <Settings className="h-4 w-4" />
+                    <span>Admin Panel</span>
+                  </Button>
+                </Link>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:border-red-300"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </Button>
+              </div>
+            ) : (
+              // Not authenticated
+              <div className="flex items-center space-x-3">
+                <Link href="/admin/login">
+                  <Button size="sm">Admin Login</Button>
+                </Link>
+                <Button variant="outline" size="sm">Get Started</Button>
               </div>
             )}
-            <NotificationsMenu />
-            <ThemeToggle />
-            <UserMenu />
-            {!isAuthed && (
-            <a href="/login" className="md:inline-flex hidden items-center h-9 rounded-md px-3 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary/60">
-              <User className="h-4 w-4 mr-2" /> Sign In
-            </a>
-            )}
-            <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
-              <Menu className="h-4 w-4" />
-            </button>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden fixed inset-0 z-[60] bg-black/40" onClick={() => setMobileOpen(false)}>
-            <div role="dialog" aria-modal="true" className="absolute left-0 top-0 h-full w-80 max-w-[85%] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border-r border-[hsl(var(--border))] shadow-xl p-5" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold">Menu</span>
-                <button onClick={() => setMobileOpen(false)} className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-[hsl(var(--muted))]">✕</button>
-              </div>
-              <nav className="grid gap-2">
-                <a href="/dashboard" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Dashboard</a>
-                <a href="/dashboard/order" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Order Media</a>
-                <a href="/dashboard/history" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">History</a>
-                <a href="/dashboard/approvals" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">My Approvals</a>
-                <a href="/how-it-works" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">How it works</a>
-                <a href="/supported-platforms" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Supported platforms</a>
-                <a href="/help" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Help</a>
-                <a href="/pricing" className="px-2 py-2 rounded hover:bg-[hsl(var(--muted))]">Pricing</a>
-                {!isAuthed && (
-                  <a href="/login" className="mt-2 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-primary to-secondary text-white h-10">Sign In</a>
-                )}
-              </nav>
-            </div>
-          </div>
-        )}
-      </header>
-    )
-  }
-)
-Header.displayName = "Header"
-
-export { Header }
+      </div>
+    </header>
+  )
+}
