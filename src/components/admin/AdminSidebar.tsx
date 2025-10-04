@@ -15,7 +15,8 @@ import {
   CheckSquare,
   Flag,
   MessageSquare,
-  Globe
+  Globe,
+  Activity
 } from 'lucide-react'
 import { useAdminPermissions } from '@/lib/hooks/useAdminPermissions'
 
@@ -24,12 +25,14 @@ const navigation = [
     name: 'Dashboard',
     href: '/admin/dashboard',
     icon: LayoutDashboard,
+    description: 'Overview & Analytics'
   },
   {
     name: 'Users',
     href: '/admin/users',
     icon: Users,
     permission: 'users.view',
+    description: 'User Management'
   },
   {
     name: 'Orders',
@@ -124,15 +127,27 @@ export function AdminSidebar() {
                     <Button
                       variant={isActive ? "default" : "ghost"}
                       className={cn(
-                        "w-full justify-start",
+                        "w-full justify-start text-left h-auto py-3 px-3",
                         isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "bg-orange-600 text-white hover:bg-orange-700"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                       )}
                       disabled={item.permission ? !has(item.permission) : false}
                     >
-                      <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />
-                      {item.name}
+                      <div className="flex items-center w-full">
+                        <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                        <div className="flex-1 text-left">
+                          <div className="font-medium text-sm">{item.name}</div>
+                          {item.description && (
+                            <div className={cn(
+                              "text-xs mt-0.5",
+                              isActive ? "text-orange-100" : "text-gray-500"
+                            )}>
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </Button>
                   </Link>
                 )
