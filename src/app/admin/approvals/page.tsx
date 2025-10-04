@@ -1,5 +1,5 @@
-import AdminApprovalsClient from './AdminApprovalsClient'
+import ApprovalsClient from './ApprovalsClient'
 
 export default function AdminApprovalsPage() {
-  return <AdminApprovalsClient />
+  return <ApprovalsClient />
 }
