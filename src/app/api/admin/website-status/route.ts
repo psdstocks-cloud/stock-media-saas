@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     console.log('🌐 Website Status API called')
     
     // Verify authentication
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
     if (!accessToken) {
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to fetch website status',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       },
       { status: 500 }
     )
@@ -81,7 +81,7 @@ export async function PUT(request: NextRequest) {
     console.log('🌐 Website Status Update API called')
     
     // Verify authentication
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
     if (!accessToken) {
@@ -152,16 +152,17 @@ export async function PUT(request: NextRequest) {
     // Log the action
     await prisma.adminAuditLog.create({
       data: {
-        userId: user.id,
+        adminId: user.id,
         action: 'WEBSITE_STATUS_CHANGE',
-        details: {
-          siteId: siteId,
-          siteName: updatedSite.displayName,
-          oldStatus: 'UNKNOWN', // We could track this if needed
-          newStatus: status,
-          maintenanceMessage: maintenanceMessage
-        },
-        ipAddress: request.ip || 'unknown',
+        resourceType: 'StockSite',
+        resourceId: siteId,
+        oldValues: JSON.stringify({ status: 'UNKNOWN' }), // We could track this if needed
+        newValues: JSON.stringify({ 
+          status: status,
+          maintenanceMessage: maintenanceMessage 
+        }),
+        reason: `Changed website status to ${status}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
         userAgent: request.headers.get('user-agent') || 'unknown',
       },
     })
@@ -178,7 +179,7 @@ export async function PUT(request: NextRequest) {
       { 
         success: false, 
         error: 'Failed to update website status',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       },
       { status: 500 }
     )
