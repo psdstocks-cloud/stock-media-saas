@@ -17,44 +17,44 @@ export default function HowItWorksClient() {
   const steps = [
     {
       id: 1,
-      title: 'Paste URL',
-      description: 'Drop in a stock media link from 50+ platforms — no sign-up hoops.',
+      title: 'Sign Up',
+      description: 'Create your account to access our powerful stock media download platform.',
       icon: Zap,
       time: '30 seconds',
       features: [
         'Supports 50+ stock platforms',
-        'No registration required',
-        'Instant URL validation',
-        'Batch URL processing'
+        'Quick registration process',
+        'Instant access to all features',
+        'Secure account management'
       ],
       screenshot: '/images/step1-paste-url.png',
       gif: '/images/step1-paste-url.gif',
-      cta: 'Try URL Parser',
-      ctaLink: '/dashboard/order-v3',
+      cta: 'Sign Up Now',
+      ctaLink: '/register',
       questions: [
-        'Which platforms are supported?',
-        'Can I paste multiple URLs?',
-        'What if the URL is invalid?'
+        'Is registration free?',
+        'What information do I need?',
+        'How quickly can I start using the platform?'
       ],
       demoSteps: [
         {
-          title: 'Enter URL',
-          description: 'Paste your stock media URL in the input field',
-          action: 'Paste URL here...'
+          title: 'Enter Details',
+          description: 'Fill in your email and create a secure password',
+          action: 'Enter email and password...'
         },
         {
-          title: 'URL Validation',
-          description: 'Our system validates the URL and detects the platform',
-          action: 'Validating...'
+          title: 'Account Creation',
+          description: 'Our system creates your secure account instantly',
+          action: 'Creating account...'
         },
         {
-          title: 'Platform Detection',
-          description: 'We identify which stock platform the URL belongs to',
-          action: 'Detected: Shutterstock'
+          title: 'Email Verification',
+          description: 'Verify your email to activate your account',
+          action: 'Check your email...'
         },
         {
-          title: 'Ready to Process',
-          description: 'URL is ready for the next step',
+          title: 'Ready to Start',
+          description: 'Your account is ready and you can start using the platform',
           action: 'Click Next to continue'
         }
       ]
@@ -235,11 +235,11 @@ export default function HowItWorksClient() {
               Watch 3-Min Demo
             </button>
             <a 
-              href="/dashboard/order-v3" 
+              href="/register" 
               className="inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 transition-colors"
             >
               <ShoppingCart className="h-4 w-4 mr-2" aria-hidden="true" />
-              Try Live Demo
+              Get Started
             </a>
             <a 
               href="/pricing" 
