@@ -1,32 +1,59 @@
-// src/app/api/admin/permissions/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { getEffectivePermissions } from '@/lib/rbac'
-import { getUserFromRequest } from '@/lib/jwt-auth'
-
-export const dynamic = 'force-dynamic'
+import { cookies } from 'next/headers'
+import { verifyToken } from '@/lib/auth/jwt'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const user = getUserFromRequest(request)
-    if (!user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    if (process.env.NEXT_PUBLIC_E2E) {
-      const role = (user as any).role || 'USER'
-      let list: string[] = []
-      if (role === 'SUPER_ADMIN') {
-        list = [
-          'users.view','users.edit','users.impersonate',
-          'orders.view','orders.manage','orders.refund',
-          'points.adjust','billing.view',
-          'flags.view','flags.manage','settings.write','approvals.manage'
-        ]
-      } else if (role === 'ADMIN') {
-        list = ['orders.view','orders.manage','approvals.manage','users.view']
-      }
-      return NextResponse.json({ permissions: list })
+    console.log('🔐 Admin Permissions API called')
+    
+    const cookieStore = await cookies()
+    const accessToken = cookieStore.get('admin_access_token')?.value
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
     }
-    const permissions = await getEffectivePermissions(user.id)
-    return NextResponse.json({ permissions: Array.from(permissions) })
+
+    const payload = await verifyToken(accessToken)
+    
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+    })
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      )
+    }
+
+    // Return default admin permissions
+    const permissions = {
+      'users.view': true,
+      'users.edit': true,
+      'orders.view': true,
+      'orders.manage': true,
+      'settings.write': true,
+      'platforms.manage': true,
+      'website_status.manage': true,
+      'tickets.manage': true,
+      'analytics.view': true,
+    }
+
+    console.log('✅ Permissions retrieved for:', user.email)
+
+    return NextResponse.json({
+      success: true,
+      permissions
+    })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch permissions' }, { status: 500 })
+    console.error('❌ Permissions error:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to get permissions' },
+      { status: 500 }
+    )
   }
 }

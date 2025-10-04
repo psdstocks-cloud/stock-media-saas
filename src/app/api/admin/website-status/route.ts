@@ -3,11 +3,10 @@ import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth/jwt'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    console.log('🌐 Website Status API called')
+    console.log('🌐 Website Status GET API called')
     
-    // Verify authentication
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
@@ -20,7 +19,6 @@ export async function GET(_request: NextRequest) {
 
     const payload = await verifyToken(accessToken)
     
-    // Verify admin role
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
     })
@@ -32,45 +30,32 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // Get all stock sites with their status
     const stockSites = await prisma.stockSite.findMany({
-      select: {
-        id: true,
-        name: true,
-        displayName: true,
-        cost: true,
-        isActive: true,
-        status: true,
-        maintenanceMessage: true,
-        lastStatusChange: true,
-        category: true,
-        icon: true,
-        statusChangedByUser: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        displayName: 'asc'
-      }
+      orderBy: { name: 'asc' }
     })
 
-    console.log('🌐 Found', stockSites.length, 'stock sites')
+    // Convert StockSite to WebsiteStatus format
+    const websiteStatuses = stockSites.map(site => ({
+      id: site.id,
+      name: site.name,
+      displayName: site.displayName || site.name,
+      status: site.isActive ? 'AVAILABLE' : 'DISABLED',
+      maintenanceMessage: '',
+      lastStatusChange: site.updatedAt.toISOString(),
+      category: site.category || 'other',
+      isActive: site.isActive
+    }))
+
+    console.log('✅ Website statuses retrieved:', websiteStatuses.length)
 
     return NextResponse.json({
       success: true,
-      data: stockSites
+      data: websiteStatuses
     })
   } catch (error) {
-    console.error('❌ Website Status error:', error)
+    console.error('❌ Website Status GET error:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch website status',
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-      },
+      { success: false, error: 'Failed to fetch website statuses' },
       { status: 500 }
     )
   }
@@ -78,9 +63,8 @@ export async function GET(_request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    console.log('🌐 Website Status Update API called')
+    console.log('🔄 Website Status PUT API called')
     
-    // Verify authentication
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
 
@@ -93,7 +77,6 @@ export async function PUT(request: NextRequest) {
 
     const payload = await verifyToken(accessToken)
     
-    // Verify admin role
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
     })
@@ -108,79 +91,26 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { siteId, status, maintenanceMessage } = body
 
-    if (!siteId || !status) {
-      return NextResponse.json(
-        { success: false, error: 'Site ID and status are required' },
-        { status: 400 }
-      )
-    }
+    const isActive = status === 'AVAILABLE'
 
-    // Validate status
-    const validStatuses = ['AVAILABLE', 'MAINTENANCE', 'DISABLED']
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid status' },
-        { status: 400 }
-      )
-    }
-
-    // Update the stock site status
     const updatedSite = await prisma.stockSite.update({
       where: { id: siteId },
       data: {
-        status: status as any,
-        maintenanceMessage: maintenanceMessage || null,
-        lastStatusChange: new Date(),
-        statusChangedBy: user.id
-      },
-      select: {
-        id: true,
-        name: true,
-        displayName: true,
-        status: true,
-        maintenanceMessage: true,
-        lastStatusChange: true,
-        statusChangedByUser: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
+        isActive,
+        updatedAt: new Date()
       }
     })
 
-    // Log the action
-    await prisma.adminAuditLog.create({
-      data: {
-        adminId: user.id,
-        action: 'WEBSITE_STATUS_CHANGE',
-        resourceType: 'StockSite',
-        resourceId: siteId,
-        oldValues: JSON.stringify({ status: 'UNKNOWN' }), // We could track this if needed
-        newValues: JSON.stringify({ 
-          status: status,
-          maintenanceMessage: maintenanceMessage 
-        }),
-        reason: `Changed website status to ${status}`,
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-      },
-    })
-
-    console.log('🌐 Updated website status:', updatedSite.displayName, 'to', status)
+    console.log('✅ Website status updated:', updatedSite.name, status)
 
     return NextResponse.json({
       success: true,
       data: updatedSite
     })
   } catch (error) {
-    console.error('❌ Website Status Update error:', error)
+    console.error('❌ Website Status PUT error:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to update website status',
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-      },
+      { success: false, error: 'Failed to update website status' },
       { status: 500 }
     )
   }

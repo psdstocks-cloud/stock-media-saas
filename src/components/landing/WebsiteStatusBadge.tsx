@@ -1,56 +1,45 @@
-'use client'
-
 import React from 'react'
-import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, AlertTriangle, XCircle, Clock } from 'lucide-react'
+import { CheckCircle2, Clock, XCircle, AlertTriangle } from 'lucide-react'
 
 interface WebsiteStatusBadgeProps {
   status: 'AVAILABLE' | 'MAINTENANCE' | 'DISABLED'
   maintenanceMessage?: string
-  className?: string
 }
 
-const STATUS_CONFIG = {
-  AVAILABLE: {
-    icon: CheckCircle2,
-    className: 'bg-green-500/20 text-green-400 border-green-500/30',
-    label: 'Available'
-  },
-  MAINTENANCE: {
-    icon: Clock,
-    className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    label: 'Maintenance'
-  },
-  DISABLED: {
-    icon: XCircle,
-    className: 'bg-red-500/20 text-red-400 border-red-500/30',
-    label: 'Disabled'
-  }
-}
-
-export default function WebsiteStatusBadge({ 
-  status, 
-  maintenanceMessage, 
-  className = '' 
-}: WebsiteStatusBadgeProps) {
-  const config = STATUS_CONFIG[status]
-  const Icon = config.icon
-
-  return (
-    <div className={`flex items-center space-x-1 ${className}`}>
-      <Badge className={config.className}>
-        <Icon className="w-3 h-3 mr-1" />
-        {config.label}
-      </Badge>
-      {status === 'MAINTENANCE' && maintenanceMessage && (
-        <div className="group relative">
-          <AlertTriangle className="w-3 h-3 text-yellow-400 cursor-help" />
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 max-w-xs">
-            {maintenanceMessage}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-          </div>
+export default function WebsiteStatusBadge({ status, maintenanceMessage }: WebsiteStatusBadgeProps) {
+  switch (status) {
+    case 'AVAILABLE':
+      return (
+        <div className="flex items-center space-x-1 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded-lg">
+          <CheckCircle2 className="w-3 h-3 text-green-400" />
+          <span className="text-xs text-green-400 font-medium">Available</span>
         </div>
-      )}
-    </div>
-  )
+      )
+    
+    case 'MAINTENANCE':
+      return (
+        <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <Clock className="w-3 h-3 text-yellow-400" />
+          <span className="text-xs text-yellow-400 font-medium">
+            {maintenanceMessage ? 'Maintenance' : 'Maintenance'}
+          </span>
+        </div>
+      )
+    
+    case 'DISABLED':
+      return (
+        <div className="flex items-center space-x-1 px-2 py-1 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <XCircle className="w-3 h-3 text-red-400" />
+          <span className="text-xs text-red-400 font-medium">Disabled</span>
+        </div>
+      )
+    
+    default:
+      return (
+        <div className="flex items-center space-x-1 px-2 py-1 bg-gray-500/10 border border-gray-500/20 rounded-lg">
+          <AlertTriangle className="w-3 h-3 text-gray-400" />
+          <span className="text-xs text-gray-400 font-medium">Unknown</span>
+        </div>
+      )
+  }
 }
