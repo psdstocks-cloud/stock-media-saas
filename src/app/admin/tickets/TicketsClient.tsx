@@ -120,13 +120,28 @@ export default function TicketsClient() {
     if (!newResponse.trim()) return
     
     try {
-      await handleTicketUpdate(ticketId, { 
-        response: newResponse.trim(),
-        status: 'IN_PROGRESS'
+      // Add response directly to the API call
+      const response = await fetch(`/api/admin/tickets/${ticketId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          response: newResponse.trim(),
+          status: 'IN_PROGRESS'
+        })
       })
-      setNewResponse('')
+      
+      if (response.ok) {
+        console.log('✅ Response added successfully')
+        setNewResponse('')
+        loadTickets() // Refresh the list
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to add response')
+      }
     } catch (error) {
       console.error('Failed to add response:', error)
+      alert(`Failed to add response: ${error}`)
     }
   }
 
