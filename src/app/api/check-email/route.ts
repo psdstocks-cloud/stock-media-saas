@@ -12,13 +12,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Apply rate limiting
-    const rateLimitResult = await checkEmailVerificationRateLimit(email.toLowerCase().trim())
-    if (!rateLimitResult.success) {
+    const rateLimitResult = await checkEmailVerificationRateLimit(request)
+    if (!rateLimitResult) {
       return NextResponse.json({
         error: 'Too many email verification attempts. Please try again later.',
-        type: 'RATE_LIMIT_EXCEEDED',
-        remaining: rateLimitResult.remaining,
-        resetTime: new Date(rateLimitResult.reset).toISOString()
+        type: 'RATE_LIMIT_EXCEEDED'
       }, { status: 429 })
     }
 

@@ -1,106 +1,66 @@
-interface RateLimitStore {
-  [key: string]: {
-    count: number
-    resetTime: number
-  }
+interface RateLimitEntry {
+  count: number
+  resetTime: number
 }
 
-const store: RateLimitStore = {}
+const rateLimitStore = new Map<string, RateLimitEntry>()
 
 export async function rateLimit(
   request: Request,
   identifier: string,
   limit: number,
-  windowMs: number
+  windowSeconds: number
 ): Promise<boolean> {
-  // Create a unique key based on IP and identifier
+  // Get client IP
   const ip = request.headers.get('x-forwarded-for') || 
-             request.headers.get('x-real-ip') || 
-             'unknown'
+           request.headers.get('x-real-ip') || 
+           'unknown'
+  
   const key = `${identifier}:${ip}`
-  
   const now = Date.now()
-  const windowStart = now - windowMs * 1000
+  const windowMs = windowSeconds * 1000
   
-  // Clean up old entries
-  Object.keys(store).forEach(k => {
-    if (store[k].resetTime < windowStart) {
-      delete store[k]
-    }
-  })
-  
-  // Get or create entry
-  if (!store[key]) {
-    store[key] = {
-      count: 0,
-      resetTime: now + windowMs * 1000
+  // Clean up expired entries
+  for (const [k, entry] of rateLimitStore.entries()) {
+    if (now > entry.resetTime) {
+      rateLimitStore.delete(k)
     }
   }
   
-  // Check rate limit
-  if (store[key].count >= limit) {
+  // Get or create entry
+  let entry = rateLimitStore.get(key)
+  if (!entry || now > entry.resetTime) {
+    entry = {
+      count: 0,
+      resetTime: now + windowMs
+    }
+    rateLimitStore.set(key, entry)
+  }
+  
+  // Check limit
+  if (entry.count >= limit) {
+    console.log(`🚫 Rate limit exceeded for ${key}: ${entry.count}/${limit}`)
     return false
   }
   
   // Increment counter
-  store[key].count++
+  entry.count++
   
+  console.log(`✅ Rate limit OK for ${key}: ${entry.count}/${limit}`)
   return true
 }
 
-// Get client identifier from request
-export function getClientIdentifier(request: Request): string {
-  // Try to get user ID from auth header first
-  const authHeader = request.headers.get('authorization')
-  if (authHeader) {
-    try {
-      const token = authHeader.split(' ')[1]
-      // In a real implementation, you'd decode the JWT to get user ID
-      // For now, we'll use the token as identifier
-      return `user:${token}`
-    } catch {
-      // Fall back to IP if token is invalid
-    }
-  }
+// Legacy function names for backward compatibility
+export const checkEmailVerificationRateLimit = (request: Request) => 
+  rateLimit(request, 'email_verification', 5, 300) // 5 attempts per 5 minutes
 
-  // Fall back to IP address
-  const forwarded = request.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
-  return `ip:${ip}`
+export const checkPasswordResetRateLimit = (request: Request) => 
+  rateLimit(request, 'password_reset', 3, 900) // 3 attempts per 15 minutes
+
+export const getClientIdentifier = (request: Request) => {
+  return request.headers.get('x-forwarded-for') || 
+         request.headers.get('x-real-ip') || 
+         'unknown'
 }
 
-// Rate limiting middleware
-export async function checkRateLimit(
-  _identifier: string,
-  _type: 'general' | 'search' | 'stockInfo' | 'download' | 'auth'
-) {
-  // Simplified rate limiting - always allow for now
-  return {
-    success: true,
-    limit: 1000,
-    reset: Date.now() + 60000,
-    remaining: 999,
-    headers: {
-      'X-RateLimit-Limit': '1000',
-      'X-RateLimit-Remaining': '999',
-      'X-RateLimit-Reset': new Date(Date.now() + 60000).toISOString(),
-    }
-  }
-}
-
-// Specific rate limit functions for different endpoints
-export async function checkRegistrationRateLimit(identifier: string) {
-  return checkRateLimit(identifier, 'auth')
-}
-
-export async function checkEmailVerificationRateLimit(identifier: string) {
-  return checkRateLimit(identifier, 'auth')
-}
-
-export async function checkPasswordResetRateLimit(identifier: string) {
-  return checkRateLimit(identifier, 'auth')
-}
-
-export async function checkLoginRateLimit(identifier: string) {
-  return checkRateLimit(identifier, 'auth')
-}
+export const checkRateLimit = rateLimit

@@ -7,10 +7,9 @@ import { getUserFromRequest } from '@/lib/jwt-auth'
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = getClientIdentifier(request)
-    const rateLimitResult = await checkRateLimit(identifier, 'general')
+    const rateLimitResult = await checkRateLimit(request, 'orders', 20, 60) // 20 requests per minute
 
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult) {
       return NextResponse.json(
         { error: 'Too many requests' },
         { status: 429 }
@@ -108,10 +107,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = getClientIdentifier(request)
-    const rateLimitResult = await checkRateLimit(identifier, 'general')
+    const rateLimitResult = await checkRateLimit(request, 'orders', 20, 60) // 20 requests per minute
 
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult) {
       return NextResponse.json(
         { error: 'Too many requests' },
         { status: 429 }

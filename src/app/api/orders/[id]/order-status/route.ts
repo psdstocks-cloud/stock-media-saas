@@ -12,15 +12,12 @@ export async function GET(
     console.log('Order status API called for order:', orderId)
     
     // Rate limiting
-    const clientIdentifier = getClientIdentifier(request)
-    const rateLimitResult = await checkRateLimit(clientIdentifier, 'general')
+    const rateLimitResult = await checkRateLimit(request, 'order_status', 30, 60) // 30 requests per minute
     
-    if (!rateLimitResult.success) {
-      console.log('Rate limit exceeded for order status check:', clientIdentifier)
+    if (!rateLimitResult) {
+      console.log('Rate limit exceeded for order status check')
       return NextResponse.json({ 
-        error: 'Too many requests. Please wait before checking again.',
-        remaining: rateLimitResult.remaining,
-        resetTime: new Date(rateLimitResult.reset).toISOString()
+        error: 'Too many requests. Please wait before checking again.'
       }, { status: 429 })
     }
     

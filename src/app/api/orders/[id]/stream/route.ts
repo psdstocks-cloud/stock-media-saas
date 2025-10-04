@@ -10,14 +10,11 @@ export async function GET(
 ) {
   try {
     // Rate limiting
-    const clientIdentifier = getClientIdentifier(request)
-    const rateLimitResult = await checkRateLimit(clientIdentifier, 'general')
+    const rateLimitResult = await checkRateLimit(request, 'order_stream', 10, 60) // 10 requests per minute
     
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult) {
       return NextResponse.json({ 
-        error: 'Too many requests. Please wait before checking again.',
-        remaining: rateLimitResult.remaining,
-        resetTime: new Date(rateLimitResult.reset).toISOString()
+        error: 'Too many requests. Please wait before checking again.'
       }, { status: 429 })
     }
     

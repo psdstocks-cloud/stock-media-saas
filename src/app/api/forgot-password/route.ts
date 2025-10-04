@@ -27,16 +27,12 @@ export async function POST(request: NextRequest) {
 
     // Check rate limit
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
-    const rateLimitResult = await checkPasswordResetRateLimit(clientIP)
+    const rateLimitResult = await checkPasswordResetRateLimit(request)
     
-    if (!rateLimitResult.success) {
-      const retryAfterMinutes = Math.ceil((rateLimitResult.reset - Date.now()) / 60000)
-      
+    if (!rateLimitResult) {
       return NextResponse.json(
         { 
-          error: `Too many password reset requests. Please try again in ${retryAfterMinutes} minute${retryAfterMinutes !== 1 ? 's' : ''}.`,
-          remaining: rateLimitResult.remaining,
-          resetTime: new Date(rateLimitResult.reset).toISOString(),
+          error: 'Too many password reset requests. Please try again later.',
           type: 'RATE_LIMIT_EXCEEDED'
         },
         { status: 429 }
@@ -129,10 +125,6 @@ export async function POST(request: NextRequest) {
         checkSpam: true,
         expiresIn: '1 hour',
         nextRequestIn: '3 minutes'
-      },
-      rateLimit: {
-        remaining: rateLimitResult.remaining,
-        resetTime: new Date(rateLimitResult.reset).toISOString()
       },
       timer: {
         duration: 180, // 3 minutes in seconds

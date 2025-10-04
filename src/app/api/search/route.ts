@@ -22,19 +22,14 @@ const SearchRequestSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = getClientIdentifier(request)
-    const rateLimitResult = await checkRateLimit(identifier, 'search')
+    const rateLimitResult = await checkRateLimit(request, 'search', 10, 60) // 10 requests per minute
     
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult) {
       return NextResponse.json(
         { 
-          error: 'Rate limit exceeded. Please try again later.',
-          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+          error: 'Rate limit exceeded. Please try again later.'
         },
-        { 
-          status: 429,
-          headers: rateLimitResult.headers
-        }
+        { status: 429 }
       )
     }
 
@@ -123,19 +118,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = getClientIdentifier(request)
-    const rateLimitResult = await checkRateLimit(identifier, 'search')
+    const rateLimitResult = await checkRateLimit(request, 'search', 10, 60) // 10 requests per minute
     
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult) {
       return NextResponse.json(
         { 
-          error: 'Rate limit exceeded. Please try again later.',
-          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+          error: 'Rate limit exceeded. Please try again later.'
         },
-        { 
-          status: 429,
-          headers: rateLimitResult.headers
-        }
+        { status: 429 }
       )
     }
 
