@@ -16,9 +16,13 @@ import {
   Settings,
   ArrowLeft,
   AlertTriangle,
+  Plus,
+  Edit,
+  Trash2,
 } from 'lucide-react'
 import PlatformLogo from '@/components/ui/PlatformLogo'
 import WebsiteStatusBadge from '@/components/landing/WebsiteStatusBadge'
+import PlatformManagementModal from '@/components/modals/PlatformManagementModal'
 
 interface WebsiteStatus {
   id: string
@@ -44,6 +48,10 @@ export default function WebsiteStatusClient() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
   const [isSeeding, setIsSeeding] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
+  const [selectedPlatform, setSelectedPlatform] = useState<WebsiteStatus | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
   const fetchSites = async () => {
     try {
@@ -92,6 +100,77 @@ export default function WebsiteStatusClient() {
       alert('Error seeding database. Please try again.')
     } finally {
       setIsSeeding(false)
+    }
+  }
+
+  const handleAddPlatform = () => {
+    setModalMode('add')
+    setSelectedPlatform(null)
+    setIsModalOpen(true)
+  }
+
+  const handleEditPlatform = (platform: WebsiteStatus) => {
+    setModalMode('edit')
+    setSelectedPlatform(platform)
+    setIsModalOpen(true)
+  }
+
+  const handleSavePlatform = async (platformData: any) => {
+    try {
+      const url = modalMode === 'add' ? '/api/admin/platforms' : '/api/admin/platforms'
+      const method = modalMode === 'add' ? 'POST' : 'PUT'
+      
+      const response = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(modalMode === 'edit' ? { id: selectedPlatform?.id, ...platformData } : platformData)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Platform saved:', data)
+        await fetchSites()
+        alert(`Platform ${modalMode === 'add' ? 'added' : 'updated'} successfully!`)
+        setIsModalOpen(false)
+      } else {
+        const errorData = await response.json()
+        console.error('Save failed:', errorData)
+        alert(`Failed to ${modalMode === 'add' ? 'add' : 'update'} platform: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error saving platform:', error)
+      alert('Error saving platform. Please try again.')
+    }
+  }
+
+  const handleDeletePlatform = async (platformId: string, platformName: string) => {
+    if (!confirm(`Are you sure you want to delete "${platformName}"? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      setIsDeleting(platformId)
+      const response = await fetch(`/api/admin/platforms?id=${platformId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        await fetchSites()
+        alert('Platform deleted successfully!')
+      } else {
+        const errorData = await response.json()
+        console.error('Delete failed:', errorData)
+        alert(`Failed to delete platform: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting platform:', error)
+      alert('Error deleting platform. Please try again.')
+    } finally {
+      setIsDeleting(null)
     }
   }
 
@@ -175,6 +254,13 @@ export default function WebsiteStatusClient() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <Button
+              onClick={handleAddPlatform}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Platform
+            </Button>
             <Button
               onClick={fetchSites}
               variant="outline"
@@ -349,37 +435,67 @@ export default function WebsiteStatusClient() {
                       </div>
                     )}
 
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateSiteStatus(site.id, 'AVAILABLE')}
-                        disabled={isUpdating === site.id || site.status === 'AVAILABLE'}
-                        className="border-green-500/30 text-green-400 hover:bg-green-500/10"
-                      >
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        Available
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateSiteStatus(site.id, 'MAINTENANCE', 'Scheduled maintenance')}
-                        disabled={isUpdating === site.id || site.status === 'MAINTENANCE'}
-                        className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
-                      >
-                        <Clock className="w-3 h-3 mr-1" />
-                        Maintenance
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateSiteStatus(site.id, 'DISABLED')}
-                        disabled={isUpdating === site.id || site.status === 'DISABLED'}
-                        className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      >
-                        <XCircle className="w-3 h-3 mr-1" />
-                        Disable
-                      </Button>
+                    <div className="space-y-3">
+                      {/* Status Buttons */}
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateSiteStatus(site.id, 'AVAILABLE')}
+                          disabled={isUpdating === site.id || site.status === 'AVAILABLE'}
+                          className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+                        >
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          Available
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateSiteStatus(site.id, 'MAINTENANCE', 'Scheduled maintenance')}
+                          disabled={isUpdating === site.id || site.status === 'MAINTENANCE'}
+                          className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+                        >
+                          <Clock className="w-3 h-3 mr-1" />
+                          Maintenance
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateSiteStatus(site.id, 'DISABLED')}
+                          disabled={isUpdating === site.id || site.status === 'DISABLED'}
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          <XCircle className="w-3 h-3 mr-1" />
+                          Disable
+                        </Button>
+                      </div>
+
+                      {/* Management Buttons */}
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditPlatform(site)}
+                          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeletePlatform(site.id, site.displayName)}
+                          disabled={isDeleting === site.id}
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          {isDeleting === site.id ? (
+                            <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3 h-3 mr-1" />
+                          )}
+                          Delete
+                        </Button>
+                      </div>
                     </div>
 
                     {isUpdating === site.id && (
@@ -394,6 +510,15 @@ export default function WebsiteStatusClient() {
           </div>
         )}
       </div>
+
+      {/* Platform Management Modal */}
+      <PlatformManagementModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSavePlatform}
+        platform={selectedPlatform}
+        mode={modalMode}
+      />
     </div>
   )
 }
