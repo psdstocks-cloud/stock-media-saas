@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession, signOut } from 'next-auth/react'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/components/ui'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -25,27 +24,47 @@ import EmptyState from '@/components/dashboard/EmptyState'
 //   role: string
 // }
 
+interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+}
+
 export default function DashboardPage() {
-  const { data: session } = useSession()
+  const [user, setUser] = useState<User | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
   
   // Use centralized store for points
   const { points: userPoints } = useUserStore()
 
-  // Convert NextAuth session to dashboard user format
-  const user = session?.user ? {
-    id: session.user.id || '',
-    email: session.user.email || '',
-    name: session.user.name || session.user.email || '',
-    role: (session.user as any).role || 'user'
-  } : null
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          credentials: 'include'
+        })
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.user) {
+            setUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
 
-  // Points are now managed by the centralized store via PointsInitializer
+    fetchUser()
+  }, [])
 
   const handleLogout = async () => {
     try {
-      await signOut({ redirect: false })
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
       router.push('/')
     } catch (error) {
       console.error('Logout error:', error)

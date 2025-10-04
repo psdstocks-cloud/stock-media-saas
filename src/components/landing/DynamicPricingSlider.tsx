@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { Typography } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui'
@@ -139,7 +138,6 @@ export const DynamicPricingSlider: React.FC<DynamicPricingSliderProps> = ({
   className
 }) => {
   const router = useRouter()
-  const { data: _session, status: _status } = useSession()
   const [points, setPoints] = useState(100)
   const [validity, setValidity] = useState(30)
   const [isEnterprise, setIsEnterprise] = useState(false)

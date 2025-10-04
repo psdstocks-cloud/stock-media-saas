@@ -1,22 +1,62 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { User, LogOut, CreditCard, History, ShoppingCart, Download } from 'lucide-react'
 
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
 export default function UserMenu() {
-  const { data: session, status } = useSession()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (status === 'loading') {
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          credentials: 'include'
+        })
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.user) {
+            setUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [])
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Failed to sign out:', error)
+      window.location.href = '/'
+    }
+  }
+
+  if (loading) {
     return null
   }
 
-  if (!session?.user) {
+  if (!user) {
     return null
   }
-
-  const user = session.user
 
   return (
     <div className="relative">
@@ -47,7 +87,7 @@ export default function UserMenu() {
         <DropdownMenuItem onClick={() => (window.location.href = '/dashboard/downloads')}>
           <Download className="h-4 w-4 mr-2" /> Downloads
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => signOut({ redirect: false }).then(() => (window.location.href = '/'))}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="h-4 w-4 mr-2" /> Logout
         </DropdownMenuItem>
       </DropdownMenuContent>

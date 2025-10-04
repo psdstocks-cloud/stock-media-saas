@@ -1,8 +1,7 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ReactNode } from 'react'
 
 interface AuthGuardProps {
@@ -11,23 +10,52 @@ interface AuthGuardProps {
   redirectTo?: string
 }
 
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
 export function AuthGuard({ children, requireAuth = false, redirectTo = '/login' }: AuthGuardProps) {
-  const { data: session, status } = useSession()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (status === 'loading') return // Still loading
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          credentials: 'include'
+        })
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.user) {
+            setUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    if (requireAuth && !session?.user) {
+    fetchUser()
+  }, [])
+
+  useEffect(() => {
+    if (loading) return // Still loading
+
+    if (requireAuth && !user) {
       // User is not authenticated and page requires auth
       const loginUrl = `${redirectTo}?redirect=${encodeURIComponent(pathname)}`
       router.push(loginUrl)
     }
-  }, [session, status, requireAuth, router, pathname, redirectTo])
+  }, [user, loading, requireAuth, router, pathname, redirectTo])
 
   // Show loading while checking authentication
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center space-x-2">
@@ -39,7 +67,7 @@ export function AuthGuard({ children, requireAuth = false, redirectTo = '/login'
   }
 
   // If auth is required and user is not authenticated, don't render children
-  if (requireAuth && !session?.user) {
+  if (requireAuth && !user) {
     return null
   }
 
