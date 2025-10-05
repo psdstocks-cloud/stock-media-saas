@@ -25,38 +25,50 @@ import {
   CheckCircle,
   LogIn,
   User,
-  Shield
+  ArrowLeft
 } from 'lucide-react'
+import Link from 'next/link'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('demo@example.com')
+  const [password, setPassword] = useState('demo123')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [emailError, setEmailError] = useState('')
-  const [passwordError, setPasswordError] = useState('')
-  const [verificationMessage, setVerificationMessage] = useState('')
-  const [isResendingVerification, setIsResendingVerification] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const redirect = searchParams.get('redirect') || '/dashboard'
 
+  // Check if user is already authenticated
   useEffect(() => {
-    const verified = searchParams.get('verified')
-    const verificationError = searchParams.get('error')
-    const requestVerification = searchParams.get('requestVerification')
-    const message = searchParams.get('message')
+    const checkAuth = async () => {
+      try {
+        console.log('🔍 [Login] Checking existing user authentication...')
+        
+        const response = await fetch('/api/auth/status', {
+          credentials: 'include'
+        })
 
-    if (verified === 'true') {
-      setVerificationMessage('Email verified successfully! You can now log in.')
-    } else if (verificationError) {
-      setError(decodeURIComponent(verificationError))
-    } else if (requestVerification === 'true') {
-      setVerificationMessage('Please check your email for a verification link.')
-    } else if (message) {
-      setVerificationMessage(decodeURIComponent(message))
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            console.log('✅ [Login] User already authenticated, redirecting...')
+            router.replace(redirect)
+            return
+          }
+        }
+        
+        console.log('ℹ️ [Login] No existing authentication found')
+      } catch (error) {
+        console.log('🔍 [Login] Auth check failed:', error)
+      } finally {
+        setIsCheckingAuth(false)
+      }
     }
-  }, [searchParams])
+
+    checkAuth()
+  }, [router, redirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,152 +76,70 @@ function LoginForm() {
     setError('')
 
     try {
-      let hasClientError = false
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setEmailError('Please enter a valid email')
-        hasClientError = true
-      } else {
-        setEmailError('')
-      }
-      if (!password || password.length < 6) {
-        setPasswordError('Password must be at least 6 characters')
-        hasClientError = true
-      } else {
-        setPasswordError('')
-      }
-      if (hasClientError) {
-        setIsLoading(false)
-        return
-      }
-      const testResponse = await fetch('/api/test-login', {
+      console.log('🚀 [Login] Attempting user login for:', email)
+
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password })
-      })
-      const testData = await testResponse.json()
-      if (!testResponse.ok) {
-        if (testData.error === 'User not found') {
-          setError('No account found with this email address. Please check your email or create a new account.')
-        } else if (testData.error === 'Invalid password') {
-          setError('Incorrect password. Please check your password and try again.')
-        } else if (testData.error === 'Account locked') {
-          setError('Account temporarily locked due to multiple failed attempts. Please try again later.')
-        } else if (testData.error === 'Email not verified') {
-          setError('Please verify your email address before logging in. Check your inbox for a verification link.')
-        } else {
-          setError(testData.error || 'Login failed. Please check your credentials and try again.')
-        }
-        return
-      }
-
-      // Use custom authentication
-      const redirectUrl = searchParams.get('redirect')
-      const callbackUrl = redirectUrl ? decodeURIComponent(redirectUrl) : '/dashboard'
-      
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password })
+        credentials: 'include',
+        body: JSON.stringify({ email: email.trim(), password }),
       })
 
-      const loginData = await loginResponse.json()
-
-      if (loginResponse.ok && loginData.success) {
-        // Successful login, redirect to the callback URL
-        router.push(callbackUrl)
-      } else {
-        // Handle login errors
-        setError(loginData.error || 'Login failed. Please try again.')
-      }
-    } catch (_err) {
-      setError('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleDemoLogin = async () => {
-    setEmail('demo@example.com')
-    setPassword('demo123')
-    setIsLoading(true)
-    setError('')
-    try {
-      // Use custom authentication for demo login
-      const redirectUrl = searchParams.get('redirect')
-      const callbackUrl = redirectUrl ? decodeURIComponent(redirectUrl) : '/dashboard'
-      
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'demo@example.com', password: 'demo123' })
-      })
-
-      const loginData = await loginResponse.json()
-
-      if (loginResponse.ok && loginData.success) {
-        // Successful login, redirect to the callback URL
-        router.push(callbackUrl)
-      } else {
-        setError(loginData.error || 'Demo account login failed')
-      }
-    } catch (_err) {
-      setError('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleResendVerification = async () => {
-    if (!email) {
-      setError('Please enter your email address first')
-      return
-    }
-    setIsResendingVerification(true)
-    setError('')
-    setVerificationMessage('')
-    try {
-      const response = await fetch('/api/auth/resend-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      })
       const data = await response.json()
-      if (response.ok && data.success) {
-        setVerificationMessage('Verification email sent! Please check your inbox and spam folder.')
-      } else {
-        setError(data.error || 'Failed to resend verification email')
+      console.log('📋 [Login] Login response:', { status: response.status, success: data.success })
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed')
+        return
       }
-    } catch (_err) {
-      setError('An error occurred. Please try again.')
+
+      if (data.success) {
+        console.log('✅ [Login] Login successful, redirecting to:', redirect)
+        router.push(redirect)
+      }
+    } catch (err) {
+      console.error('💥 [Login] Login error:', err)
+      setError('Network error. Please try again.')
     } finally {
-      setIsResendingVerification(false)
+      setIsLoading(false)
     }
+  }
+
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-white">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-4 shadow-2xl">
-            <span className="text-white font-bold text-xl">SM</span>
-          </div>
-          <Typography variant="h1" className="text-3xl font-bold text-white mb-2">
-            Welcome Back
-          </Typography>
-          <Typography variant="body" className="text-white/70">
-            Sign in to your Stock Media SaaS account
-          </Typography>
+        {/* Back to Home Link */}
+        <div className="absolute top-6 left-6">
+          <Link href="/" className="flex items-center space-x-2 text-white hover:text-orange-400 transition-colors">
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Home</span>
+          </Link>
         </div>
 
-        <Card className="w-full surface-card shadow-2xl">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-              <LogIn className="h-6 w-6 text-white" aria-hidden="true" />
+        <Card className="backdrop-blur-sm bg-white/10 border-white/20 shadow-2xl">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-2xl">SM</span>
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Sign In</CardTitle>
-            <CardDescription className="text-white/70">
-              Enter your credentials to access your account
-            </CardDescription>
+            <div>
+              <CardTitle className="text-3xl font-bold text-white">Welcome Back</CardTitle>
+              <CardDescription className="text-white/70 mt-2">
+                Sign in to your Stock Media SaaS account
+              </CardDescription>
+            </div>
           </CardHeader>
 
           <CardContent>
@@ -221,21 +151,6 @@ function LoginForm() {
                 </Alert>
               )}
 
-              {verificationMessage && (
-                <Alert className="bg-green-500/10 border-green-500/30">
-                  <CheckCircle className="h-4 w-4 text-green-400" aria-hidden="true" />
-                  <AlertDescription className="text-green-200">{verificationMessage}</AlertDescription>
-                </Alert>
-              )}
-
-              {!error && !verificationMessage && (
-                <Alert className="bg-blue-500/10 border-blue-500/30">
-                  <AlertDescription className="text-blue-200 text-sm">
-                    🔐 Secure login with email verification and account protection
-                  </AlertDescription>
-                </Alert>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white/90 font-medium">Email</Label>
                 <div className="relative">
@@ -244,7 +159,7 @@ function LoginForm() {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder="demo@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:border-orange-500 focus:ring-orange-500 pl-10"
@@ -252,9 +167,6 @@ function LoginForm() {
                     required
                     autoComplete="email"
                   />
-                  {emailError && (
-                    <div role="alert" aria-live="polite" className="mt-1 text-sm text-red-300">{emailError}</div>
-                  )}
                 </div>
               </div>
 
@@ -284,12 +196,6 @@ function LoginForm() {
                     {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                   </button>
                 </div>
-                {passwordError && (
-                  <div role="alert" aria-live="polite" className="mt-1 text-sm text-red-300">{passwordError}</div>
-                )}
-                <div className="text-xs text-white/50">
-                  💡 Having trouble? Try the demo account below or contact support
-                </div>
               </div>
 
               <Button
@@ -309,104 +215,25 @@ function LoginForm() {
             </form>
 
             <div className="mt-6 space-y-4">
-              <div className="text-center text-sm text-white/70">
-                Don't have an account?{' '}
-                <a 
-                  href="/register" 
-                  className="text-orange-400 hover:text-orange-300 font-medium transition-colors"
-                >
-                  Sign up
-                </a>
+              <div className="text-center">
+                <p className="text-white/50 text-sm mb-4">
+                  💡 Having trouble? Try the demo account below or contact support
+                </p>
+                <div className="bg-white/5 rounded-lg p-3 text-left">
+                  <p className="text-white/70 text-xs font-medium mb-1">Demo Account:</p>
+                  <p className="text-white text-sm">📧 demo@example.com</p>
+                  <p className="text-white text-sm">🔑 demo123</p>
+                </div>
               </div>
-              <div className="text-center text-sm text-white/70">
-                Forgot your password?{' '}
-                <a 
-                  href="/forgot-password" 
-                  className="text-orange-400 hover:text-orange-300 font-medium transition-colors"
-                >
-                  Reset it here
-                </a>
-              </div>
-              <div className="text-center text-sm text-white/70">
-                Need to verify your email?{' '}
-                <button 
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={isResendingVerification}
-                  className="text-orange-400 hover:text-orange-300 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isResendingVerification ? 'Sending...' : 'Resend verification'}
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="w-full surface-card shadow-2xl mt-6">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-              <User className="h-6 w-6 text-blue-400" aria-hidden="true" />
-            </div>
-            <CardTitle className="text-xl font-bold text-white">Demo Account</CardTitle>
-            <CardDescription className="text-white/70">
-              Use these credentials to test the platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-white/10 rounded-lg p-4 space-y-2">
-              <div className="flex items-center space-x-2 text-white">
-                <Mail className="h-4 w-4 text-white/70" aria-hidden="true" />
-                <span className="font-medium">Email:</span>
-                <span className="text-orange-400">demo@example.com</span>
+              <div className="text-center space-y-2">
+                <p className="text-white/70 text-sm">
+                  Don't have an account? <Link href="/register" className="text-orange-400 hover:text-orange-300 font-medium">Sign up</Link>
+                </p>
+                <p className="text-white/70 text-sm">
+                  Forgot your password? <Link href="/forgot-password" className="text-orange-400 hover:text-orange-300 font-medium">Reset it here</Link>
+                </p>
               </div>
-              <div className="flex items-center space-x-2 text-white">
-                <Lock className="h-4 w-4 text-white/70" aria-hidden="true" />
-                <span className="font-medium">Password:</span>
-                <span className="text-orange-400">demo123</span>
-              </div>
-            </div>
-            <Button
-              onClick={handleDemoLogin}
-              variant="outline"
-              className="w-full border-white/30 text-white hover:bg-white/10"
-              disabled={isLoading}
-            >
-              <User className="h-4 w-4 mr-2" aria-hidden="true" />
-              Login as Demo User
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full surface-card shadow-2xl mt-6">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-              <Shield className="h-6 w-6 text-purple-400" aria-hidden="true" />
-            </div>
-            <CardTitle className="text-xl font-bold text-white">Admin Access</CardTitle>
-            <CardDescription className="text-white/70">
-              Administrative credentials for platform management
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-white/10 rounded-lg p-4 space-y-2">
-              <div className="flex items-center space-x-2 text-white">
-                <Mail className="h-4 w-4 text-white/70" aria-hidden="true" />
-                <span className="font-medium">Email:</span>
-                <span className="text-purple-400">admin@stockmedia.com</span>
-              </div>
-              <div className="flex items-center space-x-2 text-white">
-                <Lock className="h-4 w-4 text-white/70" aria-hidden="true" />
-                <span className="font-medium">Password:</span>
-                <span className="text-purple-400">admin123</span>
-              </div>
-            </div>
-            <div className="text-center text-xs text-white/50">
-              <p className="mb-2">
-                <strong>Note:</strong> Please change the password after first login for security.
-              </p>
-              <p>
-                Admin access provides full platform management capabilities.
-              </p>
             </div>
           </CardContent>
         </Card>
