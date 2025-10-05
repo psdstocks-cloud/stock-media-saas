@@ -14,8 +14,20 @@ import {
   Plus
 } from 'lucide-react'
 
+interface PointsData {
+  success: boolean
+  summary: {
+    currentPoints: number
+    totalPurchased: number
+    totalUsed: number
+    lastRollover: string | null
+  }
+  balance: any
+  history: any[]
+}
+
 export default function PointsPage() {
-  const [pointsData, setPointsData] = useState(null)
+  const [pointsData, setPointsData] = useState<PointsData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -57,8 +69,8 @@ export default function PointsPage() {
   }
 
   const currentPoints = pointsData?.summary?.currentPoints || 0
-  const totalEarned = pointsData?.summary?.totalEarned || 0
-  const totalSpent = pointsData?.summary?.totalSpent || 0
+  const totalPurchased = pointsData?.summary?.totalPurchased || 0
+  const totalUsed = pointsData?.summary?.totalUsed || 0
 
   return (
     <div className="space-y-6">
@@ -92,7 +104,7 @@ export default function PointsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{totalEarned}</div>
+            <div className="text-3xl font-bold text-green-600">{totalPurchased}</div>
             <p className="text-xs text-gray-500 mt-1">Lifetime earned</p>
           </CardContent>
         </Card>
@@ -105,7 +117,7 @@ export default function PointsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{totalSpent}</div>
+            <div className="text-3xl font-bold text-blue-600">{totalUsed}</div>
             <p className="text-xs text-gray-500 mt-1">Lifetime spent</p>
           </CardContent>
         </Card>
@@ -138,7 +150,7 @@ export default function PointsPage() {
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          {pointsData?.history?.length > 0 ? (
+          {pointsData?.history && pointsData.history.length > 0 ? (
             <div className="space-y-3">
               {pointsData.history.map((item) => (
                 <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
