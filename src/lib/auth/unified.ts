@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { verifyToken } from './jwt'
 import { prisma } from '@/lib/prisma'
 
-export interface AuthenticatedUser {
+export interface UnifiedUser {
   id: string
   email: string
   name: string | null
@@ -12,11 +12,11 @@ export interface AuthenticatedUser {
   isUser: boolean
 }
 
-export async function getAuthenticatedUser(request?: NextRequest): Promise<AuthenticatedUser | null> {
+export async function getUnifiedAuth(request?: NextRequest): Promise<UnifiedUser | null> {
   try {
     const cookieStore = await cookies()
     
-    // Check both possible cookie names (prioritize user, then admin for backward compatibility)
+    // Check both possible cookie names for backward compatibility
     let accessToken = cookieStore.get('user_access_token')?.value || 
                       cookieStore.get('admin_access_token')?.value
     
@@ -39,12 +39,14 @@ export async function getAuthenticatedUser(request?: NextRequest): Promise<Authe
     if (!user) {
       return null
     }
-    
+
     const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'
-    const isUser = user.role === 'USER' || isAdmin // Admins can access user features too
-    
+    const isUser = true // Everyone can access user features
+
     return {
-      ...user,
+      id: user.id,
+      email: user.email,
+      name: user.name,
       role: user.role as 'USER' | 'ADMIN' | 'SUPER_ADMIN',
       isAdmin,
       isUser
@@ -56,8 +58,8 @@ export async function getAuthenticatedUser(request?: NextRequest): Promise<Authe
   }
 }
 
-export async function requireAuth(request?: NextRequest): Promise<AuthenticatedUser> {
-  const user = await getAuthenticatedUser(request)
+export async function requireUnifiedAuth(request?: NextRequest): Promise<UnifiedUser> {
+  const user = await getUnifiedAuth(request)
   
   if (!user) {
     throw new Error('Authentication required')
@@ -66,8 +68,9 @@ export async function requireAuth(request?: NextRequest): Promise<AuthenticatedU
   return user
 }
 
-export async function requireAdmin(request?: NextRequest): Promise<AuthenticatedUser> {
-  const user = await getAuthenticatedUser(request)
+// Helper function to check if user has admin permissions
+export async function requireAdminAuth(request?: NextRequest): Promise<UnifiedUser> {
+  const user = await getUnifiedAuth(request)
   
   if (!user || !user.isAdmin) {
     throw new Error('Admin access required')

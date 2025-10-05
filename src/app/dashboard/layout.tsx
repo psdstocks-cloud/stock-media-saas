@@ -19,22 +19,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const checkAuthentication = async () => {
     try {
+      console.log('🔍 [Dashboard Layout] Checking authentication...')
+      
       const response = await fetch('/api/auth/me', {
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-cache'
       })
       
       if (response.ok) {
         const data = await response.json()
         if (data.authenticated && data.user) {
+          console.log('✅ [Dashboard Layout] User authenticated')
           setIsAuthenticated(true)
         } else {
+          console.log('❌ [Dashboard Layout] User not authenticated, redirecting...')
           router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
         }
       } else {
+        console.log('❌ [Dashboard Layout] Auth check failed, redirecting...')
         router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
       }
     } catch (error) {
-      console.error('Dashboard auth check failed:', error)
+      console.error('❌ [Dashboard Layout] Auth check error:', error)
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
     } finally {
       setIsLoading(false)

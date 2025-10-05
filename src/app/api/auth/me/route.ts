@@ -1,54 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifyToken } from '@/lib/auth/jwt'
-import { prisma } from '@/lib/prisma'
+import { getUnifiedAuth } from '@/lib/auth/unified'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 [Auth Me] Checking unified auth status')
+    console.log('🔍 [Auth Me] Checking unified auth status...')
     
-    const cookieStore = await cookies()
-    
-    // Check both possible cookie names
-    let accessToken = cookieStore.get('user_access_token')?.value || 
-                      cookieStore.get('admin_access_token')?.value
-    
-    if (!accessToken) {
-      return NextResponse.json({
-        authenticated: false,
-        user: null
-      })
-    }
-    
-    const payload = await verifyToken(accessToken)
-    
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true
-      }
-    })
+    const user = await getUnifiedAuth(request)
     
     if (!user) {
+      console.log('ℹ️ [Auth Me] No authentication found')
       return NextResponse.json({
         authenticated: false,
         user: null
-      })
+      }, { status: 200 }) // Important: Return 200, not 401 for unauthenticated state
     }
 
-    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'
-    const isUser = true // Everyone can access user features
-
-    console.log('✅ [Auth Me] User found:', {
+    console.log('✅ [Auth Me] User authenticated:', {
       email: user.email,
       role: user.role,
-      isAdmin,
-      isUser
+      isAdmin: user.isAdmin,
+      isUser: user.isUser
     })
 
     return NextResponse.json({
@@ -58,10 +31,10 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name,
         role: user.role,
-        isAdmin,
-        isUser
+        isAdmin: user.isAdmin,
+        isUser: user.isUser
       }
-    })
+    }, { status: 200 })
 
   } catch (error) {
     console.error('❌ [Auth Me] Error:', error)
@@ -69,6 +42,6 @@ export async function GET(request: NextRequest) {
       authenticated: false,
       user: null,
       error: 'Failed to check auth status'
-    })
+    }, { status: 200 }) // Return 200 even on error to prevent 401s
   }
 }

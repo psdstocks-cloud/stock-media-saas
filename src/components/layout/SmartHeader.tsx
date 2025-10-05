@@ -56,9 +56,11 @@ export default function SmartHeader() {
       
       const response = await fetch('/api/auth/me', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-cache'
       })
       
+      // Always expect 200 response from auth/me
       if (response.ok) {
         const data = await response.json()
         if (data.authenticated && data.user) {
@@ -66,20 +68,25 @@ export default function SmartHeader() {
           setUser(data.user)
           setIsAuthenticated(true)
           
-          // Load user points if authenticated
-          loadUserPoints()
+          // Load user points if authenticated - with error handling
+          await loadUserPoints()
         } else {
+          console.log('ℹ️ [Smart Header] User not authenticated')
           setIsAuthenticated(false)
           setUser(null)
+          setUserPoints(0)
         }
       } else {
+        console.log('❌ [Smart Header] Auth check failed:', response.status)
         setIsAuthenticated(false)
         setUser(null)
+        setUserPoints(0)
       }
     } catch (error) {
       console.log('❌ [Smart Header] Auth check error:', error)
       setIsAuthenticated(false)
       setUser(null)
+      setUserPoints(0)
     } finally {
       setIsLoading(false)
     }
@@ -89,17 +96,26 @@ export default function SmartHeader() {
     try {
       const response = await fetch('/api/points', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-cache'
       })
       
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.summary) {
           setUserPoints(data.summary.currentPoints || 0)
+          console.log('✅ [Smart Header] Points loaded:', data.summary.currentPoints)
+        } else {
+          console.log('ℹ️ [Smart Header] Points API returned no data')
+          setUserPoints(0)
         }
+      } else {
+        console.log('ℹ️ [Smart Header] Points API failed:', response.status)
+        setUserPoints(0)
       }
     } catch (error) {
-      console.log('🔍 [Smart Header] Points check error:', error)
+      console.log('ℹ️ [Smart Header] Points check error (non-critical):', error)
+      setUserPoints(0)
     }
   }
 

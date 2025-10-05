@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyUserAuth } from '@/lib/auth/user'
+import { getUnifiedAuth } from '@/lib/auth/unified'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('💰 Points API called')
+    console.log('💰 [Points API] Checking user authentication...')
     
-    const user = await verifyUserAuth(request)
+    const user = await getUnifiedAuth(request)
     
     if (!user) {
+      console.log('❌ [Points API] No authentication found')
       return NextResponse.json({
         success: false,
         error: 'Authentication required'
       }, { status: 401 })
     }
+
+    console.log('✅ [Points API] User authenticated:', user.email)
 
     // Get or create points balance
     let pointsBalance = await prisma.pointsBalance.findUnique({
@@ -23,13 +26,14 @@ export async function GET(request: NextRequest) {
     })
 
     if (!pointsBalance) {
-      console.log('🆕 Creating points balance for user:', user.id)
+      console.log('🆕 [Points API] Creating points balance for user:', user.id)
       pointsBalance = await prisma.pointsBalance.create({
         data: {
           userId: user.id,
-          currentPoints: user.role === 'SUPER_ADMIN' ? 1000 : 100, // Give admin more points
-          totalPurchased: user.role === 'SUPER_ADMIN' ? 1000 : 100,
-          totalUsed: 0
+          currentPoints: user.isAdmin ? 1000 : 100, // Give admin more points
+          totalPurchased: user.isAdmin ? 1000 : 100,
+          totalUsed: 0,
+          lastRollover: new Date()
         }
       })
     }
@@ -48,6 +52,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    console.log('✅ [Points API] Success - Current points:', pointsBalance.currentPoints)
+
     return NextResponse.json({
       success: true,
       balance: pointsBalance,
@@ -61,7 +67,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('❌ Points API error:', error)
+    console.error('❌ [Points API] Error:', error)
     return NextResponse.json({
       success: false,
       error: 'Failed to fetch points'
