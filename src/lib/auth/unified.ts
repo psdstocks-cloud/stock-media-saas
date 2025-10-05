@@ -7,6 +7,8 @@ export interface UnifiedUser {
   email: string
   name: string | null
   role: string
+  isAdmin: boolean
+  isUser: boolean
 }
 
 export async function getUnifiedAuth(request: NextRequest): Promise<UnifiedUser | null> {
@@ -34,7 +36,17 @@ export async function getUnifiedAuth(request: NextRequest): Promise<UnifiedUser 
       return null
     }
     
-    return user
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'
+    const isUser = true // Everyone can access user features
+    
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isAdmin,
+      isUser
+    }
   } catch (error) {
     console.error('❌ Unified auth verification failed:', error)
     return null

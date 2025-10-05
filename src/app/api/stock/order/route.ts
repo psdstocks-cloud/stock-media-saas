@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
         where: { userId: user.id },
         data: {
           currentPoints: pointsBalance.currentPoints - cost,
-          totalSpent: pointsBalance.totalSpent + cost,
-          lastUpdated: new Date()
+          totalUsed: pointsBalance.totalUsed + cost,
+          lastRollover: new Date()
         }
       })
       
@@ -53,13 +53,7 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           amount: -cost,
           type: 'SPENT',
-          description: `Downloaded from ${site}`,
-          metadata: {
-            taskId: nehtwData.taskid,
-            site,
-            stockId: id,
-            url
-          }
+          description: `Downloaded from ${site} - Task: ${nehtwData.taskid}`
         }
       })
       
