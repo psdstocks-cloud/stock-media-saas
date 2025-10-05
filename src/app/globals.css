@@ -335,3 +335,249 @@ html {
 .notification-pulse {
   animation: pulse-notification 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Enhanced Dark Mode Support */
+@layer base {
+  /* Dark mode transitions */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  /* Enhanced dark mode gradients */
+  .dark .gradient-orange {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  }
+
+  .light .gradient-orange {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  }
+
+  /* Dark mode enhanced shadows */
+  .dark .card-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  .light .card-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Enhanced focus states for dark mode */
+  .dark *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Dark mode enhanced backdrop blur */
+  .dark .backdrop-blur-header {
+    backdrop-filter: blur(12px) saturate(180%);
+    background-color: rgba(17, 24, 39, 0.95);
+  }
+
+  .light .backdrop-blur-header {
+    backdrop-filter: blur(12px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+
+  /* Dark mode glassmorphism */
+  .dark .glass-effect {
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+  }
+
+  .light .glass-effect {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Dark mode command palette */
+  .dark .command-palette {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(75, 85, 99, 0.2);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+  }
+
+  .light .command-palette {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark mode navigation effects */
+  .dark .nav-item::before {
+    background: linear-gradient(90deg, #f97316, #fb923c);
+  }
+
+  .light .nav-item::before {
+    background: linear-gradient(90deg, #ea580c, #f97316);
+  }
+
+  /* Dark mode micro-interactions */
+  .dark .micro-bounce:active {
+    transform: scale(0.98);
+    background-color: hsl(var(--accent));
+  }
+
+  .light .micro-bounce:active {
+    transform: scale(0.98);
+    background-color: hsl(var(--accent));
+  }
+
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+
+  /* Light mode scrollbar */
+  .light ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .light ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  .light ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+
+  .light ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+
+  /* Dark mode selection */
+  .dark ::selection {
+    background-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .light ::selection {
+    background-color: hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Dark mode form elements */
+  .dark input:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  .light input:focus,
+  .light textarea:focus,
+  .light select:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  /* Dark mode button states */
+  .dark .btn-primary {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    color: white;
+    border: none;
+  }
+
+  .dark .btn-primary:hover {
+    background: linear-gradient(135deg, #dc2626, #ea580c);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+  }
+
+  .light .btn-primary {
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    color: white;
+    border: none;
+  }
+
+  .light .btn-primary:hover {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+  }
+
+  /* Dark mode card hover effects */
+  .dark .card-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: hsl(var(--ring) / 0.5);
+  }
+
+  .light .card-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .light .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: hsl(var(--ring) / 0.5);
+  }
+
+  /* Dark mode loading states */
+  .dark .loading-skeleton {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  .light .loading-skeleton {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Dark mode status indicators */
+  .dark .status-success {
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.1);
+  }
+
+  .dark .status-warning {
+    color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+
+  .dark .status-error {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+
+  .light .status-success {
+    color: #059669;
+    background-color: rgba(5, 150, 105, 0.1);
+  }
+
+  .light .status-warning {
+    color: #d97706;
+    background-color: rgba(217, 119, 6, 0.1);
+  }
+
+  .light .status-error {
+    color: #dc2626;
+    background-color: rgba(220, 38, 38, 0.1);
+  }
+}

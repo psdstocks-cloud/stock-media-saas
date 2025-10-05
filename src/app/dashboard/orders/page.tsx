@@ -27,20 +27,20 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Orders</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           Track your download orders and their status across all stock sites.
         </p>
       </div>
 
-      <Card>
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <ShoppingCart className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No orders yet</h3>
-          <p className="text-gray-500 text-center mb-4">
+          <ShoppingCart className="h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No orders yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-center mb-4">
             Your download orders will appear here once you start downloading assets.
           </p>
-          <Button>
+          <Button className="bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600">
             <Search className="h-4 w-4 mr-2" />
             Start Browsing
           </Button>
@@ -49,4 +49,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-
