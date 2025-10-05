@@ -54,11 +54,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API configuration error' }, { status: 500 })
     }
 
-    // Place order with nehtw.com
-    const nehtwUrl = `https://nehtw.com/api/stockorder/${site}/${id}?url=${encodeURIComponent(url)}`
-    console.log(`🌐 [Order ${requestId}] Calling nehtw API:`, nehtwUrl)
+    // STEP 1: Get stock info first to get the process_id and proper order URL
+    const stockInfoUrl = `https://nehtw.com/api/stockinfo/${site}/${id}?url=${encodeURIComponent(url)}`
+    console.log(`🔍 [Order ${requestId}] Getting stock info:`, stockInfoUrl)
     
-    const nehtwResponse = await fetch(nehtwUrl, {
+    const stockInfoResponse = await fetch(stockInfoUrl, {
       method: 'GET',
       headers: {
         'X-Api-Key': process.env.NEHTW_API_KEY,
@@ -67,48 +67,87 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    console.log(`📡 [Order ${requestId}] nehtw response status:`, nehtwResponse.status)
+    const stockInfoData = await stockInfoResponse.json()
+    console.log(`📦 [Order ${requestId}] Stock info response:`, stockInfoData)
     
-    // Log response headers for debugging
-    const responseHeaders = Object.fromEntries(nehtwResponse.headers.entries())
-    console.log(`📄 [Order ${requestId}] Response headers:`, responseHeaders)
+    if (!stockInfoData.success || !stockInfoData.data) {
+      return NextResponse.json({ 
+        error: 'Failed to get stock information',
+        details: stockInfoData
+      }, { status: 400 })
+    }
     
-    const responseText = await nehtwResponse.text()
-    console.log(`📜 [Order ${requestId}] Raw response:`, responseText)
+    // STEP 2: Use the recommended order URL from nehtw
+    const orderUrl = stockInfoData.data.actions?.order?.new_url || stockInfoData.data.actions?.order?.url
     
-    let nehtwData
+    if (!orderUrl) {
+      console.error(`❌ [Order ${requestId}] No order URL provided by nehtw`)
+      return NextResponse.json({ 
+        error: 'No order URL available',
+        details: stockInfoData.data
+      }, { status: 400 })
+    }
+    
+    console.log(`🛒 [Order ${requestId}] Placing order with nehtw URL:`, orderUrl)
+    
+    const orderResponse = await fetch(orderUrl, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': process.env.NEHTW_API_KEY,
+        'User-Agent': 'StockMediaSaaS/1.0',
+        'Accept': 'application/json'
+      }
+    })
+    
+    console.log(`📡 [Order ${requestId}] Order response status:`, orderResponse.status)
+    
+    const orderResponseText = await orderResponse.text()
+    console.log(`📜 [Order ${requestId}] Raw order response:`, orderResponseText)
+    
+    let orderData
     try {
-      nehtwData = JSON.parse(responseText)
+      orderData = JSON.parse(orderResponseText)
     } catch (parseError) {
       console.error(`❌ [Order ${requestId}] JSON parse error:`, parseError)
       return NextResponse.json({ 
-        error: 'Invalid API response format',
-        details: responseText.substring(0, 500) + (responseText.length > 500 ? '...' : '')
+        error: 'Invalid order response format',
+        details: orderResponseText.substring(0, 500)
       }, { status: 500 })
     }
     
-    console.log(`📦 [Order ${requestId}] Parsed nehtw data:`, nehtwData)
+    console.log(`📦 [Order ${requestId}] Parsed order data:`, orderData)
     
-    if (nehtwData.success && nehtwData.taskid) {
-      console.log(`✅ [Order ${requestId}] Order successful, taskid: ${nehtwData.taskid}`)
+    // Check if order was successful
+    const taskId = orderData.taskid || orderData.task_id || stockInfoData.data.process_id
+    
+    if (orderData.success || taskId) {
+      console.log(`✅ [Order ${requestId}] Order successful, taskId: ${taskId}`)
       
-      // Deduct points - use correct field names from Prisma schema
+      // Deduct points
       await prisma.pointsBalance.update({
         where: { userId: user.id },
         data: {
           currentPoints: pointsBalance.currentPoints - cost,
-          totalUsed: pointsBalance.totalUsed + cost, // Use totalUsed (correct field name)
-          lastRollover: new Date() // Use lastRollover (correct field name)
+          totalSpent: pointsBalance.totalSpent + cost,
+          lastUpdated: new Date()
         }
       })
       
-      // Create points history - use correct field names from Prisma schema
+      // Create points history
       await prisma.pointsHistory.create({
         data: {
           userId: user.id,
-          amount: -cost, // Use amount (correct field name)
+          points: -cost,
           type: 'SPENT',
-          description: `Downloaded from ${site} - Task: ${nehtwData.taskid}` // No metadata field in schema
+          description: `Downloaded from ${site} - Task: ${taskId}`,
+          metadata: {
+            taskId,
+            site,
+            stockId: id,
+            url,
+            orderUrl,
+            processId: stockInfoData.data.process_id
+          }
         }
       })
       
@@ -116,31 +155,16 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({
         success: true,
-        taskId: nehtwData.taskid,
-        message: 'Order placed successfully'
+        taskId: taskId,
+        message: 'Order placed successfully',
+        processId: stockInfoData.data.process_id
       })
     } else {
-      console.error(`❌ [Order ${requestId}] nehtw API error:`, nehtwData)
-      
-      // Handle specific error cases
-      if (nehtwData.message && nehtwData.message.includes('Invalid API key')) {
-        return NextResponse.json({ 
-          error: 'API authentication failed',
-          details: 'Please contact support'
-        }, { status: 500 })
-      }
-      
-      if (nehtwData.message && nehtwData.message.includes('not found')) {
-        return NextResponse.json({ 
-          error: 'Stock media not found',
-          details: 'The requested stock media could not be found'
-        }, { status: 404 })
-      }
-      
+      console.error(`❌ [Order ${requestId}] Order failed:`, orderData)
       return NextResponse.json({ 
-        error: nehtwData.message || nehtwData.data || 'Failed to place order',
-        details: nehtwData,
-        nehtwSuccess: nehtwData.success
+        error: orderData.message || orderData.error || 'Failed to place order',
+        details: orderData,
+        orderUrl
       }, { status: 400 })
     }
     

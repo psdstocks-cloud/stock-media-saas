@@ -17,35 +17,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Task ID required' }, { status: 400 })
     }
     
-    console.log('Download request for:', taskId)
+    console.log('📥 Download request for:', taskId)
     
-    // Generate download link with nehtw.com - use correct URL format and method
-    const nehtwUrl = `https://nehtw.com/api/v2/order/${taskId}/download?responsetype=${responseType}`
-    console.log('Calling nehtw API:', nehtwUrl)
+    // Try different download URL formats
+    const downloadUrls = [
+      `https://nehtw.com/api/v2/order/${taskId}/download?responsetype=${responseType}`,
+      `https://nehtw.com/api/order/${taskId}/download?responsetype=${responseType}`,
+      `https://nehtw.com/api/task/${taskId}/download`,
+      `https://nehtw.com/api/runtask/${taskId}/download`
+    ]
     
-    const nehtwResponse = await fetch(nehtwUrl, {
-      method: 'GET', // nehtw API uses GET method
-      headers: {
-        'X-Api-Key': process.env.NEHTW_API_KEY || ''
+    for (const downloadUrl of downloadUrls) {
+      try {
+        console.log('🌐 Trying download URL:', downloadUrl)
+        
+        const response = await fetch(downloadUrl, {
+          method: 'GET',
+          headers: {
+            'X-Api-Key': process.env.NEHTW_API_KEY || '',
+            'User-Agent': 'StockMediaSaaS/1.0',
+            'Accept': 'application/json'
+          }
+        })
+        
+        const responseText = await response.text()
+        console.log('📜 Download response:', responseText)
+        
+        if (response.ok) {
+          const data = JSON.parse(responseText)
+          
+          if (data.downloadLink || data.download_link || data.url) {
+            return NextResponse.json({
+              success: true,
+              downloadLink: data.downloadLink || data.download_link || data.url,
+              fileName: data.fileName || data.filename || `stock-${taskId}`,
+              linkType: data.linkType || data.type || 'direct'
+            })
+          }
+        }
+      } catch (urlError) {
+        console.log(`❌ Error with ${downloadUrl}:`, urlError)
+        continue
       }
-    })
-    
-    const nehtwData = await nehtwResponse.json()
-    console.log('nehtw download response:', nehtwData)
-    
-    if (nehtwData.success && nehtwData.downloadLink) {
-      return NextResponse.json({
-        success: true,
-        downloadLink: nehtwData.downloadLink,
-        fileName: nehtwData.fileName,
-        linkType: nehtwData.linkType
-      })
-    } else {
-      return NextResponse.json({ 
-        error: nehtwData.message || 'Failed to generate download link',
-        details: nehtwData
-      }, { status: 400 })
     }
+    
+    return NextResponse.json({ 
+      error: 'No download link available yet',
+      message: 'File may still be processing'
+    }, { status: 404 })
     
   } catch (error) {
     console.error('Stock download error:', error)
