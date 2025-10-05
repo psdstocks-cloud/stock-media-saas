@@ -12,7 +12,7 @@ export interface AuthenticatedUser {
 
 export async function verifyUserAuth(request?: NextRequest): Promise<AuthenticatedUser | null> {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const accessToken = cookieStore.get('user_access_token')?.value
     
     if (!accessToken) {

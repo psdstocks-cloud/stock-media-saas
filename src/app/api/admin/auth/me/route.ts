@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
         try {
           const refreshPayload = await verifyToken(refreshToken)
           
-          if (refreshPayload.type === 'refresh') {
+          // Check if it's a valid refresh token (has type property and is 'refresh')
+          if ('type' in refreshPayload && refreshPayload.type === 'refresh') {
             console.log(`🎫 [Auth Check ${requestId}] Refresh token valid, generating new access token`)
             
             // Generate new access token
@@ -60,6 +61,8 @@ export async function GET(request: NextRequest) {
             
             console.log(`✅ [Auth Check ${requestId}] Token refreshed successfully`)
             return response
+          } else {
+            console.log(`❌ [Auth Check ${requestId}] Refresh token is not a valid refresh token`)
           }
         } catch (refreshError) {
           console.log(`❌ [Auth Check ${requestId}] Refresh token invalid:`, (refreshError as Error).message)

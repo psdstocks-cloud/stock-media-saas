@@ -41,9 +41,8 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           currentPoints: 100,
-          totalEarned: 100,
-          totalSpent: 0,
-          lastUpdated: new Date()
+          totalPurchased: 100,
+          totalUsed: 0
         }
       })
     }
@@ -70,6 +69,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
+    if (!user.password) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid email or password'
+      }, { status: 401 })
+    }
+    
     const isValidPassword = await compare(password, user.password)
     if (!isValidPassword) {
       return NextResponse.json({

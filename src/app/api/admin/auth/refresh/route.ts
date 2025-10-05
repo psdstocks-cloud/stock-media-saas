@@ -17,6 +17,14 @@ export async function POST(_request: NextRequest) {
 
     const payload = await verifyToken(refreshToken)
 
+    // Check if it's a valid refresh token with sessionId
+    if (!('sessionId' in payload) || !payload.sessionId) {
+      return NextResponse.json(
+        { error: 'Invalid refresh token format' },
+        { status: 401 }
+      )
+    }
+
     // Verify session exists and is active
     const session = await prisma.adminSession.findUnique({
       where: { id: payload.sessionId },

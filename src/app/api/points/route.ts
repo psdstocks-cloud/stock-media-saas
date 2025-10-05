@@ -28,9 +28,8 @@ export async function GET(request: NextRequest) {
         data: {
           userId: user.id,
           currentPoints: user.role === 'SUPER_ADMIN' ? 1000 : 100, // Give admin more points
-          totalEarned: user.role === 'SUPER_ADMIN' ? 1000 : 100,
-          totalSpent: 0,
-          lastUpdated: new Date()
+          totalPurchased: user.role === 'SUPER_ADMIN' ? 1000 : 100,
+          totalUsed: 0
         }
       })
     }
@@ -42,7 +41,7 @@ export async function GET(request: NextRequest) {
       take: 10,
       select: {
         id: true,
-        points: true,
+        amount: true,
         type: true,
         description: true,
         createdAt: true
@@ -55,9 +54,9 @@ export async function GET(request: NextRequest) {
       history: pointsHistory,
       summary: {
         currentPoints: pointsBalance.currentPoints,
-        totalEarned: pointsBalance.totalEarned,
-        totalSpent: pointsBalance.totalSpent,
-        lastUpdated: pointsBalance.lastUpdated
+        totalPurchased: pointsBalance.totalPurchased,
+        totalUsed: pointsBalance.totalUsed,
+        lastRollover: pointsBalance.lastRollover
       }
     })
 
