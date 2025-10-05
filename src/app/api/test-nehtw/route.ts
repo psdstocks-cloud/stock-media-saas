@@ -1,123 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { NehtwAPI } from '@/lib/nehtw-api'
 
-export async function GET(_request: NextRequest) {
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
   try {
-    const rawApiKey = process.env.NEHTW_API_KEY
-    const apiKey = rawApiKey ? rawApiKey.replace(/[{}]/g, '') : null // Remove curly braces
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-    }
-
-    const api = new NehtwAPI(apiKey)
+    console.log('🧪 Testing nehtw API connection...')
     
-    // Test different URL formats to see which one works
-    const testCases = [
-      {
-        name: 'Original URL',
-        site: 'shutterstock',
-        id: '2467146017',
-        url: 'https://www.shutterstock.com/image-photo/aerial-sunset-view-skyline-london-skyscrapers-2467146017'
-      },
-      {
-        name: 'Short URL',
-        site: 'shutterstock',
-        id: '2467146017',
-        url: 'https://shutterstock.com/image-photo/aerial-sunset-view-skyline-london-skyscrapers-2467146017'
-      },
-      {
-        name: 'Minimal URL',
-        site: 'shutterstock',
-        id: '2467146017',
-        url: 'https://shutterstock.com/image-photo/2467146017'
-      },
-      {
-        name: 'ID Only URL',
-        site: 'shutterstock',
-        id: '2467146017',
-        url: 'https://shutterstock.com/2467146017'
-      },
-      {
-        name: 'No URL (null)',
-        site: 'shutterstock',
-        id: '2467146017',
-        url: null
-      },
-      {
-        name: 'Empty URL',
-        site: 'shutterstock',
-        id: '2467146017',
-        url: ''
-      }
-    ]
-
-    const results = []
-
-    for (const testCase of testCases) {
-      console.log(`\n=== Testing ${testCase.name} ===`)
-      console.log('Test data:', testCase)
-
-      try {
-        // Test getStockInfo
-        const stockInfo = await api.getStockInfo(testCase.site, testCase.id, testCase.url || undefined)
-        console.log(`${testCase.name} - getStockInfo SUCCESS:`, stockInfo)
-
-        // Test placeOrder
-        const orderResult = await api.placeOrder(testCase.site, testCase.id, testCase.url || undefined)
-        console.log(`${testCase.name} - placeOrder SUCCESS:`, orderResult)
-
-        results.push({
-          testCase: testCase.name,
-          success: true,
-          getStockInfo: stockInfo,
-          placeOrder: orderResult
-        })
-
-      } catch (error) {
-        console.log(`${testCase.name} - ERROR:`, error instanceof Error ? error.message : 'Unknown error')
-        results.push({
-          testCase: testCase.name,
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          getStockInfo: null,
-          placeOrder: null
-        })
-      }
+    if (!process.env.NEHTW_API_KEY) {
+      return NextResponse.json({ 
+        error: 'NEHTW_API_KEY not configured',
+        hasKey: false
+      }, { status: 500 })
     }
-
-    // Also test API key validation
-    console.log('\n=== Testing API Key ===')
-    try {
-      // Try a simple request to see if API key is valid
-      const testResponse = await fetch('https://nehtw.com/api/test', {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      console.log('API Key test response status:', testResponse.status)
-    } catch (error) {
-      console.log('API Key test error:', error)
-    }
-
-    return NextResponse.json({
-      success: true,
-      apiKeyConfigured: !!apiKey,
-      apiKeyLength: apiKey?.length || 0,
-      testResults: results,
-      summary: {
-        totalTests: results.length,
-        successfulTests: results.filter(r => r.success).length,
-        failedTests: results.filter(r => !r.success).length
+    
+    // Test with the same URL that's failing
+    const testUrl = 'https://www.shutterstock.com/image-photo/landscape-misty-panorama-fantastic-dreamy-sunrise-1289741896'
+    const nehtwTestUrl = `https://nehtw.com/api/stockinfo/shutterstock/1289741896?url=${encodeURIComponent(testUrl)}`
+    
+    console.log('Testing URL:', nehtwTestUrl)
+    
+    const response = await fetch(nehtwTestUrl, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': process.env.NEHTW_API_KEY,
+        'User-Agent': 'StockMediaSaaS/1.0',
+        'Accept': 'application/json'
       }
     })
-
+    
+    const responseText = await response.text()
+    
+    return NextResponse.json({
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: responseText,
+      hasKey: true,
+      keyLength: process.env.NEHTW_API_KEY.length,
+      testUrl: nehtwTestUrl
+    })
+    
   } catch (error) {
-    console.error('Test endpoint error:', error)
-    return NextResponse.json({ 
-      success: false,
-      error: 'Failed to test Nehtw API',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      hasKey: !!process.env.NEHTW_API_KEY
     }, { status: 500 })
   }
 }
