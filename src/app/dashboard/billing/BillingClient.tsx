@@ -88,11 +88,11 @@ export default function BillingClient() {
   const getTransactionBadge = (type: string) => {
     switch (type) {
       case 'PURCHASE':
-        return <Badge variant="success" className="bg-green-100 text-green-800">Purchase</Badge>
+        return <Badge variant="default" className="bg-green-100 text-green-800">Purchase</Badge>
       case 'USAGE':
         return <Badge variant="destructive" className="bg-red-100 text-red-800">Usage</Badge>
       case 'ROLLOVER':
-        return <Badge variant="info" className="bg-blue-100 text-blue-800">Rollover</Badge>
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800">Rollover</Badge>
       case 'BONUS':
         return <Badge variant="secondary" className="bg-purple-100 text-purple-800">Bonus</Badge>
       default:

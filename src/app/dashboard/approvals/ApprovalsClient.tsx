@@ -68,7 +68,7 @@ export default function ApprovalsClient() {
                   <td className="p-2">{a.resourceType} • {a.resourceId}</td>
                   <td className="p-2">{a.amount ?? '-'}</td>
                   <td className="p-2">
-                    <Badge variant={a.status === 'PENDING' ? 'secondary' : a.status === 'APPROVED' ? 'success' : 'destructive'}>{a.status}</Badge>
+                    <Badge variant={a.status === 'PENDING' ? 'secondary' : a.status === 'APPROVED' ? 'default' : 'destructive'}>{a.status}</Badge>
                   </td>
                 </tr>
               ))}

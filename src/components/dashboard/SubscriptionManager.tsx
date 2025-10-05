@@ -138,7 +138,7 @@ export default function SubscriptionManager() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge variant="success" className="bg-green-100 text-green-800">Active</Badge>
+        return <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
       case 'CANCELED':
         return <Badge variant="destructive" className="bg-red-100 text-red-800">Canceled</Badge>
       case 'PAST_DUE':

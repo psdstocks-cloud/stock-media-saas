@@ -83,9 +83,9 @@ export default function SupportedSites({
     }
   }
 
-  const getCostBadgeVariant = (_cost: number): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "brand" => {
+  const getCostBadgeVariant = (_cost: number): "default" | "secondary" | "destructive" | "outline" => {
     // Unified 10-point system - all sites use the same pricing
-    return 'success' // Use success variant for the unified 10-point system
+    return 'default' // Use default variant for the unified 10-point system
   }
 
   const getCostBadgeColor = (_cost: number) => {

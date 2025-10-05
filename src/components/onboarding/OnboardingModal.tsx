@@ -80,7 +80,7 @@ const onboardingSteps = [
           </Card>
           <Card className="text-center brand-border">
             <CardContent className="pt-6">
-              <Badge variant="brand" className="mb-2">500 Points</Badge>
+              <Badge variant="default" className="mb-2">500 Points</Badge>
               <Typography variant="h6" className="mb-1">$40</Typography>
               <Typography variant="caption" color="muted">Most popular choice</Typography>
             </CardContent>
