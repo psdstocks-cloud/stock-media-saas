@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { useTheme } from '@/contexts/ThemeContext'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,7 +127,8 @@ export default function ModernHeader() {
   const pathname = usePathname()
   const router = useRouter()
   const searchRef = useRef<HTMLInputElement>(null)
-  const { resolvedTheme } = useTheme()
+  
+  // Theme will be handled by CSS classes and the ThemeToggle component
 
   // Don't show header on these routes
   const noHeaderRoutes = ['/login', '/register', '/forgot-password', '/reset-password']
