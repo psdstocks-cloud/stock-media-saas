@@ -14,19 +14,26 @@ export async function POST(request: NextRequest) {
     const { taskId } = await request.json()
     
     if (!taskId) {
-      return NextResponse.json({ error: 'Missing task ID' }, { status: 400 })
+      return NextResponse.json({ error: 'Task ID required' }, { status: 400 })
     }
     
-    // Check status with nehtw.com
-    const nehtwResponse = await fetch(`https://nehtw.com/api/order/${taskId}/status?responsetype=any`, {
+    console.log('Status check for:', taskId)
+    
+    // Check status with nehtw.com - use correct URL format and method
+    const nehtwUrl = `https://nehtw.com/api/order/${taskId}/status?responsetype=any`
+    console.log('Calling nehtw API:', nehtwUrl)
+    
+    const nehtwResponse = await fetch(nehtwUrl, {
+      method: 'GET', // nehtw API uses GET method
       headers: {
         'X-Api-Key': process.env.NEHTW_API_KEY || ''
       }
     })
     
     const nehtwData = await nehtwResponse.json()
+    console.log('nehtw status response:', nehtwData)
     
-    if (nehtwData.success) {
+    if (nehtwData.success !== false) {
       return NextResponse.json({
         success: true,
         status: nehtwData.status
@@ -35,12 +42,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         status: 'error',
-        message: nehtwData.message || 'Failed to check status'
+        message: nehtwData.message
       })
     }
     
   } catch (error) {
     console.error('Stock status error:', error)
-    return NextResponse.json({ error: 'Failed to check status' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to check status',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }

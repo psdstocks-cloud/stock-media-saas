@@ -102,33 +102,50 @@ export default function BrowsePage() {
   }
 
   const extractSiteAndId = (url: string) => {
-    // Extract site name and ID from URL
-    const urlObj = new URL(url)
-    const hostname = urlObj.hostname.toLowerCase()
-    
-    // Map domain to site identifier
-    const siteMap = {
-      'shutterstock.com': 'shutterstock',
-      'stock.adobe.com': 'adobestock',
-      'freepik.com': 'freepik',
-      'unsplash.com': 'unsplash',
-      'pexels.com': 'pexels',
-      'istockphoto.com': 'istock',
-      'gettyimages.com': 'gettyimages',
-      'vecteezy.com': 'vecteezy',
-      'flaticon.com': 'flaticon',
-      'rawpixel.com': 'rawpixel'
+    try {
+      const urlObj = new URL(url)
+      const hostname = urlObj.hostname.toLowerCase()
+      
+      // Map domain to site identifier
+      const siteMap = {
+        'shutterstock.com': 'shutterstock',
+        'www.shutterstock.com': 'shutterstock',
+        'stock.adobe.com': 'adobestock',
+        'freepik.com': 'freepik',
+        'unsplash.com': 'unsplash',
+        'pexels.com': 'pexels',
+        'istockphoto.com': 'istock',
+        'www.istockphoto.com': 'istock',
+        'gettyimages.com': 'gettyimages',
+        'vecteezy.com': 'vecteezy',
+        'flaticon.com': 'flaticon',
+        'rawpixel.com': 'rawpixel'
+      }
+      
+      // Find matching site
+      const site = Object.entries(siteMap).find(([domain]) => 
+        hostname === domain || hostname.includes(domain)
+      )?.[1]
+      
+      // Extract ID from URL path - handle different URL patterns
+      let id = ''
+      
+      if (hostname.includes('shutterstock.com')) {
+        // For Shutterstock: extract from /image-photo/title-ID or just the ID at the end
+        const match = url.match(/-(\d+)(?:\?|$)/)
+        id = match ? match[1] : ''
+      } else {
+        // Generic extraction for other sites
+        const pathParts = urlObj.pathname.split('/').filter(Boolean)
+        id = pathParts[pathParts.length - 1]?.split('-')[0] || pathParts[pathParts.length - 1] || ''
+      }
+      
+      console.log('Extracted:', { site, id, url, hostname })
+      return { site, id }
+    } catch (error) {
+      console.error('URL parsing error:', error)
+      return { site: null, id: null }
     }
-    
-    const site = Object.entries(siteMap).find(([domain]) => 
-      hostname.includes(domain)
-    )?.[1]
-    
-    // Extract ID from URL path
-    const pathParts = urlObj.pathname.split('/')
-    const id = pathParts[pathParts.length - 1]?.split('-')[0] || pathParts[pathParts.length - 1]
-    
-    return { site, id }
   }
 
   // Step 1: Get stock information
