@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔐 User login API called')
+    console.log('🔐 Unified login API called')
     
     const { email, password } = await request.json()
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       role: user.role
     })
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie - USE SINGLE COOKIE NAME
     const response = NextResponse.json({
       success: true,
       message: 'Login successful',
@@ -100,11 +100,17 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        isAdmin: user.role === 'ADMIN' || user.role === 'SUPER_ADMIN',
+        isUser: true
       }
     })
 
-    // Set cookie with same name pattern as admin
+    // Clear any old cookies first
+    response.cookies.set('admin_access_token', '', { maxAge: 0, path: '/' })
+    response.cookies.set('user_access_token', '', { maxAge: 0, path: '/' })
+
+    // Set the new unified cookie
     response.cookies.set('user_access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -113,7 +119,7 @@ export async function POST(request: NextRequest) {
       path: '/'
     })
 
-    console.log('✅ User login successful:', user.email)
+    console.log('✅ Unified login successful:', user.email, 'Role:', user.role)
     return response
 
   } catch (error) {

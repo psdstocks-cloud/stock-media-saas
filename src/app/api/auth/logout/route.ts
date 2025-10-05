@@ -4,26 +4,31 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(_request: NextRequest) {
   try {
-    console.log('🚪 User logout API called')
+    console.log('🚪 [Logout] Unified logout called')
 
     const response = NextResponse.json({
       success: true,
       message: 'Logged out successfully'
     })
 
-    // Clear the user access token cookie
-    response.cookies.set('user_access_token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0, // Expire immediately
-      path: '/'
+    // Clear ALL possible authentication cookies
+    const cookiesToClear = ['user_access_token', 'admin_access_token']
+    
+    cookiesToClear.forEach(cookieName => {
+      response.cookies.set(cookieName, '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 0, // Expire immediately
+        path: '/'
+      })
     })
 
+    console.log('✅ [Logout] All cookies cleared')
     return response
 
   } catch (error) {
-    console.error('❌ User logout error:', error)
+    console.error('❌ [Logout] Error:', error)
     return NextResponse.json({
       success: false,
       error: 'Logout failed'

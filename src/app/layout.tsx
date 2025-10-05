@@ -6,7 +6,7 @@ import { WebVitals } from "@/components/WebVitals"
 import { ChatWidget } from "@/components/ChatWidget"
 import { AuthProvider } from "@/components/AuthProvider"
 import { ThemeProvider } from "@/contexts/ThemeContext"
-import { ConditionalHeader } from "@/components/ConditionalHeader"
+import SmartHeader from "@/components/layout/SmartHeader"
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -145,7 +145,8 @@ export default function RootLayout({
             <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] border border-[hsl(var(--border))] px-3 py-2 rounded">
               Skip to content
             </a>
-            <ConditionalHeader />
+            {/* Single Smart Header for all routes */}
+            <SmartHeader />
             <ErrorBoundary>
               <main id="main" role="main">
                 {children}
