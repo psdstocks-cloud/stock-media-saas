@@ -58,14 +58,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content Area - Properly positioned for sidebar */}
-      <div className="lg:pl-64 pt-0">
-        <main className="p-4 sm:p-6">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
-      </div>
+      {/* Simple full-width layout */}
+      <main className="pt-4 pb-8 page-transition">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }

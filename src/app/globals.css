@@ -256,3 +256,82 @@ html {
 .sidebar-transition {
   transition: margin-left 300ms ease-in-out;
 }
+
+/* Modern Header Animations */
+.header-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Navigation hover effects */
+.nav-item {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ea580c, #f97316);
+  transform: translateX(-50%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item:hover::before {
+  width: 100%;
+}
+
+.nav-item.active::before {
+  width: 100%;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modern glassmorphism effects */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Micro-interactions */
+.micro-bounce {
+  transition: transform 0.1s ease-in-out;
+}
+
+.micro-bounce:active {
+  transform: scale(0.98);
+}
+
+/* Command palette style search */
+.command-palette {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Notification badge pulse */
+@keyframes pulse-notification {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.notification-pulse {
+  animation: pulse-notification 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
