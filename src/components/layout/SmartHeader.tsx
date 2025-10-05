@@ -46,29 +46,51 @@ export default function SmartHeader() {
     try {
       console.log('🔍 [Smart Header] Checking unified authentication...')
       
-      const response = await fetch('/api/auth/me', {
+      // Try unified auth first
+      let response = await fetch('/api/auth/me', {
         method: 'GET',
         credentials: 'include'
       })
       
+      let authenticated = false
+      let userData = null
+      
       if (response.ok) {
         const data = await response.json()
         if (data.authenticated && data.user) {
-          console.log('✅ [Smart Header] User authenticated:', {
-            email: data.user.email,
-            role: data.user.role,
-            isAdmin: data.user.isAdmin,
-            isUser: data.user.isUser
-          })
-          setUser(data.user)
-          setIsAuthenticated(true)
-        } else {
-          console.log('ℹ️ [Smart Header] No authentication')
-          setIsAuthenticated(false)
-          setUser(null)
+          authenticated = true
+          userData = data.user
+          console.log('✅ [Smart Header] Unified auth successful:', userData.email)
         }
+      }
+      
+      // Fallback to admin auth if unified fails (for backward compatibility)
+      if (!authenticated) {
+        response = await fetch('/api/admin/auth/me', {
+          method: 'GET',
+          credentials: 'include'
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            authenticated = true
+            // Convert admin response to unified format
+            userData = {
+              ...data.user,
+              isAdmin: data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN',
+              isUser: true // Admins can access user features
+            }
+            console.log('✅ [Smart Header] Admin auth fallback successful:', userData.email)
+          }
+        }
+      }
+      
+      if (authenticated && userData) {
+        setUser(userData)
+        setIsAuthenticated(true)
       } else {
-        console.log('❌ [Smart Header] Auth check failed:', response.status)
+        console.log('ℹ️ [Smart Header] No authentication found')
         setIsAuthenticated(false)
         setUser(null)
       }
@@ -85,18 +107,16 @@ export default function SmartHeader() {
     try {
       console.log('🚪 [Smart Header] Logging out...')
       
-      // Call unified logout endpoint
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
+      // Call both logout endpoints to ensure complete logout
+      await Promise.all([
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }),
+        fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'include' })
+      ])
       
-      if (response.ok) {
-        console.log('✅ [Smart Header] Logout successful')
-        setIsAuthenticated(false)
-        setUser(null)
-        router.push('/login')
-      }
+      console.log('✅ [Smart Header] Logout successful')
+      setIsAuthenticated(false)
+      setUser(null)
+      router.push('/login')
     } catch (error) {
       console.error('❌ [Smart Header] Logout error:', error)
     }

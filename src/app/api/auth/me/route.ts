@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUser } from '@/lib/auth/unified'
+import { cookies } from 'next/headers'
+import { verifyToken } from '@/lib/auth/jwt'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -7,7 +9,30 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 [Auth Me] Checking unified auth status')
     
-    const user = await getAuthenticatedUser(request)
+    const cookieStore = await cookies()
+    
+    // Check both possible cookie names
+    let accessToken = cookieStore.get('user_access_token')?.value || 
+                      cookieStore.get('admin_access_token')?.value
+    
+    if (!accessToken) {
+      return NextResponse.json({
+        authenticated: false,
+        user: null
+      })
+    }
+    
+    const payload = await verifyToken(accessToken)
+    
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true
+      }
+    })
     
     if (!user) {
       return NextResponse.json({
@@ -16,11 +41,14 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'
+    const isUser = true // Everyone can access user features
+
     console.log('✅ [Auth Me] User found:', {
       email: user.email,
       role: user.role,
-      isAdmin: user.isAdmin,
-      isUser: user.isUser
+      isAdmin,
+      isUser
     })
 
     return NextResponse.json({
@@ -30,8 +58,8 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name,
         role: user.role,
-        isAdmin: user.isAdmin,
-        isUser: user.isUser
+        isAdmin,
+        isUser
       }
     })
 
