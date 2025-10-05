@@ -45,30 +45,24 @@ export async function POST(request: NextRequest) {
     
     if (nehtwData.success && nehtwData.taskid) {
       // Deduct points - use correct field names
-      await prisma.pointsBalance.update({
-        where: { userId: user.id },
-        data: {
-          currentPoints: pointsBalance.currentPoints - cost,
-          totalSpent: pointsBalance.totalSpent + cost, // Use totalSpent not totalUsed
-          lastUpdated: new Date()
-        }
-      })
-      
-      // Create points history - use correct field names
-      await prisma.pointsHistory.create({
-        data: {
-          userId: user.id,
-          points: -cost, // Use points not amount
-          type: 'SPENT',
-          description: `Downloaded from ${site} - Task: ${nehtwData.taskid}`,
-          metadata: {
-            taskId: nehtwData.taskid,
-            site,
-            stockId: id,
-            url
+        await prisma.pointsBalance.update({
+          where: { userId: user.id },
+          data: {
+            currentPoints: pointsBalance.currentPoints - cost,
+            totalUsed: pointsBalance.totalUsed + cost, // Use totalUsed (correct field name)
+            lastRollover: new Date() // Use lastRollover (correct field name)
           }
-        }
-      })
+        })
+      
+        // Create points history - use correct field names
+        await prisma.pointsHistory.create({
+          data: {
+            userId: user.id,
+            amount: -cost, // Use amount (correct field name)
+            type: 'SPENT',
+            description: `Downloaded from ${site} - Task: ${nehtwData.taskid}` // No metadata field in schema
+          }
+        })
       
       return NextResponse.json({
         success: true,
