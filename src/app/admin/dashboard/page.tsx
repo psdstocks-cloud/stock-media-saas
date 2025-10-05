@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardStats } from '@/components/admin/DashboardStats'
 import { RecentActivity } from '@/components/admin/RecentActivity'
 import { Typography } from '@/components/ui/typography'

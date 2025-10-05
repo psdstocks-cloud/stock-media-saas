@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
-async function verifyAdmin(request: NextRequest) {
+async function verifyAdmin(_request: NextRequest) {
   try {
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
@@ -30,11 +30,11 @@ async function verifyAdmin(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('📋 Approvals GET API called')
     
-    const user = await verifyAdmin(request)
+    const user = await verifyAdmin(_request)
     
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || 'PENDING'
@@ -110,11 +110,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(_request: NextRequest) {
   try {
     console.log('✏️ Approvals PATCH API called')
     
-    const user = await verifyAdmin(request)
+    const _user = await verifyAdmin(_request)
     
     return NextResponse.json({
       success: true,

@@ -10,7 +10,7 @@ export interface AuthenticatedUser {
   role: string
 }
 
-export async function verifyUserAuth(request?: NextRequest): Promise<AuthenticatedUser | null> {
+export async function verifyUserAuth(_request?: NextRequest): Promise<AuthenticatedUser | null> {
   try {
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('user_access_token')?.value

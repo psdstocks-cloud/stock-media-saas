@@ -1,13 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Typography } from '@/components/ui/typography'
-import { 
-  LogOut, 
-  User
-} from 'lucide-react'
 import KPICards from '@/components/admin/KPICards'
 import RevenueChart from '@/components/admin/RevenueChart'
 import RecentOrdersList from '@/components/admin/RecentOrdersList'
@@ -25,7 +19,7 @@ export default function AdminDashboardClient() {
   } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [_isLoggingOut, _setIsLoggingOut] = useState(false)
 
   // Check authentication on component mount
   useEffect(() => {
@@ -57,30 +51,6 @@ export default function AdminDashboardClient() {
     checkAuth()
   }, [router])
 
-  const handleLogout = async () => {
-    if (isLoggingOut) return
-    
-    setIsLoggingOut(true)
-    try {
-      console.log('🚪 Dashboard: Logging out...')
-      
-      const response = await fetch('/api/admin/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
-      
-      if (response.ok) {
-        console.log('✅ Dashboard: Logout successful')
-        router.push('/')
-      } else {
-        console.error('❌ Dashboard: Logout failed')
-      }
-    } catch (error) {
-      console.error('❌ Dashboard: Logout error:', error)
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
 
   // Show loading state while checking authentication
   if (isLoading) {

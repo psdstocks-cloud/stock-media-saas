@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
-async function verifyAdmin(request: NextRequest) {
+async function verifyAdmin(_request: NextRequest) {
   try {
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
@@ -31,15 +31,15 @@ async function verifyAdmin(request: NextRequest) {
 }
 
 export async function PATCH(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
     console.log('✏️ Individual Approval PATCH API called for:', id)
     
-    const user = await verifyAdmin(request)
-    const { action, reason } = await request.json()
+    const user = await verifyAdmin(_request)
+    const { action, reason } = await _request.json()
     
     console.log(`📋 Processing ${action} action by ${user.email}`)
     

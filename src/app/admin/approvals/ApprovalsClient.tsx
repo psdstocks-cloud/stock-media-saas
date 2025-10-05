@@ -5,7 +5,7 @@ import { Typography } from '@/components/ui/typography'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, CheckSquare, Clock, RefreshCw, Shield } from 'lucide-react'
+import { AlertCircle, CheckSquare, RefreshCw } from 'lucide-react'
 import { ThemedIcon } from '@/components/admin/ThemedIcon'
 
 interface Approval {

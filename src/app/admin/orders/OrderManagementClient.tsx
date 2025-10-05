@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,7 +8,7 @@ import { Typography } from '@/components/ui/typography'
 import { Search, ShoppingCart } from 'lucide-react'
 import { ThemedIcon } from '@/components/admin/ThemedIcon'
 
-interface AdminUser {
+interface _AdminUser {
   id: string
   email: string
   name?: string

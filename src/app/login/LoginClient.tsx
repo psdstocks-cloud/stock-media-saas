@@ -22,9 +22,6 @@ import {
   EyeOff,
   Loader2,
   AlertCircle,
-  CheckCircle,
-  LogIn,
-  User,
   ArrowLeft
 } from 'lucide-react'
 import Link from 'next/link'
