@@ -1,0 +1,120 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { compare } from 'bcryptjs'
+import { generateToken } from '@/lib/auth/jwt'
+import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('🔐 User login API called')
+    
+    const { email, password } = await request.json()
+
+    if (!email || !password) {
+      return NextResponse.json({
+        success: false,
+        error: 'Email and password are required'
+      }, { status: 400 })
+    }
+
+    // Check if user exists
+    let user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() }
+    })
+
+    // Create demo user if logging in with demo credentials
+    if (!user && email === 'demo@example.com' && password === 'demo123') {
+      console.log('🎭 Creating demo user')
+      user = await prisma.user.create({
+        data: {
+          email: 'demo@example.com',
+          name: 'Demo User',
+          password: await import('bcryptjs').then(bcrypt => bcrypt.hash('demo123', 12)),
+          emailVerified: new Date(),
+          role: 'USER'
+        }
+      })
+      
+      // Create points balance for demo user
+      await prisma.pointsBalance.create({
+        data: {
+          userId: user.id,
+          currentPoints: 100,
+          totalEarned: 100,
+          totalSpent: 0,
+          lastUpdated: new Date()
+        }
+      })
+    }
+
+    // Create admin user if logging in with admin credentials
+    if (!user && email === 'admin@stockmedia.com' && password === 'admin123') {
+      console.log('👑 Creating admin user')
+      user = await prisma.user.create({
+        data: {
+          email: 'admin@stockmedia.com',
+          name: 'System Administrator',
+          password: await import('bcryptjs').then(bcrypt => bcrypt.hash('admin123', 12)),
+          emailVerified: new Date(),
+          role: 'SUPER_ADMIN'
+        }
+      })
+    }
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid email or password'
+      }, { status: 401 })
+    }
+
+    // Verify password
+    const isValidPassword = await compare(password, user.password)
+    if (!isValidPassword) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid email or password'
+      }, { status: 401 })
+    }
+
+    // Generate access token
+    const accessToken = await generateToken({
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
+    })
+
+    // Set HTTP-only cookie
+    const response = NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    })
+
+    // Set cookie with same name pattern as admin
+    response.cookies.set('user_access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/'
+    })
+
+    console.log('✅ User login successful:', user.email)
+    return response
+
+  } catch (error) {
+    console.error('❌ User login error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error'
+    }, { status: 500 })
+  }
+}

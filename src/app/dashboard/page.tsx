@@ -1,63 +1,73 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AuthGuard } from '@/components/AuthGuard'
-import { Card, CardContent, CardHeader, CardTitle, Typography, Button } from '@/components/ui'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import PointsOverview from '@/components/dashboard/PointsOverview'
-import dynamic from 'next/dynamic'
-const OrdersManagement = dynamic(() => import('@/components/dashboard/OrdersManagement'), { ssr: false })
-const SubscriptionManager = dynamic(() => import('@/components/dashboard/SubscriptionManager'), { ssr: false })
-const StockMediaSearch = dynamic(() => import('@/components/dashboard/StockMediaSearch'), { ssr: false })
-import ProfileSettings from '@/components/dashboard/ProfileSettings'
-import RecentActivity from '@/components/dashboard/RecentActivity'
-import BillingSummary from '@/components/dashboard/BillingSummary'
-import { User as UserIcon, LogOut, Shield, Settings, Download, Search, Coins, ShoppingCart, CreditCard, FileSearch, Link } from 'lucide-react'
-import useUserStore from '@/stores/userStore'
-import EmptyState from '@/components/dashboard/EmptyState'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Typography } from '@/components/ui/typography'
+import { Coins, User, Download, Calendar, LogOut } from 'lucide-react'
 
-// interface DashboardUser {
-//   id: string
-//   email: string
-//   name: string
-//   role: string
-// }
-
-interface User {
+interface UserProfile {
   id: string
-  name: string
   email: string
+  name: string | null
   role: string
 }
 
+interface PointsData {
+  currentPoints: number
+  totalEarned: number
+  totalSpent: number
+}
+
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
-  
-  // Use centralized store for points
-  const { points: userPoints } = useUserStore()
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const [points, setPoints] = useState<PointsData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/api/profile', {
-          credentials: 'include'
-        })
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success && data.user) {
-            setUser(data.user)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch user:', error)
-      }
-    }
-
-    fetchUser()
+    loadUserData()
   }, [])
+
+  const loadUserData = async () => {
+    try {
+      console.log('📊 Loading user dashboard data...')
+      
+      // Check auth status
+      const authResponse = await fetch('/api/auth/status', {
+        credentials: 'include'
+      })
+      
+      const authData = await authResponse.json()
+      
+      if (!authData.authenticated) {
+        router.push('/login?redirect=/dashboard')
+        return
+      }
+      
+      setUser(authData.user)
+      
+      // Load points data
+      const pointsResponse = await fetch('/api/points', {
+        credentials: 'include'
+      })
+      
+      if (pointsResponse.ok) {
+        const pointsData = await pointsResponse.json()
+        if (pointsData.success) {
+          setPoints(pointsData.summary)
+        }
+      }
+      
+    } catch (err) {
+      console.error('❌ Error loading dashboard:', err)
+      setError('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleLogout = async () => {
     try {
@@ -65,231 +75,157 @@ export default function DashboardPage() {
         method: 'POST',
         credentials: 'include'
       })
-      router.push('/')
+      
+      router.push('/login')
     } catch (error) {
-      console.error('Logout error:', error)
-      router.push('/')
+      console.error('Logout failed:', error)
     }
   }
 
-  // Onboarding: show gentle empty state if no user points and overview tab
-  const showOnboarding = userPoints === 0 && activeTab === 'overview'
-
-  return (
-    <AuthGuard requireAuth={true}>
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      {/* Header */}
-      <div className="border-b border-[hsl(var(--border))]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">SM</span>
-              </div>
-              <div>
-                <Typography variant="h2" className="text-[hsl(var(--foreground))] font-bold text-xl">
-                  Stock Media SaaS
-                </Typography>
-                <Typography variant="body" className="text-[hsl(var(--muted-foreground))] text-sm">
-                  Welcome back, {user?.name || 'User'}
-                </Typography>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-[hsl(var(--muted-foreground))]">
-                <UserIcon className="h-4 w-4" aria-hidden="true" />
-                <span className="text-sm">{user?.role || 'user'}</span>
-              </div>
-              {user?.role === 'admin' || user?.role === 'SUPER_ADMIN' ? (
-                <Button
-                  onClick={() => router.push('/admin/dashboard')}
-                  variant="outline"
-                  size="sm"
-                  className="text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"
-                  title="Open Admin Panel"
-                >
-                  <Shield className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Admin Panel
-                </Button>
-              ) : null}
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-                className="text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"
-                title="Sign out of your account"
-              >
-                <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
-                Logout
-              </Button>
-            </div>
-          </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <Typography variant="body" className="text-white">Loading dashboard...</Typography>
         </div>
       </div>
+    )
+  }
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); const el = document.getElementById('content'); if (el) el.focus(); }} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 surface-card sticky top-[72px] z-40" title="Dashboard sections">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <Coins className="h-4 w-4 mr-2" aria-hidden="true" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="search" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <FileSearch className="h-4 w-4 mr-2" aria-hidden="true" />
-              Search
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <ShoppingCart className="h-4 w-4 mr-2" aria-hidden="true" />
-              Orders
-            </TabsTrigger>
-            <TabsTrigger value="subscription" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
-              Subscription
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="data-[state=active]:bg-[hsl(var(--accent))] data-[state=active]:text-[hsl(var(--accent-foreground))]">
-              <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
-              Billing
-            </TabsTrigger>
-          </TabsList>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <Typography variant="h3" className="text-red-500 mb-2">Error</Typography>
+            <Typography variant="body" className="text-gray-600 mb-4">{error}</Typography>
+            <Button onClick={loadUserData}>Retry</Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
-        <TabsContent value="overview" className="mt-6">
-          {showOnboarding && (
-            <div className="mb-6">
-              <EmptyState
-                title="Welcome! Let's get you started"
-                description="Add your first URLs on the Order page or explore supported platforms."
-                primaryCta={{ label: 'Order media', href: '/dashboard/order' }}
-                secondaryCta={{ label: 'See supported sites', href: '/dashboard/order#supported-platforms' }}
-              />
-            </div>
-          )}
-            {/* Points Hub - Prominent display */}
-              <Card className="surface-card shadow-2xl mb-8">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-6">
-                    <div className="bg-[hsl(var(--muted))] w-16 h-16 rounded-full flex items-center justify-center">
-                      <Coins className="h-8 w-8" />
-                    </div>
-                    <div>
-                      <Typography variant="h1" className="text-4xl font-bold">
-                        {userPoints === null ? '...' : userPoints?.toLocaleString() || '0'} Points
-                      </Typography>
-                      <Typography variant="body" className="text-lg text-[hsl(var(--muted-foreground))]">
-                        Available for downloads
-                      </Typography>
-                    </div>
-                  </div>
-                  <div className="flex space-x-4">
-                    <Button
-                      onClick={() => router.push('/dashboard/order')}
-                      variant="outline"
-                      className="px-8 py-3 text-lg"
-                    >
-                      <ShoppingCart className="h-5 w-5 mr-2" />
-                      Order media
-                    </Button>
-                    <Button
-                      onClick={() => router.push('/pricing')}
-                      className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg"
-                    >
-                      <Coins className="h-5 w-5 mr-2" />
-                      Buy More Points
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PointsOverview />
-              <BillingSummary />
-              <RecentActivity />
-              <Card className="surface-card shadow-2xl">
-                <CardHeader>
-                  <CardTitle className="text-[hsl(var(--card-foreground))] flex items-center">
-                    <UserIcon className="h-5 w-5 mr-2" />
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    onClick={() => router.push('/dashboard/order')}
-                  >
-                    <Link className="h-4 w-4 mr-2" />
-                    Order from URL
-                  </Button>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-                    onClick={() => setActiveTab('search')}
-                  >
-                    <Search className="h-4 w-4 mr-2" />
-                    Search Stock Media
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setActiveTab('orders')}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    View Downloads
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setActiveTab('subscription')}
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Manage Subscription
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="search" className="mt-6">
-            <StockMediaSearch />
-          </TabsContent>
-
-          <TabsContent value="orders" className="mt-6">
-            <OrdersManagement />
-          </TabsContent>
-
-          <TabsContent value="subscription" className="mt-6">
-            <SubscriptionManager />
-          </TabsContent>
-
-          <TabsContent value="profile" className="mt-6">
-            <ProfileSettings />
-          </TabsContent>
-
-          <TabsContent value="billing" className="mt-6">
-            <div className="text-center py-12">
-              <Typography variant="h3" className="text-[hsl(var(--foreground))] mb-4">
-                Billing & Transaction History
-              </Typography>
-              <Typography variant="body" className="text-[hsl(var(--muted-foreground))] mb-6">
-                View your complete transaction history and billing details
-              </Typography>
-              <Button
-                onClick={() => router.push('/dashboard/billing')}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Typography variant="h1" className="text-3xl font-bold text-white">
+              Welcome back, {user?.name || user?.email}!
+            </Typography>
+            <Typography variant="body" className="text-white/70 mt-2">
+              Manage your stock media downloads and points
+            </Typography>
+          </div>
+          <div className="flex items-center space-x-4">
+            {user?.role === 'SUPER_ADMIN' && (
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/admin')}
+                className="border-white/30 text-white hover:bg-white/10"
               >
-                <CreditCard className="h-4 w-4 mr-2" />
-                View Full Billing History
+                Admin Panel
               </Button>
+            )}
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="border-white/30 text-white hover:bg-white/10"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white flex items-center">
+                <Coins className="h-5 w-5 mr-2 text-orange-500" />
+                Current Points
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-orange-500">
+                {points?.currentPoints || 0}
+              </div>
+              <p className="text-white/70 text-sm">Available for downloads</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white flex items-center">
+                <Download className="h-5 w-5 mr-2 text-green-500" />
+                Total Earned
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-500">
+                {points?.totalEarned || 0}
+              </div>
+              <p className="text-white/70 text-sm">Points earned all-time</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 border-white/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white flex items-center">
+                <Calendar className="h-5 w-5 mr-2 text-blue-500" />
+                Total Spent
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-500">
+                {points?.totalSpent || 0}
+              </div>
+              <p className="text-white/70 text-sm">Points used for downloads</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* User Info */}
+        <Card className="bg-white/10 border-white/20 mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <User className="h-5 w-5 mr-2" />
+              Profile Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <span className="text-white/70 text-sm">Email:</span>
+              <div className="text-white">{user?.email}</div>
             </div>
-          </TabsContent>
-        </Tabs>
+            <div>
+              <span className="text-white/70 text-sm">Role:</span>
+              <div className="text-white">{user?.role}</div>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Account Status:</span>
+              <div className="text-green-400">Active</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4">
+          <Button className="bg-orange-600 hover:bg-orange-700">
+            Browse Stock Media
+          </Button>
+          <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+            Download History
+          </Button>
+          <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+            Manage Subscription
+          </Button>
+        </div>
       </div>
     </div>
-    </AuthGuard>
   )
 }
