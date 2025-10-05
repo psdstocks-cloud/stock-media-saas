@@ -19,28 +19,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const checkAuthentication = async () => {
     try {
-      console.log('🔍 [Dashboard Layout] Checking authentication...')
-      
       const response = await fetch('/api/auth/me', {
-        credentials: 'include',
-        cache: 'no-cache'
+        credentials: 'include'
       })
       
       if (response.ok) {
         const data = await response.json()
         if (data.authenticated && data.user) {
-          console.log('✅ [Dashboard Layout] User authenticated')
           setIsAuthenticated(true)
         } else {
-          console.log('❌ [Dashboard Layout] User not authenticated, redirecting...')
           router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
         }
       } else {
-        console.log('❌ [Dashboard Layout] Auth check failed, redirecting...')
         router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
       }
     } catch (error) {
-      console.error('❌ [Dashboard Layout] Auth check error:', error)
+      console.error('Dashboard auth check failed:', error)
       router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
     } finally {
       setIsLoading(false)
@@ -63,13 +57,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 lg:flex">
-      {/* Sidebar will be rendered by SmartHeader component */}
-      
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
-        <main className="p-6">
-          {children}
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content Area - Properly positioned for sidebar */}
+      <div className="lg:pl-64 pt-0">
+        <main className="p-4 sm:p-6">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

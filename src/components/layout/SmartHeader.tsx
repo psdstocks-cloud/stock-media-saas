@@ -145,10 +145,10 @@ export default function SmartHeader() {
 
   return (
     <>
-      {/* Main Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      {/* Main Header - Fixed height for consistent layout */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 h-16">
+        <div className="container mx-auto px-4 h-full">
+          <div className="flex items-center justify-between h-full">
             {/* Left Section */}
             <div className="flex items-center space-x-3">
               {/* Dashboard Menu Button - Only show in dashboard area when authenticated */}

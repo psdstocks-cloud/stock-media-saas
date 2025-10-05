@@ -223,3 +223,36 @@
   from { transform: translateY(-10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Dashboard Layout Fixes */
+.dashboard-layout {
+  padding-left: 0;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-layout {
+    padding-left: 16rem; /* 256px sidebar width */
+  }
+}
+
+/* Ensure content is not hidden behind fixed elements */
+.dashboard-content {
+  min-height: calc(100vh - 4rem);
+  padding-top: 0;
+}
+
+/* Sidebar styling */
+.dashboard-sidebar {
+  top: 4rem; /* Header height */
+  height: calc(100vh - 4rem);
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent layout shift */
+.sidebar-transition {
+  transition: margin-left 300ms ease-in-out;
+}

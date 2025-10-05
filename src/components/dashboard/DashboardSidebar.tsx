@@ -123,9 +123,9 @@ export default function DashboardSidebar({ isOpen, onToggle, onClose, userPoints
       <aside
         id="dashboard-sidebar"
         className={`
-          fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 z-50
+          fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 z-30
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:z-auto
+          lg:translate-x-0
         `}
       >
         <div className="flex flex-col h-full">
