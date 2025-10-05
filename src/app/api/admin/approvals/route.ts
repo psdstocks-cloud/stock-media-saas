@@ -36,7 +36,7 @@ export async function GET(_request: NextRequest) {
     
     const user = await verifyAdmin(_request)
     
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(_request.url)
     const status = searchParams.get('status') || 'PENDING'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')

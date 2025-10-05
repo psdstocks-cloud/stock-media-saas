@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Typography } from '@/components/ui/typography'
 import KPICards from '@/components/admin/KPICards'
 import RevenueChart from '@/components/admin/RevenueChart'
