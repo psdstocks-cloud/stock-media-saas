@@ -7,6 +7,15 @@ export async function GET(_request: NextRequest) {
   try {
     console.log('📊 KPI Analytics API called')
     
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.log('⚠️ DATABASE_URL not set, returning mock data')
+      return NextResponse.json({
+        success: true,
+        data: generateMockKPIData()
+      })
+    }
+    
     // Verify authentication
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('admin_access_token')?.value
@@ -99,5 +108,19 @@ export async function GET(_request: NextRequest) {
       },
       { status: 500 }
     )
+  }
+}
+
+// Mock data generator for build time
+function generateMockKPIData() {
+  return {
+    totalRevenue: 12500,
+    totalUsers: 150,
+    totalOrders: 500,
+    conversionRate: 75.5,
+    revenueGrowth: 12.5,
+    userGrowth: 8.3,
+    orderGrowth: 15.2,
+    conversionGrowth: 5.1
   }
 }
