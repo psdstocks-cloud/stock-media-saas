@@ -123,33 +123,25 @@ export async function POST(request: NextRequest) {
     if (orderData.success || taskId) {
       console.log(`✅ [Order ${requestId}] Order successful, taskId: ${taskId}`)
       
-      // Deduct points
-      await prisma.pointsBalance.update({
-        where: { userId: user.id },
-        data: {
-          currentPoints: pointsBalance.currentPoints - cost,
-          totalSpent: pointsBalance.totalSpent + cost,
-          lastUpdated: new Date()
-        }
-      })
-      
-      // Create points history
-      await prisma.pointsHistory.create({
-        data: {
-          userId: user.id,
-          points: -cost,
-          type: 'SPENT',
-          description: `Downloaded from ${site} - Task: ${taskId}`,
-          metadata: {
-            taskId,
-            site,
-            stockId: id,
-            url,
-            orderUrl,
-            processId: stockInfoData.data.process_id
+        // Deduct points - use correct field names from Prisma schema
+        await prisma.pointsBalance.update({
+          where: { userId: user.id },
+          data: {
+            currentPoints: pointsBalance.currentPoints - cost,
+            totalUsed: pointsBalance.totalUsed + cost, // Use totalUsed (correct field name)
+            lastRollover: new Date() // Use lastRollover (correct field name)
           }
-        }
-      })
+        })
+      
+        // Create points history - use correct field names from Prisma schema
+        await prisma.pointsHistory.create({
+          data: {
+            userId: user.id,
+            amount: -cost, // Use amount (correct field name)
+            type: 'SPENT',
+            description: `Downloaded from ${site} - Task: ${taskId}` // No metadata field in schema
+          }
+        })
       
       console.log(`💳 [Order ${requestId}] Points deducted and history created`)
       
