@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
 import { 
   LogOut, 
   User, 
   Settings, 
   Shield, 
   Home,
-  Loader2
+  Loader2,
+  Menu,
+  Coins
 } from 'lucide-react'
 
 interface AuthUser {
@@ -24,8 +27,10 @@ interface AuthUser {
 
 export default function SmartHeader() {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [userPoints, setUserPoints] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   
   const pathname = usePathname()
   const router = useRouter()
@@ -33,6 +38,9 @@ export default function SmartHeader() {
   // Don't show header on these routes
   const noHeaderRoutes = ['/login', '/register', '/forgot-password', '/reset-password']
   const shouldShowHeader = !noHeaderRoutes.some(route => pathname.startsWith(route))
+  
+  // Check if we're in dashboard area
+  const isDashboardArea = pathname.startsWith('/dashboard')
 
   useEffect(() => {
     if (shouldShowHeader) {
@@ -46,51 +54,25 @@ export default function SmartHeader() {
     try {
       console.log('🔍 [Smart Header] Checking unified authentication...')
       
-      // Try unified auth first
-      let response = await fetch('/api/auth/me', {
+      const response = await fetch('/api/auth/me', {
         method: 'GET',
         credentials: 'include'
       })
       
-      let authenticated = false
-      let userData = null
-      
       if (response.ok) {
         const data = await response.json()
         if (data.authenticated && data.user) {
-          authenticated = true
-          userData = data.user
-          console.log('✅ [Smart Header] Unified auth successful:', userData.email)
+          console.log('✅ [Smart Header] User authenticated:', data.user.email)
+          setUser(data.user)
+          setIsAuthenticated(true)
+          
+          // Load user points if authenticated
+          loadUserPoints()
+        } else {
+          setIsAuthenticated(false)
+          setUser(null)
         }
-      }
-      
-      // Fallback to admin auth if unified fails (for backward compatibility)
-      if (!authenticated) {
-        response = await fetch('/api/admin/auth/me', {
-          method: 'GET',
-          credentials: 'include'
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          if (data.authenticated && data.user) {
-            authenticated = true
-            // Convert admin response to unified format
-            userData = {
-              ...data.user,
-              isAdmin: data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN',
-              isUser: true // Admins can access user features
-            }
-            console.log('✅ [Smart Header] Admin auth fallback successful:', userData.email)
-          }
-        }
-      }
-      
-      if (authenticated && userData) {
-        setUser(userData)
-        setIsAuthenticated(true)
       } else {
-        console.log('ℹ️ [Smart Header] No authentication found')
         setIsAuthenticated(false)
         setUser(null)
       }
@@ -103,20 +85,38 @@ export default function SmartHeader() {
     }
   }
 
+  const loadUserPoints = async () => {
+    try {
+      const response = await fetch('/api/points', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.summary) {
+          setUserPoints(data.summary.currentPoints || 0)
+        }
+      }
+    } catch (error) {
+      console.log('🔍 [Smart Header] Points check error:', error)
+    }
+  }
+
   const handleLogout = async () => {
     try {
       console.log('🚪 [Smart Header] Logging out...')
       
-      // Call both logout endpoints to ensure complete logout
-      await Promise.all([
-        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }),
-        fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'include' })
-      ])
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
       
       console.log('✅ [Smart Header] Logout successful')
       setIsAuthenticated(false)
       setUser(null)
-      router.push('/login')
+      setSidebarOpen(false)
+      router.push('/')
     } catch (error) {
       console.error('❌ [Smart Header] Logout error:', error)
     }
@@ -127,117 +127,143 @@ export default function SmartHeader() {
     return null
   }
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+  return (
+    <>
+      {/* Main Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-orange-600">
-              StockMedia Pro
-            </Link>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Loading...</span>
+            {/* Left Section */}
+            <div className="flex items-center space-x-3">
+              {/* Dashboard Menu Button - Only show in dashboard area when authenticated */}
+              {isDashboardArea && isAuthenticated && (
+                <Button
+                  id="dashboard-menu-button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              )}
+
+              {/* Logo */}
+              <Link 
+                href="/" 
+                className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
+              >
+                StockMedia Pro
+              </Link>
+            </div>
+            
+            {/* Right Section */}
+            <div className="flex items-center space-x-4">
+              {isLoading ? (
+                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : isAuthenticated && user ? (
+                // User is logged in
+                <div className="flex items-center space-x-3">
+                  {/* Points Display - Only on non-dashboard pages */}
+                  {!isDashboardArea && (
+                    <div className="hidden sm:flex items-center space-x-2 bg-orange-50 px-3 py-1 rounded-lg">
+                      <Coins className="h-4 w-4 text-orange-600" />
+                      <span className="text-sm font-semibold text-orange-700">{userPoints} points</span>
+                    </div>
+                  )}
+
+                  {/* User Info */}
+                  <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+                    <User className="h-4 w-4" />
+                    <span>{user.email}</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      user.isAdmin 
+                        ? 'bg-purple-100 text-purple-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </div>
+                  
+                  {/* Navigation Buttons */}
+                  <div className="flex items-center space-x-2">
+                    {/* Home Button - Only if not on homepage */}
+                    {pathname !== '/' && (
+                      <Link href="/">
+                        <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                          <Home className="h-4 w-4" />
+                          <span className="hidden sm:inline">Home</span>
+                        </Button>
+                      </Link>
+                    )}
+
+                    {/* Dashboard Button - Only if not in dashboard area */}
+                    {!isDashboardArea && user.isUser && (
+                      <Link href="/dashboard">
+                        <Button 
+                          size="sm" 
+                          className="flex items-center space-x-2 bg-orange-600 hover:bg-orange-700"
+                        >
+                          <Settings className="h-4 w-4" />
+                          <span className="hidden sm:inline">Dashboard</span>
+                        </Button>
+                      </Link>
+                    )}
+                    
+                    {/* Admin Panel - Only for admins and not in admin area */}
+                    {user.isAdmin && !pathname.startsWith('/admin') && (
+                      <Link href="/admin">
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center space-x-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+                        >
+                          <Shield className="h-4 w-4" />
+                          <span className="hidden sm:inline">Admin</span>
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                  
+                  {/* Logout */}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:border-red-300"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden sm:inline">Sign Out</span>
+                  </Button>
+                </div>
+              ) : (
+                // Not authenticated
+                <div className="flex items-center space-x-3">
+                  <Link href="/login">
+                    <Button size="sm">Sign In</Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button variant="outline" size="sm">Get Started</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </header>
-    )
-  }
 
-  return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link 
-            href="/" 
-            className="text-2xl font-bold text-orange-600 hover:text-orange-700 transition-colors"
-          >
-            StockMedia Pro
-          </Link>
-          
-          {/* Navigation */}
-          <div className="flex items-center space-x-4">
-            {isAuthenticated && user ? (
-              // User is logged in - show single header with role-based features
-              <div className="flex items-center space-x-3">
-                {/* User Info */}
-                <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
-                  <User className="h-4 w-4" />
-                  <span>{user.email}</span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    user.isAdmin 
-                      ? 'bg-purple-100 text-purple-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {user.role}
-                  </span>
-                </div>
-                
-                {/* Navigation Buttons */}
-                <div className="flex items-center space-x-2">
-                  {/* Home Button */}
-                  <Link href="/">
-                    <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                      <Home className="h-4 w-4" />
-                      <span>Home</span>
-                    </Button>
-                  </Link>
-
-                  {/* User Dashboard - Always available */}
-                  {user.isUser && (
-                    <Link href="/dashboard">
-                      <Button 
-                        variant={pathname === '/dashboard' ? "default" : "outline"} 
-                        size="sm" 
-                        className="flex items-center space-x-2"
-                      >
-                        <Settings className="h-4 w-4" />
-                        <span>Dashboard</span>
-                      </Button>
-                    </Link>
-                  )}
-                  
-                  {/* Admin Panel - Only for admins */}
-                  {user.isAdmin && (
-                    <Link href="/admin">
-                      <Button 
-                        variant={pathname.startsWith('/admin') ? "default" : "outline"} 
-                        size="sm"
-                        className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white border-purple-600"
-                      >
-                        <Shield className="h-4 w-4" />
-                        <span>Admin Panel</span>
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-                
-                {/* Logout */}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:border-red-300"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </Button>
-              </div>
-            ) : (
-              // Not authenticated - show login/signup buttons
-              <div className="flex items-center space-x-3">
-                <Link href="/login">
-                  <Button size="sm">Sign In</Button>
-                </Link>
-                <Button variant="outline" size="sm">Get Started</Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
+      {/* Dashboard Sidebar - Only show in dashboard area when authenticated */}
+      {isDashboardArea && isAuthenticated && (
+        <DashboardSidebar
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+          onClose={() => setSidebarOpen(false)}
+          userPoints={userPoints}
+        />
+      )}
+    </>
   )
 }
